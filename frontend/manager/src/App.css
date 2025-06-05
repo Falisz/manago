@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+#root .app {
+  min-height: 100vh;
+  background: #282c34;
+  display: flex;
+  flex-direction: column;
+}
+
+Header {
+  background: rgba(10, 10, 10);
+  padding: 10px 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-logo {
+  color: white;
+  font-family: 'Roboto Condensed', 'Roboto', sans-serif;
+  font-weight: 200;
+  text-transform: uppercase;
+  margin: 0;
+}
+.site-logo a {
+  color: white;
+  text-decoration: none;
+}
+
+.right-box {
+  background: none;
+  color: white;
+  text-transform: uppercase;
+  font-family: 'Roboto Condensed', 'Roboto', sans-serif;
+}
+.right-box a {
+  color: white;
+  text-decoration: none;
+}
+Footer {
+  background: rgba(10, 10, 10);
+  padding: 10px 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+main {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin: 20px auto;
+  background: rgba(0,0,0,.5);
+  padding: 25px;
+  width: 50%;
+  border-radius: 20px;
+  color: white;
+  flex: 1;
+}
