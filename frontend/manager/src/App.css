@@ -1,64 +1,259 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
 
+:root {
+  --color: #0671ba;
+  --color-dark: #004577;
+  --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
+  --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
+  --black-brighter: #181c24;
+  --gray-darker: #1f2129;
+  --gray-dark: #282c34;
+  --gray: #4e5563;
+  --gray-light: #ccc;
+  --gray-lighter: #ddd;
+  --white-darker: #eee;
+}
+
 body {
   margin: 0;
   padding: 0;
   height: 100%;
 }
+
 #root .app {
-  min-height: 100vh;
-  background: #282c34;
+  height: 100vh;
+  width: 100vw;
+  background: #111;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  overflow: hidden;
 }
 
-Header {
-  background: rgba(10, 10, 10);
-  padding: 10px 50px;
+.site-logo {
+  font-family: 'Roboto Condensed', 'Roboto', sans-serif;
+  font-weight: 200;
+  text-transform: uppercase;
+  font-size: 40px;
+  margin: 0;
+  padding: 20px;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-gradient);
+  max-width: 200px;
+}
+
+.app-nav a {
+  color: white;
+  text-decoration: none;
+}
+
+.app-nav .site-logo {
+  display: block;
+  margin: 30px auto 50px;
+}
+
+.app-nav .page-link {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+  padding: 15px 20px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 20px;
+  text-transform: uppercase;
+  transition: ease-in-out 0.3s;
+}
+.app-nav .page-link .nav-icon {
+  margin-right: 5px;
+}
+
+.app-nav .page-link.active,
+.app-nav .page-link:hover {
+  background: var(--color-gradient);
+  transition: ease-in-out 0.3s;
+}
+
+.app-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.app-subnav {
+  background: var(--color-gradient);
+  padding: 0;
+  margin: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.site-logo {
-  color: white;
-  font-family: 'Roboto Condensed', 'Roboto', sans-serif;
-  font-weight: 200;
-  text-transform: uppercase;
-  margin: 0;
-}
-.site-logo a {
+.app-subnav a {
   color: white;
   text-decoration: none;
 }
 
-.right-box {
-  background: none;
-  color: white;
-  text-transform: uppercase;
-  font-family: 'Roboto Condensed', 'Roboto', sans-serif;
+.subpage-links {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  margin: 0 10px;
+  padding: 0;
 }
-.right-box a {
+.subpage-link,
+.username {
   color: white;
   text-decoration: none;
+  display: block;
+  margin: 0 10px;
+  padding: 5px 0;
+  font-size: 16px;
+  font-weight: 400;
+  font-family: 'Roboto Condensed', sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  border: 3px solid transparent;
+  transition: ease-in-out 0.3s;
 }
-Footer {
-  background: rgba(10, 10, 10);
-  padding: 10px 50px;
+
+.subpage-link.selected,
+.subpage-link.selected a {
+  cursor: default;
+}
+
+.subpage-link.selected,
+.subpage-link:hover {
+  border-bottom-color: white;
+  transition: ease-in-out 0.3s;
+}
+
+.user-nav {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  color: white;
+  margin-right: 20px;
+  margin-left: auto;
 }
+.user-nav .username {
+  margin: 0;
+}
+.user-nav i {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.username .material-icons {
+  font-size: 20px;
+}
+
+.submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: -10%;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  min-width: 150px;
+  width: 200px;
+  z-index: 1000;
+}
+
+.user-nav:hover .submenu,
+.username:hover~.submenu,
+.submenu:hover {
+  display: block;
+}
+
+.submenu-item {
+  padding: 8px 16px;
+}
+
+.submenu-item a,
+.submenu-item button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.submenu-item a:hover,
+.submenu-item button:hover {
+  color: #007bff;
+  background-color: #f8f9fa;
+}
+
 main {
   display: flex;
   align-items: center;
   flex-direction: column;
   margin: 20px auto;
-  background: rgba(0,0,0,.5);
   padding: 25px;
-  width: 50%;
-  border-radius: 20px;
-  color: white;
-  flex: 1;
+}
+
+.app-loading {
+  display: none;
+}
+
+.app-no-access {
+  height: 100%;
+  padding-top: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.app-no-access p {
+  margin: 5px;
+  padding: 0;
+  font-size: 20px;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-weight: 400;
+}
+.app-no-access a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.app-login {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.app-login .site-logo {
+  margin: 50px auto;
+}
+.app-login .login-form {
+  display: flex;
+  flex-direction: column;
+  width: 20%;
+}
+.app-login .login-form>* {
+  margin: 10px 0;
+  font-size: 16px;
+  padding: 10px;
+}
+.app-login .login-form>*:focus {
+  outline: none;
+}
+.app-login .login-form input,
+.app-login .login-form button {
+  cursor: pointer;
+}
+.app-login .login-form .error {
+ color: orange;
+  align-self: center;
 }

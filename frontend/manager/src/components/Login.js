@@ -20,24 +20,22 @@ const Login = ({ onLogin }) => {
     };
 
     return (
-        <div className="login">
-            <h2>Login</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
+        <div className="app-login">
+            <h1 className='site-logo'>Manager Portal</h1>
+            <form className='login-form' onSubmit={handleSubmit}>
                 <input
                     type="text"
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                <br />
                 <input
                     type="password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <br />
+                <p className='error'>{error}</p>
                 <button type="submit">Log in</button>
             </form>
         </div>

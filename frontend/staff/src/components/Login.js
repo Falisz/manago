@@ -1,4 +1,4 @@
-// Login.js
+//FRONTEND/Staff/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -10,38 +10,32 @@ const Login = ({ onLogin }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('/api/auth/login', { username, password }, { withCredentials: true });
+            const res = await axios.post('/api/staff/login', { username, password }, { withCredentials: true });
             if (res.data.user) {
                 onLogin(res.data.user);
             }
         } catch (err) {
-            if (err.response?.status === 403) {
-                setError(err.response?.data?.message);
-            } else {
-                setError(err.response?.data?.message || 'Login failed');
-            }
+            setError(err.response?.data?.message || 'Login failed!');
         }
     };
 
     return (
-        <div>
-            <h2>Login</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
+        <div className="app-login">
+            <h1 className='site-logo'>Staff Portal</h1>
+            <form className='login-form' onSubmit={handleSubmit}>
                 <input
                     type="text"
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                <br />
                 <input
                     type="password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <br />
+                <p className='error'>{error}</p>
                 <button type="submit">Log in</button>
             </form>
         </div>
