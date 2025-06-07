@@ -8,6 +8,7 @@ const {
     checkAccess,
     logoutUser
 } = require('./auth');
+const {poolPromise} = require("./db");
 
 const allowedRoles = [1, 2, 3];
 
@@ -40,20 +41,73 @@ router.get('/logout', (req, res) => {
     logoutUser(req, res);
 });
 
-router.get('/access-check', async(req, res) => {
+
+router.get('/access-check', async (req, res) => {
     const result = await checkAccess(req, allowedRoles);
 
-    if (!result.access) {
-        return res.status(result.status).json({
-            message: result.message,
-            user: result.user || null
+    return res.json({
+        message: result.message,
+        user: result.user || null
+    });
+});
+
+router.get('/pages', async (req, res) => {
+    const accessCheckup = await checkAccess(req, allowedRoles);
+
+    if (!accessCheckup.access) {
+        return res.json({
+            access: false,
+            pages: [],
+            message: accessCheckup.message,
+            user: accessCheckup.user || null
         });
     }
 
-    return res.json({
-        message: 'Authorization successful.',
-        user: result.user
-    });
+    try {
+        const pool = await poolPromise;
+        const queryResult = await pool.request().query(`
+            SELECT id, parent_id, path, title, icon, min_role, component
+            FROM pages_staff
+            ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END, parent_id, id
+        `);
+
+        const rows = queryResult.recordset;
+
+        const pages = [];
+        const pageMap = new Map();
+
+        for (const row of rows) {
+            const page = {
+                path: row.path,
+                title: row.title,
+                icon: row.icon,
+                minRole: row.min_role,
+                ...(row.component ? {component: row.component} : {}),
+                ...(row.parent_id ? {} : { subpages: [] }),
+            };
+
+            if (!row.parent_id) {
+                pageMap.set(row.id, page);
+                pages.push(page);
+            } else {
+                const parent = pageMap.get(row.parent_id);
+                if (parent) {
+                    parent.subpages.push({
+                        path: row.path,
+                        title: row.title,
+                        minRole: row.min_role,
+                        component: row.component,
+                    });
+                }
+            }
+        }
+
+        res.json(pages);
+
+    } catch (err) {
+        console.error('Error fetching pages:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
 });
 
 module.exports = router;

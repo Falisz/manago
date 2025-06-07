@@ -1,16 +1,57 @@
 //FRONTEND/Staff/Portal.js
 import React from 'react';
-import {Link, Outlet} from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 
-const Portal = ({user}) => {
+const Portal = ({ user, pages }) => {
+    const location = useLocation();
+
     return (
         <div className="app">
             <div className="app-header">
+                <Link to="/" className='site-logo'>Staff Portal</Link>
                 <nav className="app-nav">
-                    <Link to="/"><h1 className='site-logo'>Staff Portal</h1></Link>
-                    <Link to="/schedule">Schedule</Link>
-                    <Link to="/reports">Reports</Link>
-                    <Link to="/settings">Settings</Link>
+                    {pages
+                        .filter((page) => user.role >= page.minRole)
+                        .filter((page) => page.path !== "/")
+                        .map((page) => (
+                            <div key={page.path} className={'page-link-item'}>
+                            <Link
+                                key={page.path}
+                                to={page.path}
+                                className={`page-link ${
+                                    page.path === '/'
+                                        ? location.pathname === '/'
+                                        : location.pathname === `/${page.path}` || location.pathname.startsWith(`/${page.path}/`)
+                                            ? 'active'
+                                            : ''
+                                }`}
+                            >
+                                {page.icon && <span className="nav-icon material-icons">{page.icon}</span>}
+                                <span className="nav-title">{page.title}</span>
+                            </Link>
+                                {page.subpages?.length >= 1 && (
+                                    <ul className="submenu">
+                                        {page.subpages
+                                            .filter((subpage) => user.role >= subpage.minRole)
+                                            .filter((subpage) => subpage.path !== '')
+                                            .map((subpage) => (
+                                                <li key={`${page.path}/${subpage.path}`} className="submenu-item">
+                                                    <Link
+                                                        to={`${page.path}${subpage.path ? `/${subpage.path}` : ''}`}
+                                                        className={`subpage-link ${
+                                                            location.pathname === `/${page.path}${subpage.path ? `/${subpage.path}` : ''}`
+                                                                ? 'active'
+                                                                : ''
+                                                        }`}
+                                                    >
+                                                        {subpage.title}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                    </ul>
+                                )}
+                            </div>
+                    ))}
                 </nav>
                 <div className='user-nav'>
                     <span className='username'>

@@ -1,22 +1,29 @@
 //FRONTEND/Manager/App.js
 import './App.css';
 import React, { useEffect, useState, useCallback } from 'react';
+import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import Portal from './components/Portal';
 import Login from './components/Login';
-import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 
+const Dashboard = () => <InWorks title={'Dashboard'}/>;
+const ScheduleShow = () => <InWorks title={'Work schedule'}/>;
+const ScheduleEdit = () => <InWorks title={'Work schedule editor'}/>;
+const SchedulePast = () => <InWorks title={'Work schedule archive'}/>;
+const ScheduleNew = () => <InWorks title={'Work schedule creator'}/>;
+const PostsShow = () => <InWorks title={'Forum'}/>;
+const PostsNew = () => <InWorks title={'Create new post'}/>;
+const PostsArchive = () => <InWorks title={'Posts archive'}/>;
+const EmployeesShow = () => <InWorks title={'Users list'}/>;
+const EmployeesNew = () => <InWorks title={'Add new user'}/>;
 
-const Dashboard = () => <h3>Dashboard</h3>;
-const ScheduleShow = () => <h3>Show Schedule</h3>;
-const ScheduleEdit = () => <h3>Edit Schedule</h3>;
-const SchedulePast = () => <h3>Past Schedule</h3>;
-const ScheduleNew = () => <h3>New Schedule</h3>;
-const PostsShow = () => <h3>Show Posts</h3>;
-const PostsNew = () => <h3>New Posts</h3>;
-const PostsArchive = () => <h3>Post Archive</h3>;
-const EmployeesShow = () => <h3>Show Employees</h3>;
-const EmployeesNew = () => <h3>New Employee</h3>;
+const InWorks = ({ title }) => (
+    <div className="app-in-works">
+        <span className="main-icon material-symbols-outlined">manufacturing</span>
+        <h3>{title}</h3>
+        <p>This page is under construction. It will be available soon.</p>
+    </div>
+);
 
 const NotFound = () => (
     <div className="not-found">
@@ -84,7 +91,13 @@ const App = () => {
 
     const fetchPages = async () => {
         try {
-            const res = await axios.get('/api/manager/pages', { withCredentials: true });
+            const res = await axios.get('/api/manager/pages', {withCredentials: true});
+
+            if (!Array.isArray(res.data)) {
+                console.log('Pages not fetched.');
+                setPages([]);
+                return;
+            }
 
             const mappedPages = res.data.map((page) => ({
                 ...page,
@@ -107,7 +120,6 @@ const App = () => {
             const performLogout = async () => {
                 try {
                     await axios.get('/api/manager/logout', { withCredentials: true });
-                    console.log('Logout successful');
                 } catch (err) {
                     console.error('Logout error', err);
                 } finally {
@@ -131,7 +143,7 @@ const App = () => {
 
     useEffect(() => {
         checkAuth().then();
-    }, []);
+    }, [checkAuth]);
 
     if (loading) {
         return <Loading />;
@@ -189,7 +201,6 @@ const App = () => {
             </Routes>
         </Router>
     );
-
 };
 
 export default App;

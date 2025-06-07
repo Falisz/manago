@@ -41,29 +41,24 @@ router.get('/logout', (req, res) => {
     logoutUser(req, res);
 });
 
-router.get('/access-check', (req, res) => {
-    const result = checkAccess(req, allowedRoles);
-
-    if (!result.access) {
-        return res.status(result.status).json({
-            message: result.message,
-            user: result.user || null
-        });
-    }
+router.get('/access-check', async (req, res) => {
+    const result = await checkAccess(req, allowedRoles);
 
     return res.json({
-        message: 'Authorization successful.',
-        user: result.user
+        message: result.message,
+        user: result.user || null
     });
 });
 
 router.get('/pages', async (req, res) => {
-    const result = checkAccess(req, allowedRoles);
+    const accessCheckup = await checkAccess(req, allowedRoles);
 
-    if (!result.access) {
-        return res.status(result.status).json({
-            message: result.message,
-            user: result.user || null
+    if (!accessCheckup.access) {
+        return res.json({
+            access: false,
+            pages: [],
+            message: accessCheckup.message,
+            user: accessCheckup.user || null
         });
     }
 
@@ -71,7 +66,7 @@ router.get('/pages', async (req, res) => {
         const pool = await poolPromise;
         const queryResult = await pool.request().query(`
             SELECT id, parent_id, path, title, icon, min_role, component
-            FROM pages
+            FROM pages_manager
             ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END, parent_id, id
         `);
 
@@ -107,6 +102,7 @@ router.get('/pages', async (req, res) => {
         }
 
         res.json(pages);
+
     } catch (err) {
         console.error('Error fetching pages:', err);
         res.status(500).json({ message: 'Server error.' });

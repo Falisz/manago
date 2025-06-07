@@ -4,10 +4,10 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 
 const Portal = ({ user, pages }) => {
     const location = useLocation();
+
     const currentMainPage = pages.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
     ) || pages[0];
-
 
     const accessibleSubpages = currentMainPage.subpages.filter(
         (subpage) => user.role >= subpage.minRole

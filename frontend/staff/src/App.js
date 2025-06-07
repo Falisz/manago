@@ -1,15 +1,24 @@
 //FRONTEND/Staff/App.js
 import './App.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import Portal from './components/Portal';
 import Login from './components/Login';
-import Reports from './components/Reports';
-import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 
-const Dashboard = () => <h3><i>User dashboard will be in this place.</i></h3>;
-const Schedule = () => <h3>User schedule will be in this place.</h3>;
-const Settings = () => <h3>Settings</h3>;
+const Dashboard = () => <InWorks title={'Dashboard'}/>;
+const Schedule = () => <InWorks title={'Schedule'}/>;
+const Posts = () => <InWorks title={'Forum'}/>;
+const Trainings = () => <InWorks title={'Trainings'}/>;
+const Dispositions = () => <InWorks title={'Dispositions Dispositions'}/>;
+
+const InWorks = ({ title }) => (
+    <div className="app-in-works">
+        <span className="main-icon material-symbols-outlined">manufacturing</span>
+        <h3>{title}</h3>
+        <p>This page is under construction. It will be available soon.</p>
+    </div>
+);
 
 const NotFound = () => (
     <div className="not-found">
@@ -33,22 +42,31 @@ const Loading = () => (
     <div className='app-loading'>Loading...</div>
 );
 
+const componentMap = {
+    Dashboard,
+    Schedule,
+    Posts,
+    Trainings,
+    Dispositions,
+};
+
 const App = () => {
     const [user, setUser] = useState(null);
     const [access, setAccess] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [pages, setPages] = useState([]);
 
     const handleLogin = async () => {
         setLoading(true);
         await checkAuth();
     };
 
-    const checkAuth = async () => {
+    const checkAuth = useCallback(async () => {
         try {
             const res = await axios.get('/api/staff/access-check', { withCredentials: true });
-            console.log(res.data);
             setUser(res.data.user);
             setAccess(true);
+            await fetchPages();
         } catch (err) {
             if (err.response?.status === 403) {
                 setUser(err.response.data?.user || null);
@@ -58,6 +76,34 @@ const App = () => {
             }
         } finally {
             setLoading(false);
+        }
+    }, []);
+
+
+    const fetchPages = async () => {
+        try {
+            const res = await axios.get('/api/staff/pages', {withCredentials: true});
+
+            if (!Array.isArray(res.data)) {
+                console.log('Pages not fetched.');
+                setPages([]);
+                return;
+            }
+
+            const mappedPages = res.data.map((page) => ({
+                ...page,
+                ...(page.component ? {component: componentMap[page.component] || NotFound } : {}),
+                subpages: page.subpages.map((subpage) => ({
+                    ...subpage,
+                    component: componentMap[subpage.component] || NotFound,
+                })),
+            }));
+            console.log(mappedPages);
+            console.log(JSON.stringify(mappedPages));
+            setPages(mappedPages);
+        } catch (err) {
+            console.error('Error fetching pages:', err);
+            setPages([]);
         }
     };
 
@@ -78,7 +124,7 @@ const App = () => {
             };
             performLogout().then();
         }, [navigate]);
-        return null; // Render nothing while logging out
+        return null;
     };
 
     const ManagerPortalRedirect = () => {
@@ -90,7 +136,7 @@ const App = () => {
 
     useEffect(() => {
         checkAuth().then();
-    }, []);
+    }, [checkAuth]);
 
     if (loading) {
         return <Loading />;
@@ -112,24 +158,41 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route
-                    path="/"
-                    element={<Portal user={user}/>}>
-                    <Route index element={<Dashboard />} />
-                    <Route path="schedule" element={<Schedule />} />
-                    <Route path="reports" element={<Reports />} />
-                    <Route path="settings" element={<Settings />} />
+                <Route path="/" element={<Portal user={user} pages={pages} />}>
+                    {pages
+                        .filter((page) => user.role >= page.minRole)
+                        .map((page) =>
+                            page.component ? (
+                                <Route
+                                    key={page.path}
+                                    path={page.path}
+                                    element={<page.component />}
+                                    index={page.path === '/'}
+                                />
+                            ) : (
+                                <Route key={page.path} path={page.path}>
+                                    {page.subpages
+                                        .filter((subpage) => user.role >= subpage.minRole)
+                                        .map((subpage) => (
+                                            <Route
+                                                key={`${page.path}/${subpage.path}`}
+                                                path={subpage.path}
+                                                index={subpage.path === ''}
+                                                element={<subpage.component />}
+                                            />
+                                        ))}
+                                </Route>
+                            )
+                        )}
                     <Route path="logout" element={<Logout />} />
-                    <Route path="staff-portal" element={<ManagerPortalRedirect />} />
+                    <Route path="manager-portal" element={<ManagerPortalRedirect />} />
                     <Route path="not-found" element={<NotFound />} />
                     <Route path="*" element={<Navigate to="/not-found" replace />} />
                 </Route>
-                <Route path="*" element={<Navigate to="/staff" />} />
                 <Route path="/login" element={<Login onLogin={handleLogin} />} />
             </Routes>
         </Router>
     );
-
 };
 
 export default App;

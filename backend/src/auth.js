@@ -37,9 +37,13 @@ function serializeUser(user) {
 }
 
 async function checkAccess(req, allowedRoles) {
+    if (!req.session) {
+        return {access: false, message: 'No session found.'};
+    }
+
     const user = req.session.user;
     if (!user) {
-        return {access: false, status: 401, message: 'No user.'};
+        return {access: false, message: 'No user found.'};
     }
 
     const pool = await poolPromise;
@@ -52,12 +56,11 @@ async function checkAccess(req, allowedRoles) {
     }
 
     const userResult = result.recordset[0]
-    console.log(userResult);
     if (!allowedRoles.includes(userResult.role) || !userResult.active) {
         return {access: false, status: 403, message: 'Access denied.', user};
     }
 
-    return {access: true, user};
+    return {access: true, user: user, message: 'Authorization successfully!'};
 }
 
 function logoutUser(req, res) {

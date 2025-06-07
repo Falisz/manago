@@ -51,23 +51,12 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
+    const timestamp = new Date().toLocaleString('en-EN');
     const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
     const host = req.headers.host || 'Unknown Host';
     const referer = req.headers.referer || req.get('referer') || 'No Referer';
-    const origin = req.headers.origin || 'No Origin';
-    const userAgent = req.headers['user-agent'] || 'Unknown User-Agent';
 
-    console.log(`Incoming request: ${req.method} ${req.url}`);
-    console.log('Request Origin:');
-    console.log(`  IP: ${ip}`);
-    console.log(`  Host: ${host}`);
-    console.log(`  Referer: ${referer}`);
-    console.log(`  Origin: ${origin}`);
-    console.log(`  User-Agent: ${userAgent}`);
-
-    if (req.cookies) {
-        console.log('Cookies:', req.cookies);
-    }
+    console.log(`[${timestamp}] Incoming ${req.method} request ${req.url} from: {IP:${ip} Host:${host} Referer:${referer}}`);
     next();
 });
 
