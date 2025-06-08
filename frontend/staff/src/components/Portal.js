@@ -1,7 +1,7 @@
 //FRONTEND/Staff/Portal.js
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
+import { ReactComponent as SiteLogo } from '../assets/site-logo-h.svg';
 
 const Portal = ({ user, pages }) => {
     const location = useLocation();
