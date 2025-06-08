@@ -1,6 +1,7 @@
 //FRONTEND/Staff/Portal.js
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
 
 const Portal = ({ user, pages }) => {
     const location = useLocation();
@@ -8,7 +9,7 @@ const Portal = ({ user, pages }) => {
     return (
         <div className="app">
             <div className="app-header">
-                <Link to="/" className='site-logo'>Staff Portal</Link>
+                <Link to="/" className='app-home-link'><SiteLogo class={'app-logo'}/></Link>
                 <nav className="app-nav">
                     {pages
                         .filter((page) => user.role >= page.minRole)
@@ -61,7 +62,7 @@ const Portal = ({ user, pages }) => {
                     <ul className='submenu'>
                         { user.role === 2 ?
                             <li className='submenu-item'>
-                                <a className='goToStaff' href="http://localhost:3001">Go to Manager Portal</a>
+                                <a className='goToStaff' href="http://localhost:3001">Manager Portal</a>
                             </li> : null }
                         <li className='submenu-item'>
                             <Link  to='/logout' className='logout'>Logout</Link>

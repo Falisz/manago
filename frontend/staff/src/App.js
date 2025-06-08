@@ -16,23 +16,27 @@ const InWorks = ({ title }) => (
     <div className="app-in-works">
         <span className="main-icon material-symbols-outlined">manufacturing</span>
         <h3>{title}</h3>
-        <p>This page is under construction. It will be available soon.</p>
+        <p>
+            This page is under construction. It will be available soon.
+        </p>
+        <Link to="/">Return to Dashboard</Link>
     </div>
 );
 
 const NotFound = () => (
-    <div className="not-found">
+    <div className="app-not-found">
+        <span className="main-icon material-symbols-outlined">error</span>
         <h3>404 - Page Not Found</h3>
-        <p>The page you are trying to access does not exist or you lack the necessary permissions.</p>
         <p>
-            <Link to="/">Return to Dashboard</Link>
+            The page you are trying to access does not exist or you lack the necessary permissions.
         </p>
+        <Link to="/">Return to Dashboard</Link>
     </div>
-);
+)
 
 const NoAccess = ({ user }) => (
     <div className="app-no-access">
-        <h1 className='site-logo'>Staff Portal</h1>
+        <span className="main-icon material-symbols-outlined">error</span>
         <p>Hi {user?.username || 'User'}! Looks like you don't have sufficient permissions to visit this portal.</p>
         <p>You can <Link to={'/logout'}>logout</Link> and switch to another account.</p>
     </div>
@@ -64,8 +68,10 @@ const App = () => {
     const checkAuth = useCallback(async () => {
         try {
             const res = await axios.get('/api/staff/access-check', { withCredentials: true });
+
             setUser(res.data.user);
             setAccess(true);
+
             await fetchPages();
         } catch (err) {
             if (err.response?.status === 403) {
@@ -85,7 +91,6 @@ const App = () => {
             const res = await axios.get('/api/staff/pages', {withCredentials: true});
 
             if (!Array.isArray(res.data)) {
-                console.log('Pages not fetched.');
                 setPages([]);
                 return;
             }
@@ -98,8 +103,7 @@ const App = () => {
                     component: componentMap[subpage.component] || NotFound,
                 })),
             }));
-            console.log(mappedPages);
-            console.log(JSON.stringify(mappedPages));
+
             setPages(mappedPages);
         } catch (err) {
             console.error('Error fetching pages:', err);
@@ -150,6 +154,7 @@ const App = () => {
                 <Routes>
                     <Route path="/" element={<NoAccess user={user} />} />
                     <Route path="logout" element={<Logout />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Router>
         )

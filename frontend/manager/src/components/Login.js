@@ -1,6 +1,7 @@
 //FRONTEND/Manager/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
 
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');
@@ -21,7 +22,7 @@ const Login = ({ onLogin }) => {
 
     return (
         <div className="app-login">
-            <h1 className='site-logo'>Manager Portal</h1>
+            <SiteLogo className='app-logo' />
             <form className='login-form' onSubmit={handleSubmit}>
                 <input
                     type="text"

@@ -45,7 +45,7 @@ router.get('/logout', (req, res) => {
 router.get('/access-check', async (req, res) => {
     const result = await checkAccess(req, allowedRoles);
 
-    return res.json({
+    return res.status(result.status).json({
         message: result.message,
         user: result.user || null
     });

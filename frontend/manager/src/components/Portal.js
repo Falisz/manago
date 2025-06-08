@@ -1,9 +1,13 @@
 //FRONTEND/Manager/Portal.js
-import React from 'react';
+import React, {useState} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
+import { ReactComponent as SiteLogoSmall } from '../assets/site-logo-small.svg';
+import axios from "axios";
 
 const Portal = ({ user, pages }) => {
     const location = useLocation();
+    const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
     const currentMainPage = pages.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
@@ -13,10 +17,18 @@ const Portal = ({ user, pages }) => {
         (subpage) => user.role >= subpage.minRole
     );
 
+    const toggleNavCollapse = async () => {
+        setNavCollapsed((prev) => !prev);
+        await axios.get('/api/manager/toggle-nav', {withCredentials: true});
+    };
+
     return (
         <div className="app">
-            <nav className="app-nav">
-                <Link to="/" className="site-logo">Manager Portal</Link>
+            <nav className={`app-nav ${navCollapsed ? 'app-nav-collapsed' : ''}`}>
+                <Link to="/" className="app-home-link">
+                    <SiteLogo className={'app-logo'}/>
+                    <SiteLogoSmall className={'app-logo-small'}/>
+                </Link>
                 {pages
                     .filter((page) => user.role >= page.minRole)
                     .filter((page) => page.path !== "/")
@@ -24,7 +36,7 @@ const Portal = ({ user, pages }) => {
                         <Link
                             key={page.path}
                             to={page.path}
-                            className={`page-link ${
+                            className={`app-nav-page-link ${
                                 page.path === '/'
                                     ? location.pathname === '/'
                                     : location.pathname === `/${page.path}` || location.pathname.startsWith(`/${page.path}/`)
@@ -32,14 +44,19 @@ const Portal = ({ user, pages }) => {
                                         : ''
                             }`}
                         >
-                            {page.icon && <span className="nav-icon material-icons">{page.icon}</span>}
-                            <span className="nav-title">{page.title}</span>
+                            {page.icon && <span className="app-nav-page-link-icon material-icons">{page.icon}</span>}
+                            <span className="app-nav-page-link-label">{page.title}</span>
                         </Link>
                     ))}
+                <span
+                    className="nav-collapse-button material-symbols-outlined"
+                    onClick={toggleNavCollapse}>
+                    {navCollapsed ? 'left_panel_open' : 'left_panel_close'}
+                </span>
             </nav>
             <div className="app-content">
                 <nav className="app-subnav">
-                    {accessibleSubpages.length > 1 && (
+                {accessibleSubpages.length > 1 && (
                         <ul className="subpage-links">
                             {accessibleSubpages.map((subpage) => (
                                 <li
@@ -60,9 +77,9 @@ const Portal = ({ user, pages }) => {
                         <i className="material-icons">keyboard_arrow_down</i>
                         <ul className="submenu">
                             <li className="submenu-item">
-                                <a className="goToStaff" href="http://localhost:3000">
-                                    Go to Staff Portal
-                                </a>
+                                <Link to="/staff-portal" className="goToStaff">
+                                    Staff Portal
+                                </Link>
                             </li>
                             <li className="submenu-item">
                                 <Link to="/logout" className="logout">
