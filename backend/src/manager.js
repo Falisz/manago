@@ -110,31 +110,6 @@ router.get('/pages', async (req, res) => {
 });
 
 
-router.get('/toggle-nav', async (req, res) => {
-    try {
-        const user = req.session?.user;
-        if (!user || !user.id)
-            res.json(null);
 
-        const pool = await poolPromise;
-
-        const result = await pool
-            .request()
-            .input('userID', sql.Int, user.id)
-            .query(`
-                UPDATE users
-                SET manager_nav_collapsed = 1 - manager_nav_collapsed
-                WHERE id = @userID;
-                SELECT manager_nav_collapsed AS isCollapsed
-                FROM users
-                WHERE id = @userID;
-            `);
-
-        res.json({ isCollapsed: result.recordset[0].isCollapsed });
-    } catch (err) {
-        console.error('Error toggling NAV:', err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-});
 
 module.exports = router;

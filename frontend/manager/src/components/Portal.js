@@ -1,8 +1,8 @@
 //FRONTEND/Manager/Portal.js
 import React, {useState} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
-import { ReactComponent as SiteLogoSmall } from '../assets/site-logo-small.svg';
+import { ReactComponent as SiteLogo } from '../../../staff/src/assets/site-logo.svg';
+import { ReactComponent as SiteLogoSmall } from '../../../staff/src/assets/site-logo-small.svg';
 import axios from "axios";
 
 const Portal = ({ user, pages }) => {

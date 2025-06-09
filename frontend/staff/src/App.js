@@ -1,10 +1,10 @@
 //FRONTEND/Staff/App.js
 import './App.css';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import Portal from './components/Portal';
-import ManagerPortal from './components/Portal';
+import ManagerPortal from './components/ManagerPortal';
 import Login from './components/Login';
 
 const Dashboard = () => <InWorks title={'Dashboard'}/>;
@@ -57,6 +57,7 @@ const componentMap = {
 
 const App = () => {
     const [loading, setLoading] = useState(true);
+    const isCheckingRef = useRef(false);
     const [user, setUser] = useState(null);
     const [pages, setPages] = useState([]);
 
@@ -67,15 +68,26 @@ const App = () => {
         setLoading(false);
     };
 
-    const checkAuth = useCallback(async () => {
+    const checkAccess = useCallback(async () => {
+        if (isCheckingRef.current)
+            return;
+
+        isCheckingRef.current = true;
         try {
             const res = await axios.get('/api/access', { withCredentials: true });
-            setUser(res.data.user);
-            await fetchPages();
+            if (res.data.access) {
+                setUser(res.data.user);
+                await fetchPages();
+            } else {
+                setUser(null);
+            }
         } catch (err) {
+            setUser(null);
             console.error(err);
+        } finally {
+            isCheckingRef.current = false;
+            setLoading(false);
         }
-        setLoading(false);
     }, []);
 
     const fetchPages = async () => {
@@ -122,37 +134,27 @@ const App = () => {
         return null;
     };
 
-    const SwitchView = (val) => {
-      useEffect(() => {
-          const performViewSwitch = async () => {
-              try {
-                  const res = await axios.get('/api/manager-access', { withCredentials: true });
-                  if (res.data.access) {
-                      user.manager_view = val;
-                      await axios.get('/api/manager-view', { withCredentials: true });
-                  }
-              } catch (err) {
-                console.error('View Switching error', err);
-                  user.manager_view = false;
-              }
-          }
-          performViewSwitch().then();
-      });
-      return null;
-    };
-
-    const ManagerPortalRedirect = () => {
-        useEffect(() => {
-            window.location.href = 'http://localhost:3001';
-        }, []);
-        return null;
+    const SwitchView = async (isManagerView) => {
+        setLoading(true);
+        try {
+            const res = await axios.get('/api/manager-access', { withCredentials: true });
+            if (res.data.access) {
+                const res = await axios.post('/api/manager-view', { user: user.id, manager_view: isManagerView }, { withCredentials: true });
+                if (res.data.success) {
+                    setUser((prev) => ({ ...prev, manager_view: isManagerView }));
+                    await fetchPages();
+                }
+            }
+        } catch (err) {
+            console.error('View Switching error', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
-        checkAuth().then();
-    }, [checkAuth]);
-
-
+        checkAccess().then();
+    }, [checkAccess]);
 
     if (loading) {
         return <Loading />;
@@ -164,7 +166,7 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={user.manager_view ? <ManagerPortal user={user} pages={pages} view={SwitchView}/> : <Portal user={user} pages={pages} view={SwitchView}/>}>
+                <Route path="/" element={user.manager_view ? <ManagerPortal user={user} pages={pages} switchView={SwitchView}/> : <Portal user={user} pages={pages} switchView={SwitchView}/>}>
                     {pages
                         .filter((page) => user.role >= page.minRole)
                         .map((page) =>
@@ -191,7 +193,6 @@ const App = () => {
                             )
                         )}
                     <Route path="logout" element={<Logout />} />
-                    <Route path="manager-portal" element={<ManagerPortalRedirect />} />
                     <Route path="not-found" element={<NotFound />} />
                     <Route path="*" element={<Navigate to="/not-found" replace />} />
                 </Route>

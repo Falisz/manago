@@ -40,7 +40,9 @@ router.get('/logout', (req, res) => {
 
 router.get('/access', async (req, res) => {
     const result = await checkAccess(req);
-    return res.status(result.status).json({
+
+    return res.json({
+        access: result.access,
         message: result.message,
         user: result.user || null
     });
@@ -69,18 +71,15 @@ router.get('/manager-access', async (req, res) => {
     return res.status(200).json({access: true, message: 'Access granted.'});
 });
 
-router.get('/manager-view', async (req, res) => {
+router.post('/manager-view', async (req, res) => {
     try {
-        const user = req.session?.user;
-        if (!user || !user.id)
-            res.json(null);
+        const {user, manager_view} = req.body;
 
         const pool = await poolPromise;
-
         const result = await pool
             .request()
-            .input('userID', sql.Int, user.id)
-            .input('managerView', sql.Bit, user.manager_view)
+            .input('userID', sql.Int, user)
+            .input('managerView', sql.Bit, manager_view)
             .query(`
                 UPDATE users
                 SET manager_view_enabled = @managerView
@@ -90,10 +89,10 @@ router.get('/manager-view', async (req, res) => {
                 WHERE id = @userID;
             `);
 
-        res.json({ isCollapsed: result.recordset[0].managerView });
+        return res.json({ success: true, result: result.recordset[0]});
     } catch (err) {
         console.error('Error toggling NAV:', err);
-        res.status(500).json({ message: 'Server error.' });
+        return res.status(500).json({ message: 'Server error.' });
     }
 });
 
@@ -141,6 +140,33 @@ router.get('/pages', async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching pages:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/toggle-nav', async (req, res) => {
+    try {
+        const user = req.session?.user;
+        if (!user || !user.id)
+            res.json(null);
+
+        const pool = await poolPromise;
+
+        const result = await pool
+            .request()
+            .input('userID', sql.Int, user.id)
+            .query(`
+                UPDATE users
+                SET manager_nav_collapsed = 1 - manager_nav_collapsed
+                WHERE id = @userID;
+                SELECT manager_nav_collapsed AS isCollapsed
+                FROM users
+                WHERE id = @userID;
+            `);
+
+        res.json({ isCollapsed: result.recordset[0].isCollapsed });
+    } catch (err) {
+        console.error('Error toggling NAV:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 });

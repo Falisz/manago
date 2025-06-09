@@ -5,7 +5,7 @@ import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/site-logo-small.svg';
 import axios from "axios";
 
-const ManagerPortal = ({ user, pages }) => {
+const ManagerPortal = ({ user, pages, switchView }) => {
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
@@ -19,15 +19,15 @@ const ManagerPortal = ({ user, pages }) => {
 
     const toggleNavCollapse = async () => {
         setNavCollapsed((prev) => !prev);
-        await axios.get('/api/manager/toggle-nav', {withCredentials: true});
+        await axios.get('/api/toggle-nav', {withCredentials: true});
     };
 
     return (
-        <div className="app">
-            <nav className={`app-nav ${navCollapsed ? 'app-nav-collapsed' : ''}`}>
-                <Link to="/" className="app-home-link">
-                    <SiteLogo className={'app-logo'}/>
-                    <SiteLogoSmall className={'app-logo-small'}/>
+        <div className="app manager">
+            <nav className={`manager-nav ${navCollapsed ? 'manager-nav-collapsed' : ''}`}>
+                <Link to="/" className="manager-home-link">
+                    <SiteLogo className={'manager-logo'}/>
+                    <SiteLogoSmall className={'manager-logo-small'}/>
                 </Link>
                 {pages
                     .filter((page) => user.role >= page.minRole)
@@ -36,7 +36,7 @@ const ManagerPortal = ({ user, pages }) => {
                         <Link
                             key={page.path}
                             to={page.path}
-                            className={`app-nav-page-link ${
+                            className={`manager-nav-page-link ${
                                 page.path === '/'
                                     ? location.pathname === '/'
                                     : location.pathname === `/${page.path}` || location.pathname.startsWith(`/${page.path}/`)
@@ -44,8 +44,8 @@ const ManagerPortal = ({ user, pages }) => {
                                         : ''
                             }`}
                         >
-                            {page.icon && <span className="app-nav-page-link-icon material-icons">{page.icon}</span>}
-                            <span className="app-nav-page-link-label">{page.title}</span>
+                            {page.icon && <span className="manager-nav-page-link-icon material-icons">{page.icon}</span>}
+                            <span className="manager-nav-page-link-label">{page.title}</span>
                         </Link>
                     ))}
                 <span
@@ -54,8 +54,8 @@ const ManagerPortal = ({ user, pages }) => {
                     {navCollapsed ? 'left_panel_open' : 'left_panel_close'}
                 </span>
             </nav>
-            <div className="app-content">
-                <nav className="app-subnav">
+            <div className="manager-content">
+                <nav className="manager-subnav">
                 {accessibleSubpages.length > 1 && (
                         <ul className="subpage-links">
                             {accessibleSubpages.map((subpage) => (
@@ -77,7 +77,7 @@ const ManagerPortal = ({ user, pages }) => {
                         <i className="material-icons">keyboard_arrow_down</i>
                         <ul className="submenu">
                             <li className="submenu-item">
-                                <Link to="/staff-portal" className="goToStaff">
+                                <Link to="#" onClick={() => switchView(false)}>
                                     Staff Portal
                                 </Link>
                             </li>

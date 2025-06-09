@@ -1,7 +1,7 @@
 //FRONTEND/Manager/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
-import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
+import { ReactComponent as SiteLogo } from '../../../staff/src/assets/site-logo.svg';
 
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');

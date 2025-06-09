@@ -24,7 +24,8 @@ async function authUser(username, password) {
 
 function serializeUser(user) {
     return {
-        id: user.id,
+        id: user.ID,
+        active: user.active,
         username: user.username,
         role: user.role,
         manager_nav_collapsed: user.manager_nav_collapsed,
@@ -34,31 +35,31 @@ function serializeUser(user) {
 
 async function checkAccess(req) {
     if (!req.session) {
-        return {access: false, user: null, status: 401, message: 'No session found.'};
+        return {access: false, message: 'No session found.'};
     }
 
-    let user = req.session.user;
+    const user = req.session.user;
     if (!user) {
-        return {access: false, user: null, status: 401, message: 'No user found.'};
+        return {access: false, message: 'No user found.'};
     }
 
     const pool = await poolPromise;
     const result = await pool
         .request()
         .input('userID', sql.Int, user.id)
-        .query('SELECT ID, username, role, active, manager_view_enabled, manager_nav_collapsed FROM Users WHERE id = @userID');
+        .query('SELECT id, username, role, active, manager_view_enabled, manager_nav_collapsed FROM Users WHERE id = @userID');
 
     if (!result.recordset[0]) {
-        return {access: false, user: null, status: 401, message: 'No user.'};
+        return {access: false, message: 'No user.'};
     }
 
-    user = serializeUser(result.recordset[0]);
+    const checkedUser = serializeUser(result.recordset[0]);
 
     if (!user.active) {
-        return {access: false, user: user, status: 403, message: 'Access denied.'};
+        return {user: checkedUser, access: false, message: 'Access denied.'};
     }
 
-    return {access: true, user: user, status: 200, message: 'Authorization successfully!'};
+    return {user: checkedUser, access: true, message: 'Access granted.'};
 }
 
 function logoutUser(req, res) {

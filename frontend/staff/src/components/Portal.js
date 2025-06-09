@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/site-logo-h.svg';
 
-const Portal = ({ user, pages, view }) => {
+const Portal = ({ user, pages, switchView }) => {
     const location = useLocation();
 
     return (
@@ -62,7 +62,7 @@ const Portal = ({ user, pages, view }) => {
                     <ul className='submenu'>
                         { user.role === 2 ?
                             <li className='submenu-item'>
-                                <Link  to='/' className='switch-view' onClick={() => view(true)}>Manager Portal</Link>
+                                <Link to='#' onClick={() => switchView(true)}>Manager Portal</Link>
                             </li>
                              : null }
                         <li className='submenu-item'>
