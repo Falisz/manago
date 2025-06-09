@@ -11,7 +11,7 @@ const Login = ({ onLogin }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('/api/staff/login', { username, password }, { withCredentials: true });
+            const res = await axios.post('/api/login', { username, password }, { withCredentials: true });
             if (res.data.user) {
                 onLogin(res.data.user);
             }

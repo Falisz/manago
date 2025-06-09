@@ -2,29 +2,25 @@
 const express = require('express');
 const router = express.Router();
 const {
-    findUser,
-    validateUser,
+    authUser,
     serializeUser,
     checkAccess,
     logoutUser
 } = require('./auth');
-const {poolPromise} = require("./db");
-
-const allowedRoles = [1, 2, 3];
+const {sql, poolPromise} = require("./db");
 
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const user = await findUser(username);
+        const userAuth = await authUser(username, password);
 
-        const validation = await validateUser(user, password, allowedRoles);
-
-        if (!validation.valid) {
-            return res.status(validation.status).json({ message: validation.message });
+        if (!userAuth.valid) {
+            return res.status(userAuth.status).json({ message: userAuth.message });
         }
 
-        const sessionUser = serializeUser(user);
+        const sessionUser = serializeUser(userAuth.user);
+
         req.session.user = sessionUser;
 
         return res.json({
@@ -42,27 +38,66 @@ router.get('/logout', (req, res) => {
 });
 
 
-router.get('/access-check', async (req, res) => {
-    const result = await checkAccess(req, allowedRoles);
-
+router.get('/access', async (req, res) => {
+    const result = await checkAccess(req);
     return res.status(result.status).json({
         message: result.message,
         user: result.user || null
     });
 });
 
-router.get('/pages', async (req, res) => {
-    const accessCheckup = await checkAccess(req, allowedRoles);
-
-    if (!accessCheckup.access) {
-        return res.json({
-            access: false,
-            pages: [],
-            message: accessCheckup.message,
-            user: accessCheckup.user || null
-        });
+router.get('/manager-access', async (req, res) => {
+    if (!req.session) {
+        return res.status(401).json({access: false, message: 'No session found.'});
     }
 
+    const user = req.session.user;
+    if (!user) {
+        return res.status(401).json({access: false, message: 'No user found.'});
+    }
+
+    const pool = await poolPromise;
+    const result = await pool
+        .request()
+        .input('userID', sql.Int, user.id)
+        .query('SELECT id FROM manager_view_access WHERE id = @userID');
+
+    if (!result.recordset[0]) {
+        return res.status(401).json({access: false, message: 'No access.'});
+    }
+
+    return res.status(200).json({access: true, message: 'Access granted.'});
+});
+
+router.get('/manager-view', async (req, res) => {
+    try {
+        const user = req.session?.user;
+        if (!user || !user.id)
+            res.json(null);
+
+        const pool = await poolPromise;
+
+        const result = await pool
+            .request()
+            .input('userID', sql.Int, user.id)
+            .input('managerView', sql.Bit, user.manager_view)
+            .query(`
+                UPDATE users
+                SET manager_view_enabled = @managerView
+                WHERE id = @userID;
+                SELECT manager_view_enabled AS managerView
+                FROM users
+                WHERE id = @userID;
+            `);
+
+        res.json({ isCollapsed: result.recordset[0].managerView });
+    } catch (err) {
+        console.error('Error toggling NAV:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/pages', async (req, res) => {
     try {
         const pool = await poolPromise;
         const queryResult = await pool.request().query(`
