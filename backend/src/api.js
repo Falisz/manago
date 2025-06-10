@@ -1,4 +1,4 @@
-//BACKEND/staff.js
+//BACKEND/api.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -57,8 +57,6 @@ router.get('/access', async (req, res) => {
             });
         }
 
-        console.log('Access checkup #0');
-
         const user = req.session.user;
 
         if (!user) {
@@ -68,8 +66,6 @@ router.get('/access', async (req, res) => {
                 message: 'No user found.'
             });
         }
-
-        console.log('Access checkup #1');
 
         const userId = parseInt(user.id, 10);
 
@@ -81,11 +77,9 @@ router.get('/access', async (req, res) => {
             });
         }
 
-        console.log('Access checkup #2 ', userId);
-
         const pool = await poolPromise;
 
-        let result = await pool
+        const result = await pool
             .request()
             .input('userID', sql.Int, userId)
             .query(`
@@ -99,10 +93,8 @@ router.get('/access', async (req, res) => {
                     CAST(IIF(mva.ID IS NOT NULL, 1, 0) AS BIT) AS manager_access
                 FROM users AS u
                          LEFT JOIN manager_view_access AS mva ON u.ID = mva.[user]
-                WHERE u.ID = 1
+                WHERE u.ID = @userID
             `);
-
-        console.log('Access checkup #3');
 
         if (!result.recordset[0]) {
             return res.status(401).json({
@@ -111,13 +103,24 @@ router.get('/access', async (req, res) => {
                 message: 'User from the session not found.'
             });
         }
-        console.log('Access checkup #4');
 
         const checkedUser = serializeUser(result.recordset[0]);
 
         const managerAccess = !!result.recordset[0].manager_access;
 
-        console.log('Access checkup #5', managerAccess);
+        if (!managerAccess && checkedUser.manager_view) {
+            await pool
+                .request()
+                .input('userID', sql.Int, userId)
+                .input('managerView', sql.Bit, false)
+                .query(`
+                UPDATE users
+                SET manager_view_enabled = @managerView
+                WHERE id = @userID;
+            `);
+            req.session.user.manager_view = false;
+            checkedUser.manager_view = false;
+        }
 
         if (!checkedUser.active) {
             return res.status(401).json({
@@ -127,7 +130,6 @@ router.get('/access', async (req, res) => {
                 user: checkedUser,
             });
         }
-        console.log('Access checkup #6');
 
         return res.json({
             access: true,

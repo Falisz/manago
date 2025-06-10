@@ -103,9 +103,12 @@ const App = () => {
 
             if (res.data.access) {
                 setUser(res.data.user);
-                setManagerView(res.data.user.manager_view);
                 setManagerNavCollapsed(res.data.user.manager_nav_collapsed);
                 setHasManagerAccess(res.data.manager_access);
+                if (res.data.manager_access)
+                    setManagerView(res.data.user.manager_view);
+                else
+                    setManagerView(false);
                 await fetchPages();
             } else {
                 setUser(null);
@@ -166,7 +169,6 @@ const App = () => {
     const CheckManagerAccess = async () => {
         try {
             const res = await axios.get('/api/access', { withCredentials: true });
-            console.log(res.data.manager_access);
             setHasManagerAccess(res.data.manager_access);
             return res.data.manager_access;
         } catch (err) {
@@ -181,7 +183,7 @@ const App = () => {
         try {
             const hasManagerAccess = await CheckManagerAccess();
 
-            if (!isManagerView || hasManagerAccess) {
+            if (isManagerView && hasManagerAccess) {
                 const res = await axios.post('/api/manager-view',
                     { user: user, manager_view: isManagerView },
                     { withCredentials: true }
@@ -192,6 +194,14 @@ const App = () => {
                     setManagerView(isManagerView);
                     await fetchPages();
                 }
+            } else {
+                const res = await axios.post('/api/manager-view',
+                    { user: user, manager_view: false },
+                    { withCredentials: true }
+                );
+                setUser((prev) => ({ ...prev, manager_view: false }));
+                setManagerView(false);
+                await fetchPages();
             }
         } catch (err) {
             console.error('View switching error: ', err);
