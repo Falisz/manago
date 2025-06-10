@@ -1,15 +1,17 @@
-//FRONTEND/Staff/Portal.js
+//FRONTEND/StaffView.js
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ReactComponent as SiteLogo } from '../assets/site-logo-h.svg';
+import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 
-const Portal = ({ user, pages, switchView }) => {
+const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
     const location = useLocation();
 
     return (
         <div className="app">
             <div className="app-header">
-                <Link to="/" className='app-home-link'><SiteLogo class={'app-logo'}/></Link>
+                <Link to="/" className={`app-home-link ${location.pathname === '/' ? 'active' : ''}`}>
+                    <SiteLogo class={'app-logo'}/>
+                </Link>
                 <nav className="app-nav">
                     {pages
                         .filter((page) => user.role >= page.minRole)
@@ -60,11 +62,10 @@ const Portal = ({ user, pages, switchView }) => {
                     </span>
                     <i className="material-icons">keyboard_arrow_down</i>
                     <ul className='submenu'>
-                        { user.role === 2 ?
+                        { hasManagerAccess &&
                             <li className='submenu-item'>
                                 <Link to='#' onClick={() => switchView(true)}>Manager Portal</Link>
-                            </li>
-                             : null }
+                            </li> }
                         <li className='submenu-item'>
                             <Link  to='/logout' className='logout'>Logout</Link>
                         </li>
@@ -80,4 +81,4 @@ const Portal = ({ user, pages, switchView }) => {
     );
 };
 
-export default Portal;
+export default StaffView;

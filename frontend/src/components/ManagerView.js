@@ -1,13 +1,12 @@
-//FRONTEND/Manager/Portal.js
-import React, {useState} from 'react';
+//FRONTEND/ManagerView.js
+import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
-import { ReactComponent as SiteLogoSmall } from '../assets/site-logo-small.svg';
+import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
+// import { ReactComponent as SiteLogoSmall } from '../assets/manager-logo-s.svg';
 import axios from "axios";
 
-const ManagerPortal = ({ user, pages, switchView }) => {
+const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed }) => {
     const location = useLocation();
-    const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
     const currentMainPage = pages.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
@@ -25,9 +24,8 @@ const ManagerPortal = ({ user, pages, switchView }) => {
     return (
         <div className="app manager">
             <nav className={`manager-nav ${navCollapsed ? 'manager-nav-collapsed' : ''}`}>
-                <Link to="/" className="manager-home-link">
-                    <SiteLogo className={'manager-logo'}/>
-                    <SiteLogoSmall className={'manager-logo-small'}/>
+                <Link to="/" className={`manager-home-link ${location.pathname === '/' ? 'active' : ''}`}>
+                    <SiteLogo className={'manager-logo '}/>
                 </Link>
                 {pages
                     .filter((page) => user.role >= page.minRole)
@@ -97,4 +95,4 @@ const ManagerPortal = ({ user, pages, switchView }) => {
     );
 };
 
-export default ManagerPortal;
+export default ManagerView;

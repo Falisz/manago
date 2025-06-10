@@ -33,31 +33,34 @@ body {
 .app-header {
   display: flex;
   justify-content: space-between;
-  padding: 15px 150px 10px;
+  padding: 10px 150px 0;
   background: var(--gray-gradient);
 }
 
 .app-header .app-home-link {
   display: block;
-  padding: 5px 0;
+  padding: 5px 0 10px;
   margin: 0 auto 0 0;
+  transition: ease-in-out 0.3s;
 }
 .app-header .app-logo {
   width: auto;
   height: 40px;
   fill: white;
+}
+.app-header .app-home-link #AppLogoSymbol {
   transition: ease-in-out 0.3s;
 }
-.app-header .app-home-link:hover .app-logo .st0 {
+.app-header .app-home-link.active #AppLogoSymbol,
+.app-header .app-home-link:hover #AppLogoSymbol {
   fill: var(--color);
-  transition: ease-in-out 0.3s;
 }
 
 .app-nav {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin: 0 auto 0 20px;
+  margin: 0 auto;
 }
 
 .app-nav .page-link-item {
@@ -108,6 +111,9 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin: 0;
   min-width: 150px;
+}
+.app.manager .submenu {
+  top: 30px;
 }
 .user-nav .submenu {
   left: unset;
@@ -237,7 +243,7 @@ main {
   opacity: 1;
   transition: ease-in-out 0.3s;
 }
-.app-login .app-logo .st0 {
+.app-login .app-logo {
   fill: var(--color);
 }
 .app-login .login-form {
@@ -322,34 +328,20 @@ main {
   opacity: 1;
   transition: ease-in-out 0.3s;
 }
-.manager-nav .manager-logo .st0 path {
+.manager-nav .manager-logo #AppLogoSymbol {
   transition: ease-in-out 0.3s;
 }
-.manager-nav .manager-home-link:hover .st0 path {
+.manager-nav .manager-home-link.active #AppLogoSymbol,
+.manager-nav .manager-home-link:hover #AppLogoSymbol {
   fill: var(--color);
-}
-.manager-nav-collapsed .manager-logo {
-  opacity: 0;
-}
-.manager-nav .manager-logo-small {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: auto;
-  position: absolute;
-  fill: white;
-  opacity: 0;
   transition: ease-in-out 0.3s;
 }
-.manager-nav-collapsed .manager-logo-small {
+.manager-nav .manager-logo #AppLogoLabel {
   opacity: 1;
-}
-.manager-nav .manager-logo-small path {
   transition: ease-in-out 0.3s;
 }
-.manager-nav .manager-home-link:hover .manager-logo-small path {
-  fill: var(--color);
+.manager-nav-collapsed .manager-logo #AppLogoLabel {
+  opacity: 0;
   transition: ease-in-out 0.3s;
 }
 .manager-nav .manager-nav-page-link {
@@ -372,6 +364,7 @@ main {
 }
 .manager-nav-collapsed .manager-nav-page-link-label {
   opacity: 0;
+  visibility: hidden;
 }
 .manager-nav .manager-nav-page-link.active,
 .manager-nav .manager-nav-page-link:hover {

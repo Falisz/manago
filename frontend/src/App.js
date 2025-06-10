@@ -3,15 +3,25 @@ import './App.css';
 import React, {useEffect, useState, useCallback, useRef} from 'react';
 import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
-import Portal from './components/Portal';
-import ManagerPortal from './components/ManagerPortal';
 import Login from './components/Login';
+import StaffView from './components/StaffView';
+import ManagerView from './components/ManagerView';
 
 const Dashboard = () => <InWorks title={'Dashboard'}/>;
 const Schedule = () => <InWorks title={'Schedule'}/>;
 const Posts = () => <InWorks title={'Forum'}/>;
 const Trainings = () => <InWorks title={'Trainings'}/>;
 const Dispositions = () => <InWorks title={'Dispositions Dispositions'}/>;
+const ManagerDashboard = () => <InWorks title={'ManagerDashboard'}/>;
+const ScheduleShow = () => <InWorks title={'Work schedule'}/>;
+const ScheduleEdit = () => <InWorks title={'Work schedule editor'}/>;
+const SchedulePast = () => <InWorks title={'Work schedule archive'}/>;
+const ScheduleNew = () => <InWorks title={'Work schedule creator'}/>;
+const PostsShow = () => <InWorks title={'Forum'}/>;
+const PostsNew = () => <InWorks title={'Create new post'}/>;
+const PostsArchive = () => <InWorks title={'Posts archive'}/>;
+const EmployeesShow = () => <InWorks title={'Users list'}/>;
+const EmployeesNew = () => <InWorks title={'Add new user'}/>;
 
 const InWorks = ({ title }) => (
     <div className="app-in-works">
@@ -53,17 +63,32 @@ const componentMap = {
     Posts,
     Trainings,
     Dispositions,
+    ManagerDashboard,
+    ScheduleShow,
+    ScheduleEdit,
+    SchedulePast,
+    ScheduleNew,
+    PostsShow,
+    PostsNew,
+    PostsArchive,
+    EmployeesShow,
+    EmployeesNew,
 };
 
 const App = () => {
     const [loading, setLoading] = useState(true);
+    const [managerView, setManagerView] = useState(null);
     const isCheckingRef = useRef(false);
     const [user, setUser] = useState(null);
     const [pages, setPages] = useState([]);
+    const [hasManagerAccess, setHasManagerAccess] = useState(false);
+    const [managerNavCollapsed, setManagerNavCollapsed] = useState(null);
 
     const handleLogin = async (user) => {
         setLoading(true);
         setUser(user);
+        setManagerView(user.manager_view);
+        setManagerNavCollapsed(user.manager_nav_collapsed);
         await fetchPages();
         setLoading(false);
     };
@@ -75,8 +100,12 @@ const App = () => {
         isCheckingRef.current = true;
         try {
             const res = await axios.get('/api/access', { withCredentials: true });
+
             if (res.data.access) {
                 setUser(res.data.user);
+                setManagerView(res.data.user.manager_view);
+                setManagerNavCollapsed(res.data.user.manager_nav_collapsed);
+                setHasManagerAccess(res.data.manager_access);
                 await fetchPages();
             } else {
                 setUser(null);
@@ -134,19 +163,38 @@ const App = () => {
         return null;
     };
 
-    const SwitchView = async (isManagerView) => {
+    const CheckManagerAccess = async () => {
+        try {
+            const res = await axios.get('/api/access', { withCredentials: true });
+            console.log(res.data.manager_access);
+            setHasManagerAccess(res.data.manager_access);
+            return res.data.manager_access;
+        } catch (err) {
+            console.error('Manager access check error: ', err);
+            setHasManagerAccess(false);
+            return false;
+        }
+    };
+
+    const ToggleManagerView = async (isManagerView) => {
         setLoading(true);
         try {
-            const res = await axios.get('/api/manager-access', { withCredentials: true });
-            if (res.data.access) {
-                const res = await axios.post('/api/manager-view', { user: user.id, manager_view: isManagerView }, { withCredentials: true });
+            const hasManagerAccess = await CheckManagerAccess();
+
+            if (!isManagerView || hasManagerAccess) {
+                const res = await axios.post('/api/manager-view',
+                    { user: user, manager_view: isManagerView },
+                    { withCredentials: true }
+                );
+
                 if (res.data.success) {
                     setUser((prev) => ({ ...prev, manager_view: isManagerView }));
+                    setManagerView(isManagerView);
                     await fetchPages();
                 }
             }
         } catch (err) {
-            console.error('View Switching error', err);
+            console.error('View switching error: ', err);
         } finally {
             setLoading(false);
         }
@@ -166,7 +214,23 @@ const App = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={user.manager_view ? <ManagerPortal user={user} pages={pages} switchView={SwitchView}/> : <Portal user={user} pages={pages} switchView={SwitchView}/>}>
+                <Route path="/" element={
+                    managerView ?
+                        <ManagerView
+                            user={user}
+                            pages={pages}
+                            switchView={ToggleManagerView}
+                            navCollapsed={managerNavCollapsed}
+                            setNavCollapsed={setManagerNavCollapsed}
+                        />
+                        :
+                        <StaffView
+                            user={user}
+                            pages={pages}
+                            switchView={ToggleManagerView}
+                            hasManagerAccess={hasManagerAccess}
+                        />
+                }>
                     {pages
                         .filter((page) => user.role >= page.minRole)
                         .map((page) =>

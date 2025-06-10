@@ -1,7 +1,7 @@
 //FRONTEND/Staff/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
-import { ReactComponent as SiteLogo } from '../assets/site-logo.svg';
+import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');
@@ -22,7 +22,7 @@ const Login = ({ onLogin }) => {
 
     return (
         <div className="app-login">
-            <SiteLogo className='app-logo' />
+            <AppLogo className='app-logo' />
             <form className='login-form' onSubmit={handleSubmit}>
                 <input
                     type="text"
