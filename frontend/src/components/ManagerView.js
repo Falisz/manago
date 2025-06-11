@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
-// import { ReactComponent as SiteLogoSmall } from '../assets/manager-logo-s.svg';
+import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from "axios";
 
 const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed }) => {
@@ -18,7 +18,11 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
 
     const toggleNavCollapse = async () => {
         setNavCollapsed((prev) => !prev);
-        await axios.get('/api/toggle-nav', {withCredentials: true});
+
+        await axios.post('/api/toggle-nav',
+            { user: user, nav_collapsed: navCollapsed },
+            { withCredentials: true }
+        );
     };
 
     return (
@@ -26,6 +30,7 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
             <nav className={`manager-nav ${navCollapsed ? 'manager-nav-collapsed' : ''}`}>
                 <Link to="/" className={`manager-home-link ${location.pathname === '/' ? 'active' : ''}`}>
                     <SiteLogo className={'manager-logo '}/>
+                    <SiteLogoSmall className={'manager-logo-small '}/>
                 </Link>
                 {pages
                     .filter((page) => user.role >= page.minRole)
@@ -70,7 +75,7 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
                     )}
                     <div className="user-nav">
                         <span className="username">
-                            {user?.username || 'User'}
+                            {user?.first_name || 'User'}
                         </span>
                         <i className="material-icons">keyboard_arrow_down</i>
                         <ul className="submenu">

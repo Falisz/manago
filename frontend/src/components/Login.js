@@ -1,9 +1,9 @@
-//FRONTEND/Staff/Login.js
+//FRONTEND/Login.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 
-const Login = ({ onLogin }) => {
+const Login = ({ handleLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -13,7 +13,7 @@ const Login = ({ onLogin }) => {
         try {
             const res = await axios.post('/api/login', { username, password }, { withCredentials: true });
             if (res.data.user) {
-                onLogin(res.data.user);
+                handleLogin(res.data.user);
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed!');

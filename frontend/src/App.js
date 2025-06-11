@@ -1,6 +1,6 @@
-//FRONTEND/Staff/App.js
+//FRONTEND/App.js
 import './App.css';
-import React, {useEffect, useState, useCallback, useRef} from 'react';
+import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import Login from './components/Login';
@@ -45,13 +45,13 @@ const NotFound = () => (
     </div>
 )
 
-// const NoAccess = ({ user }) => (
-//     <div className="app-no-access">
-//         <span className="main-icon material-symbols-outlined">error</span>
-//         <p>Hi {user?.username || 'User'}! Looks like you don't have sufficient permissions to visit this portal.</p>
-//         <p>You can <Link to={'/logout'}>logout</Link> and switch to another account.</p>
-//     </div>
-// );
+const NoAccess = ({ user }) => (
+    <div className="app-no-access">
+        <span className="main-icon material-symbols-outlined">error</span>
+        <p>Hi {user?.first_name || 'User'}! Looks like you don't have sufficient permissions to visit this portal.</p>
+        <p>You can <Link to={'/logout'}>logout</Link> and switch to another account.</p>
+    </div>
+);
 
 const Loading = () => (
     <div className='app-loading'>Loading...</div>
@@ -76,24 +76,22 @@ const componentMap = {
 };
 
 const App = () => {
-    const [loading, setLoading] = useState(true);
-    const [managerView, setManagerView] = useState(null);
     const isCheckingRef = useRef(false);
+    const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [access, setAccess] = useState(null);
     const [pages, setPages] = useState([]);
-    const [hasManagerAccess, setHasManagerAccess] = useState(false);
+    const [managerAccess, setManagerAccess] = useState(null);
+    const [managerView, setManagerView] = useState(null);
     const [managerNavCollapsed, setManagerNavCollapsed] = useState(null);
 
-    const handleLogin = async (user) => {
+    const HandleLogin = async (user) => {
         setLoading(true);
         setUser(user);
-        setManagerView(user.manager_view);
-        setManagerNavCollapsed(user.manager_nav_collapsed);
-        await fetchPages();
-        setLoading(false);
+        await CheckAccess().then();
     };
 
-    const checkAccess = useCallback(async () => {
+    const CheckAccess = useCallback(async () => {
         if (isCheckingRef.current)
             return;
 
@@ -101,20 +99,22 @@ const App = () => {
         try {
             const res = await axios.get('/api/access', { withCredentials: true });
 
-            if (res.data.access) {
-                setUser(res.data.user);
+            setAccess(res.data.access);
+            setUser(res.data.user);
+            setManagerAccess(res.data.manager_access);
+            if (res.data.access && res.data.manager_access) {
+                setManagerView(res.data.user.manager_view);
                 setManagerNavCollapsed(res.data.user.manager_nav_collapsed);
-                setHasManagerAccess(res.data.manager_access);
-                if (res.data.manager_access)
-                    setManagerView(res.data.user.manager_view);
-                else
-                    setManagerView(false);
-                await fetchPages();
-            } else {
-                setUser(null);
             }
+            else {
+                setManagerView(false);
+            }
+            await FetchPages();
         } catch (err) {
-            setUser(null);
+            console.log('errorek here');
+            setAccess(false);
+            setManagerAccess(false);
+            setUser(err.response.data.user);
             console.error(err);
         } finally {
             isCheckingRef.current = false;
@@ -122,25 +122,25 @@ const App = () => {
         }
     }, []);
 
-    const fetchPages = async () => {
+    const FetchPages = async () => {
         try {
             const res = await axios.get('/api/pages', {withCredentials: true});
 
-            if (!Array.isArray(res.data)) {
+            if (Array.isArray(res.data)) {
+
+                const mappedPages = res.data.map((page) => ({
+                    ...page,
+                    ...(page.component ? {component: componentMap[page.component] || NotFound } : {}),
+                    subpages: page.subpages.map((subpage) => ({
+                        ...subpage,
+                        component: componentMap[subpage.component] || NotFound,
+                    })),
+                }));
+
+                setPages(mappedPages);
+            } else {
                 setPages([]);
-                return;
             }
-
-            const mappedPages = res.data.map((page) => ({
-                ...page,
-                ...(page.component ? {component: componentMap[page.component] || NotFound } : {}),
-                subpages: page.subpages.map((subpage) => ({
-                    ...subpage,
-                    component: componentMap[subpage.component] || NotFound,
-                })),
-            }));
-
-            setPages(mappedPages);
         } catch (err) {
             console.error('Error fetching pages:', err);
             setPages([]);
@@ -163,20 +163,19 @@ const App = () => {
             };
             performLogout().then();
         }, [navigate]);
-        return null;
     };
 
-    const CheckManagerAccess = async () => {
+    const CheckManagerAccess = useCallback(async () => {
         try {
             const res = await axios.get('/api/access', { withCredentials: true });
-            setHasManagerAccess(res.data.manager_access);
+            setManagerAccess(res.data.manager_access);
             return res.data.manager_access;
         } catch (err) {
             console.error('Manager access check error: ', err);
-            setHasManagerAccess(false);
+            setManagerAccess(false);
             return false;
         }
-    };
+    }, []);
 
     const ToggleManagerView = async (isManagerView) => {
         setLoading(true);
@@ -188,21 +187,19 @@ const App = () => {
                     { user: user, manager_view: isManagerView },
                     { withCredentials: true }
                 );
-
                 if (res.data.success) {
                     setUser((prev) => ({ ...prev, manager_view: isManagerView }));
                     setManagerView(isManagerView);
-                    await fetchPages();
                 }
             } else {
-                const res = await axios.post('/api/manager-view',
+                await axios.post('/api/manager-view',
                     { user: user, manager_view: false },
                     { withCredentials: true }
                 );
                 setUser((prev) => ({ ...prev, manager_view: false }));
                 setManagerView(false);
-                await fetchPages();
             }
+            await FetchPages();
         } catch (err) {
             console.error('View switching error: ', err);
         } finally {
@@ -211,14 +208,27 @@ const App = () => {
     };
 
     useEffect(() => {
-        checkAccess().then();
-    }, [checkAccess]);
+        CheckAccess().then();
+    }, [CheckAccess]);
 
     if (loading) {
         return <Loading />;
     }
+
     if (!user) {
-        return <Login onLogin={handleLogin} />;
+        return <Login handleLogin={HandleLogin} />;
+    }
+
+    if (!access) {
+        return (
+            <Router>
+                <Routes>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                    <Route path="/" element={<NoAccess user={user} />} />
+                    <Route path="logout" element={<Logout />} />
+                </Routes>
+            </Router>
+            )
     }
 
     return (
@@ -238,7 +248,7 @@ const App = () => {
                             user={user}
                             pages={pages}
                             switchView={ToggleManagerView}
-                            hasManagerAccess={hasManagerAccess}
+                            hasManagerAccess={managerAccess}
                         />
                 }>
                     {pages
@@ -270,7 +280,7 @@ const App = () => {
                     <Route path="not-found" element={<NotFound />} />
                     <Route path="*" element={<Navigate to="/not-found" replace />} />
                 </Route>
-                <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                <Route path="/login" element={<Login handleLogin={HandleLogin} />} />
             </Routes>
         </Router>
     );

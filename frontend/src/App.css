@@ -316,7 +316,8 @@ main {
   position: relative;
   height: 150px;
 }
-.manager-nav .manager-logo {
+.manager-nav .manager-logo,
+.manager-nav .manager-logo-small {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -328,7 +329,12 @@ main {
   opacity: 1;
   transition: ease-in-out 0.3s;
 }
-.manager-nav .manager-logo #AppLogoSymbol {
+.manager-nav .manager-logo-small {
+  opacity: 0;
+  visibility: hidden;
+  transition: ease-in-out 0.3s;
+}
+.manager-nav  #AppLogoSymbol {
   transition: ease-in-out 0.3s;
 }
 .manager-nav .manager-home-link.active #AppLogoSymbol,
@@ -336,12 +342,14 @@ main {
   fill: var(--color);
   transition: ease-in-out 0.3s;
 }
-.manager-nav .manager-logo #AppLogoLabel {
-  opacity: 1;
+.manager-nav-collapsed .manager-logo {
+  opacity: 0;
+  visibility: hidden;
   transition: ease-in-out 0.3s;
 }
-.manager-nav-collapsed .manager-logo #AppLogoLabel {
-  opacity: 0;
+.manager-nav-collapsed .manager-logo-small {
+  opacity: 1;
+  visibility: visible;
   transition: ease-in-out 0.3s;
 }
 .manager-nav .manager-nav-page-link {

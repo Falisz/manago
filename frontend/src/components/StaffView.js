@@ -58,7 +58,7 @@ const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
                 </nav>
                 <div className='user-nav'>
                     <span className='username'>
-                        {user?.username || 'User'}
+                        {user?.first_name || 'User'}
                     </span>
                     <i className="material-icons">keyboard_arrow_down</i>
                     <ul className='submenu'>
