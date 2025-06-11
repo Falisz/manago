@@ -236,12 +236,15 @@ main {
 }
 .app-login .app-logo {
   margin: 150px auto 30px;
-  width: 250px;
+  width: 100px;
   height: auto;
   color: white;
   fill: white;
   opacity: 1;
   transition: ease-in-out 0.3s;
+  background: white;
+  padding: 20px;
+  border-radius: 100px;
 }
 .app-login .app-logo {
   fill: var(--color);
@@ -253,7 +256,9 @@ main {
 }
 .app-login .login-form>* {
   margin: 10px 0;
-  font-size: 16px;
+  text-transform: uppercase;
+  font-size: 18px;
+  font-family: 'Roboto Condensed', sans-serif;
   padding: 10px;
 }
 .app-login .login-form>*:focus {
@@ -321,8 +326,8 @@ main {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 200px;
-  height: auto;
+  width: auto;
+  height: 100px;
   position: absolute;
   color: white;
   fill: white;
