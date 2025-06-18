@@ -28,7 +28,7 @@ const store = new SequelizeStore({
 });
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: ['http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -59,8 +59,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/api/staff', require('./staff'));
-app.use('/api/manager', require('./manager'));
+app.use('/api', require('./api'));
 
 const errorHandler = (err, req, res, _next) => {
     console.error('❌ Server error:', err.stack);
