@@ -1,9 +1,9 @@
 //FRONTEND/App.js
-import './App.css';
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate, Link} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, Navigate, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import Login from './components/Login';
+import {InWorks, NotFound, NoAccess, Loading} from "./components/Common";
 import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 
@@ -22,40 +22,6 @@ const PostsNew = () => <InWorks title={'Create new post'}/>;
 const PostsArchive = () => <InWorks title={'Posts archive'}/>;
 const EmployeesShow = () => <InWorks title={'Users list'}/>;
 const EmployeesNew = () => <InWorks title={'Add new user'}/>;
-
-const InWorks = ({ title }) => (
-    <div className="app-in-works">
-        <span className="main-icon material-symbols-outlined">manufacturing</span>
-        <h3>{title}</h3>
-        <p>
-            This page is under construction. It will be available soon.
-        </p>
-        <Link to="/">Return to Dashboard</Link>
-    </div>
-);
-
-const NotFound = () => (
-    <div className="app-not-found">
-        <span className="main-icon material-symbols-outlined">error</span>
-        <h3>404 - Page Not Found</h3>
-        <p>
-            The page you are trying to access does not exist or you lack the necessary permissions.
-        </p>
-        <Link to="/">Return to Dashboard</Link>
-    </div>
-)
-
-const NoAccess = ({ user }) => (
-    <div className="app-no-access">
-        <span className="main-icon material-symbols-outlined">error</span>
-        <p>Hi {user?.first_name || 'User'}! Looks like you don't have sufficient permissions to visit this portal.</p>
-        <p>You can <Link to={'/logout'}>logout</Link> and switch to another account.</p>
-    </div>
-);
-
-const Loading = () => (
-    <div className='app-loading'>Loading...</div>
-);
 
 const componentMap = {
     Dashboard,
@@ -111,7 +77,6 @@ const App = () => {
             }
             await FetchPages();
         } catch (err) {
-            console.log('errorek here');
             setAccess(false);
             setManagerAccess(false);
             setUser(err.response.data.user);
@@ -163,6 +128,7 @@ const App = () => {
             };
             performLogout().then();
         }, [navigate]);
+        return null;
     };
 
     const CheckManagerAccess = useCallback(async () => {
@@ -211,13 +177,56 @@ const App = () => {
         CheckAccess().then();
     }, [CheckAccess]);
 
+    useEffect(() => {
+        if (managerNavCollapsed !== null && user && managerView) {
+            const syncNavCollapsed = async () => {
+                try {
+                    await axios.post('/api/toggle-nav',
+                        { user: user, nav_collapsed: managerNavCollapsed },
+                        { withCredentials: true }
+                    );
+                } catch (error) {
+                    console.error('Error syncing nav_collapsed:', error);
+                }
+            };
+            syncNavCollapsed().then();
+        }
+    }, [managerNavCollapsed, user, managerView]);
+
+
+    if (managerView) {
+        document.getElementById('root').classList.add('manager');
+        document.getElementById('root').classList.remove('staff');
+    }
+    else {
+        document.getElementById('root').classList.add('staff');
+        document.getElementById('root').classList.remove('manager');
+    }
+
     if (loading) {
         return <Loading />;
     }
 
     if (!user) {
+        document.getElementById('root').classList.add('login');
         return <Login handleLogin={HandleLogin} />;
+    } else {
+        document.getElementById('root').classList.remove('login');
     }
+
+    const SwitchToManagerView = () => {
+        useEffect(() => {
+            ToggleManagerView(true);
+        }, []);
+        return <Navigate to="/" replace />;
+    };
+
+    const SwitchToStaffView = () => {
+        useEffect(() => {
+            ToggleManagerView(false);
+        }, []);
+        return <Navigate to="/" replace />;
+    };
 
     if (!access) {
         return (
@@ -230,7 +239,6 @@ const App = () => {
             </Router>
             )
     }
-
     return (
         <Router>
             <Routes>
@@ -276,6 +284,11 @@ const App = () => {
                                 </Route>
                             )
                         )}
+                    {
+                        managerView ?
+                            <Route path="staff-view" element={<SwitchToStaffView/>} />
+                            : <Route path="manager-view" element={<SwitchToManagerView/>} />
+                    }
                     <Route path="logout" element={<Logout />} />
                     <Route path="not-found" element={<NotFound />} />
                     <Route path="*" element={<Navigate to="/not-found" replace />} />

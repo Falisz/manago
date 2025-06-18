@@ -1,0 +1,139 @@
+:root {
+    --color-bright: #2889d5;
+    --color: #0671ba;
+    --color-dark: #004577;
+    --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
+    --color-bright-gradient: linear-gradient(45deg, var(--color-bright), var(--color));
+    --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
+    --black: #111;
+    --black-brighter: #181c24;
+    --gray-darker: #1f2129;
+    --gray-dark: #282c34;
+    --gray: #4e5563;
+    --gray-light: #ccc;
+    --gray-lighter: #ddd;
+    --white-darker: #eee;
+}
+
+.app-login {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.app-login .app-logo {
+    margin: 150px auto 30px;
+    width: 100px;
+    height: auto;
+    color: white;
+    fill: white;
+    opacity: 1;
+    transition: ease-in-out 0.3s;
+    background: white;
+    padding: 20px;
+    border-radius: 100px;
+}
+.app-login .app-logo {
+    fill: var(--color);
+}
+.app-login .login-form {
+    display: flex;
+    flex-direction: column;
+    min-width: 250px;
+    max-width: 33%;
+}
+.app-login .login-form input:focus,
+.app-login .login-form button:focus {
+    outline: none;
+}
+.app-login .login-form .input-field {
+    position: relative;
+    display: flex;
+    margin: 10px 0;
+}
+.app-login .login-form .input-icon {
+    position: absolute;
+    color: var(--color-dark);
+    top: calc(50% - 2px);
+    transform: translateY(-50%);
+    left: 10px;
+    transition: ease-in-out 0.3s;
+}
+.app-login .login-form .input-field input,
+.app-login .login-form .input-field input:-webkit-autofill {
+    background: transparent !important;
+    color: white !important;
+    appearance: unset !important;
+    border-radius: 10px 10px 0 0;
+    border: none;
+    border-bottom: 4px solid var(--color-dark);
+    margin: 0;
+    padding: 10px 40px;
+    flex: 1;
+    font-size: 18px;
+    font-family: 'Roboto Condensed', sans-serif;
+    text-transform: uppercase;
+    transition: ease-in-out 0.3s;
+}
+.app-login .login-form .input-field input:hover,
+.app-login .login-form .input-field input:focus {
+    border-bottom: 4px solid var(--color);
+}
+.app-login .login-form .input-field input:hover~.input-icon,
+.app-login .login-form .input-field input:focus~.input-icon {
+    color: var(--color);
+}
+.app-login .login-form button {
+    background: var(--color-gradient);
+    -webkit-tap-highlight-color: transparent;
+    color: white;
+    border: 0;
+    border-radius: 10px;
+    position: relative;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 18px;
+    font-family: 'Roboto Condensed', sans-serif;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+.app-login .login-form button::before {
+    padding: 10px;
+    content: 'LOG IN';
+    background: var(--color-bright-gradient);
+    opacity: 0;
+    transition: ease-in-out 0.3s;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: 10px;
+}
+.app-login .login-form button:hover::before {
+    opacity: 1;
+}
+.app-login .login-form .error {
+    color: orange;
+    border-radius: 10px;
+    border: 2px solid orange;
+    padding: 10px;
+    align-self: center;
+}
+
+
+@media (max-width: 768px) {
+    .app-login .login-form {
+        width: 90%;
+        max-width: unset;
+        min-width: unset;
+    }
+    .app-login .login-form .input-field input {
+        padding: 15px 40px 15px;
+        font-size: 24px;
+    }
+    .app-login .login-form .input-field,
+    .app-login .login-form button {
+        margin: 25px 0;
+        font-size: 24px;
+    }
+
+}

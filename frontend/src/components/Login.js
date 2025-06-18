@@ -1,4 +1,5 @@
 //FRONTEND/Login.js
+import '../Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
@@ -24,18 +25,24 @@ const Login = ({ handleLogin }) => {
         <div className="app-login">
             <AppLogo className='app-logo' />
             <form className='login-form' onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className='input-field'>
+                    <input
+                        type="text"
+                        placeholder="Login"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <span className="input-icon material-icons">person</span>
+                </div>
+                <div className='input-field'>
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <span className="input-icon material-icons">lock</span>
+                </div>
                 <button type="submit">Log in</button>
                 { error && <p className='error'>{error}</p> }
             </form>
