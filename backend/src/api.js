@@ -11,7 +11,7 @@ const {
     setNavCollapsed,
     getPages,
     logoutUser
-} = require('./auth');
+} = require('./utils');
 
 router.post('/login', async (req, res) => {
 

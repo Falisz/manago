@@ -1,4 +1,4 @@
-//BACKEND/auth.js
+//BACKEND/utils.js
 const { sql, poolPromise } = require('./db');
 const bcrypt = require('bcrypt');
 
