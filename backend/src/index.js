@@ -1,15 +1,21 @@
-//BACKEND/index.js
 const express = require('express');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
-const { sequelize } = require('./db');
-
+const { sequelize, seedData } = require('./db');
 
 const validateEnv = () => {
-    const requiredEnvVars = ['SESSION_SECRET', 'PORT'];
+    const requiredEnvVars = [
+        'SESSION_SECRET', 'PORT',
+        'DB_DIALECT',
+        'DB_HOST',
+        'DB_PORT',
+        'DB_NAME',
+        'DB_USERNAME',
+        'DB_PASSWORD'
+    ];
     const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
     if (missingVars.length > 0) {
         throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
@@ -70,10 +76,16 @@ app.use(errorHandler);
 async function startServer() {
     try {
         await sequelize.authenticate();
-        console.log('✅  Database connection established');
+        console.log('✅ Database connection established');
+
+        await sequelize.sync();
+        console.log('✅ Database models synced successfully');
 
         await store.sync();
-        console.log('✅  Session store synced successfully');
+        console.log('✅ Session store synced successfully');
+
+        await seedData();
+        console.log('✅ Data seeding completed');
 
         const PORT = process.env.PORT || 5000;
 
@@ -81,7 +93,7 @@ async function startServer() {
             console.log(`🚀 Server is up and running on port ${PORT}`);
         });
     } catch (err) {
-        console.error(err);
+        console.error('❌ Failed to start server:', err);
         process.exit(1);
     }
 }

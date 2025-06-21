@@ -15,9 +15,9 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
         location.pathname.startsWith(`/${page.path}`)
     ) || pages[0];
 
-    const accessibleSubpages = currentMainPage.subpages.filter(
+    const accessibleSubpages = currentMainPage?.subpages?.filter(
         (subpage) => user.role >= subpage.minRole
-    );
+    ) || [];
 
     const toggleNavCollapse = async () => {
         const toggledValue = !navCollapsed;

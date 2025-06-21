@@ -293,7 +293,6 @@ const App = () => {
                     <Route path="not-found" element={<NotFound />} />
                     <Route path="*" element={<Navigate to="/not-found" replace />} />
                 </Route>
-                <Route path="/login" element={<Login handleLogin={HandleLogin} />} />
             </Routes>
         </Router>
     );
