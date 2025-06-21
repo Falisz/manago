@@ -227,7 +227,7 @@ async function seedData() {
             });
 
             for (const row of pagesStaffRows) {
-                if (!row.id || !row.path || !row.title || !row.min_role) {
+                if (!row.id || !row.title || !row.min_role) {
                     console.warn('Skipping invalid pages_staff row:', row);
                     continue;
                 }
@@ -270,7 +270,7 @@ async function seedData() {
             });
 
             for (const row of pagesManagerRows) {
-                if (!row.id || !row.path || !row.title || !row.min_role) {
+                if (!row.id || !row.title || !row.min_role) {
                     console.warn('Skipping invalid pages_manager row:', row);
                     continue;
                 }
