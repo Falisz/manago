@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Loading } from './Common';
 
-const PostsShow = () => {
-    const { postId } = useParams(); // Pobieramy postId z URL
+const PostsShow = ({ postId, onClose }) => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,22 +24,62 @@ const PostsShow = () => {
     }, [postId]);
 
     if (loading) {
-        return <Loading />;
+        return (
+            <div className="modal-overlay">
+                <div className="modal-content">
+                    <Loading />
+                </div>
+            </div>
+        );
     }
 
     if (error) {
         return (
-            <div>
-                {error && <p>{error}</p>}
+            <div className="post-modal-overlay">
+                <div className="post-modal-content">
+                    <h1>Post not found!</h1>
+                    <button onClick={onClose} className="modal-close-button">
+                        Close
+                    </button>
+                </div>
             </div>
-        )
+        );
     }
 
     return (
-        <div title={`Post ${postId}`}>
-            <h1>{post.title}</h1>
-            <p>{post.content}</p>
-        </div>
+        <>
+            <div className="post-modal-overlay" onClick={onClose}></div>
+            <div className="post-modal-content">
+                <h1>{post.title || 'Untitled Post'}</h1>
+                <p>Posted by {post.User.first_name} {post.User.last_name}</p>
+                <p>Channel: {post.Channel.name}</p>
+                <p>
+                    {new Date(post.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}
+                </p>
+                <p>{post.content}</p>
+                {post.isEdited && (
+                    <p>
+                        Last edited:{' '}
+                        {new Date(post.updatedAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </p>
+                )}
+                <button onClick={onClose} className="modal-close-button">
+                    Close
+                </button>
+            </div>
+        </>
     );
 };
 

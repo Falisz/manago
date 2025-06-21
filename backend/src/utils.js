@@ -1,5 +1,5 @@
 //BACKEND/utils.js
-const { sequelize, User, PagesStaff, PagesManager, ManagerViewAccess } = require('./db');
+const { sequelize, User, PagesStaff, PagesManager, ManagerViewAccess, Post, Channel } = require('./db');
 const bcrypt = require('bcrypt');
 
 async function authUser(login, password) {
@@ -170,6 +170,99 @@ function logoutUser(req, res) {
         res.json({ message: 'Logged out' });
     });
 }
+async function getAllPosts() {
+    try {
+        const posts = await Post.findAll({
+            include: [
+                { model: User, attributes: ['ID', 'first_name', 'last_name'] },
+                { model: Channel, attributes: ['ID', 'name'] }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+        return posts.map(post => post.toJSON());
+    } catch (err) {
+        console.error('Error fetching all posts:', err);
+        throw err;
+    }
+}
+
+async function getPostById(postId) {
+    try {
+        const post = await Post.findOne({
+            where: { ID: postId },
+            include: [
+                { model: User, attributes: ['ID', 'first_name', 'last_name'] },
+                { model: Channel, attributes: ['ID', 'name'] }
+            ]
+        });
+        return post ? post.toJSON() : null;
+    } catch (err) {
+        console.error(`Error fetching post with ID ${postId}:`, err);
+        throw err;
+    }
+}
+async function createPost(data) {
+    try {
+        const channel = await Channel.findOne({ where: { ID: data.channelID } });
+        if (!channel) {
+            throw new Error('Invalid channel ID.');
+        }
+
+        const user = await User.findOne({ where: { ID: data.authorID } });
+        if (!user) {
+            throw new Error('Invalid author ID.');
+        }
+
+        const post = await Post.create({
+            channelID: data.channelID,
+            authorID: data.authorID,
+            title: data.title,
+            content: data.content,
+            createdAt: new Date(),
+            isEdited: false,
+            updatedAt: null
+        });
+
+        return await getPostById(post.ID);
+    } catch (err) {
+        console.error('Error creating post:', err);
+        throw err;
+    }
+}
+async function updatePost(postId, data) {
+    try {
+        const post = await Post.findOne({ where: { ID: postId } });
+        if (!post) {
+            throw new Error('Post not found.');
+        }
+
+        await post.update({
+            title: data.title,
+            content: data.content,
+            isEdited: true,
+            updatedAt: new Date()
+        });
+
+        return await getPostById(postId);
+    } catch (err) {
+        console.error(`Error updating post with ID ${postId}:`, err);
+        throw err;
+    }
+}
+
+async function deletePost(postId) {
+    try {
+        const post = await Post.findOne({ where: { ID: postId } });
+        if (!post) {
+            throw new Error('Post not found.');
+        }
+
+        await post.destroy();
+    } catch (err) {
+        console.error(`Error deleting post with ID ${postId}:`, err);
+        throw err;
+    }
+}
 
 module.exports = {
     authUser,
@@ -180,5 +273,10 @@ module.exports = {
     setManagerView,
     setNavCollapsed,
     getPages,
-    logoutUser
+    logoutUser,
+    getAllPosts,
+    getPostById,
+    createPost,
+    updatePost,
+    deletePost
 };

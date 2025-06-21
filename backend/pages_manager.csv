@@ -1,10 +1,6 @@
 1,,/,Home,1,Dashboard,home
 2,,schedule,Schedule,1,ScheduleShow,calendar_month
-3,,posts,Posts,1,PostsShow,forum
+3,,posts,Posts,1,PostsIndex,forum
 4,,employees,Employees,2,EmployeesShow,people
-21,2,edit,Edit Schedule,2,ScheduleEdit,
-22,2,past,Past Schedule,1,SchedulePast,
-23,2,new,New Schedule,2,ScheduleNew,
-31,3,new,New Posts,2,PostsNew,
-32,3,archive,Post Archive,1,PostsArchive,
-41,4,new,New Employee,2,EmployeesNew,
+21,2,past,Past Schedules,1,SchedulePast,
+31,3,archive,Post Archive,1,PostsArchive,

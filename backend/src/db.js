@@ -447,5 +447,7 @@ module.exports = {
     PagesStaff,
     PagesManager,
     ManagerViewAccess,
+    Post,
+    Channel,
     seedData
 };

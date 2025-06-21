@@ -8,7 +8,14 @@ import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 import { ConnectivityProvider } from './ConnectivityContext';
 import ConnectivityPopup from './components/ConnectivityPopup';
+import PostsIndex from './components/PostsIndex';
 import PostsShow from './components/PostsShow';
+import './App.css';
+
+console.log(process.env);
+
+const theme = process.env['REACT_APP_THEME'] || 'dark';
+const color = process.env['REACT_APP_COLOR'] || 'blue';
 
 const Dashboard = () => <InWorks title={'Dashboard'}/>;
 const Schedule = () => <InWorks title={'Schedule'}/>;
@@ -20,7 +27,6 @@ const ScheduleShow = () => <InWorks title={'Work schedule'}/>;
 const ScheduleEdit = () => <InWorks title={'Work schedule editor'}/>;
 const SchedulePast = () => <InWorks title={'Work schedule archive'}/>;
 const ScheduleNew = () => <InWorks title={'Work schedule creator'}/>;
-const PostsIndex = () => <InWorks title={'Forum'}/>;
 const PostsNew = () => <InWorks title={'Create new post'}/>;
 const PostsArchive = () => <InWorks title={'Posts archive'}/>;
 const EmployeesShow = () => <InWorks title={'Users list'}/>;
@@ -107,7 +113,6 @@ const App = () => {
                 }));
 
                 setPages(mappedPages);
-                console.log(mappedPages);
             } else {
                 setPages([]);
             }
@@ -182,6 +187,7 @@ const App = () => {
     };
 
     useEffect(() => {
+        import(`./assets/palette-${theme}-${color}.css`).then();
         CheckAccess().then();
     }, [CheckAccess]);
 
@@ -203,14 +209,14 @@ const App = () => {
 
     const SwitchToManagerView = () => {
         useEffect(() => {
-            ToggleManagerView(true);
+            ToggleManagerView(true).then();
         }, []);
         return <Navigate to="/" replace />;
     };
 
     const SwitchToStaffView = () => {
         useEffect(() => {
-            ToggleManagerView(false);
+            ToggleManagerView(false).then();
         }, []);
         return <Navigate to="/" replace />;
     };
@@ -295,7 +301,7 @@ const App = () => {
                                     {page.path === 'posts' && (
                                         <Route
                                             path=":postId"
-                                            element={<PostsShow />}
+                                            element={<PostsIndex />}
                                         />
                                     )}
                                 </Route>
