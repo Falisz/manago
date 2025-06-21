@@ -13,6 +13,15 @@ const {
     logoutUser
 } = require('./utils');
 
+router.get('/ping', async (req, res) => {
+    try {
+        res.json({ connected: true });
+    } catch (err) {
+        console.error('Ping error:', err);
+        res.status(500).json({ connected: false });
+    }
+});
+
 router.post('/login', async (req, res) => {
 
     const { username, password } = req.body;
@@ -54,7 +63,7 @@ router.get('/access', async (req, res) => {
 
         if (!req.session) {
 
-            return res.status(401).json({
+            return res.json({
                 access: false,
                 manager_access: false,
                 message: 'No session found.'
@@ -68,7 +77,7 @@ router.get('/access', async (req, res) => {
 
         if (!user) {
 
-            return res.status(401).json({
+            return res.json({
                 access: false,
                 manager_access: false,
                 message: 'No user found.'
@@ -80,7 +89,7 @@ router.get('/access', async (req, res) => {
 
         if (!userAccess) {
 
-            return res.status(401).json({
+            return res.json({
                 access: false,
                 manager_access: false,
                 message: 'User not active.',

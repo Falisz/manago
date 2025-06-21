@@ -62,12 +62,12 @@ const User = sequelize.define('User', {
 });
 
 const PagesStaff = sequelize.define('PagesStaff', {
-    id: {
+    ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false
     },
-    parent_id: {
+    parentID: {
         type: DataTypes.INTEGER,
         allowNull: true
     },
@@ -97,12 +97,12 @@ const PagesStaff = sequelize.define('PagesStaff', {
 });
 
 const PagesManager = sequelize.define('PagesManager', {
-    id: {
+    ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false
     },
-    parent_id: {
+    parentID: {
         type: DataTypes.INTEGER,
         allowNull: true
     },
@@ -148,8 +148,8 @@ const ManagerViewAccess = sequelize.define('ManagerViewAccess', {
 
 User.hasMany(ManagerViewAccess, { foreignKey: 'userID', sourceKey: 'ID' });
 ManagerViewAccess.belongsTo(User, { foreignKey: 'userID', targetKey: 'ID' });
-PagesStaff.belongsTo(PagesStaff, { foreignKey: 'parent_id', targetKey: 'id' });
-PagesManager.belongsTo(PagesManager, { foreignKey: 'parent_id', targetKey: 'id' });
+PagesStaff.belongsTo(PagesStaff, { foreignKey: 'parentID', targetKey: 'ID' });
+PagesManager.belongsTo(PagesManager, { foreignKey: 'parentID', targetKey: 'ID' });
 
 async function seedData() {
     try {
@@ -218,7 +218,7 @@ async function seedData() {
                 const results = [];
                 require('fs').createReadStream(pagesStaffFilePath)
                     .pipe(csv({
-                        headers: ['id', 'parent_id', 'path', 'title', 'min_role', 'component', 'icon'],
+                        headers: ['ID', 'parentID', 'path', 'title', 'min_role', 'component', 'icon'],
                         skipLines: 0
                     }))
                     .on('data', (data) => results.push(data))
@@ -227,13 +227,13 @@ async function seedData() {
             });
 
             for (const row of pagesStaffRows) {
-                if (!row.id || !row.title || !row.min_role) {
+                if (!row.ID || !row.title || !row.min_role) {
                     console.warn('Skipping invalid pages_staff row:', row);
                     continue;
                 }
                 pagesStaff.push({
-                    id: parseInt(row.id),
-                    parent_id: row.parent_id ? parseInt(row.parent_id) : null,
+                    ID: parseInt(row.ID),
+                    parentID: row.parentID ? parseInt(row.parentID) : null,
                     path: row.path,
                     title: row.title,
                     min_role: parseInt(row.min_role),
@@ -261,7 +261,7 @@ async function seedData() {
                 const results = [];
                 require('fs').createReadStream(pagesManagerFilePath)
                     .pipe(csv({
-                        headers: ['id', 'parent_id', 'path', 'title', 'min_role', 'component', 'icon'],
+                        headers: ['ID', 'parentID', 'path', 'title', 'min_role', 'component', 'icon'],
                         skipLines: 0
                     }))
                     .on('data', (data) => results.push(data))
@@ -270,13 +270,13 @@ async function seedData() {
             });
 
             for (const row of pagesManagerRows) {
-                if (!row.id || !row.title || !row.min_role) {
+                if (!row.ID || !row.title || !row.min_role) {
                     console.warn('Skipping invalid pages_manager row:', row);
                     continue;
                 }
                 pagesManager.push({
-                    id: parseInt(row.id),
-                    parent_id: row.parent_id ? parseInt(row.parent_id) : null,
+                    ID: parseInt(row.ID),
+                    parentID: row.parentID ? parseInt(row.parentID) : null,
                     path: row.path,
                     title: row.title,
                     min_role: parseInt(row.min_role),

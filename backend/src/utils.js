@@ -33,7 +33,7 @@ async function authUser(login, password) {
 
 function serializeUser(user) {
     return {
-        id: user.ID,
+        ID: user.ID,
         first_name: user.first_name,
         last_name: user.last_name,
         active: user.active,
@@ -45,15 +45,11 @@ function serializeUser(user) {
 
 async function refreshUser(user) {
     try {
-        const refreshedUser = await User.findOne({
-            where: { ID: user.id }
-        });
+        if (!user?.ID) return null;
 
-        if (refreshedUser) {
-            return serializeUser(refreshedUser.toJSON());
-        }
+        const refreshedUser = await User.findOne({ where: { ID: user.ID } });
 
-        return null;
+        return refreshedUser ? serializeUser(refreshedUser.toJSON()) : null;
     } catch (err) {
         console.error('Error refreshing user:', err);
         return null;
@@ -64,7 +60,7 @@ async function checkUserAccess(user) {
     try {
         const result = await User.findOne({
             attributes: ['active'],
-            where: { ID: user.id }
+            where: { ID: user.ID }
         });
 
         return result ? result.active : false;
@@ -77,12 +73,12 @@ async function checkUserAccess(user) {
 async function checkManagerAccess(user) {
     try {
         const result = await ManagerViewAccess.findOne({
-            where: { userID: user.id }
+            where: { userID: user.ID }
         });
 
         return !!result;
     } catch (err) {
-        console.error(`Error checking Manager Access for userID: ${user.id}`, err);
+        console.error(`Error checking Manager Access for userID: ${user.ID}`, err);
         return false;
     }
 }
@@ -91,12 +87,12 @@ async function setManagerView(user, value) {
     try {
         const [updated] = await User.update(
             { manager_view_enabled: value },
-            { where: { ID: user.id } }
+            { where: { ID: user.ID } }
         );
 
         return updated === 1;
     } catch (err) {
-        console.error(`Error updating manager view for userID: ${user.id}`, err);
+        console.error(`Error updating manager view for userID: ${user.ID}`, err);
         return false;
     }
 }
@@ -105,12 +101,12 @@ async function setNavCollapsed(user, value) {
     try {
         const [updated] = await User.update(
             { manager_nav_collapsed: value },
-            { where: { ID: user.id } }
+            { where: { ID: user.ID } }
         );
 
         return updated === 1;
     } catch (err) {
-        console.error(`Error updating nav collapsed for userID: ${user.id}`, err);
+        console.error(`Error updating nav collapsed for userID: ${user.ID}`, err);
         return false;
     }
 }
@@ -122,9 +118,9 @@ async function getPages(user) {
 
         const rows = await Model.findAll({
             order: [
-                sequelize.literal('CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END'),
-                ['parent_id', 'ASC'],
-                ['id', 'ASC']
+                sequelize.literal('CASE WHEN "parentID" IS NULL THEN 0 ELSE 1 END'),
+                ['parentID', 'ASC'],
+                ['ID', 'ASC']
             ]
         });
 
@@ -138,14 +134,14 @@ async function getPages(user) {
                 icon: row.icon,
                 minRole: row.min_role,
                 ...(row.component ? { component: row.component } : {}),
-                ...(row.parent_id ? {} : { subpages: [] })
+                ...(row.parentID ? {} : { subpages: [] })
             };
 
-            if (!row.parent_id) {
-                pageMap.set(row.id, page);
+            if (!row.parentID) {
+                pageMap.set(row.ID, page);
                 pages.push(page);
             } else {
-                const parent = pageMap.get(row.parent_id);
+                const parent = pageMap.get(row.parentID);
                 if (parent) {
                     parent.subpages.push({
                         path: row.path,
