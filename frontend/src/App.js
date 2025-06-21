@@ -6,6 +6,16 @@ import Login from './components/Login';
 import {InWorks, NotFound, NoAccess, Loading} from "./components/Common";
 import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
+import { ConnectivityProvider } from './ConnectivityContext';
+import ConnectivityPopup from './components/ConnectivityPopup';
+import PostsIndex from './components/PostsIndex';
+import PostsShow from './components/PostsShow';
+import './App.css';
+
+console.log(process.env);
+
+const theme = process.env['REACT_APP_THEME'] || 'dark';
+const color = process.env['REACT_APP_COLOR'] || 'blue';
 
 const Dashboard = () => <InWorks title={'Dashboard'}/>;
 const Schedule = () => <InWorks title={'Schedule'}/>;
@@ -17,7 +27,6 @@ const ScheduleShow = () => <InWorks title={'Work schedule'}/>;
 const ScheduleEdit = () => <InWorks title={'Work schedule editor'}/>;
 const SchedulePast = () => <InWorks title={'Work schedule archive'}/>;
 const ScheduleNew = () => <InWorks title={'Work schedule creator'}/>;
-const PostsShow = () => <InWorks title={'Forum'}/>;
 const PostsNew = () => <InWorks title={'Create new post'}/>;
 const PostsArchive = () => <InWorks title={'Posts archive'}/>;
 const EmployeesShow = () => <InWorks title={'Users list'}/>;
@@ -34,6 +43,7 @@ const componentMap = {
     ScheduleEdit,
     SchedulePast,
     ScheduleNew,
+    PostsIndex,
     PostsShow,
     PostsNew,
     PostsArchive,
@@ -79,7 +89,7 @@ const App = () => {
         } catch (err) {
             setAccess(false);
             setManagerAccess(false);
-            setUser(err.response.data.user);
+            setUser(null);
             console.error(err);
         } finally {
             isCheckingRef.current = false;
@@ -117,12 +127,15 @@ const App = () => {
         useEffect(() => {
             const performLogout = async () => {
                 try {
+                    document.getElementById('root').classList.remove('staff');
+                    document.getElementById('root').classList.remove('manager');
                     await axios.get('/api/logout', { withCredentials: true });
                 } catch (err) {
                     console.error('Logout error', err);
                 } finally {
                     navigate('/', { replace: true });
                     setUser(null);
+                    setManagerView(false);
                     setLoading(false);
                 }
             };
@@ -174,6 +187,7 @@ const App = () => {
     };
 
     useEffect(() => {
+        import(`./assets/palette-${theme}-${color}.css`).then();
         CheckAccess().then();
     }, [CheckAccess]);
 
@@ -193,6 +207,35 @@ const App = () => {
         }
     }, [managerNavCollapsed, user, managerView]);
 
+    const SwitchToManagerView = () => {
+        useEffect(() => {
+            ToggleManagerView(true).then();
+        }, []);
+        return <Navigate to="/" replace />;
+    };
+
+    const SwitchToStaffView = () => {
+        useEffect(() => {
+            ToggleManagerView(false).then();
+        }, []);
+        return <Navigate to="/" replace />;
+    };
+
+    if (loading) {
+        return <Loading />;
+    }
+
+    if (!user) {
+        document.getElementById('root').classList.add('login');
+        return (
+            <ConnectivityProvider>
+                <Login handleLogin={HandleLogin} />
+                <ConnectivityPopup />
+            </ConnectivityProvider>
+        );
+    } else {
+        document.getElementById('root').classList.remove('login');
+    }
 
     if (managerView) {
         document.getElementById('root').classList.add('manager');
@@ -203,99 +246,79 @@ const App = () => {
         document.getElementById('root').classList.remove('manager');
     }
 
-    if (loading) {
-        return <Loading />;
-    }
-
-    if (!user) {
-        document.getElementById('root').classList.add('login');
-        return <Login handleLogin={HandleLogin} />;
-    } else {
-        document.getElementById('root').classList.remove('login');
-    }
-
-    const SwitchToManagerView = () => {
-        useEffect(() => {
-            ToggleManagerView(true);
-        }, []);
-        return <Navigate to="/" replace />;
-    };
-
-    const SwitchToStaffView = () => {
-        useEffect(() => {
-            ToggleManagerView(false);
-        }, []);
-        return <Navigate to="/" replace />;
-    };
-
     if (!access) {
         return (
-            <Router>
-                <Routes>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                    <Route path="/" element={<NoAccess user={user} />} />
-                    <Route path="logout" element={<Logout />} />
-                </Routes>
-            </Router>
+            <ConnectivityProvider>
+                <Router>
+                    <Routes>
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                        <Route path="/" element={<NoAccess user={user} />} />
+                        <Route path="logout" element={<Logout />} />
+                    </Routes>
+                </Router>
+                <ConnectivityPopup />
+            </ConnectivityProvider>
             )
     }
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={
-                    managerView ?
-                        <ManagerView
-                            user={user}
-                            pages={pages}
-                            switchView={ToggleManagerView}
-                            navCollapsed={managerNavCollapsed}
-                            setNavCollapsed={setManagerNavCollapsed}
-                        />
-                        :
-                        <StaffView
-                            user={user}
-                            pages={pages}
-                            switchView={ToggleManagerView}
-                            hasManagerAccess={managerAccess}
-                        />
-                }>
-                    {pages
-                        .filter((page) => user.role >= page.minRole)
-                        .map((page) =>
-                            page.component ? (
-                                <Route
-                                    key={page.path}
-                                    path={page.path}
-                                    element={<page.component />}
-                                    index={page.path === '/'}
-                                />
-                            ) : (
+        <ConnectivityProvider>
+            <Router>
+                <Routes>
+                    <Route path="/" element={
+                        managerView ?
+                            <ManagerView
+                                user={user}
+                                pages={pages}
+                                switchView={ToggleManagerView}
+                                navCollapsed={managerNavCollapsed}
+                                setNavCollapsed={setManagerNavCollapsed}
+                            />
+                            :
+                            <StaffView
+                                user={user}
+                                pages={pages}
+                                switchView={ToggleManagerView}
+                                hasManagerAccess={managerAccess}
+                            />
+                    }>
+                        <Route index element={<Dashboard/>}/>
+                        {pages
+                            .filter((page) => user.role >= page.minRole)
+                            .map((page) => (
                                 <Route key={page.path} path={page.path}>
+                                    <Route index element={page.component ? <page.component /> : <NotFound />} />
                                     {page.subpages
                                         .filter((subpage) => user.role >= subpage.minRole)
                                         .map((subpage) => (
                                             <Route
                                                 key={`${page.path}/${subpage.path}`}
-                                                path={subpage.path}
-                                                index={subpage.path === ''}
+                                                path={subpage.path ? `${subpage.path}` : ''}
+                                                index={!subpage.path}
                                                 element={<subpage.component />}
                                             />
-                                        ))}
+                                        ))
+                                    }
+                                    {page.path === 'posts' && (
+                                        <Route
+                                            path=":postId"
+                                            element={<PostsIndex />}
+                                        />
+                                    )}
                                 </Route>
-                            )
-                        )}
-                    {
-                        managerView ?
-                            <Route path="staff-view" element={<SwitchToStaffView/>} />
-                            : <Route path="manager-view" element={<SwitchToManagerView/>} />
-                    }
-                    <Route path="logout" element={<Logout />} />
-                    <Route path="not-found" element={<NotFound />} />
-                    <Route path="*" element={<Navigate to="/not-found" replace />} />
-                </Route>
-                <Route path="/login" element={<Login handleLogin={HandleLogin} />} />
-            </Routes>
-        </Router>
+                            ))}
+                        {
+                            managerView ?
+                                <Route path="staff-view" element={<SwitchToStaffView/>} />
+                                : <Route path="manager-view" element={<SwitchToManagerView/>} />
+                        }
+                        <Route path="logout" element={<Logout />} />
+                        <Route path="not-found" element={<NotFound />} />
+                        <Route path="*" element={<Navigate to="/not-found" replace />} />
+                    </Route>
+                </Routes>
+                <ConnectivityPopup />
+            </Router>
+        </ConnectivityProvider>
     );
 };
 

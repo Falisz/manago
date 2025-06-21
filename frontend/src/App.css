@@ -1,23 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
 
-:root {
-  --color: #0671ba;
-  --color-dark: #004577;
-  --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
-  --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
-  --black: #111;
-  --black-brighter: #181c24;
-  --gray-darker: #1f2129;
-  --gray-dark: #282c34;
-  --gray: #4e5563;
-  --gray-light: #ccc;
-  --gray-lighter: #ddd;
-  --white-darker: #eee;
-}
-
 body {
-  color: white;
-  background: var(--black);
+  color: var(--text-color);
+  background: var(--background-color);
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -25,6 +10,11 @@ body {
   sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body a {
+  color: var(--link-color);
+  text-decoration: none;
 }
 
 code {
@@ -71,7 +61,241 @@ code {
   font-weight: 400;
 }
 .app-notice a {
-  color: #007bff;
+  color: var(--link-color);
   text-decoration: none;
   font-weight: bold;
+}
+
+/****************/
+/*APP MOBILE NAV*/
+/****************/
+.app-mobile-nav {
+  z-index: 1000;
+  display: none;
+  align-items: center;
+  width: 100%;
+  background: var(--color-gradient);
+  position: relative;
+  justify-content: space-between;
+}
+
+.app-mobile-nav .app-home-link {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 30px;
+  font-weight: 300;
+  margin: 0 10px 0 20px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-mobile-nav .app-logo-mobile {
+  width: 50px;
+  fill: white;
+  height: auto;
+}
+.app-mobile-nav-title {
+  text-transform: uppercase;
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 30px;
+  font-weight: 300;
+  margin-right: auto;
+}
+.app-mobile-nav-view-button {
+  margin: auto 20px;
+  font-size: 30px;
+  cursor: pointer;
+}
+.app-mobile-nav-backdrop {
+  display: block;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+  background: rgba(0,0,0,.5);
+  transition: ease-in-out 0.3s;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-mobile-nav-links {
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 80vw;
+  flex-direction: column;
+  list-style: none;
+  background: var(--gray-gradient);
+  transition: ease-in-out 0.3s;
+  transform: translateX(100%);
+  overflow: auto;
+  scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+  scrollbar-width: thin;
+}
+.app-mobile-nav-links::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.app-mobile-nav-links::-webkit-scrollbar-track {
+  background: transparent;
+}
+.app-mobile-nav-links::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  border: none;
+}
+.app-mobile-nav-links::-webkit-scrollbar-button {
+  display: none;
+}
+
+.app-mobile-nav-backdrop.expanded {
+  opacity: 1;
+  visibility: visible;
+  transition: ease-in-out 0.3s;
+}
+.app-mobile-nav-links.expanded {
+  transform: translateX(0);
+}
+.app-mobile-nav-link-item {
+  margin: 0 50px;
+  padding: 15px 0;
+  font-size: 20px;
+  font-family: 'roboto condensed', sans-serif;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-mobile-nav-link-item:not(:first-child) {
+  border-top: 1px solid var(--gray);
+}
+.app-mobile-nav-link-item a {
+  display: flex;
+  align-items: center;
+  color: white;
+  margin: 5px 0;
+  text-decoration: none;
+  transition: 0.3s ease-in-out;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-mobile-nav-link-item .app-nav-page-link-icon {
+  margin-right: 10px;
+}
+.app-mobile-nav-link-item a:hover,
+.app-mobile-nav-link-item a.active {
+  color: var(--link-color);
+}
+.app-mobile-nav-link-item.nav-collapse-button {
+  margin: 50px 50px auto;
+  align-self: self-start;
+}
+.app-mobile-nav-link-item.user-link {
+  margin: auto 50px 50px;
+}
+.app-mobile-nav-link-item .submenu {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  visibility: visible;
+  opacity: 1;
+  list-style: none;
+  padding: 0 15px 0;
+  margin: 0;
+}
+.app-mobile-nav-link-item .submenu li {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+
+.posts-index {
+  padding: 20px;
+  width: 80%;
+}
+.post-list {
+  list-style: none;
+  padding: 0;
+}
+.post-item {
+  border-bottom: 1px solid #ccc;
+  padding: 15px 0;
+}
+.post-item h1 {
+  margin: 10px 0 10px;
+}
+.post-item h2 {
+  margin: 0 0 10px;
+  font-size: 1.5em;
+}
+.post-item h2 a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+.post-item p {
+  margin: 5px 0;
+}
+
+.post-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.post-modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--background-color-2);
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1500;
+}
+
+.modal-close-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: var(--link-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-close-button:hover {
+  background: var(--highlight-color);
+}
+
+.post-title-button {
+  background: none;
+  border: none;
+  color: var(--link-color);
+  cursor: pointer;
+  font-size: 1.5em;
+  padding: 0;
+  text-align: left;
+}
+
+.post-title-button:hover {
+  color: var(--link-color);
 }

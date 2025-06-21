@@ -1,49 +1,39 @@
 //BACKEND/utils.js
-const { sql, poolPromise } = require('./db');
+const { sequelize, User, PagesStaff, PagesManager, ManagerViewAccess, Post, Channel } = require('./db');
 const bcrypt = require('bcrypt');
 
 async function authUser(login, password) {
+    try {
+        const isInteger = Number.isInteger(Number(login));
 
-    const isInteger = Number.isInteger(Number(login));
+        const user = await User.findOne({
+            where: isInteger ? { ID: login } : { email: login }
+        });
 
-    const query = isInteger
-        ? 'SELECT * FROM Users WHERE ID = @login'
-        : 'SELECT * FROM Users WHERE email = @login';
+        if (!user) {
+            return { valid: false, status: 401, message: 'Invalid credentials!' };
+        }
 
-    const pool = await poolPromise;
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    const result = await pool
-        .request()
-        .input('login', isInteger ? sql.Int : sql.VarChar, login)
-        .query(query);
+        if (!isPasswordValid) {
+            return { valid: false, status: 401, message: 'Invalid credentials, wrong password!' };
+        }
 
-    const user = result.recordset[0] || null;
+        if (!user.active) {
+            return { valid: false, status: 403, message: 'User inactive.' };
+        }
 
-    if (!user)
-        return { valid: false, status: 401, message: 'Invalid credentials!' };
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid)
-        return { valid: false, status: 401, message: 'Invalid credentials, wrong password!' };
-
-
-    if (!user.active)
-        return { valid: false, status: 403, message: 'User inactive.' };
-
-
-    return { valid: true, user: user };
+        return { valid: true, user: user.toJSON() };
+    } catch (err) {
+        console.error('Error authenticating user:', err);
+        return { valid: false, status: 500, message: 'Server error' };
+    }
 }
 
-// async function hashPassword(password) {
-//     const saltRounds = 10;
-//     return await bcrypt.hash(password, saltRounds);
-// }
-
 function serializeUser(user) {
-
     return {
-        id: user.ID,
+        ID: user.ID,
         first_name: user.first_name,
         last_name: user.last_name,
         active: user.active,
@@ -51,211 +41,227 @@ function serializeUser(user) {
         manager_nav_collapsed: user.manager_nav_collapsed,
         manager_view: user.manager_view_enabled,
     };
-
 }
 
 async function refreshUser(user) {
     try {
+        if (!user?.ID) return null;
 
-        const pool = await poolPromise
+        const refreshedUser = await User.findOne({ where: { ID: user.ID } });
 
-        const result = await pool
-            .request()
-            .input('userID', sql.Int, user.id)
-            .query('SELECT * FROM Users WHERE ID = @userID');
-
-        if (result.recordset[0])
-            return serializeUser(result.recordset[0]);
-
-        else
-            return null;
-
-    } catch(err) {
+        return refreshedUser ? serializeUser(refreshedUser.toJSON()) : null;
+    } catch (err) {
+        console.error('Error refreshing user:', err);
         return null;
     }
-
-
 }
 
 async function checkUserAccess(user) {
     try {
+        const result = await User.findOne({
+            attributes: ['active'],
+            where: { ID: user.ID }
+        });
 
-        const pool = await poolPromise
-
-        const result = await pool
-            .request()
-            .input('userID', sql.Int, user.id)
-            .query(`
-                SELECT active FROM users WHERE ID = @userID
-            `);
-
-        if (!result.recordset[0])
-            return false;
-
-        else
-            return result.recordset[0].active;
-
-
-    } catch(err) {
-
+        return result ? result.active : false;
+    } catch (err) {
+        console.error('Error checking user access:', err);
         return false;
-
     }
 }
 
 async function checkManagerAccess(user) {
     try {
+        const result = await ManagerViewAccess.findOne({
+            where: { userID: user.ID }
+        });
 
-        const pool = await poolPromise
-
-        const result = await pool
-
-            .request()
-            .input('userID', sql.Int, user.id)
-            .query(`
-                SELECT ID FROM manager_view_access WHERE userID = @userID
-            `);
-
-        return !!result.recordset[0];
-
-    } catch(err) {
-
-        console.error(`Error checking Manager Access for userID: ${user.id}`, err);
-
+        return !!result;
+    } catch (err) {
+        console.error(`Error checking Manager Access for userID: ${user.ID}`, err);
         return false;
-
     }
-
 }
 
 async function setManagerView(user, value) {
     try {
+        const [updated] = await User.update(
+            { manager_view_enabled: value },
+            { where: { ID: user.ID } }
+        );
 
-        const pool = await poolPromise
-
-        const result = await pool
-            .request()
-            .input('userID', sql.Int, user.id)
-            .input('managerView', sql.Bit, value)
-            .query(`
-                UPDATE users
-                SET manager_view_enabled = @managerView
-                WHERE id = @userID;
-            `);
-
-        return result.rowsAffected[0] === 1;
-
-    } catch(err) {
-
-        console.error(`Error updating manager view for userID: ${user.id}`, err);
-
+        return updated === 1;
+    } catch (err) {
+        console.error(`Error updating manager view for userID: ${user.ID}`, err);
         return false;
-
     }
 }
 
 async function setNavCollapsed(user, value) {
     try {
+        const [updated] = await User.update(
+            { manager_nav_collapsed: value },
+            { where: { ID: user.ID } }
+        );
 
-        const pool = await poolPromise
-
-        const result = await pool
-            .request()
-            .input('userID', sql.Int, user.id)
-            .input('navCollapsed', sql.Bit, value)
-            .query(`
-                UPDATE users
-                SET manager_nav_collapsed = @navCollapsed
-                WHERE id = @userID;
-            `);
-
-        return result.rowsAffected[0] === 1;
-
-    } catch(err) {
-
-        console.error(`Error updating manager view for userID: ${user.id}`, err);
-
+        return updated === 1;
+    } catch (err) {
+        console.error(`Error updating nav collapsed for userID: ${user.ID}`, err);
         return false;
-
     }
-
 }
 
 async function getPages(user) {
     try {
-
         const isManagerView = user?.manager_view || false;
+        const Model = isManagerView ? PagesManager : PagesStaff;
 
-        const pool = await poolPromise;
-
-        const table = isManagerView ? 'pages_manager' : 'pages_staff';
-
-        const queryResult = await pool.request().query(`
-            SELECT id, parent_id, path, title, icon, min_role, component
-            FROM ${table}
-            ORDER BY CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END, parent_id, id
-        `);
-
-        const rows = queryResult.recordset;
+        const rows = await Model.findAll({
+            order: [
+                sequelize.literal('CASE WHEN "parentID" IS NULL THEN 0 ELSE 1 END'),
+                ['parentID', 'ASC'],
+                ['ID', 'ASC']
+            ]
+        });
 
         const pages = [];
         const pageMap = new Map();
 
         for (const row of rows) {
-
             const page = {
                 path: row.path,
                 title: row.title,
                 icon: row.icon,
                 minRole: row.min_role,
-                ...(row.component ? {component: row.component} : {}),
-                ...(row.parent_id ? {} : { subpages: [] }),
+                ...(row.component ? { component: row.component } : {}),
+                ...(row.parentID ? {} : { subpages: [] })
             };
 
-            if (!row.parent_id) {
-
-                pageMap.set(row.id, page);
-
+            if (!row.parentID) {
+                pageMap.set(row.ID, page);
                 pages.push(page);
-
             } else {
-
-                const parent = pageMap.get(row.parent_id);
-
-                if (parent)
+                const parent = pageMap.get(row.parentID);
+                if (parent) {
                     parent.subpages.push({
                         path: row.path,
                         title: row.title,
                         minRole: row.min_role,
-                        component: row.component,
+                        component: row.component
                     });
-
-
+                }
             }
         }
 
         return pages;
-
-    } catch(err) {
-
+    } catch (err) {
         console.error(`Error getting pages: ${err}`, err);
-
         return [];
-
     }
 }
 
 function logoutUser(req, res) {
     req.session.destroy(err => {
-
-        if (err)
+        if (err) {
             return res.status(500).json({ message: 'Logout failed' });
+        }
 
         res.clearCookie('connect.sid', { path: '/', sameSite: 'lax', httpOnly: true });
-
         res.json({ message: 'Logged out' });
-
     });
+}
+async function getAllPosts() {
+    try {
+        const posts = await Post.findAll({
+            include: [
+                { model: User, attributes: ['ID', 'first_name', 'last_name'] },
+                { model: Channel, attributes: ['ID', 'name'] }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+        return posts.map(post => post.toJSON());
+    } catch (err) {
+        console.error('Error fetching all posts:', err);
+        throw err;
+    }
+}
+
+async function getPostById(postId) {
+    try {
+        const post = await Post.findOne({
+            where: { ID: postId },
+            include: [
+                { model: User, attributes: ['ID', 'first_name', 'last_name'] },
+                { model: Channel, attributes: ['ID', 'name'] }
+            ]
+        });
+        return post ? post.toJSON() : null;
+    } catch (err) {
+        console.error(`Error fetching post with ID ${postId}:`, err);
+        throw err;
+    }
+}
+async function createPost(data) {
+    try {
+        const channel = await Channel.findOne({ where: { ID: data.channelID } });
+        if (!channel) {
+            throw new Error('Invalid channel ID.');
+        }
+
+        const user = await User.findOne({ where: { ID: data.authorID } });
+        if (!user) {
+            throw new Error('Invalid author ID.');
+        }
+
+        const post = await Post.create({
+            channelID: data.channelID,
+            authorID: data.authorID,
+            title: data.title,
+            content: data.content,
+            createdAt: new Date(),
+            isEdited: false,
+            updatedAt: null
+        });
+
+        return await getPostById(post.ID);
+    } catch (err) {
+        console.error('Error creating post:', err);
+        throw err;
+    }
+}
+async function updatePost(postId, data) {
+    try {
+        const post = await Post.findOne({ where: { ID: postId } });
+        if (!post) {
+            throw new Error('Post not found.');
+        }
+
+        await post.update({
+            title: data.title,
+            content: data.content,
+            isEdited: true,
+            updatedAt: new Date()
+        });
+
+        return await getPostById(postId);
+    } catch (err) {
+        console.error(`Error updating post with ID ${postId}:`, err);
+        throw err;
+    }
+}
+
+async function deletePost(postId) {
+    try {
+        const post = await Post.findOne({ where: { ID: postId } });
+        if (!post) {
+            throw new Error('Post not found.');
+        }
+
+        await post.destroy();
+    } catch (err) {
+        console.error(`Error deleting post with ID ${postId}:`, err);
+        throw err;
+    }
 }
 
 module.exports = {
@@ -267,5 +273,10 @@ module.exports = {
     setManagerView,
     setNavCollapsed,
     getPages,
-    logoutUser
+    logoutUser,
+    getAllPosts,
+    getPostById,
+    createPost,
+    updatePost,
+    deletePost
 };

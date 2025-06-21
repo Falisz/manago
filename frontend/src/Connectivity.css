@@ -1,0 +1,37 @@
+/* FRONTEND/Connectivity.css */
+.connectivity-popup {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #fff;
+    border: 1px solid #ff4d4f;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    max-width: 300px;
+    z-index: 1000;
+}
+
+.connectivity-icon {
+    color: #ff4d4f;
+    font-size: 24px;
+    margin-right: 12px;
+}
+
+.connectivity-message {
+    color: #333;
+}
+
+.connectivity-message h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #ff4d4f;
+}
+
+.connectivity-message p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #666;
+}

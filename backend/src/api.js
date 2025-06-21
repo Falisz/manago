@@ -10,8 +10,28 @@ const {
     setManagerView,
     setNavCollapsed,
     getPages,
-    logoutUser
+    logoutUser,
+    getAllPosts,
+    getPostById,
+    createPost,
+    updatePost,
+    deletePost
 } = require('./utils');
+
+// const { LoremIpsum } = require('lorem-ipsum');
+// const lorem = new LoremIpsum({
+//     sentencesPerParagraph: { max: 10, min: 3 },
+//     wordsPerSentence: { max: 16, min: 4 }
+// });
+
+router.get('/ping', async (req, res) => {
+    try {
+        res.json({ connected: true });
+    } catch (err) {
+        console.error('Ping error:', err);
+        res.status(500).json({ connected: false });
+    }
+});
 
 router.post('/login', async (req, res) => {
 
@@ -54,7 +74,7 @@ router.get('/access', async (req, res) => {
 
         if (!req.session) {
 
-            return res.status(401).json({
+            return res.json({
                 access: false,
                 manager_access: false,
                 message: 'No session found.'
@@ -68,7 +88,7 @@ router.get('/access', async (req, res) => {
 
         if (!user) {
 
-            return res.status(401).json({
+            return res.json({
                 access: false,
                 manager_access: false,
                 message: 'No user found.'
@@ -80,7 +100,7 @@ router.get('/access', async (req, res) => {
 
         if (!userAccess) {
 
-            return res.status(401).json({
+            return res.json({
                 access: false,
                 manager_access: false,
                 message: 'User not active.',
@@ -177,6 +197,140 @@ router.get('/pages', async (req, res) => {
 
         res.status(500).json({ message: 'Server error.' });
 
+    }
+});
+
+router.get('/posts', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const posts = await getAllPosts();
+        res.json(posts);
+    } catch (err) {
+        console.error('Error fetching posts:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/posts/:postId', async (req, res) => {
+    try {
+        const { postId } = req.params;
+
+        if (!postId || isNaN(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID.' });
+        }
+
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const post = await getPostById(parseInt(postId));
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found.' });
+        }
+
+        res.json(post);
+    } catch (err) {
+        console.error('Error fetching post:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.post('/posts', async (req, res) => {
+    try {
+        const { boardID, title, content } = req.body;
+
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        if (!boardID || !content) {
+            return res.status(400).json({ message: 'Board ID and content are required.' });
+        }
+
+        const post = await createPost({
+            boardID: parseInt(boardID),
+            authorID: req.session.user.ID,
+            title: title || null,
+            content
+        });
+
+        res.status(201).json({ message: 'Post created successfully!', post });
+    } catch (err) {
+        console.error('Error creating post:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.put('/posts/:postId', async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { title, content } = req.body;
+
+        if (!postId || isNaN(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID.' });
+        }
+
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required.' });
+        }
+
+        const user = req.session.user;
+        const post = await getPostById(parseInt(postId));
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found.' });
+        }
+
+        if (post.authorID !== user.ID) {
+            return res.status(403).json({ message: 'Forbidden: You are not the author of this post.' });
+        }
+
+        const updatedPost = await updatePost(parseInt(postId), { title: title || null, content });
+
+        res.json({ message: 'Post updated successfully!', post: updatedPost });
+    } catch (err) {
+        console.error('Error updating post:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.delete('/posts/:postId', async (req, res) => {
+    try {
+        const { postId } = req.params;
+
+        if (!postId || isNaN(postId)) {
+            return res.status(400).json({ message: 'Invalid post ID.' });
+        }
+
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const user = req.session.user;
+        const post = await getPostById(parseInt(postId));
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found.' });
+        }
+
+        if (post.authorID !== user.ID && user.role !== 10) {
+            return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });
+        }
+
+        await deletePost(parseInt(postId));
+
+        res.json({ message: 'Post deleted successfully!' });
+    } catch (err) {
+        console.error('Error deleting post:', err);
+        res.status(500).json({ message: 'Server error.' });
     }
 });
 

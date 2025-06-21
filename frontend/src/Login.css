@@ -1,20 +1,3 @@
-:root {
-    --color-bright: #2889d5;
-    --color: #0671ba;
-    --color-dark: #004577;
-    --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
-    --color-bright-gradient: linear-gradient(45deg, var(--color-bright), var(--color));
-    --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
-    --black: #111;
-    --black-brighter: #181c24;
-    --gray-darker: #1f2129;
-    --gray-dark: #282c34;
-    --gray: #4e5563;
-    --gray-light: #ccc;
-    --gray-lighter: #ddd;
-    --white-darker: #eee;
-}
-
 .app-login {
     height: 100%;
     display: flex;
@@ -96,20 +79,6 @@
     font-family: 'Roboto Condensed', sans-serif;
     text-transform: uppercase;
     cursor: pointer;
-}
-.app-login .login-form button::before {
-    padding: 10px;
-    content: 'LOG IN';
-    background: var(--color-bright-gradient);
-    opacity: 0;
-    transition: ease-in-out 0.3s;
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    border-radius: 10px;
-}
-.app-login .login-form button:hover::before {
-    opacity: 1;
 }
 .app-login .login-form .error {
     color: orange;
