@@ -1,6 +1,7 @@
 //BACKEND/api.js
 const express = require('express');
 const router = express.Router();
+const { LoremIpsum } = require('lorem-ipsum');
 const {
     authUser,
     serializeUser,
@@ -12,6 +13,11 @@ const {
     getPages,
     logoutUser
 } = require('./utils');
+
+const lorem = new LoremIpsum({
+    sentencesPerParagraph: { max: 10, min: 3 },
+    wordsPerSentence: { max: 16, min: 4 }
+});
 
 router.get('/ping', async (req, res) => {
     try {
@@ -186,6 +192,31 @@ router.get('/pages', async (req, res) => {
 
         res.status(500).json({ message: 'Server error.' });
 
+    }
+});
+
+router.get('/posts/:postId', async (req, res) => {
+    try {
+        const { postId } = req.params;
+
+        if (!postId) {
+            return res.status(400).json({message: 'Invalid post ID.'});
+        }
+
+        const paragraphCount = Math.floor(Math.random() * 5) + 1;
+
+        const content = lorem.generateParagraphs(paragraphCount);
+
+        const post = {
+            id: parseInt(postId),
+            title: `Post #${postId}`,
+            content: content
+        };
+
+        res.json(post);
+    } catch (err) {
+        console.error('Error fetching post:', err);
+        res.status(500).json({ message: 'Server error.' });
     }
 });
 

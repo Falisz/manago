@@ -109,7 +109,6 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
                                 <ul className="submenu">
                                     {page.subpages
                                         .filter((subpage) => user.role >= subpage.minRole)
-                                        .filter((subpage) => subpage.path !== '')
                                         .map((subpage) => (
                                             <li key={`${page.path}/${subpage.path}`} className="submenu-item">
                                                 <Link
@@ -129,21 +128,6 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
                             )}
                             </li>
                         ))}
-                        {/*<li className={'manager-mobile-nav-link-item'}>*/}
-                        {/*    Test*/}
-                        {/*</li>*/}
-                        {/*<li className={'manager-mobile-nav-link-item'}>*/}
-                        {/*    Test*/}
-                        {/*</li>*/}
-                        {/*<li className={'manager-mobile-nav-link-item'}>*/}
-                        {/*    Test*/}
-                        {/*</li>*/}
-                        {/*<li className={'manager-mobile-nav-link-item'}>*/}
-                        {/*    Test*/}
-                        {/*</li>*/}
-                        {/*<li className={'manager-mobile-nav-link-item'}>*/}
-                        {/*    Test*/}
-                        {/*</li>*/}
                         <li className={'app-mobile-nav-link-item user-link'}>
                             <Link className="app-nav-page-link" to="#">
                                 <span className="app-nav-page-link-icon material-icons">account_circle</span>
@@ -169,6 +153,13 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
                 <nav className="app-subnav">
                 {accessibleSubpages.length > 1 && (
                         <ul className="subpage-links">
+                            <li
+                                key={`${currentMainPage.path}`}
+                                className={`subpage-link ${location.pathname === `/${currentMainPage.path}` ? 'selected' : ''}`}>
+                                <Link to={`${currentMainPage.path}`}>
+                                    {currentMainPage.title}
+                                </Link>
+                            </li>
                             {accessibleSubpages.map((subpage) => (
                                 <li
                                     key={subpage.path}

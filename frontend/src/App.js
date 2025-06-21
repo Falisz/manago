@@ -8,6 +8,7 @@ import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 import { ConnectivityProvider } from './ConnectivityContext';
 import ConnectivityPopup from './components/ConnectivityPopup';
+import PostsShow from './components/PostsShow';
 
 const Dashboard = () => <InWorks title={'Dashboard'}/>;
 const Schedule = () => <InWorks title={'Schedule'}/>;
@@ -19,7 +20,7 @@ const ScheduleShow = () => <InWorks title={'Work schedule'}/>;
 const ScheduleEdit = () => <InWorks title={'Work schedule editor'}/>;
 const SchedulePast = () => <InWorks title={'Work schedule archive'}/>;
 const ScheduleNew = () => <InWorks title={'Work schedule creator'}/>;
-const PostsShow = () => <InWorks title={'Forum'}/>;
+const PostsIndex = () => <InWorks title={'Forum'}/>;
 const PostsNew = () => <InWorks title={'Create new post'}/>;
 const PostsArchive = () => <InWorks title={'Posts archive'}/>;
 const EmployeesShow = () => <InWorks title={'Users list'}/>;
@@ -36,6 +37,7 @@ const componentMap = {
     ScheduleEdit,
     SchedulePast,
     ScheduleNew,
+    PostsIndex,
     PostsShow,
     PostsNew,
     PostsArchive,
@@ -105,6 +107,7 @@ const App = () => {
                 }));
 
                 setPages(mappedPages);
+                console.log(mappedPages);
             } else {
                 setPages([]);
             }
@@ -272,31 +275,31 @@ const App = () => {
                                 hasManagerAccess={managerAccess}
                             />
                     }>
+                        <Route index element={<Dashboard/>}/>
                         {pages
                             .filter((page) => user.role >= page.minRole)
-                            .map((page) =>
-                                page.component ? (
-                                    <Route
-                                        key={page.path}
-                                        path={page.path}
-                                        element={<page.component />}
-                                        index={page.path === '/'}
-                                    />
-                                ) : (
-                                    <Route key={page.path} path={page.path}>
-                                        {page.subpages
-                                            .filter((subpage) => user.role >= subpage.minRole)
-                                            .map((subpage) => (
-                                                <Route
-                                                    key={`${page.path}/${subpage.path}`}
-                                                    path={subpage.path}
-                                                    index={subpage.path === ''}
-                                                    element={<subpage.component />}
-                                                />
-                                            ))}
-                                    </Route>
-                                )
-                            )}
+                            .map((page) => (
+                                <Route key={page.path} path={page.path}>
+                                    <Route index element={page.component ? <page.component /> : <NotFound />} />
+                                    {page.subpages
+                                        .filter((subpage) => user.role >= subpage.minRole)
+                                        .map((subpage) => (
+                                            <Route
+                                                key={`${page.path}/${subpage.path}`}
+                                                path={subpage.path ? `${subpage.path}` : ''}
+                                                index={!subpage.path}
+                                                element={<subpage.component />}
+                                            />
+                                        ))
+                                    }
+                                    {page.path === 'posts' && (
+                                        <Route
+                                            path=":postId"
+                                            element={<PostsShow />}
+                                        />
+                                    )}
+                                </Route>
+                            ))}
                         {
                             managerView ?
                                 <Route path="staff-view" element={<SwitchToStaffView/>} />

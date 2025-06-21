@@ -146,10 +146,73 @@ const ManagerViewAccess = sequelize.define('ManagerViewAccess', {
     timestamps: false
 });
 
+
+const Channel = sequelize.define('Channel', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+    },
+    name: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+    }
+}, {
+    tableName: 'channels',
+    timestamps: false
+});
+
+const Post = sequelize.define('Post', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+    },
+    channelID: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    authorID: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING(200),
+        allowNull: true
+    },
+    content: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    isEdited: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
+    }
+}, {
+    tableName: 'posts',
+    timestamps: false
+});
+
 User.hasMany(ManagerViewAccess, { foreignKey: 'userID', sourceKey: 'ID' });
 ManagerViewAccess.belongsTo(User, { foreignKey: 'userID', targetKey: 'ID' });
 PagesStaff.belongsTo(PagesStaff, { foreignKey: 'parentID', targetKey: 'ID' });
 PagesManager.belongsTo(PagesManager, { foreignKey: 'parentID', targetKey: 'ID' });
+Channel.hasMany(Post, { foreignKey: 'channelID', sourceKey: 'ID' });
+Post.belongsTo(Channel, { foreignKey: 'channelID', targetKey: 'ID' });
+User.hasMany(Post, { foreignKey: 'authorID', sourceKey: 'ID' });
+Post.belongsTo(User, { foreignKey: 'authorID', targetKey: 'ID' });
 
 async function seedData() {
     try {
@@ -314,6 +377,62 @@ async function seedData() {
             } else {
                 await ManagerViewAccess.bulkCreate(managerAccess);
                 console.log(`Seeded ${managerAccess.length} manager_view_access entries.`);
+            }
+        }
+
+        // Seed channels
+        const channelCount = await Channel.count();
+        if (channelCount > 0) {
+            console.log('Channels table is not empty, skipping seeding.');
+        } else {
+            const channels = [
+                { name: 'General Discussion' },
+                { name: 'Announcements' },
+                { name: 'Ideas and Suggestions' }
+            ];
+            await Channel.bulkCreate(channels);
+            console.log(`Seeded ${channels.length} channels.`);
+        }
+
+        // Seed posts
+        const postCount = await Post.count();
+        if (postCount > 0) {
+            console.log('Posts table is not empty, skipping seeding.');
+        } else {
+            const users = await User.findAll({ attributes: ['ID'] });
+            const channels = await Channel.findAll({ attributes: ['ID'] });
+            if (users.length === 0 || channels.length === 0) {
+                console.warn('No users or channels found, skipping posts seeding.');
+            } else {
+                const posts = [
+                    {
+                        channelID: channels[0].ID,
+                        authorID: users[0].ID,
+                        title: 'Welcome to the Forum',
+                        content: 'This is the first post in our new forum. Feel free to share your thoughts!',
+                        createdAt: new Date(),
+                        isEdited: false
+                    },
+                    {
+                        channelID: channels[1].ID,
+                        authorID: users[0].ID,
+                        title: 'Company Update',
+                        content: 'We have some exciting news to share about upcoming projects!',
+                        createdAt: new Date(Date.now() - 86400000), // 1 day ago
+                        isEdited: true,
+                        updatedAt: new Date()
+                    },
+                    {
+                        channelID: channels[2].ID,
+                        authorID: users[1]?.ID || users[0].ID,
+                        title: null,
+                        content: 'I have an idea for improving our workflow. Let’s discuss!',
+                        createdAt: new Date(Date.now() - 172800000), // 2 days ago
+                        isEdited: false
+                    }
+                ];
+                await Post.bulkCreate(posts);
+                console.log(`Seeded ${posts.length} posts.`);
             }
         }
     } catch (err) {
