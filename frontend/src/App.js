@@ -59,7 +59,6 @@ const App = () => {
     const [pages, setPages] = useState([]);
     const [managerAccess, setManagerAccess] = useState(null);
     const [managerView, setManagerView] = useState(null);
-    const [managerNavCollapsed, setManagerNavCollapsed] = useState(null);
 
     const HandleLogin = async (user) => {
         setLoading(true);
@@ -80,7 +79,6 @@ const App = () => {
             setManagerAccess(res.data.manager_access);
             if (res.data.access && res.data.manager_access) {
                 setManagerView(res.data.user.manager_view);
-                setManagerNavCollapsed(res.data.user.manager_nav_collapsed);
             }
             else {
                 setManagerView(false);
@@ -191,22 +189,6 @@ const App = () => {
         CheckAccess().then();
     }, [CheckAccess]);
 
-    useEffect(() => {
-        if (managerNavCollapsed !== null && user && managerView) {
-            const syncNavCollapsed = async () => {
-                try {
-                    await axios.post('/api/toggle-nav',
-                        { user: user, nav_collapsed: managerNavCollapsed },
-                        { withCredentials: true }
-                    );
-                } catch (error) {
-                    console.error('Error syncing nav_collapsed:', error);
-                }
-            };
-            syncNavCollapsed().then();
-        }
-    }, [managerNavCollapsed, user, managerView]);
-
     const SwitchToManagerView = () => {
         useEffect(() => {
             ToggleManagerView(true).then();
@@ -270,8 +252,6 @@ const App = () => {
                                 user={user}
                                 pages={pages}
                                 switchView={ToggleManagerView}
-                                navCollapsed={managerNavCollapsed}
-                                setNavCollapsed={setManagerNavCollapsed}
                             />
                             :
                             <StaffView
@@ -312,8 +292,9 @@ const App = () => {
                                 : <Route path="manager-view" element={<SwitchToManagerView/>} />
                         }
                         <Route path="logout" element={<Logout />} />
-                        <Route path="not-found" element={<NotFound />} />
-                        <Route path="*" element={<Navigate to="/not-found" replace />} />
+                        {/*<Route path="not-found" element={<NotFound />} />*/}
+                        {/*<Route path="*" element={<Navigate to="/not-found" replace />} />*/}
+                        <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>
                 <ConnectivityPopup />

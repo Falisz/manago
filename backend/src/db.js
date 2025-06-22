@@ -61,6 +61,48 @@ const User = sequelize.define('User', {
     timestamps: false
 });
 
+const Project = sequelize.define('Project', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false
+    },
+    project_head: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    name: {
+        type: DataTypes.STRING(100), // varchar(100)
+        allowNull: false
+    }
+}, {
+    tableName: 'projects',
+    timestamps: false
+});
+
+const Team = sequelize.define('Team', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false
+    },
+    project: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    team_leader: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    name: {
+        type: DataTypes.STRING(100), // varchar(100)
+        allowNull: false
+    }
+}, {
+    tableName: 'projects',
+    timestamps: false
+});
+
 const PagesStaff = sequelize.define('PagesStaff', {
     ID: {
         type: DataTypes.INTEGER,

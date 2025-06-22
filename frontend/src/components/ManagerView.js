@@ -1,14 +1,28 @@
 //FRONTEND/ManagerView.js
 import '../Manager.css';
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from "axios";
 import MobileNav from './MobileNav';
 
-const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed }) => {
+const ManagerView = ({ user, pages, switchView }) => {
     const location = useLocation();
+    const [navCollapsed, setNavCollapsed] = useState(false);
+
+    useEffect(() => {
+        const fetchNavCollapsed = async () => {
+            try {
+                const res = await axios.get('/api/access', { withCredentials: true });
+                setNavCollapsed(res.data.user.manager_nav_collapsed || false);
+            } catch (error) {
+                console.error('Error fetching nav_collapsed:', error);
+                setNavCollapsed(false);
+            }
+        };
+        fetchNavCollapsed();
+    }, []);
 
     const currentMainPage = pages.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
@@ -20,12 +34,12 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
 
     const toggleNavCollapse = async () => {
         const toggledValue = !navCollapsed;
-
         setNavCollapsed(toggledValue);
 
         try {
-            await axios.post('/api/toggle-nav',
-                { user: user, nav_collapsed: toggledValue }, // Use toggledValue here
+            await axios.post(
+                '/api/toggle-nav',
+                { user: user, nav_collapsed: toggledValue },
                 { withCredentials: true }
             );
         } catch (error) {
@@ -62,7 +76,8 @@ const ManagerView = ({ user, pages, switchView, navCollapsed, setNavCollapsed })
                     ))}
                 <span
                     className="nav-collapse-button material-symbols-outlined"
-                    onClick={toggleNavCollapse}>
+                    onClick={toggleNavCollapse}
+                >
                     {navCollapsed ? 'left_panel_open' : 'left_panel_close'}
                 </span>
             </nav>
