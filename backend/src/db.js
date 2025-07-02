@@ -14,6 +14,28 @@ const sequelize = new Sequelize({
     logging: false
 });
 
+const Role = sequelize.define('Role', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false
+    },
+    name: {
+        type: DataTypes.STRING(50),
+        allowNull: false
+    },
+    power: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    system_default: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+    }}, {
+    tableName: 'roles',
+    timestamps: false
+});
+
 const User = sequelize.define('User', {
     ID: {
         type: DataTypes.INTEGER,
@@ -90,12 +112,12 @@ const Team = sequelize.define('Team', {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    team_leader: {
+    parent_team: {
         type: DataTypes.INTEGER,
         allowNull: true
     },
     name: {
-        type: DataTypes.STRING(100), // varchar(100)
+        type: DataTypes.STRING(100),
         allowNull: false
     }
 }, {
