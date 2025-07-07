@@ -95,6 +95,7 @@ const App = () => {
         }
     }, []);
 
+    /* TODO: Make it a separate func */
     const FetchPages = async () => {
         try {
             const res = await axios.get('/api/pages', {withCredentials: true});

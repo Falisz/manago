@@ -4,15 +4,47 @@ const path = require('path');
 const csv = require('csv-parser');
 require('dotenv').config();
 
+// DATABASE
 const sequelize = new Sequelize({
     dialect: 'postgres',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
-    username: process.env.DB_USERNAME,
+    username: process.env.DB_USERNAME || 'appagent',
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME || 'staff_portal',
     logging: false
 });
+
+// MAIN MODULE
+const AppPage = sequelize.define("Pages", {
+    ID: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    view: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    module: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    parent: {type: DataTypes.INTEGER, allowNull: true, defaultValue: null},
+    title: {type: DataTypes.STRING(50), allowNull: false, defaultValue: ''},
+    icon: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
+    component: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
+    min_power: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 10},
+}, {tableName: 'pages', timestamps: false});
+
+const AppModule = sequelize.define("Modules", {
+    ID: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    name: {type: DataTypes.STRING(50), allowNull: false, defaultValue: ''},
+    enabled: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true},
+}, {tableName: 'modules', timestamps: false});
+
+const AppAuditLogs = sequelize.define("AuditLogs", {
+    ID: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
+    timestamp: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
+    user: {type: DataTypes.INTEGER, allowNull: false, defaultValue: ''},
+    action: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
+    old_value: {type: DataTypes.STRING(150), allowNull: false, defaultValue: ''},
+    new_value: {type: DataTypes.STRING(150), allowNull: false, defaultValue: ''},
+});
+
+AppPage.belongsTo(AppPage, { foreignKey: 'parent', targetKey: 'ID' });
+AppPage.belongsTo(AppModule, { foreignKey: 'module', targetKey: 'ID' });
+AppModule.hasMany(AppPage, { foreignKey: 'module', sourceKey: 'ID' });
 
 const Role = sequelize.define('Role', {
     ID: {
