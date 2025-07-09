@@ -21,16 +21,12 @@ const ManagerView = ({ user, pages, switchView }) => {
                 setNavCollapsed(false);
             }
         };
-        fetchNavCollapsed();
+        fetchNavCollapsed().then();
     }, []);
 
     const currentMainPage = pages.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
     ) || pages[0];
-
-    const accessibleSubpages = currentMainPage?.subpages?.filter(
-        (subpage) => user.role >= subpage.minRole
-    ) || [];
 
     const toggleNavCollapse = async () => {
         const toggledValue = !navCollapsed;
@@ -56,7 +52,6 @@ const ManagerView = ({ user, pages, switchView }) => {
                     <SiteLogoSmall className={'app-logo-small '}/>
                 </Link>
                 {pages
-                    .filter((page) => user.role >= page.minRole)
                     .filter((page) => page.path !== "/")
                     .map((page) => (
                         <Link
@@ -94,7 +89,7 @@ const ManagerView = ({ user, pages, switchView }) => {
 
             <div className="app-content">
                 <nav className="app-subnav">
-                {accessibleSubpages.length >= 1 && (
+                {currentMainPage?.subpages?.length >= 1 && (
                         <ul className="subpage-links">
                             <li
                                 key={`${currentMainPage.path}`}
@@ -103,7 +98,7 @@ const ManagerView = ({ user, pages, switchView }) => {
                                     {currentMainPage.title}
                                 </Link>
                             </li>
-                            {accessibleSubpages.map((subpage) => (
+                            {currentMainPage?.subpages?.map((subpage) => (
                                 <li
                                     key={subpage.path}
                                     className={`subpage-link ${location.pathname === `/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}` ? 'selected' : ''}`}

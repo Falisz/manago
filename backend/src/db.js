@@ -16,36 +16,116 @@ const sequelize = new Sequelize({
 });
 
 // MAIN MODULE
-const AppPage = sequelize.define("Pages", {
-    ID: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    view: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
-    module: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
-    parent: {type: DataTypes.INTEGER, allowNull: true, defaultValue: null},
-    title: {type: DataTypes.STRING(50), allowNull: false, defaultValue: ''},
-    icon: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
-    component: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
-    min_power: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 10},
-}, {tableName: 'pages', timestamps: false});
-
-const AppModule = sequelize.define("Modules", {
-    ID: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
-    name: {type: DataTypes.STRING(50), allowNull: false, defaultValue: ''},
-    enabled: {type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true},
-}, {tableName: 'modules', timestamps: false});
-
-const AppAuditLogs = sequelize.define("AuditLogs", {
-    ID: {type: DataTypes.INTEGER, allowNull: false, defaultValue: 0},
-    timestamp: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
-    user: {type: DataTypes.INTEGER, allowNull: false, defaultValue: ''},
-    action: {type: DataTypes.STRING(100), allowNull: false, defaultValue: ''},
-    old_value: {type: DataTypes.STRING(150), allowNull: false, defaultValue: ''},
-    new_value: {type: DataTypes.STRING(150), allowNull: false, defaultValue: ''},
+const AppModule = sequelize.define('Modules', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        defaultValue: 0
+    },
+    title: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: ''
+    },
+    enabled: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    }
+}, {
+    tableName: 'app_modules',
+    timestamps: false
 });
 
-AppPage.belongsTo(AppPage, { foreignKey: 'parent', targetKey: 'ID' });
-AppPage.belongsTo(AppModule, { foreignKey: 'module', targetKey: 'ID' });
-AppModule.hasMany(AppPage, { foreignKey: 'module', sourceKey: 'ID' });
+const AppPage = sequelize.define('Pages', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    view: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+    module: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+    parent: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: null
+    },
+    path: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+    },
+    title: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        defaultValue: ''
+    },
+    icon: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+        defaultValue: ''
+    },
+    component: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        defaultValue: ''
+    },
+    min_power: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 10
+}
+}, {
+    tableName: 'app_pages',
+    timestamps: false
+});
 
+const AppAuditLogs = sequelize.define('AuditLogs', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        autoIncrement: true
+    },
+    timestamp: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        defaultValue: ''
+    },
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
+    action: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        defaultValue: ''
+    },
+    old_value: {
+        type: DataTypes.STRING(150),
+        allowNull: false,
+        defaultValue: ''
+    },
+    new_value: {
+        type: DataTypes.STRING(150),
+        allowNull: false,
+        defaultValue: ''
+    },
+}, {
+    tableName: 'app_audit_logs',
+    timestamps: false
+});
+
+// USERS AND MANAGEMENT MODULE
 const Role = sequelize.define('Role', {
     ID: {
         type: DataTypes.INTEGER,
@@ -63,10 +143,19 @@ const Role = sequelize.define('Role', {
     system_default: {
         type: DataTypes.BOOLEAN,
         allowNull: false
-    }}, {
+    }
+}, {
     tableName: 'roles',
     timestamps: false
 });
+// ROLES:
+//      #1 Employee (system default)
+//      #2 Specialist
+//      #3 Team Leader
+//      #11 Manager
+//      #12 Project Manager
+//      #13 Branch Manager
+//      #99 Admin
 
 const User = sequelize.define('User', {
     ID: {
@@ -75,62 +164,77 @@ const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: () => Math.floor(Math.random() * 900000) + 100000
     },
-    first_name: {
-        type: DataTypes.STRING(50), // varchar(50)
-        allowNull: false
-    },
-    last_name: {
-        type: DataTypes.STRING(50), // varchar(50)
-        allowNull: false
+    login: {
+        type: DataTypes.STRING(100),
+        allowNull: true
     },
     email: {
-        type: DataTypes.STRING(100), // varchar(100)
+        type: DataTypes.STRING(100),
         allowNull: false
     },
-    role: {
-        type: DataTypes.INTEGER, // integer
+    password: {
+        type: DataTypes.STRING(200),
         allowNull: false
     },
     active: {
-        type: DataTypes.BOOLEAN, // boolean
+        type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: true
     },
-    manager_view_enabled: {
-        type: DataTypes.BOOLEAN, // boolean
+    deleted: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
-    },
-    manager_nav_collapsed: {
-        type: DataTypes.BOOLEAN, // boolean
-        allowNull: false,
-        defaultValue: false
-    },
-    password: {
-        type: DataTypes.STRING(200), // varchar(200)
-        allowNull: false
     }
 }, {
     tableName: 'users',
     timestamps: false
 });
 
-const Project = sequelize.define('Project', {
-    ID: {
+const UserDetails = sequelize.define('UserDetails', {
+    user: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    first_name: {
+        type: DataTypes.STRING(50),
         allowNull: false
     },
-    project_head: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    name: {
-        type: DataTypes.STRING(100), // varchar(100)
+    last_name: {
+        type: DataTypes.STRING(50),
         allowNull: false
     }
 }, {
-    tableName: 'projects',
+    tableName: 'user_details',
+    timestamps: false
+});
+
+const UserConfigs = sequelize.define('UserConfigs', {
+    user: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    manager_view_access: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    manager_view_enabled: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    manager_nav_collapsed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    }
+}, {
+    tableName: 'user_configs',
     timestamps: false
 });
 
@@ -153,95 +257,104 @@ const Team = sequelize.define('Team', {
         allowNull: false
     }
 }, {
+    tableName: 'teams',
+    timestamps: false
+});
+
+const UserRole = sequelize.define('UserRole', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'roles', key: 'ID' }
+    }
+}, {
+    tableName: 'user_roles',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['user', 'role'] }]
+});
+
+const UserManager = sequelize.define('UserManager', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    manager: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    primary: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+    }
+}, {
+    tableName: 'user_managers',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['user', 'manager'] }]
+});
+
+const TeamUser = sequelize.define('TeamUser', {
+    team: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'teams', key: 'ID' }
+    },
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0 // 0 - member, 1 - leader, 2 - manager
+    }
+}, {
+    tableName: 'team_users',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['team', 'user'] }]
+});
+
+const Branch = sequelize.define('Branch', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false
+    },
+    name: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+    }
+}, {
+    tableName: 'branches',
+    timestamps: false
+});
+
+const Project = sequelize.define('Project', {
+    ID: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull: false
+    },
+    project_head: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
+    name: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+    }
+}, {
     tableName: 'projects',
     timestamps: false
 });
-
-const PagesStaff = sequelize.define('PagesStaff', {
-    ID: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false
-    },
-    parentID: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    path: {
-        type: DataTypes.STRING(100), // varchar(100)
-        allowNull: false
-    },
-    title: {
-        type: DataTypes.STRING(100), // varchar(100)
-        allowNull: false
-    },
-    min_role: {
-        type: DataTypes.INTEGER, // integer
-        allowNull: false
-    },
-    component: {
-        type: DataTypes.STRING(100), // varchar(100)
-        allowNull: true
-    },
-    icon: {
-        type: DataTypes.STRING(50), // varchar(50)
-        allowNull: true
-    }
-}, {
-    tableName: 'pages_staff',
-    timestamps: false
-});
-
-const PagesManager = sequelize.define('PagesManager', {
-    ID: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false
-    },
-    parentID: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    path: {
-        type: DataTypes.STRING(100), // varchar(100)
-        allowNull: false
-    },
-    title: {
-        type: DataTypes.STRING(100), // varchar(100)
-        allowNull: false
-    },
-    min_role: {
-        type: DataTypes.INTEGER, // integer
-        allowNull: false
-    },
-    component: {
-        type: DataTypes.STRING(100), // varchar(100)
-        allowNull: true
-    },
-    icon: {
-        type: DataTypes.STRING(50), // varchar(50)
-        allowNull: true
-    }
-}, {
-    tableName: 'pages_manager',
-    timestamps: false
-});
-
-const ManagerViewAccess = sequelize.define('ManagerViewAccess', {
-    ID: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    userID: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    }
-}, {
-    tableName: 'manager_view_access',
-    timestamps: false
-});
-
 
 const Channel = sequelize.define('Channel', {
     ID: {
@@ -301,29 +414,142 @@ const Post = sequelize.define('Post', {
     timestamps: false
 });
 
-User.hasMany(ManagerViewAccess, { foreignKey: 'userID', sourceKey: 'ID' });
-ManagerViewAccess.belongsTo(User, { foreignKey: 'userID', targetKey: 'ID' });
-PagesStaff.belongsTo(PagesStaff, { foreignKey: 'parentID', targetKey: 'ID' });
-PagesManager.belongsTo(PagesManager, { foreignKey: 'parentID', targetKey: 'ID' });
+//ASSOCIATIONS
+AppPage.belongsTo(AppPage, { foreignKey: 'parent', targetKey: 'ID' });
+AppPage.belongsTo(AppModule, { foreignKey: 'module', targetKey: 'ID' });
+AppModule.hasMany(AppPage, { foreignKey: 'module', sourceKey: 'ID' });
+
+User.hasOne(UserDetails, { foreignKey: 'user', sourceKey: 'ID', as: 'UserDetails' });
+UserDetails.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
+
+User.hasOne(UserConfigs, { foreignKey: 'user', sourceKey: 'ID', as: 'UserConfigs' });
+UserConfigs.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
+
+User.hasMany(UserManager, { foreignKey: 'user', sourceKey: 'ID', as: 'ManagedUsers' });
+UserManager.belongsTo(User, { foreignKey: 'user', targetKey: 'ID', as: 'User' });
+User.hasMany(UserManager, { foreignKey: 'manager', sourceKey: 'ID', as: 'Managers' });
+UserManager.belongsTo(User, { foreignKey: 'manager', targetKey: 'ID', as: 'Manager' });
+
+User.hasMany(UserRole, { foreignKey: 'user', sourceKey: 'ID' });
+UserRole.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
+Role.hasMany(UserRole, { foreignKey: 'role', sourceKey: 'ID' });
+UserRole.belongsTo(Role, { foreignKey: 'role', targetKey: 'ID' });
+
+Team.hasMany(TeamUser, { foreignKey: 'team', sourceKey: 'ID' });
+TeamUser.belongsTo(Team, { foreignKey: 'team', targetKey: 'ID' });
+User.hasMany(TeamUser, { foreignKey: 'user', sourceKey: 'ID' });
+TeamUser.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
+
 Channel.hasMany(Post, { foreignKey: 'channelID', sourceKey: 'ID' });
 Post.belongsTo(Channel, { foreignKey: 'channelID', targetKey: 'ID' });
+
 User.hasMany(Post, { foreignKey: 'authorID', sourceKey: 'ID' });
 Post.belongsTo(User, { foreignKey: 'authorID', targetKey: 'ID' });
 
 async function seedData() {
     try {
+        await AppModule.sync();
+        await AppPage.sync();
         await User.sync();
-        await PagesStaff.sync();
-        await PagesManager.sync();
-        await ManagerViewAccess.sync();
+        await UserDetails.sync();
+        await UserConfigs.sync();
+        await UserManager.sync();
+        await Channel.sync();
+        await Post.sync();
 
-        // Seed users
+        const moduleCount = await AppModule.count();
+        if (moduleCount > 0) {
+            console.log('\tAppModules table is not empty, skipping seeding.');
+        } else {
+            const appModuleFilePath = path.join(__dirname, '..', 'modules.csv');
+            const appModules = [];
+            const appModuleRows = await new Promise((resolve, reject) => {
+                const results = [];
+                require('fs').createReadStream(appModuleFilePath)
+                    .pipe(csv({
+                        headers: ['ID','title','enabled'],
+                        skipLines: 0
+                    }))
+                    .on('data', (data) => results.push(data))
+                    .on('end', () => resolve(results))
+                    .on('error', (err) => reject(err));
+            });
+
+            for (const row of appModuleRows) {
+                if (!row?.ID || !row.title) {
+                    console.warn('Skipping invalid App Modules row:', row);
+                    continue;
+                }
+                appModules.push({
+                    ID: parseInt(row.ID),
+                    title: row.title,
+                    enabled: row.enabled || false
+                });
+            }
+
+            if (appModules.length === 0) {
+                console.warn('No valid App Modules to seed from modules.csv');
+            } else {
+                await AppModule.bulkCreate(appModules);
+                console.log(`\tSeeded ${appModules.length} App Modules from modules.csv`);
+            }
+        }
+
+        const pagesCount = await AppPage.count();
+        if (pagesCount > 0) {
+            console.log('\tAppPages table is not empty, skipping seeding.');
+        } else {
+            const appPageFilePath = path.join(__dirname, '..', 'pages.csv');
+            const appPages = [];
+            const appPageRows = await new Promise((resolve, reject) => {
+                const results = [];
+                require('fs').createReadStream(appPageFilePath)
+                    .pipe(csv({
+                        headers: ['ID','view','module','parent','path','title','icon','component','min_power'],
+                        skipLines: 0
+                    }))
+                    .on('data', (data) => results.push(data))
+                    .on('end', () => resolve(results))
+                    .on('error', (err) => reject(err));
+            });
+
+            for (const row of appPageRows) {
+                if (!row?.ID || !row.view || !row.module || !row.path || !row.title) {
+                    console.warn('Skipping invalid App Pages row:', row);
+                    continue;
+                }
+                appPages.push({
+                    ID: parseInt(row.ID),
+                    view: parseInt(row.view),
+                    module: parseInt(row.module),
+                    parent: parseInt(row.parent) || null,
+                    path: row.path,
+                    title: row.title,
+                    icon: row.icon || null,
+                    component: row.component || null,
+                    min_power: parseInt(row.min_power)
+                });
+            }
+
+
+            if (appPages.length === 0) {
+                console.warn('\tNo valid Pages to seed from pages.csv');
+            } else {
+                await AppPage.bulkCreate(appPages);
+                console.log(`\tSeeded ${appPages.length} Pages from pages.csv`);
+            }
+        }
+
+        // Seed users, user_details, and user_configs
         const userCount = await User.count();
         if (userCount > 0) {
-            console.log('Users table is not empty, skipping seeding.');
+            console.log('\tUsers table is not empty, skipping seeding.');
         } else {
             const csvFilePath = path.join(__dirname, '..', 'users.csv');
             const users = [];
+            const userDetails = [];
+            const userConfigs = [];
+            const managerUserIds = [353621, 398285];
             const userRows = await new Promise((resolve, reject) => {
                 const results = [];
                 require('fs').createReadStream(csvFilePath)
@@ -337,7 +563,7 @@ async function seedData() {
             });
 
             for (const row of userRows) {
-                if (!row.ID || !row.first_name || !row.last_name || !row.email || !row.role || !row.password) {
+                if (!row?.ID || !row.first_name || !row.last_name || !row.email || !row.role || !row.password) {
                     console.warn('Skipping invalid user row:', row);
                     continue;
                 }
@@ -345,141 +571,42 @@ async function seedData() {
                 const manager_view_enabled = row.manager_view_enabled ? (row.manager_view_enabled === '1' || row.manager_view_enabled.toLowerCase() === 'true') : false;
                 const manager_nav_collapsed = row.manager_nav_collapsed ? (row.manager_nav_collapsed === '1' || row.manager_nav_collapsed.toLowerCase() === 'true') : false;
 
+                const userID = parseInt(row.ID) || Math.floor(Math.random() * 900000) + 100000;
+
                 users.push({
-                    ID: parseInt(row.ID) || Math.floor(Math.random() * 900000) + 100000,
-                    first_name: row.first_name,
-                    last_name: row.last_name,
+                    ID: userID,
                     email: row.email,
                     role: parseInt(row.role),
                     active,
-                    manager_view_enabled,
-                    manager_nav_collapsed,
                     password: row.password
+                });
+                userDetails.push({
+                    user: userID,
+                    first_name: row.first_name,
+                    last_name: row.last_name
+                });
+                userConfigs.push({
+                    user: userID,
+                    manager_view_access: managerUserIds.includes(userID),
+                    manager_view_enabled: managerUserIds.includes(userID) ? manager_view_enabled : false,
+                    manager_nav_collapsed
                 });
             }
 
             if (users.length === 0) {
-                console.warn('No valid users to seed from users.csv');
+                console.warn('\tNo valid users to seed from users.csv');
             } else {
                 await User.bulkCreate(users);
-                console.log(`Seeded ${users.length} users from users.csv`);
-            }
-        }
-
-        // Seed pages_staff
-        const pagesStaffCount = await PagesStaff.count();
-        if (pagesStaffCount > 0) {
-            console.log('PagesStaff table is not empty, skipping seeding.');
-        } else {
-            const pagesStaffFilePath = path.join(__dirname, '..', 'pages_staff.csv');
-            const pagesStaff = [];
-            const pagesStaffRows = await new Promise((resolve, reject) => {
-                const results = [];
-                require('fs').createReadStream(pagesStaffFilePath)
-                    .pipe(csv({
-                        headers: ['ID', 'parentID', 'path', 'title', 'min_role', 'component', 'icon'],
-                        skipLines: 0
-                    }))
-                    .on('data', (data) => results.push(data))
-                    .on('end', () => resolve(results))
-                    .on('error', (err) => reject(err));
-            });
-
-            for (const row of pagesStaffRows) {
-                if (!row.ID || !row.title || !row.min_role) {
-                    console.warn('Skipping invalid pages_staff row:', row);
-                    continue;
-                }
-                pagesStaff.push({
-                    ID: parseInt(row.ID),
-                    parentID: row.parentID ? parseInt(row.parentID) : null,
-                    path: row.path,
-                    title: row.title,
-                    min_role: parseInt(row.min_role),
-                    component: row.component || null,
-                    icon: row.icon || null
-                });
-            }
-
-            if (pagesStaff.length === 0) {
-                console.warn('No valid pages_staff to seed from pages_staff.csv');
-            } else {
-                await PagesStaff.bulkCreate(pagesStaff);
-                console.log(`Seeded ${pagesStaff.length} pages_staff from pages_staff.csv`);
-            }
-        }
-
-        // Seed pages_manager
-        const pagesManagerCount = await PagesManager.count();
-        if (pagesManagerCount > 0) {
-            console.log('PagesManager table is not empty, skipping seeding.');
-        } else {
-            const pagesManagerFilePath = path.join(__dirname, '..', 'pages_manager.csv');
-            const pagesManager = [];
-            const pagesManagerRows = await new Promise((resolve, reject) => {
-                const results = [];
-                require('fs').createReadStream(pagesManagerFilePath)
-                    .pipe(csv({
-                        headers: ['ID', 'parentID', 'path', 'title', 'min_role', 'component', 'icon'],
-                        skipLines: 0
-                    }))
-                    .on('data', (data) => results.push(data))
-                    .on('end', () => resolve(results))
-                    .on('error', (err) => reject(err));
-            });
-
-            for (const row of pagesManagerRows) {
-                if (!row.ID || !row.title || !row.min_role) {
-                    console.warn('Skipping invalid pages_manager row:', row);
-                    continue;
-                }
-                pagesManager.push({
-                    ID: parseInt(row.ID),
-                    parentID: row.parentID ? parseInt(row.parentID) : null,
-                    path: row.path,
-                    title: row.title,
-                    min_role: parseInt(row.min_role),
-                    component: row.component || null,
-                    icon: row.icon || null
-                });
-            }
-
-            if (pagesManager.length === 0) {
-                console.warn('No valid pages_manager to seed from pages_manager.csv');
-            } else {
-                await PagesManager.bulkCreate(pagesManager);
-                console.log(`Seeded ${pagesManager.length} pages_manager from pages_manager.csv`);
-            }
-        }
-
-        // Seed manager_view_access
-        const managerAccessCount = await ManagerViewAccess.count();
-        if (managerAccessCount > 0) {
-            console.log('ManagerViewAccess table is not empty, skipping seeding.');
-        } else {
-            const managerUserIds = [353621, 398285]; // Manager and test1
-            const managerAccess = [];
-            for (const userId of managerUserIds) {
-                const exists = await User.findOne({ where: { ID: userId } });
-                if (exists) {
-                    managerAccess.push({ userID: userId });
-                } else {
-                    console.warn(`User ID ${userId} not found, skipping manager_view_access entry.`);
-                }
-            }
-
-            if (managerAccess.length === 0) {
-                console.warn('No valid manager_view_access entries to seed.');
-            } else {
-                await ManagerViewAccess.bulkCreate(managerAccess);
-                console.log(`Seeded ${managerAccess.length} manager_view_access entries.`);
+                await UserDetails.bulkCreate(userDetails);
+                await UserConfigs.bulkCreate(userConfigs);
+                console.log(`\tSeeded ${users.length} users, ${userDetails.length} user_details, and ${userConfigs.length} user_configs from users.csv`);
             }
         }
 
         // Seed channels
         const channelCount = await Channel.count();
         if (channelCount > 0) {
-            console.log('Channels table is not empty, skipping seeding.');
+            console.log('\tChannels table is not empty, skipping seeding.');
         } else {
             const channels = [
                 { name: 'General Discussion' },
@@ -487,13 +614,13 @@ async function seedData() {
                 { name: 'Ideas and Suggestions' }
             ];
             await Channel.bulkCreate(channels);
-            console.log(`Seeded ${channels.length} channels.`);
+            console.log(`\tSeeded ${channels.length} channels.`);
         }
 
         // Seed posts
         const postCount = await Post.count();
         if (postCount > 0) {
-            console.log('Posts table is not empty, skipping seeding.');
+            console.log('\tPosts table is not empty, skipping seeding.');
         } else {
             const users = await User.findAll({ attributes: ['ID'] });
             const channels = await Channel.findAll({ attributes: ['ID'] });
@@ -528,22 +655,31 @@ async function seedData() {
                     }
                 ];
                 await Post.bulkCreate(posts);
-                console.log(`Seeded ${posts.length} posts.`);
+                console.log(`\tSeeded ${posts.length} posts.`);
             }
         }
     } catch (err) {
-        console.error('Error seeding data:', err.message, err.stack);
+        console.error('\tError seeding data:', err.message, err.stack);
         throw err;
     }
 }
 
 module.exports = {
     sequelize,
+    seedData,
+    AppModule,
+    AppPage,
+    AppAuditLogs,
+    Role,
     User,
-    PagesStaff,
-    PagesManager,
-    ManagerViewAccess,
+    UserConfigs,
+    UserDetails,
+    Team,
+    UserRole,
+    UserManager,
+    TeamUser,
+    Branch,
+    Project,
     Post,
-    Channel,
-    seedData
+    Channel
 };

@@ -44,7 +44,7 @@ router.post('/login', async (req, res) => {
         if (!userAuth.valid)
             return res.status(userAuth.status).json({ message: userAuth.message });
 
-        const sessionUser = serializeUser(userAuth.user);
+        const sessionUser = serializeUser(userAuth.user.toJSON());
 
         req.session.user = sessionUser;
 

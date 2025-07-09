@@ -1,5 +1,5 @@
 //BACKEND/utils.js
-const { sequelize, User, PagesStaff, PagesManager, ManagerViewAccess, Post, Channel } = require('./db');
+const { sequelize, AppPage, User, UserDetails, UserConfigs, Post, Channel } = require('./db');
 const bcrypt = require('bcrypt');
 
 async function authUser(login, password) {
@@ -7,7 +7,11 @@ async function authUser(login, password) {
         const isInteger = Number.isInteger(Number(login));
 
         const user = await User.findOne({
-            where: isInteger ? { ID: login } : { email: login }
+            where: isInteger ? { ID: login } : { email: login },
+            include: [
+                { model: UserDetails, as: 'UserDetails' },
+                { model: UserConfigs, as: 'UserConfigs' }
+            ]
         });
 
         if (!user) {
@@ -20,11 +24,11 @@ async function authUser(login, password) {
             return { valid: false, status: 401, message: 'Invalid credentials, wrong password!' };
         }
 
-        if (!user.active) {
+        if (!user.active || user.deleted) {
             return { valid: false, status: 403, message: 'User inactive.' };
         }
 
-        return { valid: true, user: user.toJSON() };
+        return { valid: true, user: user };
     } catch (err) {
         console.error('Error authenticating user:', err);
         return { valid: false, status: 500, message: 'Server error' };
@@ -34,12 +38,12 @@ async function authUser(login, password) {
 function serializeUser(user) {
     return {
         ID: user.ID,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        first_name: user.UserDetails.first_name || '',
+        last_name: user.UserDetails.last_name || '',
         active: user.active,
         role: user.role,
-        manager_nav_collapsed: user.manager_nav_collapsed,
-        manager_view: user.manager_view_enabled,
+        manager_nav_collapsed: user.UserConfigs.manager_nav_collapsed || false,
+        manager_view: user.UserConfigs.manager_view_enabled || false,
     };
 }
 
@@ -47,7 +51,13 @@ async function refreshUser(user) {
     try {
         if (!user?.ID) return null;
 
-        const refreshedUser = await User.findOne({ where: { ID: user.ID } });
+        const refreshedUser = await User.findOne({
+            where: { ID: user.ID },
+            include: [
+                { model: UserDetails, as: 'UserDetails' },
+                { model: UserConfigs, as: 'UserConfigs' }
+            ]
+        });
 
         return refreshedUser ? serializeUser(refreshedUser.toJSON()) : null;
     } catch (err) {
@@ -72,81 +82,81 @@ async function checkUserAccess(user) {
 
 async function checkManagerAccess(user) {
     try {
-        const result = await ManagerViewAccess.findOne({
-            where: { userID: user.ID }
+        const result = await UserConfigs.findOne({
+            where: { user: user.ID }
         });
 
-        return !!result;
+        return result ? result.manager_view_access : false;
     } catch (err) {
-        console.error(`Error checking Manager Access for userID: ${user.ID}`, err);
+        console.error(`Error checking Manager Access for user: ${user.ID}`, err);
         return false;
     }
 }
 
 async function setManagerView(user, value) {
     try {
-        const [updated] = await User.update(
+        const [updated] = await UserConfigs.update(
             { manager_view_enabled: value },
-            { where: { ID: user.ID } }
+            { where: { user: user.ID } }
         );
 
         return updated === 1;
     } catch (err) {
-        console.error(`Error updating manager view for userID: ${user.ID}`, err);
+        console.error(`Error updating manager view for user: ${user.ID}`, err);
         return false;
     }
 }
 
 async function setNavCollapsed(user, value) {
     try {
-        const [updated] = await User.update(
+        const [updated] = await UserConfigs.update(
             { manager_nav_collapsed: value },
-            { where: { ID: user.ID } }
+            { where: { user: user.ID } }
         );
 
         return updated === 1;
     } catch (err) {
-        console.error(`Error updating nav collapsed for userID: ${user.ID}`, err);
+        console.error(`Error updating nav collapsed for user: ${user.ID}`, err);
         return false;
     }
 }
 
 async function getPages(user) {
     try {
-        const isManagerView = user?.manager_view || false;
-        const Model = isManagerView ? PagesManager : PagesStaff;
+        const userConfigs = await UserConfigs.findOne({ where: { user: user.ID } });
 
-        const rows = await Model.findAll({
-            order: [
-                sequelize.literal('CASE WHEN "parentID" IS NULL THEN 0 ELSE 1 END'),
-                ['parentID', 'ASC'],
-                ['ID', 'ASC']
-            ]
-        });
+        const view = (userConfigs?.manager_view_enabled || false) ? 1 : 0;
 
         const pages = [];
         const pageMap = new Map();
+
+        const rows = await AppPage.findAll({
+            where: { view: view },
+            order: [
+                sequelize.literal('CASE WHEN "parent" IS NULL THEN 0 ELSE 1 END'),
+                ['parent', 'ASC'],
+                ['ID', 'ASC']
+            ]
+        });
 
         for (const row of rows) {
             const page = {
                 path: row.path,
                 title: row.title,
                 icon: row.icon,
-                minRole: row.min_role,
                 ...(row.component ? { component: row.component } : {}),
-                ...(row.parentID ? {} : { subpages: [] })
+                ...(row.parent ? {} : { subpages: [] })
             };
 
-            if (!row.parentID) {
+            if (!row.parent) {
                 pageMap.set(row.ID, page);
                 pages.push(page);
             } else {
-                const parent = pageMap.get(row.parentID);
+                const parent = pageMap.get(row.parent);
                 if (parent) {
                     parent.subpages.push({
                         path: row.path,
                         title: row.title,
-                        minRole: row.min_role,
                         component: row.component
                     });
                 }
@@ -174,12 +184,17 @@ async function getAllPosts() {
     try {
         const posts = await Post.findAll({
             include: [
-                { model: User, attributes: ['ID', 'first_name', 'last_name'] },
+                { model: User, attributes: ['ID'], include: [
+                    { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
+                    ] },
                 { model: Channel, attributes: ['ID', 'name'] }
             ],
             order: [['createdAt', 'DESC']]
         });
-        return posts.map(post => post.toJSON());
+        return posts.map(post => ({
+            ...post.toJSON(),
+            User: post?.User ? post.User.toJSON() : null
+        }));
     } catch (err) {
         console.error('Error fetching all posts:', err);
         throw err;
@@ -191,11 +206,13 @@ async function getPostById(postId) {
         const post = await Post.findOne({
             where: { ID: postId },
             include: [
-                { model: User, attributes: ['ID', 'first_name', 'last_name'] },
+                { model: User, attributes: ['ID'], include: [
+                        { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
+                    ] },
                 { model: Channel, attributes: ['ID', 'name'] }
             ]
         });
-        return post ? post.toJSON() : null;
+        return post ? { ...post.toJSON(), User: post.User ? post.User.toJSON() : null } : null;
     } catch (err) {
         console.error(`Error fetching post with ID ${postId}:`, err);
         throw err;

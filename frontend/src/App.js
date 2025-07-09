@@ -264,12 +264,10 @@ const App = () => {
                     }>
                         <Route index element={<Dashboard/>}/>
                         {pages
-                            .filter((page) => user.role >= page.minRole)
                             .map((page) => (
                                 <Route key={page.path} path={page.path}>
                                     <Route index element={page.component ? <page.component /> : <NotFound />} />
                                     {page.subpages
-                                        .filter((subpage) => user.role >= subpage.minRole)
                                         .map((subpage) => (
                                             <Route
                                                 key={`${page.path}/${subpage.path}`}

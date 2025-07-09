@@ -76,6 +76,8 @@ const errorHandler = (err, req, res, _next) => {
 app.use(errorHandler);
 
 async function startServer() {
+    console.log('🔄️ Starting the server...');
+
     try {
         await sequelize.authenticate();
         console.log('✅ Database connection established');
@@ -86,6 +88,7 @@ async function startServer() {
         await store.sync();
         console.log('✅ Session store synced successfully');
 
+        console.log('🔄️ Starting data seeding...');
         await seedData();
         console.log('✅ Data seeding completed');
 

@@ -20,7 +20,6 @@ const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
                 </Link>
                 <ul className="app-pages">
                     {pages
-                        .filter((page) => user.role >= page.minRole)
                         .filter((page) => page.path !== "/")
                         .map((page) => (
                             <li key={page.path} className={'page-link-item'}>
@@ -41,7 +40,6 @@ const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
                                 {page.subpages?.length >= 1 && (
                                     <ul className="submenu">
                                         {page.subpages
-                                            .filter((subpage) => user.role >= subpage.minRole)
                                             .filter((subpage) => subpage.path !== '')
                                             .map((subpage) => (
                                                 <li key={`${page.path}/${subpage.path}`} className="submenu-item">
