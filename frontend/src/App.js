@@ -10,9 +10,8 @@ import { ConnectivityProvider } from './ConnectivityContext';
 import ConnectivityPopup from './components/ConnectivityPopup';
 import PostsIndex from './components/PostsIndex';
 import PostsShow from './components/PostsShow';
+import UsersIndex from './components/UsersIndex';
 import './App.css';
-
-console.log(process.env);
 
 const theme = process.env['REACT_APP_THEME'] || 'dark';
 const color = process.env['REACT_APP_COLOR'] || 'blue';
@@ -49,6 +48,7 @@ const componentMap = {
     PostsArchive,
     EmployeesShow,
     EmployeesNew,
+    UsersIndex
 };
 
 const App = () => {

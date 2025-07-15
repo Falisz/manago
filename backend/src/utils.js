@@ -180,6 +180,31 @@ function logoutUser(req, res) {
         res.json({ message: 'Logged out' });
     });
 }
+
+async function getAllUsers() {
+    try {
+        const users = await User.findAll({
+            attributes: { exclude: ['password', 'deleted'] },
+            where: {deleted: false },
+            include: [
+                { model: UserDetails,  as: 'UserDetails' }
+            ],
+            order: [['ID', 'ASC']]
+        });
+        return users.map(user => {
+            const userData = {
+                ...user.toJSON(),
+                ...user.UserDetails.toJSON()
+            };
+            delete userData.UserDetails;
+            return userData;
+        });
+    } catch (err) {
+        console.error('Error fetching all users:', err);
+        throw err;
+    }
+}
+
 async function getAllPosts() {
     try {
         const posts = await Post.findAll({
@@ -291,6 +316,7 @@ module.exports = {
     setNavCollapsed,
     getPages,
     logoutUser,
+    getAllUsers,
     getAllPosts,
     getPostById,
     createPost,

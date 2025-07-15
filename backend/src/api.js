@@ -11,6 +11,7 @@ const {
     setNavCollapsed,
     getPages,
     logoutUser,
+    getAllUsers,
     getAllPosts,
     getPostById,
     createPost,
@@ -200,6 +201,22 @@ router.get('/pages', async (req, res) => {
     }
 });
 
+router.get('/users', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const users = await getAllUsers();
+
+        res.json(users);
+
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
 router.get('/posts', async (req, res) => {
     try {
         if (!req.session.user) {
@@ -207,6 +224,7 @@ router.get('/posts', async (req, res) => {
         }
 
         const posts = await getAllPosts();
+
         res.json(posts);
     } catch (err) {
         console.error('Error fetching posts:', err);

@@ -1,0 +1,77 @@
+.users-index {
+    width: 100%;
+}
+.users-list {
+    display: flex;
+    margin: 20px auto;
+    flex-direction: column;
+    padding: 10px;
+}
+.users-list .users-list-header {
+    display: flex;
+    flex-direction: row;
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 300;
+    padding-right: 48px;
+}
+.users-list .users-list-header-cell {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    padding: 10px;
+    flex-wrap: wrap;
+}
+.users-list .users-list-header-cell label {
+    flex: 1 1 100%;
+    margin-bottom: 5px;
+}
+.users-list .users-list-header-cell .search {
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 10px;
+    outline: none;
+    border: none;
+    background: rgba(255,255,255,0.7);
+    opacity: 0.5;
+    color: black;
+    transition: 0.3s ease-in-out;
+}
+.users-list .users-list-header-cell .search:hover,
+.users-list .users-list-header-cell .search:focus,
+.users-list .users-list-header-cell .search.non-empty {
+    opacity: 1;
+}
+.users-list .users-list-header-cell .order {
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 10px;
+    outline: none;
+    border: none;
+    background: var(--link-color);
+    opacity: 0.5;
+    color: black;
+    transition: 0.3s ease-in-out;
+    cursor: pointer;
+}
+.users-list .users-list-header-cell .order:hover,
+.users-list .users-list-header-cell .order.asc,
+.users-list .users-list-header-cell .order.desc {
+    opacity: 1;
+}
+.users-list .users-list-row {
+    display: flex;
+    flex-direction: row;
+}
+.users-list .users-list-row div {
+    flex: 1;
+    padding: 10px;
+}
+.users-list .users-list-row .user-edit {
+    flex: 0;
+    width: 50px;
+    cursor: pointer;
+}
+.users-list .users-list-row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}

@@ -89,27 +89,25 @@ const ManagerView = ({ user, pages, switchView }) => {
 
             <div className="app-content">
                 <nav className="app-subnav">
-                {currentMainPage?.subpages?.length >= 1 && (
-                        <ul className="subpage-links">
+                    <ul className="subpage-links">
+                        <li
+                            key={`${currentMainPage.path}`}
+                            className={`subpage-link ${location.pathname === `/${currentMainPage.path}` ? 'selected' : ''}`}>
+                            <Link to={`${currentMainPage.path}`}>
+                                {currentMainPage.title}
+                            </Link>
+                        </li>
+                        {currentMainPage?.subpages?.length >= 1 && currentMainPage?.subpages?.map((subpage) => (
                             <li
-                                key={`${currentMainPage.path}`}
-                                className={`subpage-link ${location.pathname === `/${currentMainPage.path}` ? 'selected' : ''}`}>
-                                <Link to={`${currentMainPage.path}`}>
-                                    {currentMainPage.title}
+                                key={subpage.path}
+                                className={`subpage-link ${location.pathname === `/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}` ? 'selected' : ''}`}
+                            >
+                                <Link to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}>
+                                    {subpage.title}
                                 </Link>
                             </li>
-                            {currentMainPage?.subpages?.map((subpage) => (
-                                <li
-                                    key={subpage.path}
-                                    className={`subpage-link ${location.pathname === `/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}` ? 'selected' : ''}`}
-                                >
-                                    <Link to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}>
-                                        {subpage.title}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                        ))}
+                    </ul>
                     <div className="user-nav">
                         <span className="username">
                             {user?.first_name || 'User'}
