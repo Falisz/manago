@@ -1,11 +1,13 @@
 //FRONTEND/StaffView.js
-import '../Staff.css';
+import '../assets/styles/Staff.css';
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
+import {useUser} from "../UserContext";
 
-const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
+const StaffView = ({ pages, switchView }) => {
+    const { user, managerAccess } = useUser();
     const location = useLocation();
 
     const currentMainPage = pages.find((page) =>
@@ -66,7 +68,7 @@ const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
                     </span>
                     <i className="material-icons">keyboard_arrow_down</i>
                     <ul className='submenu'>
-                        { hasManagerAccess &&
+                        { managerAccess &&
                             <li className='submenu-item'>
                                 <Link to='#' onClick={() => switchView(true)}>Manager Portal</Link>
                             </li> }
@@ -80,7 +82,7 @@ const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
                 logoText={`Staff ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
                 pages={pages}
                 user={user}
-                hasManagerAccess={hasManagerAccess}
+                hasManagerAccess={managerAccess}
                 currentView={'staff'}
                 switchView={switchView}
                 currentPath={location.pathname}

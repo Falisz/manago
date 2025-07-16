@@ -1,7 +1,7 @@
 // FRONTEND/ConnectivityPopup.js
 import React from 'react';
 import { useConnectivity } from '../ConnectivityContext';
-import '../Connectivity.css';
+import '../assets/styles/Connectivity.css';
 
 const ConnectivityPopup = () => {
     const { isConnected } = useConnectivity();

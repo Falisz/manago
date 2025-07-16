@@ -28,7 +28,6 @@ const MobileNav = ({ logoText, pages, user, hasManagerAccess, currentView, switc
                     </span>
                 </li>
                 {pages
-                    .filter((page) => user.role >= page.minRole)
                     .map((page) => (
                         <li key={`${page.path}`} className={'app-mobile-nav-link-item'}>
                             <Link
@@ -49,7 +48,6 @@ const MobileNav = ({ logoText, pages, user, hasManagerAccess, currentView, switc
                             {page.subpages?.length >= 1 && (
                                 <ul className="submenu">
                                     {page.subpages
-                                        .filter((subpage) => user.role >= subpage.minRole)
                                         .filter((subpage) => subpage.path !== '')
                                         .map((subpage) => (
                                             <li key={`${page.path}/${subpage.path}`} className="submenu-item">

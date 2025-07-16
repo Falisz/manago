@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Loading } from './Common';
+import Loader from "./Loader";
 
 const PostsShow = ({ postId, onClose }) => {
     const [post, setPost] = useState(null);
@@ -20,14 +20,14 @@ const PostsShow = ({ postId, onClose }) => {
             }
         };
 
-        fetchPost();
+        fetchPost().then();
     }, [postId]);
 
     if (loading) {
         return (
             <div className="modal-overlay">
-                <div className="modal-content">
-                    <Loading />
+                <div className="post-modal-content">
+                    <Loader />
                 </div>
             </div>
         );

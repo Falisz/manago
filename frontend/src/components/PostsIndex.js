@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {useParams, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
-import { Loading } from './Common';
+import { Loader } from './Loader';
 import PostsShow from './PostsShow';
 
 const PostsIndex = () => {
@@ -25,7 +25,7 @@ const PostsIndex = () => {
             }
         };
 
-        fetchPosts();
+        fetchPosts().then();
     }, []);
 
     useEffect(() => {
@@ -42,7 +42,7 @@ const PostsIndex = () => {
     };
 
     if (loading) {
-        return <Loading />;
+        return <Loader />;
     }
 
     return (

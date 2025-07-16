@@ -1,12 +1,12 @@
 //FRONTEND/Login.js
-import '../Login.css';
+import '../assets/styles/Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 import { useUser } from '../UserContext';
 
 const Login = () => {
-    const { HandleLogin } = useUser();
+    const { Login: HandleLogin } = useUser();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -31,6 +31,7 @@ const Login = () => {
                     <input
                         type="text"
                         placeholder="Login"
+                        name='login'
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                     />
@@ -40,6 +41,7 @@ const Login = () => {
                     <input
                         type="password"
                         placeholder="Password"
+                        name='password'
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />

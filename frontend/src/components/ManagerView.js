@@ -1,13 +1,15 @@
 //FRONTEND/ManagerView.js
-import '../Manager.css';
+import '../assets/styles/Manager.css';
 import React, {useState, useEffect} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from "axios";
 import MobileNav from './MobileNav';
+import {useUser} from "../UserContext";
 
-const ManagerView = ({ user, pages, switchView }) => {
+const ManagerView = ({pages, switchView }) => {
+    const { user } = useUser();
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(false);
 
@@ -92,7 +94,7 @@ const ManagerView = ({ user, pages, switchView }) => {
                     <ul className="subpage-links">
                         <li
                             key={`${currentMainPage?.path}`}
-                            className={`subpage-link ${location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}>
+                            className={`subpage-link ${location.pathname === '/' || location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}>
                             <Link to={`${currentMainPage?.path}`}>
                                 {currentMainPage?.title}
                             </Link>

@@ -16,7 +16,7 @@ export const UserProvider = ({ children }) => {
         if (isCheckingRef.current) return;
 
         isCheckingRef.current = true;
-        setLoading(true);
+
         try {
             const res = await axios.get('/api/access', { withCredentials: true });
             setAccess(res.data.access);
@@ -29,13 +29,20 @@ export const UserProvider = ({ children }) => {
             console.error(err);
         } finally {
             isCheckingRef.current = false;
+        }
+
+    }, []);
+
+    const Login = async (userData) => {
+        setLoading(true);
+        try {
+            setUser(userData);
+            await CheckAccess();
+        } catch (err) {
+            console.error('Login error', err);
+        } finally {
             setLoading(false);
         }
-    }, [setLoading]);
-
-    const HandleLogin = async (userData) => {
-        setUser(userData);
-        await CheckAccess();
     };
 
     const Logout = async () => {
@@ -63,7 +70,7 @@ export const UserProvider = ({ children }) => {
                 user,
                 access,
                 managerAccess,
-                HandleLogin,
+                Login,
                 Logout,
                 CheckAccess,
             }}

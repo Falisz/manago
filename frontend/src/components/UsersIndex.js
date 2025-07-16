@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
-import { Loading } from './Common';
-import './Users.css';
+import Loader from "./Loader";
+import '../assets/styles/Users.css';
 
 const UsersIndex = () => {
     const [users, setUsers] = useState([]);
@@ -31,7 +31,7 @@ const UsersIndex = () => {
             }
         };
 
-        fetchUsers();
+        fetchUsers().then();
     }, []);
 
     const handleFilter = (e) => {
@@ -90,7 +90,7 @@ const UsersIndex = () => {
         return result;
     }, [users, filters, sortConfig]);
 
-    if (loading) return <Loading />;
+    if (loading) return <Loader />;
     if (error) return <>{error}</>;
 
     return (
