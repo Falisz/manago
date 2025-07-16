@@ -77,7 +77,7 @@ const StaffView = ({ user, pages, switchView, hasManagerAccess }) => {
                 </div>
             </div>
             <MobileNav
-                logoText={`Staff ${currentMainPage.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
+                logoText={`Staff ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
                 pages={pages}
                 user={user}
                 hasManagerAccess={hasManagerAccess}

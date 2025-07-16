@@ -17,10 +17,8 @@ export const ConnectivityProvider = ({ children }) => {
             }
         };
 
-        // Initial check
-        checkConnection();
+        checkConnection().then();
 
-        // Check every 2 minutes
         const interval = setInterval(checkConnection, 60000);
 
         return () => clearInterval(interval);

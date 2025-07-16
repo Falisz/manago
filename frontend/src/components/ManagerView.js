@@ -78,7 +78,7 @@ const ManagerView = ({ user, pages, switchView }) => {
             </nav>
 
             <MobileNav
-                logoText={`Manager ${currentMainPage.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
+                logoText={`Manager ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
                 pages={pages}
                 user={user}
                 hasManagerAccess={true}
@@ -91,10 +91,10 @@ const ManagerView = ({ user, pages, switchView }) => {
                 <nav className="app-subnav">
                     <ul className="subpage-links">
                         <li
-                            key={`${currentMainPage.path}`}
-                            className={`subpage-link ${location.pathname === `/${currentMainPage.path}` ? 'selected' : ''}`}>
-                            <Link to={`${currentMainPage.path}`}>
-                                {currentMainPage.title}
+                            key={`${currentMainPage?.path}`}
+                            className={`subpage-link ${location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}>
+                            <Link to={`${currentMainPage?.path}`}>
+                                {currentMainPage?.title}
                             </Link>
                         </li>
                         {currentMainPage?.subpages?.length >= 1 && currentMainPage?.subpages?.map((subpage) => (
