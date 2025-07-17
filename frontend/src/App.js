@@ -20,7 +20,7 @@ import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
 import PostsIndex from './components/PostsIndex';
 import PostsShow from './components/PostsShow';
-import UsersIndex from './components/UsersIndex';
+import UsersIndex from './components/Users/Index';
 const Dashboard = () => <InWorks title={'Dashboard'} />;
 const Schedule = () => <InWorks title={'Schedule'} />;
 const Posts = () => <InWorks title={'Forum'} />;
@@ -33,7 +33,6 @@ const SchedulePast = () => <InWorks title={'Work schedule archive'} />;
 const ScheduleNew = () => <InWorks title={'Work schedule creator'} />;
 const PostsNew = () => <InWorks title={'Create new post'} />;
 const PostsArchive = () => <InWorks title={'Posts archive'} />;
-const EmployeesShow = () => <InWorks title={'Users list'} />;
 const EmployeesNew = () => <InWorks title={'Add new user'} />;
 
 const componentMap = {
@@ -51,7 +50,6 @@ const componentMap = {
     PostsShow,
     PostsNew,
     PostsArchive,
-    EmployeesShow,
     EmployeesNew,
     UsersIndex,
 };
@@ -204,9 +202,6 @@ const AppContent = () => {
                                     element={React.createElement(subpage.component)}
                                 />
                             ))}
-                            {page.path === 'posts' && (
-                                <Route path=":postId" element={<PostsIndex />} />
-                            )}
                         </Route>
                     ))}
                     <Route

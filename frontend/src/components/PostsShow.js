@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loader from "./Loader";
+import Modal from "./Modal";
 
 const PostsShow = ({ postId, onClose }) => {
     const [post, setPost] = useState(null);
@@ -25,31 +26,23 @@ const PostsShow = ({ postId, onClose }) => {
 
     if (loading) {
         return (
-            <div className="modal-overlay">
-                <div className="post-modal-content">
-                    <Loader />
-                </div>
-            </div>
+            <Modal onClose={onClose}>
+                <Loader />
+            </Modal>
         );
     }
 
     if (error) {
         return (
-            <div className="post-modal-overlay">
-                <div className="post-modal-content">
-                    <h1>Post not found!</h1>
-                    <button onClick={onClose} className="modal-close-button">
-                        Close
-                    </button>
-                </div>
-            </div>
+            <Modal onClose={onClose}>
+                <h1>Post not found!</h1>
+            </Modal>
         );
     }
 
     return (
         <>
-            <div className="post-modal-overlay" onClick={onClose}></div>
-            <div className="post-modal-content">
+            <Modal onClose={onClose} closeButton={true}>
                 <h1>{post.title || 'Untitled Post'}</h1>
                 <p>Posted by {post.User.first_name} {post.User.last_name}</p>
                 <p>Channel: {post.Channel.name}</p>
@@ -75,10 +68,7 @@ const PostsShow = ({ postId, onClose }) => {
                         })}
                     </p>
                 )}
-                <button onClick={onClose} className="modal-close-button">
-                    Close
-                </button>
-            </div>
+            </Modal>
         </>
     );
 };

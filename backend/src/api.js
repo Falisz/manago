@@ -12,6 +12,7 @@ const {
     getPages,
     logoutUser,
     getAllUsers,
+    getUserById,
     getAllPosts,
     getPostById,
     createPost,
@@ -210,6 +211,28 @@ router.get('/users', async (req, res) => {
         const users = await getAllUsers();
 
         res.json(users);
+
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+
+router.get('/users/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+        const { userId } = req.params;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const user = await getUserById(parseInt(userId));
+
+        res.json(user);
 
     } catch (err) {
         console.error('Error fetching users:', err);

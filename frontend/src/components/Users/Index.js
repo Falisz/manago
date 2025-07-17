@@ -1,22 +1,35 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import {useNavigate, useParams} from "react-router-dom";
 import axios from 'axios';
-import Loader from "./Loader";
-import '../assets/styles/Users.css';
+import Loader from "../Loader";
+import '../../assets/styles/Users.css';
+import UserDetail from './Detail';
 
 const UsersIndex = () => {
+    const { userId } = useParams();
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [filters, setFilters] = useState({
-        first_name: '',
-        last_name: '',
-        email: '',
-        active: ''
-    });
+    const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: 'asc'
     });
+
+    useEffect(() => {
+        if (userId) {
+            setSelectedUserId(parseInt(userId));
+        } else {
+            setSelectedUserId(null);
+        }
+    }, [userId]);
+
+    const deselectUser = () => {
+        setSelectedUserId(null);
+        navigate('/employees');
+    };
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -60,17 +73,18 @@ const UsersIndex = () => {
         let result = [...users];
 
         result = result.filter(user => {
-            return (
-                user.first_name.toLowerCase().includes(filters.first_name.toLowerCase()) &&
-                user.last_name.toLowerCase().includes(filters.last_name.toLowerCase()) &&
-                user.email.toLowerCase().includes(filters.email.toLowerCase()) &&
-                (filters.active === '' ||
-                    (filters.active.toLowerCase() === 'active' && user.active) ||
-                    (filters.active.toLowerCase() === 'not' && !user.active))
-            );
+            return Object.entries(filters).every(([key, value]) => {
+                if (!value) return true;
+
+                if (key === 'active') {
+                    const filterValue = value.toLowerCase();
+                    return (filterValue === 'active' && user[key]) || (filterValue === 'not' && !user[key]);
+                }
+
+                return user[key]?.toLowerCase().includes(value.toLowerCase());
+            });
         });
 
-        // Apply sorting
         if (sortConfig.key) {
             result.sort((a, b) => {
                 let aValue = a[sortConfig.key];
@@ -95,6 +109,8 @@ const UsersIndex = () => {
 
     return (
         <div className="users-index">
+            <h1>Employees of Zyrah</h1>
+            <button className="new-user-button">+ Add Employee</button>
             <div className="users-list">
                 <div className="users-list-header">
                     <div className="users-list-header-cell">
@@ -104,7 +120,7 @@ const UsersIndex = () => {
                             placeholder="Filter by the first name..."
                             className="search"
                             name="first_name"
-                            value={filters.first_name}
+                            value={filters.first_name || ''}
                             onChange={handleFilter}
                         />
                         <button
@@ -122,7 +138,7 @@ const UsersIndex = () => {
                             placeholder="Filter by the last name..."
                             className="search"
                             name="last_name"
-                            value={filters.last_name}
+                            value={filters.last_name || ''}
                             onChange={handleFilter}
                         />
                         <button
@@ -140,7 +156,7 @@ const UsersIndex = () => {
                             placeholder="Filter by the e-mail..."
                             className="search"
                             name="email"
-                            value={filters.email}
+                            value={filters.email || ''}
                             onChange={handleFilter}
                         />
                         <button
@@ -158,7 +174,7 @@ const UsersIndex = () => {
                             placeholder="Filter by active status..."
                             className="search"
                             name="active"
-                            value={filters.active}
+                            value={filters.active || ''}
                             onChange={handleFilter}
                         />
                         <button
@@ -169,22 +185,32 @@ const UsersIndex = () => {
                             {sortConfig.key === 'active' && sortConfig.direction === 'asc' ? '↑' : '↓'}
                         </button>
                     </div>
+                    <div className="users-list-header-cell">
+                        <label>Actions</label>
+                    </div>
                 </div>
                 <div className="users-list-content">
                     {filteredAndSortedUsers.length === 0 ? (
                         <p>No users found.</p>
                     ) : (filteredAndSortedUsers.map(user => (
-                        <div className="users-list-row" key={user.user}>
-                            <div>{user.first_name}</div>
-                            <div>{user.last_name}</div>
-                            <div>{user.email}</div>
-                            <div>{user.active ? 'Active' : 'Not'}</div>
-                            <div className="user-edit"><span className="material-symbols-outlined">edit</span></div>
-                        </div>
+                            <div className="users-list-row" key={user.user} >
+                                <div>{user.first_name}</div>
+                                <div>{user.last_name}</div>
+                                <div>{user.email}</div>
+                                <div>{user.active ? 'Active' : 'Not'}</div>
+                                <div className="user-actions">
+                                    <i className="material-symbols-outlined" onClick={() => navigate('/employees/' + user.user)}>manage_search</i>
+                                    <i className="material-symbols-outlined">edit</i>
+                                    <i className="material-symbols-outlined">delete</i>
+                                </div>
+                            </div>
                         ))
                     )}
                 </div>
             </div>
+            {selectedUserId && (
+                <UserDetail userId={selectedUserId} onClose={deselectUser} />
+            )}
         </div>
     );
 };

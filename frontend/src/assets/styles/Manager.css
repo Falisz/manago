@@ -178,9 +178,10 @@
 .app.manager .app-subnav .submenu {
     list-style: none;
     position: absolute;
+    visibility: hidden;
     opacity: 0;
     transition: 0.3s;
-    z-index: -99;
+    z-index: 1500;
     padding: 5px;
     top: 45px;
     left: 50%;
@@ -198,8 +199,8 @@
 .app.manager .app-subnav .user-nav:hover .submenu,
 .app.manager .app-subnav .username:hover~.submenu,
 .app.manager .app-subnav .submenu:hover {
-    z-index: 1000;
     opacity: 1;
+    visibility: visible;
     margin-top: 5px;
 }
 .app.manager .app-subnav .submenu-item {
@@ -236,6 +237,7 @@
 }
 .app.manager .app-content main {
     display: flex;
+    position: relative;
     flex: 1;
     align-items: center;
     flex-direction: column;

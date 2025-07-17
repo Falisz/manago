@@ -100,6 +100,7 @@ const ManagerView = ({pages, switchView }) => {
                             </Link>
                         </li>
                         {currentMainPage?.subpages?.length >= 1 && currentMainPage?.subpages?.map((subpage) => (
+                            (!subpage.path.startsWith(':') &&
                             <li
                                 key={subpage.path}
                                 className={`subpage-link ${location.pathname === `/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}` ? 'selected' : ''}`}
@@ -107,7 +108,7 @@ const ManagerView = ({pages, switchView }) => {
                                 <Link to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}>
                                     {subpage.title}
                                 </Link>
-                            </li>
+                            </li>)
                         ))}
                     </ul>
                     <div className="user-nav">
@@ -129,7 +130,7 @@ const ManagerView = ({pages, switchView }) => {
                         </ul>
                     </div>
                 </nav>
-                <main>
+                <main className={currentMainPage?.path}>
                     <Outlet />
                 </main>
             </div>

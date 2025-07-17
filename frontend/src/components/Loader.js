@@ -2,7 +2,7 @@
 import '../assets/styles/Loader.css';
 
 export const Loader = () => (
-    <div className="app-loading flex justify-center items-center">
+    <div className="app-loading">
         <div className="spinner"></div>
     </div>
 );

@@ -238,7 +238,7 @@ code {
   margin: 5px 0;
 }
 
-.post-modal-overlay {
+.app-modal-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -247,11 +247,11 @@ code {
   background: rgba(0, 0, 0, 0.5);
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 500;
   cursor: pointer;
 }
 
-.post-modal-content {
+.app-modal-content {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -267,18 +267,26 @@ code {
   z-index: 1500;
 }
 
-.modal-close-button {
-  margin-top: 10px;
-  padding: 8px 16px;
-  background: var(--link-color);
+.app-modal-content>h1 {
+  margin: 0 0 10px;
+  font-weight: 300;
+}
+.app-modal-close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  margin: 0;
+  padding: 5px;
+  background: none;
   color: white;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s;
 }
 
-.modal-close-button:hover {
-  background: var(--highlight-color);
+.app-modal-close-button:hover {
+  opacity: 1;
 }
 
 .post-title-button {

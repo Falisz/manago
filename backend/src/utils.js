@@ -5,9 +5,10 @@ const bcrypt = require('bcrypt');
 async function authUser(login, password) {
     try {
         const isInteger = Number.isInteger(Number(login));
+        const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
 
         const user = await User.findOne({
-            where: isInteger ? { ID: login } : { email: login },
+            where: isInteger ? { ID: login } : (isEmailFormat ? { email: login } : { login: login }),
             include: [
                 { model: UserDetails, as: 'UserDetails' },
                 { model: UserConfigs, as: 'UserConfigs' }
@@ -201,7 +202,34 @@ async function getAllUsers() {
         });
     } catch (err) {
         console.error('Error fetching all users:', err);
-        throw err;
+        return false;
+    }
+}
+
+async function getUserById(userId) {
+    try {
+        const user = await User.findOne({
+            where: { ID: userId },
+            attributes: { exclude: ['password', 'deleted'] },
+            include: [
+                { model: UserDetails,  as: 'UserDetails' }
+            ],
+            order: [['ID', 'ASC']]
+        });
+
+        if (user) {
+            const userData = {
+                ...user.toJSON(),
+                ...user.UserDetails.toJSON()
+            };
+            delete userData.UserDetails;
+            return userData;
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error(`Error fetching post with ID ${postId}:`, err);
+        return false;
     }
 }
 
@@ -222,7 +250,7 @@ async function getAllPosts() {
         }));
     } catch (err) {
         console.error('Error fetching all posts:', err);
-        throw err;
+        return false;
     }
 }
 
@@ -240,19 +268,19 @@ async function getPostById(postId) {
         return post ? { ...post.toJSON(), User: post.User ? post.User.toJSON() : null } : null;
     } catch (err) {
         console.error(`Error fetching post with ID ${postId}:`, err);
-        throw err;
+        return false;
     }
 }
 async function createPost(data) {
     try {
         const channel = await Channel.findOne({ where: { ID: data.channelID } });
         if (!channel) {
-            throw new Error('Invalid channel ID.');
+            return { valid: false, status: 400, message: 'Invalid channel ID.' };
         }
 
         const user = await User.findOne({ where: { ID: data.authorID } });
         if (!user) {
-            throw new Error('Invalid author ID.');
+            return { valid: false, status: 400, message: 'Invalid author ID.' };
         }
 
         const post = await Post.create({
@@ -275,7 +303,7 @@ async function updatePost(postId, data) {
     try {
         const post = await Post.findOne({ where: { ID: postId } });
         if (!post) {
-            throw new Error('Post not found.');
+            return { valid: false, status: 404, message: 'Post not found.' };
         }
 
         await post.update({
@@ -296,7 +324,7 @@ async function deletePost(postId) {
     try {
         const post = await Post.findOne({ where: { ID: postId } });
         if (!post) {
-            throw new Error('Post not found.');
+            return { valid: false, status: 404, message: 'Post not found.' };
         }
 
         await post.destroy();
@@ -317,6 +345,7 @@ module.exports = {
     getPages,
     logoutUser,
     getAllUsers,
+    getUserById,
     getAllPosts,
     getPostById,
     createPost,
