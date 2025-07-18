@@ -1,8 +1,7 @@
-import path from "path";
-import csv from "csv-parser";
-const {AppModule, AppPage} = require('../model/app-models')
-const {User, UserDetails, UserConfigs, UserManager} = require('../model/user-models')
-const {Channel, Post} = require('../model/posts-models')
+// BACKEND/src/seed-data.js
+const path = require('path');
+const csv = require('csv-parser');
+const {AppModule, AppPage, User, UserDetails, UserConfigs, UserManager, Channel, Post} = require('../db')
 
 async function seedData() {
     try {

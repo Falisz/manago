@@ -1,8 +1,5 @@
 //BACKEND/utils.js
-const { sequelize } = require('./db');
-const { AppPage } = require('./model/app-models');
-const { User, UserDetails, UserConfigs } = require('./model/user-models');
-const { Post, Channel } = require('./model/posts-models');
+const { sequelize, AppPage, User, UserDetails, UserConfigs, Channel, Post} = require('./db')
 
 const bcrypt = require('bcrypt');
 
@@ -29,7 +26,7 @@ async function authUser(login, password) {
             return { valid: false, status: 401, message: 'Invalid credentials, wrong password!' };
         }
 
-        if (!user.active || user.deleted) {
+        if (!user.active || user.removed) {
             return { valid: false, status: 403, message: 'User inactive.' };
         }
 
