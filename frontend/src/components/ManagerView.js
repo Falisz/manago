@@ -100,7 +100,7 @@ const ManagerView = ({pages, switchView }) => {
                             </Link>
                         </li>
                         {currentMainPage?.subpages?.length >= 1 && currentMainPage?.subpages?.map((subpage) => (
-                            (!subpage.path.startsWith(':') &&
+                            (!subpage.hidden &&
                             <li
                                 key={subpage.path}
                                 className={`subpage-link ${location.pathname === `/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}` ? 'selected' : ''}`}

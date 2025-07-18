@@ -80,10 +80,10 @@ const AppPage = sequelize.define('Pages', {
         allowNull: false,
         defaultValue: ''
     },
-    min_power: {
-        type: DataTypes.INTEGER,
+    hidden: {
+        type: DataTypes.BOOLEAN,
         allowNull: true,
-        defaultValue: 10
+        defaultValue: null
     }
 }, {
     tableName: 'app_pages',

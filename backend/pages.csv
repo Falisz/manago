@@ -1,14 +1,19 @@
-1,0,0,,/,Home,home,Dashboard,1
-2,0,3,,schedule,Schedule,calendar_month,Schedule,1
-3,0,6,,posts,Posts,forum,PostsIndex,1
-4,0,5,,trainings,Trainings,school,Trainings,1
-5,0,3,2,dispositions,Dispositions,,Dispositions,1
-11,1,0,,/,Home,home,Dashboard,2
-12,1,3,,schedule,Schedule,calendar_month,ScheduleShow,2
-13,1,6,,posts,Posts,forum,PostsIndex,2
-14,1,0,,employees,Employees,people,EmployeesShow,3
-21,1,3,12,past,Past Schedules,,SchedulePast,3
-31,1,6,13,archive,Posts Archive,,PostsArchive,3
-30,1,6,13,:postId,Post,,PostsIndex,2
-40,1,0,14,:userId,User,,UsersIndex,3
-41,1,0,14,roles,Roles,,Roles,3
+1,0,0,,/,Home,home,Dashboard,
+2,0,3,,schedule,Schedule,calendar_month,Schedule,
+3,0,6,,posts,Posts,forum,PostsIndex,
+4,0,5,,trainings,Trainings,school,Trainings,
+5,0,3,2,dispositions,Dispositions,,Dispositions,
+11,1,0,,/,Home,home,Dashboard,
+12,1,0,,employees,Employees,people,UsersIndex,
+13,1,0,,teams,Teams,groups,TeamsIndex,
+14,1,1,,branches,Branches,hub,BranchIndex,
+15,1,2,,projects,Projects,workspaces,ProjectIndex,
+16,1,3,,schedule,Schedule,calendar_month,ScheduleShow,
+17,1,6,,posts,Posts,forum,PostsIndex,
+20,1,0,12,:userId,User,,UsersIndex,1
+21,1,0,12,new,New User,,UserEdit,1
+22,1,0,12,edit/:userId,Edit User,,UserEdit,1
+23,1,0,12,roles,Roles,,Roles,
+61,1,3,16,past,Past Schedules,,SchedulePast,
+70,1,6,17,:postId,Post,,PostsIndex,1
+75,1,6,17,archive,Posts Archive,,PostsArchive,

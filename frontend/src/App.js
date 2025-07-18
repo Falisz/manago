@@ -21,6 +21,8 @@ import ConnectivityPopup from './components/ConnectivityPopup';
 import PostsIndex from './components/PostsIndex';
 import PostsShow from './components/PostsShow';
 import UsersIndex from './components/Users/Index';
+import UserEdit from './components/Users/Edit';
+
 const Dashboard = () => <InWorks title={'Dashboard'} />;
 const Schedule = () => <InWorks title={'Schedule'} />;
 const Posts = () => <InWorks title={'Forum'} />;
@@ -33,7 +35,6 @@ const SchedulePast = () => <InWorks title={'Work schedule archive'} />;
 const ScheduleNew = () => <InWorks title={'Work schedule creator'} />;
 const PostsNew = () => <InWorks title={'Create new post'} />;
 const PostsArchive = () => <InWorks title={'Posts archive'} />;
-const EmployeesNew = () => <InWorks title={'Add new user'} />;
 
 const componentMap = {
     Dashboard,
@@ -50,8 +51,8 @@ const componentMap = {
     PostsShow,
     PostsNew,
     PostsArchive,
-    EmployeesNew,
     UsersIndex,
+    UserEdit,
 };
 
 const theme = process.env['REACT_APP_THEME'] || 'dark';

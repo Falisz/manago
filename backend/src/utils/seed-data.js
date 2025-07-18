@@ -18,7 +18,7 @@ async function seedData() {
         if (moduleCount > 0) {
             console.log('\tAppModules table is not empty, skipping seeding.');
         } else {
-            const appModuleFilePath = path.join(__dirname, '..', 'modules.csv');
+            const appModuleFilePath = path.join(__dirname, '..', '..', 'modules.csv');
             const appModules = [];
             const appModuleRows = await new Promise((resolve, reject) => {
                 const results = [];
@@ -56,13 +56,13 @@ async function seedData() {
         if (pagesCount > 0) {
             console.log('\tAppPages table is not empty, skipping seeding.');
         } else {
-            const appPageFilePath = path.join(__dirname, '..', 'pages.csv');
+            const appPageFilePath = path.join(__dirname, '..', '..', 'pages.csv');
             const appPages = [];
             const appPageRows = await new Promise((resolve, reject) => {
                 const results = [];
                 require('fs').createReadStream(appPageFilePath)
                     .pipe(csv({
-                        headers: ['ID','view','module','parent','path','title','icon','component','min_power'],
+                        headers: ['ID','view','module','parent','path','title','icon','component','hidden'],
                         skipLines: 0
                     }))
                     .on('data', (data) => results.push(data))
@@ -84,7 +84,7 @@ async function seedData() {
                     title: row.title,
                     icon: row.icon || null,
                     component: row.component || null,
-                    min_power: parseInt(row.min_power)
+                    hidden: row.hidden ? true : null
                 });
             }
 
@@ -102,7 +102,7 @@ async function seedData() {
         if (userCount > 0) {
             console.log('\tUsers table is not empty, skipping seeding.');
         } else {
-            const csvFilePath = path.join(__dirname, '..', 'users.csv');
+            const csvFilePath = path.join(__dirname, '..', '..', 'users.csv');
             const users = [];
             const userDetails = [];
             const userConfigs = [];

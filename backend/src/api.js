@@ -249,10 +249,7 @@ router.post('/users/new', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        if (req.session.user.role !== 99) {
-            return res.status(403).json({ message: 'Forbidden: Admin access required.' });
-        }
-
+        console.log(req.body);
         const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
 
         const result = await createUser({
@@ -278,14 +275,10 @@ router.post('/users/new', async (req, res) => {
     }
 });
 
-router.put('/users/edit/:userId', async (req, res) => {
+router.put('/users/:userId', async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        if (req.session.user.role !== 99) {
-            return res.status(403).json({ message: 'Forbidden: Admin access required.' });
         }
 
         const { userId } = req.params;
@@ -319,14 +312,10 @@ router.put('/users/edit/:userId', async (req, res) => {
     }
 });
 
-router.delete('/users/rm/:userId', async (req, res) => {
+router.delete('/users/:userId', async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        if (req.session.user.role !== 99) {
-            return res.status(403).json({ message: 'Forbidden: Admin access required.' });
         }
 
         const { userId } = req.params;

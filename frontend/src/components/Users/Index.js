@@ -69,6 +69,17 @@ const UsersIndex = () => {
         }));
     };
 
+    const handleDelete = async (userId) => {
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
+        try {
+            await axios.delete(`/api/users/${userId}`, { withCredentials: true });
+            setUsers(users.filter(user => user.user !== userId));
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            setError(err.response?.data?.message || 'Failed to delete user. Please try again.');
+        }
+    };
+
     const filteredAndSortedUsers = useMemo(() => {
         let result = [...users];
 
@@ -110,7 +121,9 @@ const UsersIndex = () => {
     return (
         <div className="users-index">
             <h1>Employees of Zyrah</h1>
-            <button className="new-user-button">+ Add Employee</button>
+            <button className="new-user-button" onClick={() => navigate('/employees/new')}>
+                + Add Employee
+            </button>
             <div className="users-list">
                 <div className="users-list-header">
                     <div className="users-list-header-cell">
@@ -200,8 +213,8 @@ const UsersIndex = () => {
                                 <div>{user.active ? 'Active' : 'Not'}</div>
                                 <div className="user-actions">
                                     <i className="material-symbols-outlined" onClick={() => navigate('/employees/' + user.user)}>manage_search</i>
-                                    <i className="material-symbols-outlined">edit</i>
-                                    <i className="material-symbols-outlined">delete</i>
+                                    <i className="material-symbols-outlined" onClick={() => navigate('/employees/edit/' + user.user)}>edit</i>
+                                    <i className="material-symbols-outlined" onClick={() => handleDelete(user.user)}>delete</i>
                                 </div>
                             </div>
                         ))
