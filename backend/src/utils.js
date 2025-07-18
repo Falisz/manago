@@ -146,6 +146,7 @@ async function getPages(user) {
                 path: row?.path,
                 title: row?.title,
                 icon: row?.icon,
+                hidden: row?.hidden,
                 ...(row?.component ? { component: row.component } : {}),
                 ...(row?.parent ? {} : { subpages: [] })
             };
@@ -159,7 +160,8 @@ async function getPages(user) {
                     parent.subpages.push({
                         path: row.path,
                         title: row.title,
-                        component: row.component
+                        component: row.component,
+                        hidden: row?.hidden,
                     });
                 }
             }
@@ -187,7 +189,7 @@ async function getAllUsers() {
     try {
         const users = await User.findAll({
             attributes: { exclude: ['password', 'deleted'] },
-            where: {deleted: false },
+            where: {removed: false },
             include: [
                 { model: UserDetails,  as: 'UserDetails' }
             ],
@@ -254,8 +256,8 @@ async function createUser(data) {
 
         await UserDetails.create({
             user: user.ID,
-            first_name: user.first_name,
-            last_name: user.last_name,
+            first_name: data.first_name,
+            last_name: data.last_name,
         });
 
         await UserConfigs.create({

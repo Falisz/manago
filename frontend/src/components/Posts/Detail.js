@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Loader from "./Loader";
-import Modal from "./Modal";
+import Loader from "../Loader";
+import Modal from "../Modal";
 
-const PostsShow = ({ postId, onClose }) => {
+const PostDetail = ({ postId, onClose }) => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -73,4 +73,4 @@ const PostsShow = ({ postId, onClose }) => {
     );
 };
 
-export default PostsShow;
+export default PostDetail;

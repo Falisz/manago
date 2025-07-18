@@ -18,40 +18,40 @@ import Loader from './components/Loader';
 import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
-import PostsIndex from './components/PostsIndex';
-import PostsShow from './components/PostsShow';
+import PostsIndex from './components/Posts/Index';
 import UsersIndex from './components/Users/Index';
-const Dashboard = () => <InWorks title={'Dashboard'} />;
-const Schedule = () => <InWorks title={'Schedule'} />;
-const Posts = () => <InWorks title={'Forum'} />;
-const Trainings = () => <InWorks title={'Trainings'} />;
-const Dispositions = () => <InWorks title={'Dispositions Dispositions'} />;
-const ManagerDashboard = () => <InWorks title={'ManagerDashboard'} />;
-const ScheduleShow = () => <InWorks title={'Work schedule'} />;
-const ScheduleEdit = () => <InWorks title={'Work schedule editor'} />;
-const SchedulePast = () => <InWorks title={'Work schedule archive'} />;
-const ScheduleNew = () => <InWorks title={'Work schedule creator'} />;
-const PostsNew = () => <InWorks title={'Create new post'} />;
-const PostsArchive = () => <InWorks title={'Posts archive'} />;
-const EmployeesNew = () => <InWorks title={'Add new user'} />;
+import UserEdit from './components/Users/Edit';
+
+const Dashboard = () => <InWorks title={'Dashboard'} icon={'dashboard'}/>;
+const Schedule = () => <InWorks title={'Schedule'} icon={'schedule'}/>;
+const Trainings = () => <InWorks title={'Trainings'} icon={'school'} />;
+const Dispositions = () => <InWorks title={'Dispositions Dispositions'} icon={'punch_clock'} />;
+
+const ManagerDashboard = () => <InWorks title={'Manager Dashboard'} icon={'dashboard'} />;
+const RolesIndex = () => <InWorks title={'Roles'} icon={'assignment_ind'} />;
+const TeamsIndex = () => <InWorks title={'Teams'} icon={'groups'} />;
+const BranchIndex = () => <InWorks title={'Branches'} icon={'graph_3'} />;
+const ProjectIndex = () => <InWorks title={'Projects'} icon={'fact_check'} />;
+const ScheduleShow = () => <InWorks title={'Work schedule'} icon={'schedule'} />;
+const SchedulePast = () => <InWorks title={'Work schedule archive'} icon={'archive'} />;
+const PostsArchive = () => <InWorks title={'Posts archive'} icon={'archive'}/>;
 
 const componentMap = {
     Dashboard,
     Schedule,
-    Posts,
     Trainings,
     Dispositions,
     ManagerDashboard,
+    RolesIndex,
+    TeamsIndex,
+    BranchIndex,
+    ProjectIndex,
     ScheduleShow,
-    ScheduleEdit,
     SchedulePast,
-    ScheduleNew,
     PostsIndex,
-    PostsShow,
-    PostsNew,
     PostsArchive,
-    EmployeesNew,
     UsersIndex,
+    UserEdit,
 };
 
 const theme = process.env['REACT_APP_THEME'] || 'dark';
@@ -67,6 +67,8 @@ const AppContent = () => {
         setLoading(true);
         try {
             const res = await axios.get('/api/pages', { withCredentials: true });
+
+            // Mapping React components onto pages
             if (Array.isArray(res.data)) {
                 const mappedPages = res.data.map((page) => ({
                     ...page,
@@ -187,7 +189,6 @@ const AppContent = () => {
                         )
                     }
                 >
-                    <Route index element={<Dashboard />} />
                     {pages.map((page) => (
                         <Route key={page.path} path={page.path}>
                             <Route

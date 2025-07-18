@@ -1,12 +1,12 @@
-.users-index {
-    width: 100%;
+.app.manager .app-content main.employees {
+    align-items: flex-start;
 }
-.users-index>h1 {
+.employees>h1 {
     margin: 25px 20px 10px;
     font-weight: 100;
     font-family: 'Roboto Condensed', sans-serif;
 }
-.users-index .new-user-button {
+.employees .new-user-button {
     position: absolute;
     top: 25px;
     right: 20px;
@@ -95,4 +95,44 @@
 }
 .users-list .users-list-row:hover {
     background-color: rgba(255, 255, 255, 0.03);
+}
+
+.user-form {
+    display: flex;
+    flex-direction: column;
+    padding: 0 50px;
+}
+.user-form .form-group {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+}
+.user-form .form-group label {
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 300;
+    margin-bottom: 5px;
+}
+.user-form .form-group input {
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-left: 10px;
+    outline: none;
+    border: none;
+    background: var(--gray-dark);
+    color: white;
+    transition: 0.3s ease-in-out;
+}
+.user-form .form-actions {
+    display: flex;
+    flex-direction: row;
+}
+.user-form button {
+    margin: 10px 5px;
+    padding: 8px 16px;
+    background: var(--link-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }

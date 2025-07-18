@@ -49,7 +49,7 @@ const MobileNav = ({ logoText, pages, user, hasManagerAccess, currentView, switc
                                 <ul className="submenu">
                                     {page.subpages
                                         .filter((subpage) => subpage.path !== '')
-                                        .map((subpage) => (
+                                        .map((subpage) => (!subpage.hidden &&
                                             <li key={`${page.path}/${subpage.path}`} className="submenu-item">
                                                 <Link
                                                     to={`${page.path}${subpage.path ? `/${subpage.path}` : ''}`}

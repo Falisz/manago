@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import {useParams, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
-import { Loader } from './Loader';
-import PostsShow from './PostsShow';
+import { Loader } from '../Loader';
+import PostDetail from './Detail';
 
-const PostsIndex = () => {
+const PostIndex = () => {
     const { postId } = useParams();
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
@@ -47,7 +47,6 @@ const PostsIndex = () => {
 
     return (
         <>
-        <div className="posts-index">
             {posts.length === 0 || error ? (
                 <p>No posts available.</p>
             ) : (
@@ -94,13 +93,11 @@ const PostsIndex = () => {
                     ))}
                 </ul>
             )}
-
-        </div>
-        {selectedPostId && (
-            <PostsShow postId={selectedPostId} onClose={closePostModal} />
-        )}
+            {selectedPostId && (
+                <PostDetail postId={selectedPostId} onClose={closePostModal} />
+            )}
         </>
     );
 };
 
-export default PostsIndex;
+export default PostIndex;

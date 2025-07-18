@@ -35,6 +35,7 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin: 0 auto;
 }
 .app-notice .main-icon {
   font-size: 100px;
@@ -210,14 +211,14 @@ code {
   font-size: 16px;
 }
 
-
-.posts-index {
-  padding: 20px;
-  width: 80%;
+main.posts .post-list {
+  margin: 0 auto;
 }
 .post-list {
+  padding: 20px;
+  width: 80%;
+  margin: 0;
   list-style: none;
-  padding: 0;
 }
 .post-item {
   border-bottom: 1px solid #ccc;
@@ -249,22 +250,31 @@ code {
   align-items: center;
   z-index: 500;
   cursor: pointer;
+  transition: ease-in-out 0.3s;
+}
+
+.app-modal-overlay.hidden {
+  visibility: hidden;
+  opacity: 0;
 }
 
 .app-modal-content {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  right: 0;
   background: var(--background-color-2);
-  padding: 20px;
+  padding: 25px;
   border-radius: 8px;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
+  width: 50%;
+  height: calc(100% - 50px);
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 1500;
+  transition: ease-in-out 0.3s;
+}
+.app-modal-content.hidden {
+  transform: translateX(100%);
+  visibility: hidden;
 }
 
 .app-modal-content>h1 {

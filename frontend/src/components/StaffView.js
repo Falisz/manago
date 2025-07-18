@@ -88,7 +88,7 @@ const StaffView = ({ pages, switchView }) => {
                 currentPath={location.pathname}
             />
             <div className="app-content">
-                <main>
+                <main className={currentMainPage?.path}>
                     <Outlet />
                 </main>
             </div>

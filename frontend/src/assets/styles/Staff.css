@@ -128,8 +128,24 @@
 /*APP CONTENT*/
 /*************/
 .app.staff .app-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
     flex: 1;
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+.app.staff .app-content main {
+    display: flex;
+    position: relative;
+    flex: 1;
+    align-items: center;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
 }
 
 

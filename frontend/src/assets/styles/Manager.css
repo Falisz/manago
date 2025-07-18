@@ -244,6 +244,7 @@
     margin: 0;
     padding: 0;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 .app.manager .app-content main::-webkit-scrollbar {
     width: 20px;

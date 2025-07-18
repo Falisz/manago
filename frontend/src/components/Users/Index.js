@@ -1,13 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import {useNavigate, useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
 import axios from 'axios';
 import Loader from "../Loader";
 import '../../assets/styles/Users.css';
 import UserDetail from './Detail';
+import UserEdit from "./Edit";
+import Modal from "../Modal";
 
 const UsersIndex = () => {
     const { userId } = useParams();
+    const location = useLocation();
     const [selectedUserId, setSelectedUserId] = useState(null);
+    const [editMode, setEditMode] = useState(null);
+    const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,17 +24,22 @@ const UsersIndex = () => {
     });
 
     useEffect(() => {
+        const isEditMode = location.pathname.includes('/new') || location.pathname.includes('/edit')
+
         if (userId) {
             setSelectedUserId(parseInt(userId));
         } else {
             setSelectedUserId(null);
         }
-    }, [userId]);
 
-    const deselectUser = () => {
-        setSelectedUserId(null);
+        setEditMode(isEditMode);
+        setShowModal(isEditMode || userId);
+
+    }, [userId, location.pathname]);
+
+    const goBack = () => {
         navigate('/employees');
-    };
+    }
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -67,6 +77,17 @@ const UsersIndex = () => {
             key: field,
             direction: prev.key === field && prev.direction === 'asc' ? 'desc' : 'asc'
         }));
+    };
+
+    const handleDelete = async (userId) => {
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
+        try {
+            await axios.delete(`/api/users/${userId}`, { withCredentials: true });
+            setUsers(users.filter(user => user.user !== userId));
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            setError(err.response?.data?.message || 'Failed to delete user. Please try again.');
+        }
     };
 
     const filteredAndSortedUsers = useMemo(() => {
@@ -108,9 +129,11 @@ const UsersIndex = () => {
     if (error) return <>{error}</>;
 
     return (
-        <div className="users-index">
+        <>
             <h1>Employees of Zyrah</h1>
-            <button className="new-user-button">+ Add Employee</button>
+            <button className="new-user-button" onClick={() => navigate('/employees/new')}>
+                + Add Employee
+            </button>
             <div className="users-list">
                 <div className="users-list-header">
                     <div className="users-list-header-cell">
@@ -200,18 +223,23 @@ const UsersIndex = () => {
                                 <div>{user.active ? 'Active' : 'Not'}</div>
                                 <div className="user-actions">
                                     <i className="material-symbols-outlined" onClick={() => navigate('/employees/' + user.user)}>manage_search</i>
-                                    <i className="material-symbols-outlined">edit</i>
-                                    <i className="material-symbols-outlined">delete</i>
+                                    <i className="material-symbols-outlined" onClick={() => navigate('/employees/edit/' + user.user)}>edit</i>
+                                    <i className="material-symbols-outlined" onClick={() => handleDelete(user.user)}>delete</i>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
             </div>
-            {selectedUserId && (
-                <UserDetail userId={selectedUserId} onClose={deselectUser} />
+            <Modal hidden={!showModal} onClose={goBack} closeButton={true}>
+            {editMode && (
+                    <UserEdit userId={selectedUserId} />
             )}
-        </div>
+            {!editMode && selectedUserId && (
+                    <UserDetail userId={selectedUserId} />
+            )}
+            </Modal>
+        </>
     );
 };
 
