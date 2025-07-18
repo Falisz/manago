@@ -5,7 +5,8 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config();
-const { sequelize, seedData } = require('./db');
+const { sequelize } = require('./db');
+const { seedData } = require('./utils/seed-data');
 
 const validateEnv = () => {
     const requiredEnvVars = [

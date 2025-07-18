@@ -1,5 +1,9 @@
 //BACKEND/utils.js
-const { sequelize, AppPage, User, UserDetails, UserConfigs, Post, Channel } = require('./db');
+const { sequelize } = require('./db');
+const { AppPage } = require('./model/app-models');
+const { User, UserDetails, UserConfigs } = require('./model/user-models');
+const { Post, Channel } = require('./model/posts-models');
+
 const bcrypt = require('bcrypt');
 
 async function authUser(login, password) {
@@ -142,15 +146,15 @@ async function getPages(user) {
 
         for (const row of rows) {
             const page = {
-                path: row.path,
-                title: row.title,
-                icon: row.icon,
-                ...(row.component ? { component: row.component } : {}),
-                ...(row.parent ? {} : { subpages: [] })
+                path: row?.path,
+                title: row?.title,
+                icon: row?.icon,
+                ...(row?.component ? { component: row.component } : {}),
+                ...(row?.parent ? {} : { subpages: [] })
             };
 
-            if (!row.parent) {
-                pageMap.set(row.ID, page);
+            if (!row?.parent) {
+                pageMap.set(row?.ID, page);
                 pages.push(page);
             } else {
                 const parent = pageMap.get(row.parent);
@@ -202,7 +206,7 @@ async function getAllUsers() {
         });
     } catch (err) {
         console.error('Error fetching all users:', err);
-        return false;
+        return null;
     }
 }
 
@@ -222,16 +226,125 @@ async function getUserById(userId) {
                 ...user.toJSON(),
                 ...user.UserDetails.toJSON()
             };
+
             delete userData.UserDetails;
+
             return userData;
         } else {
             return null;
         }
     } catch (err) {
-        console.error(`Error fetching post with ID ${postId}:`, err);
-        return false;
+        console.error(`Error fetching post with ID ${userId}:`, err);
+        return null;
     }
 }
+
+async function createUser(data) {
+    try {
+        if (!data.email || !data.password || !data.first_name || !data.last_name) {
+            return { success: false, status: 400, message: 'Email, password, first_name, and last_name are required.' };
+        }
+
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+
+        const user = await User.create({
+            login: data.login || null,
+            email: data.email,
+            password: hashedPassword,
+            active: true,
+            removed: false,
+        });
+
+        await UserDetails.create({
+            user: user.ID,
+            first_name: user.first_name,
+            last_name: user.last_name,
+        });
+
+        await UserConfigs.create({
+            user: user.ID,
+            manager_view_access: data.manager_view_access || false,
+            manager_view_enabled: false,
+            manager_nav_collapsed: false
+        });
+
+        return { success: true, user: user.ID};
+    } catch (err) {
+        console.error('Error creating post:', err);
+        return { success: false, status: 500, message: 'Server error.' };
+    }
+}
+
+async function editUser(userId, data) {
+    try {
+        const user = await User.findOne({
+            where: { ID: userId, removed: false },
+            include: [
+                { model: UserDetails,  as: 'UserDetails' },
+                { model: UserConfigs,  as: 'UserConfigs' },
+            ],
+        });
+
+        if (!user) {
+            return { success: false, status: 404, message: 'User not found.' };
+        }
+
+        const userUpdate = {};
+
+        if (data.login !== undefined) userUpdate.login = data.login;
+        if (data.email) userUpdate.email = data.email;
+        if (data.password) userUpdate.password = await bcrypt.hash(data.password, 10);
+        if (data.active !== undefined) userUpdate.active = data.active;
+
+        await user.update(userUpdate);
+
+        if (data.first_name || data.last_name) {
+            await UserDetails.update(
+                {
+                    first_name: data.first_name || user.UserDetails?.first_name,
+                    last_name: data.last_name || user.UserDetails?.last_name
+                },
+                { where: { user: userId } }
+            );
+        }
+
+        if (data.manager_view_access) {
+            await UserConfigs.update(
+                {
+                    manager_view_access: data.manager_view_access,
+                },
+                { where: { user: userId } }
+            );
+        }
+
+        const updatedUser = await getUserById(userId);
+
+        return { success: true, user: updatedUser };
+    } catch (err) {
+        console.error(`Error updating user with ID ${userId}:`, err);
+        return { success: false, status: 500, message: 'Server error.' };
+    }
+}
+
+async function removeUser(userId) {
+    try {
+        const user = await User.findOne({
+            where: { ID: userId, removed: false }
+        });
+
+        if (!user) {
+            return { success: false, status: 404, message: 'User not found.' };
+        }
+
+        await user.update({ removed: true, active: false });
+
+        return { success: true, message: 'User removed successfully.' };
+    } catch (err) {
+        console.error(`Error removing user with ID ${userId}:`, err);
+        return { success: false, status: 500, message: 'Server error.' };
+    }
+}
+
 
 async function getAllPosts() {
     try {
@@ -346,6 +459,9 @@ module.exports = {
     logoutUser,
     getAllUsers,
     getUserById,
+    createUser,
+    editUser,
+    removeUser,
     getAllPosts,
     getPostById,
     createPost,

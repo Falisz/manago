@@ -13,6 +13,9 @@ const {
     logoutUser,
     getAllUsers,
     getUserById,
+    createUser,
+    editUser,
+    removeUser,
     getAllPosts,
     getPostById,
     createPost,
@@ -236,6 +239,109 @@ router.get('/users/:userId', async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching users:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.post('/users/new', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        if (req.session.user.role !== 99) {
+            return res.status(403).json({ message: 'Forbidden: Admin access required.' });
+        }
+
+        const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
+
+        const result = await createUser({
+            login,
+            email,
+            password,
+            first_name,
+            last_name,
+            role,
+            active,
+            manager_view_access
+        });
+
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        const newUser = await getUserById(result.user);
+        res.status(201).json({ message: 'User created successfully!', user: newUser });
+    } catch (err) {
+        console.error('Error creating user:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.put('/users/edit/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        if (req.session.user.role !== 99) {
+            return res.status(403).json({ message: 'Forbidden: Admin access required.' });
+        }
+
+        const { userId } = req.params;
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const { login, email, password, first_name, last_name, role, active, manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
+
+        const result = await editUser(parseInt(userId), {
+            login,
+            email,
+            password,
+            first_name,
+            last_name,
+            role,
+            active,
+            manager_view_access,
+            manager_view_enabled,
+            manager_nav_collapsed
+        });
+
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        res.json({ message: 'User updated successfully!', user: result.user });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.delete('/users/rm/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        if (req.session.user.role !== 99) {
+            return res.status(403).json({ message: 'Forbidden: Admin access required.' });
+        }
+
+        const { userId } = req.params;
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const result = await removeUser(parseInt(userId));
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        res.json({ message: 'User removed successfully!' });
+    } catch (err) {
+        console.error('Error removing user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 });

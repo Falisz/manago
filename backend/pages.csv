@@ -9,3 +9,6 @@
 14,1,0,,employees,Employees,people,EmployeesShow,3
 21,1,3,12,past,Past Schedules,,SchedulePast,3
 31,1,6,13,archive,Posts Archive,,PostsArchive,3
+30,1,6,13,:postId,Post,,PostsIndex,2
+40,1,0,14,:userId,User,,UsersIndex,3
+41,1,0,14,roles,Roles,,Roles,3

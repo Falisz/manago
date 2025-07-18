@@ -1,0 +1,1 @@
+/* Here will be all posts related functions from utils.js */
