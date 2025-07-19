@@ -67,8 +67,6 @@ const AppContent = () => {
         setLoading(true);
         try {
             const res = await axios.get('/api/pages', { withCredentials: true });
-
-            // Mapping React components onto pages
             if (Array.isArray(res.data)) {
                 const mappedPages = res.data.map((page) => ({
                     ...page,
