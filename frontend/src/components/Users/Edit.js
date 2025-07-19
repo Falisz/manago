@@ -4,7 +4,7 @@ import axios from 'axios';
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
-const UserEdit = ({ userId }) => {
+const UserEdit = ({ userId, onSave }) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         login: '',
@@ -64,29 +64,17 @@ const UserEdit = ({ userId }) => {
             if (userId) {
                 const response = await axios.put(`/api/users/${userId}`, formData, { withCredentials: true });
                 setSuccess(response.data.message);
+                onSave();
                 setTimeout(() => navigate('/employees'), 1500);
             } else {
                 const response = await axios.post('/api/users/new', formData, { withCredentials: true });
                 setSuccess(response.data.message);
+                onSave();
                 setTimeout(() => navigate('/employees'), 1500);
             }
         } catch (err) {
             console.error('Error saving user:', err);
             setError(err.response?.data?.message || 'Failed to save user. Please try again.');
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this user?')) return;
-        setError(null);
-        setSuccess(null);
-        try {
-            await axios.delete(`/api/users/${userId}`, { withCredentials: true });
-            setSuccess('User deleted successfully!');
-            setTimeout(() => navigate('/employees'), 1500);
-        } catch (err) {
-            console.error('Error deleting user:', err);
-            setError(err.response?.data?.message || 'Failed to delete user. Please try again.');
         }
     };
 
@@ -176,13 +164,13 @@ const UserEdit = ({ userId }) => {
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="save-button">
-                        {userId ? 'Save Changes' : 'Create Employee'}
+                        {userId ? (
+                            <><i className={'material-symbols-outlined'}>save</i> Save changes</>
+                        ) : (
+                            <><i className={'material-symbols-outlined'}>add</i>Create Employee</>
+                        )
+                        }
                     </button>
-                    {userId && (
-                        <button type="button" className="delete-button" onClick={handleDelete}>
-                            Delete Employee
-                        </button>
-                    )}
                 </div>
             </form>
         </>
