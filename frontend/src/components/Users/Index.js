@@ -15,7 +15,7 @@ const UserDetail = ({ userId, handleDelete }) => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const res = await axios.get(`/api/users/${userId}`, { withCredentials: true });
+                const res = await axios.get(`/users/${userId}`, { withCredentials: true });
                 if (res.data)
                     setUser(res.data);
                 else
@@ -210,8 +210,7 @@ const UsersIndex = () => {
     const refreshUsers = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/users', { withCredentials: true });
-            console.log('users:', response.data);
+            const response = await axios.get('/users', { withCredentials: true });
             setUsers(response.data);
         } catch (err) {
             console.error('Error fetching users:', err);
@@ -224,7 +223,7 @@ const UsersIndex = () => {
     const handleDelete = async (userId) => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         try {
-            await axios.delete(`/api/users/${userId}`, { withCredentials: true });
+            await axios.delete(`/users/${userId}`, { withCredentials: true });
         } catch (err) {
             console.error('Error deleting user:', err);
         } finally {

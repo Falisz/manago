@@ -11,7 +11,7 @@ const PostDetail = ({ postId, onClose }) => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const res = await axios.get(`/api/posts/${postId}`, { withCredentials: true });
+                const res = await axios.get(`/posts/${postId}`, { withCredentials: true });
                 setPost(res.data);
                 setLoading(false);
             } catch (err) {

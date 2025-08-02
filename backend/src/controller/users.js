@@ -1,1 +1,0 @@
-/* Here will be all users related functions from utils.js */

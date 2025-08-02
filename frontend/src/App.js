@@ -66,7 +66,7 @@ const AppContent = () => {
     const FetchPages = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/api/pages', { withCredentials: true });
+            const res = await axios.get('/pages', { withCredentials: true });
             if (Array.isArray(res.data)) {
                 const mappedPages = res.data.map((page) => ({
                     ...page,
@@ -93,8 +93,8 @@ const AppContent = () => {
         try {
             if (isManagerView && managerAccess) {
                 const res = await axios.post(
-                    '/api/manager-view',
-                    { user: user, manager_view: isManagerView },
+                    '/manager-view',
+                    { manager_view: isManagerView },
                     { withCredentials: true }
                 );
                 if (res.data.success) {
@@ -102,8 +102,8 @@ const AppContent = () => {
                 }
             } else {
                 await axios.post(
-                    '/api/manager-view',
-                    { user: user, manager_view: false },
+                    '/manager-view',
+                    { manager_view: false },
                     { withCredentials: true }
                 );
                 setManagerView(false);
@@ -117,8 +117,9 @@ const AppContent = () => {
     };
 
     useEffect(() => {
+        document.getElementById('root').classList.add(theme);
+        document.getElementById('root').classList.add(color);
         setLoading(true);
-        import(`./assets/styles/palette-${theme}-${color}.css`).then();
         CheckAccess().then();
     }, [setLoading, CheckAccess]);
 
@@ -127,7 +128,7 @@ const AppContent = () => {
     }, [FetchPages]);
 
     useEffect(() => {
-        setManagerView(user?.manager_view || false);
+        setManagerView(user?.manager_view_enabled || false);
     }, [user]);
 
     if (loading) {

@@ -1,1 +1,0 @@
-/* Here will be all authentication related functions from utils.js */

@@ -3,10 +3,24 @@ const express = require('express');
 const session = require('express-session');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const cors = require('cors');
+const winston = require('winston');
 const dotenv = require('dotenv');
 dotenv.config();
 const { sequelize } = require('./db');
 const { seedData } = require('./utils/seed-data');
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        winston.format.printf(({ timestamp, level, message }) => {
+            return `[${timestamp}] ${level.toUpperCase()}: ${message}`;
+        })
+    ),
+    transports: [
+        new winston.transports.File({ filename: 'requests.log' })
+    ]
+});
 
 const validateEnv = () => {
     const requiredEnvVars = [
@@ -59,16 +73,18 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
-    const timestamp = new Date().toLocaleString('en-EN');
     const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
     const host = req.headers.host || 'Unknown Host';
     const referer = req.headers.referer || req.get('referer') || 'No Referer';
 
-    console.log(`[${timestamp}] Incoming ${req.method} request ${req.url} from: {IP:${ip} Host:${host} Referer:${referer}}`);
+    logger.info(`Incoming ${req.method} request ${req.url} from: {IP:${ip} Host:${host} Referer:${referer}}`);
     next();
 });
 
-app.use('/api', require('./api'));
+app.use('/', require('./api/utils'));
+app.use('/', require('./api/auth'));
+app.use('/users', require('./api/users'));
+app.use('/posts', require('./api/posts'));
 
 const errorHandler = (err, req, res, _next) => {
     console.error('❌ Server error:', err.stack);

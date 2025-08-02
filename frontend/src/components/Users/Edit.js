@@ -24,7 +24,7 @@ const UserEdit = ({ userId, onSave }) => {
         if (userId) {
             const fetchUser = async () => {
                 try {
-                    const response = await axios.get(`/api/users/${userId}`, { withCredentials: true });
+                    const response = await axios.get(`/users/${userId}`, { withCredentials: true });
                     setFormData({
                         login: response.data.login || '',
                         email: response.data.email || '',
@@ -62,12 +62,12 @@ const UserEdit = ({ userId, onSave }) => {
         setSuccess(null);
         try {
             if (userId) {
-                const response = await axios.put(`/api/users/${userId}`, formData, { withCredentials: true });
+                const response = await axios.put(`/users/${userId}`, formData, { withCredentials: true });
                 setSuccess(response.data.message);
                 onSave();
                 setTimeout(() => navigate('/employees'), 1500);
             } else {
-                const response = await axios.post('/api/users/new', formData, { withCredentials: true });
+                const response = await axios.post('/users/new', formData, { withCredentials: true });
                 setSuccess(response.data.message);
                 onSave();
                 setTimeout(() => navigate('/employees'), 1500);

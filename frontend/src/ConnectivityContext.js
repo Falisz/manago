@@ -10,7 +10,7 @@ export const ConnectivityProvider = ({ children }) => {
     useEffect(() => {
         const checkConnection = async () => {
             try {
-                const response = await axios.get('/api/ping', { withCredentials: true });
+                const response = await axios.get('/ping', { withCredentials: true });
                 setIsConnected(response.data.connected);
             } catch (error) {
                 setIsConnected(false);

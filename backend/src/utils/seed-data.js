@@ -1,18 +1,11 @@
 // BACKEND/src/seed-data.js
 const path = require('path');
 const csv = require('csv-parser');
-const {AppModule, AppPage, User, UserDetails, UserConfigs, UserManager, Channel, Post} = require('../db')
+const {AppModule, AppPage, User, UserDetails, UserConfigs, UserManager, Channel, Post, Role, sequelize} = require('../db')
 
 async function seedData() {
     try {
-        await AppModule.sync();
-        await AppPage.sync();
-        await User.sync();
-        await UserDetails.sync();
-        await UserConfigs.sync();
-        await UserManager.sync();
-        await Channel.sync();
-        await Post.sync();
+        await sequelize.sync({ force: true });
 
         const moduleCount = await AppModule.count();
         if (moduleCount > 0) {
@@ -88,13 +81,30 @@ async function seedData() {
                 });
             }
 
-
             if (appPages.length === 0) {
                 console.warn('\tNo valid Pages to seed from pages.csv');
             } else {
                 await AppPage.bulkCreate(appPages);
                 console.log(`\tSeeded ${appPages.length} Pages from pages.csv`);
             }
+        }
+
+        const roleCount = await Role.count();
+        if (roleCount > 0) {
+            console.log('\tRoles table is not empty, skipping seeding.');
+        } else {
+            await Role.bulkCreate([
+                { ID: 1, name: 'Employee', system_default: true },
+                { ID: 2, name: 'Specialist', system_default: false },
+                { ID: 3, name: 'Team Leader', system_default: false },
+                { ID: 11, name: 'Manager', system_default: false },
+                { ID: 12, name: 'Branch Manager', system_default: false },
+                { ID: 13, name: 'Project Manager', system_default: false },
+                { ID: 50, name: 'CEO', system_default: false },
+                { ID: 99, name: 'Admin', system_default: false },
+            ]);
+            const roleCount = await Role.count();
+            console.log(`\tSeeded ${roleCount} Roles to the Roles table.`);
         }
 
         // Seed users, user_details, and user_configs
@@ -111,7 +121,8 @@ async function seedData() {
                 const results = [];
                 require('fs').createReadStream(csvFilePath)
                     .pipe(csv({
-                        headers: ['ID', 'first_name', 'last_name', 'email', 'role', 'active', 'manager_view_enabled', 'manager_nav_collapsed', 'password'],
+                        headers: ['ID', 'first_name', 'last_name', 'login', 'email', 'role',
+                            'active', 'manager_view_enabled', 'manager_nav_collapsed', 'password'],
                         skipLines: 0
                     }))
                     .on('data', (data) => results.push(data))
@@ -132,8 +143,8 @@ async function seedData() {
 
                 users.push({
                     ID: userID,
+                    login: row.login,
                     email: row.email,
-                    role: parseInt(row.role),
                     active,
                     password: row.password
                 });

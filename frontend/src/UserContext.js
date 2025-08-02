@@ -18,7 +18,8 @@ export const UserProvider = ({ children }) => {
         isCheckingRef.current = true;
 
         try {
-            const res = await axios.get('/api/access', { withCredentials: true });
+            const res = await axios.get('/access', { withCredentials: true });
+            console.log("Checked access", res);
             setAccess(res.data.access);
             setUser(res.data.user);
             setManagerAccess(res.data.manager_access);
@@ -49,7 +50,7 @@ export const UserProvider = ({ children }) => {
         setLoading(true);
         try {
             document.getElementById('root').classList.remove('staff', 'manager');
-            await axios.get('/api/logout', { withCredentials: true });
+            await axios.get('/logout', { withCredentials: true });
             setUser(null);
             setAccess(false);
             setManagerAccess(false);

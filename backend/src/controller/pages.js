@@ -1,1 +1,0 @@
-/* Here will be all app pages and modules related functions from utils.js */

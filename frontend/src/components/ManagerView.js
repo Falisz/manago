@@ -9,12 +9,12 @@ import MobileNav from './MobileNav';
 import {useUser} from "../UserContext";
 
 const MainNav = ({user, pages, location}) => {
-    const [navCollapsed, setNavCollapsed] = useState(false);
+    const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
     useEffect(() => {
         const fetchNavCollapsed = async () => {
             try {
-                const res = await axios.get('/api/access', { withCredentials: true });
+                const res = await axios.get('/access', { withCredentials: true });
                 setNavCollapsed(res.data.user.manager_nav_collapsed || false);
             } catch (error) {
                 console.error('Error fetching nav_collapsed:', error);
@@ -30,7 +30,7 @@ const MainNav = ({user, pages, location}) => {
 
         try {
             await axios.post(
-                '/api/toggle-nav',
+                '/toggle-nav',
                 { user: user, nav_collapsed: toggledValue },
                 { withCredentials: true }
             );
