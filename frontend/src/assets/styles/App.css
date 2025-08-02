@@ -44,7 +44,7 @@ code {
   --background-color-2: var(--black-brighter);
   --background-gradient-1: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
   --background-gradient-2: linear-gradient(45deg, var(--black), var(--gray-darker));
-  --background-color-1: var(--color-gradient);
+
 }
 
 .app.light {
@@ -84,6 +84,8 @@ code {
 .app {
   --link-color: var(--color);
   --highlight-color: var(--color-bright);
+  color: var(--text-color);
+  background: var(--background-color);
 }
 
 .app a {
