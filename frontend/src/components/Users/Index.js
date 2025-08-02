@@ -276,12 +276,10 @@ const UsersIndex = () => {
                 onClose={goBack}
                 closeButton={true}
                 key={'detail'}>
-                {selectedUserId &&
-                    <UserDetail
-                        userId={selectedUserId}
-                        handleDelete={()=>{handleDelete(selectedUserId).then()}}
-                    />
-                }
+                <UserDetail
+                    userId={selectedUserId}
+                    handleDelete={()=>{handleDelete(selectedUserId).then()}}
+                />
             </Modal>
 
             <Modal
