@@ -14,16 +14,17 @@ const UserDetail = ({ userId, handleDelete }) => {
 
     useEffect(() => {
         const fetchPost = async () => {
+            console.log(userId);
             try {
                 const res = await axios.get(`/users/${userId}`, { withCredentials: true });
                 if (res.data)
                     setUser(res.data);
                 else
-                    setError('User not found');
-                setLoading(false);
+                    setError('User not found!');
             } catch (err) {
                 console.error('Error fetching post:', err);
                 setError('User not found!');
+            } finally {
                 setLoading(false);
             }
         };
@@ -247,7 +248,7 @@ const UsersIndex = () => {
         const isEditMode = location.pathname.includes('/new') || location.pathname.includes('/edit')
 
         if (userId) {
-            setSelectedUserId(parseInt(userId));
+            setSelectedUserId(userId);
             setShowDetailModal(true);
         } else {
             setSelectedUserId(null);
@@ -276,10 +277,10 @@ const UsersIndex = () => {
                 onClose={goBack}
                 closeButton={true}
                 key={'detail'}>
-                <UserDetail
+                {selectedUserId && <UserDetail
                     userId={selectedUserId}
                     handleDelete={()=>{handleDelete(selectedUserId).then()}}
-                />
+                />}
             </Modal>
 
             <Modal
