@@ -14,7 +14,6 @@ const UserDetail = ({ userId, handleDelete }) => {
 
     useEffect(() => {
         const fetchPost = async () => {
-            console.log(userId);
             try {
                 const res = await axios.get(`/users/${userId}`, { withCredentials: true });
                 if (res.data)
