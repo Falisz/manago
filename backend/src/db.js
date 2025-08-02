@@ -134,7 +134,6 @@ AppModule.hasMany(AppPage, { foreignKey: 'module', sourceKey: 'ID' });
 //
 // USER MODELS
 //
-
 const Role = sequelize.define('Role', {
     ID: {
         type: DataTypes.INTEGER,
@@ -145,22 +144,20 @@ const Role = sequelize.define('Role', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    power: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10,
+        allowNull: false,
+    },
     system_default: {
         type: DataTypes.BOOLEAN,
+        defaultValue: false,
         allowNull: true
     }
 }, {
     tableName: 'roles',
     timestamps: false
 });
-// ROLES:
-//      #1 Employee (system default)
-//      #2 Specialist
-//      #3 Team Leader
-//      #11 Manager
-//      #12 Project Manager
-//      #13 Branch Manager
-//      #99 Admin
 
 const User = sequelize.define('User', {
     ID: {

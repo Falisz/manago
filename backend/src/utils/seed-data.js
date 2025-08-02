@@ -94,14 +94,14 @@ async function seedData() {
             console.log('\tRoles table is not empty, skipping seeding.');
         } else {
             await Role.bulkCreate([
-                { ID: 1, name: 'Employee', system_default: true },
-                { ID: 2, name: 'Specialist', system_default: false },
-                { ID: 3, name: 'Team Leader', system_default: false },
-                { ID: 11, name: 'Manager', system_default: false },
-                { ID: 12, name: 'Branch Manager', system_default: false },
-                { ID: 13, name: 'Project Manager', system_default: false },
-                { ID: 50, name: 'CEO', system_default: false },
-                { ID: 99, name: 'Admin', system_default: false },
+                { ID: 1, name: 'Employee', power: 10, system_default: true },
+                { ID: 2, name: 'Specialist', power: 20, system_default: false },
+                { ID: 3, name: 'Team Leader', power: 30, system_default: false },
+                { ID: 11, name: 'Manager', power: 50, system_default: false },
+                { ID: 12, name: 'Branch Manager', power: 60, system_default: false },
+                { ID: 13, name: 'Project Manager', power: 70, system_default: false },
+                { ID: 50, name: 'CEO', power: 90, system_default: false },
+                { ID: 99, name: 'Admin', power: 100, system_default: false },
             ]);
             const roleCount = await Role.count();
             console.log(`\tSeeded ${roleCount} Roles to the Roles table.`);
