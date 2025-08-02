@@ -33,21 +33,21 @@ async function getPages(user) {
             icon: row?.icon,
             hidden: row?.hidden,
             ...(row?.component ? { component: row.component } : {}),
-            ...(row?.parent ? {} : { subpages: [] })
+            subpages: []
         };
+        pageMap.set(row.ID, page);
 
         if (!row?.parent) {
-            pageMap.set(row?.ID, page);
             pages.push(page);
-        } else {
+        }
+    }
+
+    for (const row of rows) {
+        if (row?.parent) {
             const parent = pageMap.get(row.parent);
             if (parent) {
-                parent.subpages.push({
-                    path: row.path,
-                    title: row.title,
-                    component: row.component,
-                    hidden: row?.hidden,
-                });
+                const childPage = pageMap.get(row.ID);
+                parent.subpages.push(childPage);
             }
         }
     }
