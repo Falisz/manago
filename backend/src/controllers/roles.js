@@ -57,7 +57,7 @@ async function updateRole(roleId, data) {
     }
 
     const role = await Role.findOne({
-        where: { ID: roleId, removed: false },
+        where: { ID: roleId },
     });
 
     if (!role) {
@@ -83,7 +83,7 @@ async function deleteRole(roleId) {
     const transaction = await sequelize.transaction();
 
     const role = await Role.findOne({
-        where: { ID: roleId, removed: false },
+        where: { ID: roleId },
         transaction
     });
 
