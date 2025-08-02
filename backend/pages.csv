@@ -12,8 +12,8 @@
 16,1,3,,schedule,Schedule,calendar_month,ScheduleShow,
 17,1,6,,posts,Posts,forum,PostsIndex,
 20,1,0,12,:userId,User,,UsersIndex,1
-21,1,0,12,new,New User,,UserEdit,1
-22,1,0,12,edit/:userId,Edit User,,UserEdit,1
+21,1,0,12,new,New User,,UsersIndex,1
+22,1,0,12,edit/:userId,Edit User,,UsersIndex,1
 23,1,0,12,roles,Roles,,RolesIndex,
 61,1,3,16,past,Past Schedules,,SchedulePast,
 70,1,6,17,:postId,Post,,PostsIndex,1

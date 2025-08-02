@@ -61,7 +61,7 @@ router.post('/manager-view', async (req, res) => {
 
         const {manager_view} = req.body;
 
-        if (!req.body || !manager_view) {
+        if (!req.body) {
             return res.status(401).json({message: 'No toggle value provided.'});
         }
 
@@ -94,11 +94,11 @@ router.post('/toggle-nav', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const {nav_collapsed} = req.body;
-
-        if (!req.body || !nav_collapsed) {
-            return res.status(401).json({message: 'No toggle value provided.'});
+        if (!req.body || typeof req.body.nav_collapsed !== 'boolean') {
+            return res.status(401).json({ message: 'Invalid or missing nav_collapsed value.' });
         }
+
+        const {nav_collapsed} = req.body;
 
         const [updated] = await UserConfigs.update(
             { manager_nav_collapsed: nav_collapsed },

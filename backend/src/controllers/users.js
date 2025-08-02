@@ -3,52 +3,55 @@ const { User, UserDetails, UserConfigs, sequelize} = require('../db')
 
 const bcrypt = require('bcrypt');
 
-async function getAllUsers() {
-    const users = await User.findAll({
-        attributes: { exclude: ['password', 'removed'] },
-        where: {removed: false },
-        include: [
-            { model: UserDetails,  as: 'UserDetails' }
-        ],
-        order: [['ID', 'ASC']]
-    });
+async function getUsers(userId = null) {
+    if (userId) {
+        let user = await User.findOne({
+            attributes: { exclude: ['password', 'removed'] },
+            where: { ID: userId, removed: false },
+            include: [
+                { model: UserDetails,  as: 'UserDetails' }
+            ],
+            order: [['ID', 'ASC']]
+        });
 
-    return users.map(user => {
-        const userData = {
+        if (!user)
+            return null;
+
+        user = {
             ...user.toJSON(),
             ...user.UserDetails.toJSON()
         };
-        delete userData.UserDetails;
-        return userData;
-    }) || null;
-}
 
-async function getUserById(userId) {
-    let user = await User.findOne({
-        attributes: { exclude: ['password', 'removed'] },
-        where: { ID: userId, removed: false },
-        include: [
-            { model: UserDetails,  as: 'UserDetails' }
-        ],
-        order: [['ID', 'ASC']]
-    });
+        delete user.UserDetails;
 
-    if (!user)
-        return null;
+        return user;
+    } else {
+        const users = await User.findAll({
+            attributes: { exclude: ['password', 'removed'] },
+            where: {removed: false },
+            include: [
+                { model: UserDetails,  as: 'UserDetails' }
+            ],
+            order: [['ID', 'ASC']]
+        });
 
-    user = {
-        ...user.toJSON(),
-        ...user.UserDetails.toJSON()
-    };
+        if (!users)
+            return null;
 
-    delete user.UserDetails;
-
-    return user;
+        return users.map(user => {
+            const userData = {
+                ...user.toJSON(),
+                ...user.UserDetails.toJSON()
+            };
+            delete userData.UserDetails;
+            return userData;
+        }) || null;
+    }
 }
 
 async function createUser(data) {
     if (!data.email || !data.password || !data.first_name || !data.last_name) {
-        return null;
+        return {success: false, message: "Mandatory data not provided."};
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -74,12 +77,12 @@ async function createUser(data) {
         manager_nav_collapsed: false
     });
 
-    return user;
+    return {success: true, message: "User created successfully.", user: user};
 }
 
 async function editUser(userId, data) {
     if (!userId) {
-        return null;
+        return {success: false, message: "User ID not provided."};
     }
 
     const user = await User.findOne({
@@ -91,7 +94,7 @@ async function editUser(userId, data) {
     });
 
     if (!user) {
-        return null;
+        return {success: false, message: "User not found."};
     }
 
     const userUpdate = {};
@@ -122,7 +125,7 @@ async function editUser(userId, data) {
         );
     }
 
-    return updatedUser;
+    return {success: true, message: "User updated successfully.", user: updatedUser};
 }
 
 async function removeUser(userId) {
@@ -142,7 +145,7 @@ async function removeUser(userId) {
     })
 
     if (!user) {
-        return null;
+        return {success: false, message: "User not found."};
     }
 
     await user.update({
@@ -162,12 +165,11 @@ async function removeUser(userId) {
 
     await transaction.commit();
 
-    return user;
+    return {success: true, message: "User removed successfully."};
 }
 
 module.exports = {
-    getAllUsers,
-    getUserById,
+    getUsers,
     createUser,
     editUser,
     removeUser

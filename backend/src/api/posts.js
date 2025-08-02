@@ -1,8 +1,7 @@
 //BACKEND/api/posts.js
 const router = require('express').Router();
 const {
-    getAllPosts,
-    getPostById,
+    getPosts,
     createPost,
     updatePost,
     deletePost
@@ -15,7 +14,7 @@ router.get('/', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const posts = await getAllPosts();
+        const posts = await getPosts();
 
         res.json(posts);
     } catch (err) {
@@ -27,17 +26,17 @@ router.get('/', async (req, res) => {
 // Get Post by its ID
 router.get('/:postId', async (req, res) => {
     try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
         const { postId } = req.params;
 
         if (!postId || isNaN(postId)) {
             return res.status(400).json({ message: 'Invalid post ID.' });
         }
 
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        const post = await getPostById(parseInt(postId));
+        const post = await getPosts(parseInt(postId));
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });

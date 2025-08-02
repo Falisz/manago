@@ -1,35 +1,42 @@
 //BACKEND/controller/pages.js
 const {Post, User, UserDetails, Channel} = require("../db");
 
-async function getAllPosts() {
-    const posts = await Post.findAll({
-        include: [
-            { model: User, attributes: ['ID'], include: [
-                    { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
-                ] },
-            { model: Channel, attributes: ['ID', 'name'] }
-        ],
-        order: [['createdAt', 'DESC']]
-    });
+async function getPosts(postId = null) {
 
-    return posts.map(post => ({
-        ...post.toJSON(),
-        User: post?.User ? post.User.toJSON() : null
-    }));
-}
-
-async function getPostById(postId) {
-    const post = await Post.findOne({
-        where: { ID: postId },
+    const commonConfig = {
         include: [
-            { model: User, attributes: ['ID'], include: [
+            {
+                model: User,
+                attributes: ['ID'],
+                include: [
                     { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
-                ] },
+                ]
+            },
             { model: Channel, attributes: ['ID', 'name'] }
         ]
-    });
+    };
 
-    return post ? { ...post.toJSON(), User: post.User ? post.User.toJSON() : null } : null;
+    if (postId) {
+
+        const post = await Post.findOne({
+            where: { ID: postId },
+            ...commonConfig
+        });
+        return post ? { ...post.toJSON(), User: post.User ? post.User.toJSON() : null } : null;
+
+    } else {
+
+        const posts = await Post.findAll({
+            ...commonConfig,
+            order: [['createdAt', 'DESC']]
+        });
+
+        return posts.map(post => ({
+            ...post.toJSON(),
+            User: post?.User ? post.User.toJSON() : null
+        }));
+
+    }
 }
 
 async function createPost(data) {
@@ -79,8 +86,7 @@ async function deletePost(postId) {
 }
 
 module.exports = {
-    getAllPosts,
-    getPostById,
+    getPosts,
     createPost,
     updatePost,
     deletePost

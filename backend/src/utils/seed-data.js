@@ -1,11 +1,11 @@
 // BACKEND/src/seed-data.js
 const path = require('path');
 const csv = require('csv-parser');
-const {AppModule, AppPage, User, UserDetails, UserConfigs, UserManager, Channel, Post, Role, sequelize} = require('../db')
+const {AppModule, AppPage, User, UserDetails, UserConfigs, Channel, Post, Role, sequelize} = require('../db')
 
 async function seedData() {
     try {
-        await sequelize.sync({ force: true });
+        await sequelize.sync();
 
         const moduleCount = await AppModule.count();
         if (moduleCount > 0) {

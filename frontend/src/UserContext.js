@@ -19,7 +19,6 @@ export const UserProvider = ({ children }) => {
 
         try {
             const res = await axios.get('/access', { withCredentials: true });
-            console.log("Checked access", res);
             setAccess(res.data.access);
             setUser(res.data.user);
             setManagerAccess(res.data.manager_access);

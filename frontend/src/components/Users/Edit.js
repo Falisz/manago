@@ -65,12 +65,12 @@ const UserEdit = ({ userId, onSave }) => {
                 const response = await axios.put(`/users/${userId}`, formData, { withCredentials: true });
                 setSuccess(response.data.message);
                 onSave();
-                setTimeout(() => navigate('/employees'), 1500);
+                setTimeout(() => navigate(`/employees/${userId}`), 1500);
             } else {
                 const response = await axios.post('/users/new', formData, { withCredentials: true });
                 setSuccess(response.data.message);
                 onSave();
-                setTimeout(() => navigate('/employees'), 1500);
+                setTimeout(() => navigate(`/employees/${userId}`), 1500);
             }
         } catch (err) {
             console.error('Error saving user:', err);

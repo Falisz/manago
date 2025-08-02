@@ -1,12 +1,10 @@
 //BACKEND/api/users.js
 const router = require('express').Router();
 const {
-    getAllUsers,
-    getUserById,
+    getUsers,
     createUser,
     editUser,
-    removeUser,
-    checkUserIdAvailability,
+    removeUser
 } = require('../controllers/users');
 const {User} = require("../db");
 
@@ -16,7 +14,7 @@ router.get('/', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const users = await getAllUsers();
+        const users = await getUsers();
 
         res.json(users);
 
@@ -38,7 +36,7 @@ router.get('/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const user = await getUserById(parseInt(userId));
+        const user = await getUsers(parseInt(userId));
 
         res.json(user);
 
@@ -135,7 +133,7 @@ router.put('/:userId', async (req, res) => {
             return res.status(result.status || 400).json({ message: result.message });
         }
 
-        res.json({ message: 'User updated successfully!', user: result.user });
+        res.json({ message: result.message, user: result.user });
     } catch (err) {
         console.error('Error updating user:', err);
         res.status(500).json({ message: 'Server error.' });
