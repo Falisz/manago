@@ -324,7 +324,7 @@ main.posts .post-list {
   position: absolute;
   top: 0;
   right: 0;
-  background: var(--background-color-2);
+  background: var(--background-gradient-2);
   padding: 25px;
   border-radius: 8px;
   width: 50%;
