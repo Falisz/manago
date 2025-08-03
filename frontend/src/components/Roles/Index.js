@@ -11,13 +11,13 @@ import RoleDetails from "./Details";
 import RoleEdit from "./Edit";
 
 const RolesIndex = () => {
-    const {roleId} = useParams();
+    const { roleId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { roles, loading: rolesLoading, fetchRoles } = useRoles();
     const { role, loading: roleLoading, fetchRole, deleteRole } = useRole();
-    const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
+    const [ showDetailModal, setShowDetailModal ] = useState(false);
+    const [ showEditModal, setShowEditModal ] = useState(false);
 
     useEffect(() => {
         if (!roles) {
@@ -37,13 +37,6 @@ const RolesIndex = () => {
         }
     }, [roleId, location.pathname, fetchRole]);
 
-    const handleDelete = () => {
-        if (!window.confirm('Are you sure you want to delete this role?')) return;
-        deleteRole(roleId).then();
-        fetchRoles(false).then();
-        navigate('/employees/roles');
-    };
-
     const handleSave = (newRoleId) => {
         fetchRoles(false).then();
         if (newRoleId) {
@@ -55,6 +48,13 @@ const RolesIndex = () => {
             setShowEditModal(false);
             navigate(`/employees/roles/${roleId}`);
         }
+    };
+
+    const handleDelete = () => {
+        if (!window.confirm('Are you sure you want to delete this role?')) return;
+        deleteRole(roleId).then();
+        fetchRoles(false).then();
+        navigate('/employees/roles');
     };
 
     const closeDetailsModal = () => {
@@ -92,13 +92,12 @@ const RolesIndex = () => {
                 onClose={closeDetailsModal}
                 key="detail"
             >
-                {roleId && (
+                {roleId &&
                     <RoleDetails
                         role={role}
                         loading={roleLoading}
                         handleDelete={handleDelete}
-                    />
-                )}
+                    />}
             </Modal>
             <Modal
                 hidden={!showEditModal}
