@@ -68,11 +68,15 @@ const RoleDetail = ({ roleId, handleDelete }) => {
     );
 };
 
-const RolesList = ({roles, loading}) => {
+const RolesList = ({roles, loading, error}) => {
     const navigate = useNavigate();
 
     if (loading)
         return <Loader />;
+
+    if (error)
+        return <div>{error}</div>;
+
     return (
         <div className="roles-list">
             {roles.length === 0 ? (<p>No roles found.</p>) : (roles.map(role => (
@@ -154,12 +158,16 @@ const RolesIndex = () => {
 
     return (
         <>
-            <h1>Roles in Zyrah</h1>
+            <h1>Security Roles</h1>
             <button className="new-role-button" onClick={() => navigate('/employees/roles/new')}>
                 + Add Role
             </button>
 
-            <RolesList roles={roles} loading={loading} />
+            <RolesList
+                roles={roles}
+                loading={loading}
+                error={error}
+            />
 
             <Modal
                 hidden={!showDetailModal}

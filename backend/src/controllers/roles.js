@@ -20,7 +20,7 @@ async function getRoles(roleId = null) {
 
     } else {
 
-        const roles = await Role.findAll({order: [['ID', 'ASC']]});
+        const roles = await Role.findAll({order: [['power', 'ASC']]});
 
         return roles.map(role => {
             return {
@@ -59,6 +59,10 @@ async function createRole(data) {
 
     if (!data.name || !data.power) {
         return {success: false, message: "Mandatory data not provided."};
+    }
+
+    if (await Role.findOne({where: {name: data.name}})) {
+        return {success: false, message: "The role with this exact name already exists."};
     }
 
     const role = await Role.create({
