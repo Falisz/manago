@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Modal = ({ children, onClose, hidden = false, closeButton = false }) => {
+const Modal = ({ children, onClose, hidden = false, closeButton = true }) => {
     return (
         <>
             <div className={`app-modal-overlay ${hidden ? 'hidden' : ''}`} onClick={onClose} ></div>
