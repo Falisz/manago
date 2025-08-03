@@ -72,7 +72,7 @@ async function createRole(data) {
     });
 
 
-    return {success: true, message: "Role created successfully.", role: role};
+    return {success: true, message: "Role created successfully.", role: role.toJSON()};
 
 }
 
@@ -97,7 +97,7 @@ async function updateRole(roleId, data) {
 
     const updatedRole = await role.update(roleUpdate);
 
-    return {success: true, message: "Role updated successfully.", role: updatedRole};
+    return {success: true, message: "Role updated successfully.", role: updatedRole.toJSON()};
 }
 
 async function deleteRole(roleId) {
