@@ -2,20 +2,20 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import '../../assets/styles/Roles.css';
+import Button from "../Button";
 import Modal from "../Modal";
 import useRoles from "../../hooks/useRoles";
 import useRole from "../../hooks/useRole";
 import RolesList from "./List";
 import RoleDetails from "./Details";
 import RoleEdit from "./Edit";
-import Button from "../Button";
 
 const RolesIndex = () => {
+    const {roleId} = useParams();
     const location = useLocation();
     const navigate = useNavigate();
     const { roles, loading: rolesLoading, fetchRoles } = useRoles();
     const { role, loading: roleLoading, fetchRole, deleteRole } = useRole();
-    const {roleId} = useParams();
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
@@ -40,12 +40,12 @@ const RolesIndex = () => {
     const handleDelete = () => {
         if (!window.confirm('Are you sure you want to delete this role?')) return;
         deleteRole(roleId).then();
-        fetchRoles().then();
+        fetchRoles(false).then();
         navigate('/employees/roles');
     };
 
     const handleSave = (newRoleId) => {
-        fetchRoles().then();
+        fetchRoles(false).then();
         if (newRoleId) {
             fetchRole(newRoleId).then();
             setShowEditModal(false);

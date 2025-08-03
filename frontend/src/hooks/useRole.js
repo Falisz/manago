@@ -12,6 +12,7 @@ const useRole = () => {
         try {
             setLoading(true);
             setError(null);
+            setSuccess(null);
             const res = await axios.get(`/roles/${roleId}`, { withCredentials: true });
             if (res.data) {
                 setRole(res.data);
@@ -49,6 +50,8 @@ const useRole = () => {
             return null;
         } finally {
             setLoading(false);
+            setError(null);
+            setSuccess(null);
         }
     }, []);
 
@@ -56,6 +59,7 @@ const useRole = () => {
         try {
             setLoading(true);
             setError(null);
+            setSuccess(null);
             await axios.delete(`/roles/${roleId}`, { withCredentials: true });
             setRole(null);
             return true;
@@ -65,6 +69,8 @@ const useRole = () => {
             return false;
         } finally {
             setLoading(false);
+            setError(null);
+            setSuccess(null);
         }
     }, []);
 

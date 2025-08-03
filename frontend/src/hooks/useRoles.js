@@ -6,9 +6,9 @@ const useRoles = () => {
     const [roles, setRoles] = useState(null);
     const [error, setError] = useState(null);
 
-    const fetchRoles = useCallback(async () => {
+    const fetchRoles = useCallback(async (loading=true) => {
         try {
-            setLoading(true);
+            setLoading(loading);
             setError(null);
             const response = await axios.get('/roles', { withCredentials: true });
             setRoles(response.data);
