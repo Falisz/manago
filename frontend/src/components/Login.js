@@ -3,10 +3,10 @@ import '../assets/styles/Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
-import { useUser } from '../UserContext';
+import {useAuth} from "../contexts/AuthContext";
 
 const Login = () => {
-    const { Login: HandleLogin } = useUser();
+    const { Login: HandleLogin } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');

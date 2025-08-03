@@ -4,10 +4,10 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
-import {useUser} from "../UserContext";
+import {useAuth} from "../contexts/AuthContext";
 
 const StaffView = ({ pages, switchView }) => {
-    const { user, managerAccess } = useUser();
+    const { user, managerAccess } = useAuth();
     const location = useLocation();
 
     const currentMainPage = pages.find((page) =>

@@ -6,7 +6,7 @@ import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from "axios";
 import MobileNav from './MobileNav';
-import {useUser} from "../UserContext";
+import {useAuth} from "../contexts/AuthContext";
 
 const MainNav = ({user, pages, location}) => {
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
@@ -120,7 +120,7 @@ const SubNav = ({user, currentMainPage, location, switchView}) => {
 }
 
 const ManagerView = ({pages, switchView }) => {
-    const { user } = useUser();
+    const { user } = useAuth();
     const location = useLocation();
 
     const currentMainPage = pages.find((page) =>

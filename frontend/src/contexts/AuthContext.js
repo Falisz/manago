@@ -1,11 +1,11 @@
-// FRONTEND/UserContext.js
+// FRONTEND/contexts/AuthContext.js
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useLoading } from './LoadingContext';
 
-const UserContext = createContext();
+const AuthContext = createContext();
 
-export const UserProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [access, setAccess] = useState(null);
     const [managerAccess, setManagerAccess] = useState(null);
@@ -65,7 +65,7 @@ export const UserProvider = ({ children }) => {
     }, [CheckAccess]);
 
     return (
-        <UserContext.Provider
+        <AuthContext.Provider
             value={{
                 user,
                 access,
@@ -76,8 +76,8 @@ export const UserProvider = ({ children }) => {
             }}
         >
             {children}
-        </UserContext.Provider>
+        </AuthContext.Provider>
     );
 };
 
-export const useUser = () => useContext(UserContext);
+export const useAuth = () => useContext(AuthContext);
