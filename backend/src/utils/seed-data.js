@@ -1,7 +1,7 @@
 // BACKEND/src/seed-data.js
 const path = require('path');
 const csv = require('csv-parser');
-const {AppModule, AppPage, User, UserDetails, UserConfigs, Channel, Post, Role, sequelize} = require('../db')
+const {AppModule, AppPage, User, UserDetails, UserConfigs, Channel, Post, Role, sequelize, UserRole} = require('../db')
 
 async function seedData() {
     try {
@@ -94,14 +94,14 @@ async function seedData() {
             console.log('\tRoles table is not empty, skipping seeding.');
         } else {
             await Role.bulkCreate([
-                { ID: 1, name: 'Employee', system_default: true },
-                { ID: 2, name: 'Specialist', system_default: false },
-                { ID: 3, name: 'Team Leader', system_default: false },
-                { ID: 11, name: 'Manager', system_default: false },
-                { ID: 12, name: 'Branch Manager', system_default: false },
-                { ID: 13, name: 'Project Manager', system_default: false },
-                { ID: 50, name: 'CEO', system_default: false },
-                { ID: 99, name: 'Admin', system_default: false },
+                { ID: 1, name: 'Employee', power: 10, system_default: true },
+                { ID: 2, name: 'Specialist', power: 20, system_default: false },
+                { ID: 3, name: 'Team Leader', power: 30, system_default: false },
+                { ID: 11, name: 'Manager', power: 50, system_default: false },
+                { ID: 12, name: 'Branch Manager', power: 60, system_default: false },
+                { ID: 13, name: 'Project Manager', power: 70, system_default: false },
+                { ID: 50, name: 'CEO', power: 90, system_default: false },
+                { ID: 99, name: 'Admin', power: 100, system_default: false },
             ]);
             const roleCount = await Role.count();
             console.log(`\tSeeded ${roleCount} Roles to the Roles table.`);
@@ -169,6 +169,24 @@ async function seedData() {
                 await UserConfigs.bulkCreate(userConfigs);
                 console.log(`\tSeeded ${users.length} users, ${userDetails.length} user_details, and ${userConfigs.length} user_configs from users.csv`);
             }
+        }
+
+        const userRolesCount = await UserRole.count();
+        if (userRolesCount > 0) {
+            console.log('\tUsers Roles assignment table is not empty, skipping seeding.');
+        } else {
+            await UserRole.bulkCreate([
+                {user: 137500, role: 1},
+                {user: 475776, role: 1},
+                {user: 475776, role: 2},
+                {user: 864434, role: 3},
+                {user: 353621, role: 11},
+                {user: 353621, role: 12},
+                {user: 398285, role: 11},
+            ]);
+            const userRolesCount = await UserRole.count();
+            console.log(`\tSeeded ${userRolesCount} User Role assignments to the User Roles table.`);
+
         }
 
         // Seed channels

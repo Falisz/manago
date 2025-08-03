@@ -79,19 +79,45 @@
     display: flex;
     flex-direction: row;
     cursor: pointer;
+    border-radius: 10px;
+    transition: .3s ease-in-out;
 }
 .users-list .users-list-row div {
     flex: 1;
     padding: 10px;
 }
-.users-list .users-list-row .user-actions {
-    display: flex;
-    flex: 0;
-    width: fit-content;
-    cursor: pointer;
-}
 .users-list .users-list-row:hover {
-    background-color: rgba(255, 255, 255, 0.03);
+    background-color: var(--background-color-2);
+}
+
+.user-detail {
+    padding: 10px;
+}
+.user-detail-label {
+    font-size: 1.25em;
+    font-weight: 200;
+    margin: 10px 0 5px;
+    text-transform: uppercase;
+}
+.user-detail-data {
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+}
+.user-detail-data i {
+    padding: 3px;
+    margin-right: 5px;
+    border-radius: 10px;
+}
+.user-detail-data.true i {
+    background-color: yellowgreen;
+}
+.user-detail-data.false i {
+    background-color: coral;
+}
+.user-detail-data.placeholder {
+    font-style: italic;
+    opacity: 0.6;
 }
 
 .user-form {
@@ -120,6 +146,15 @@
     background: var(--gray-dark);
     color: white;
     transition: 0.3s ease-in-out;
+}
+.user-form .roles-checklist {
+    display: flex;
+    flex-direction: column;
+}
+.user-form .roles-checklist .role-checkbox {
+    display: flex;
+    padding: 5px;
+    font-size: 1.25em;
 }
 .user-form .form-actions {
     display: flex;

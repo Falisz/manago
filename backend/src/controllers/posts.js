@@ -1,6 +1,27 @@
 //BACKEND/controller/pages.js
 const {Post, User, UserDetails, Channel} = require("../db");
 
+function postCleanUp(post) {
+    post = {
+        author: post.User ? post.User.toJSON() : null,
+        channel: post.Channel ? post.Channel.toJSON() : null,
+        ...post.toJSON(),
+    };
+    delete post.channelID;
+    delete post.authorID;
+    delete post.Channel;
+    delete post.User;
+
+    if (post.author && post.author.UserDetails)
+        post.author = {
+            ...post.author,
+            ...post.author.UserDetails,
+        }
+    delete post.author.UserDetails;
+
+    return post;
+}
+
 async function getPosts(postId = null) {
 
     const commonConfig = {
@@ -18,11 +39,15 @@ async function getPosts(postId = null) {
 
     if (postId) {
 
-        const post = await Post.findOne({
+        let post = await Post.findOne({
             where: { ID: postId },
             ...commonConfig
         });
-        return post ? { ...post.toJSON(), User: post.User ? post.User.toJSON() : null } : null;
+
+        if (!post)
+            return null;
+
+        return postCleanUp(post);
 
     } else {
 
@@ -31,11 +56,7 @@ async function getPosts(postId = null) {
             order: [['createdAt', 'DESC']]
         });
 
-        return posts.map(post => ({
-            ...post.toJSON(),
-            User: post?.User ? post.User.toJSON() : null
-        }));
-
+        return posts.map(post => (postCleanUp(post)));
     }
 }
 

@@ -21,6 +21,7 @@ import ConnectivityPopup from './components/ConnectivityPopup';
 import PostsIndex from './components/Posts/Index';
 import UsersIndex from './components/Users/Index';
 import UserEdit from './components/Users/Edit';
+import RolesIndex from './components/Roles/Index';
 
 const Dashboard = () => <InWorks title={'Dashboard'} icon={'dashboard'}/>;
 const Schedule = () => <InWorks title={'Schedule'} icon={'schedule'}/>;
@@ -28,7 +29,6 @@ const Trainings = () => <InWorks title={'Trainings'} icon={'school'} />;
 const Dispositions = () => <InWorks title={'Dispositions Dispositions'} icon={'punch_clock'} />;
 
 const ManagerDashboard = () => <InWorks title={'Manager Dashboard'} icon={'dashboard'} />;
-const RolesIndex = () => <InWorks title={'Roles'} icon={'assignment_ind'} />;
 const TeamsIndex = () => <InWorks title={'Teams'} icon={'groups'} />;
 const BranchIndex = () => <InWorks title={'Branches'} icon={'graph_3'} />;
 const ProjectIndex = () => <InWorks title={'Projects'} icon={'fact_check'} />;
@@ -57,6 +57,22 @@ const componentMap = {
 const theme = process.env['REACT_APP_THEME'] || 'dark';
 const color = process.env['REACT_APP_COLOR'] || 'blue';
 
+const renderRoutes = (pages, parentPath = '') => {
+    return pages.map((page) => {
+        const currentPath = page.path ? `${parentPath}/${page.path}`.replace(/^\/+/, '/') : parentPath;
+
+        return (
+            <Route key={currentPath || page.title} path={page.path}>
+                <Route
+                    index
+                    element={page.component ? React.createElement(page.component) : <NotFound />}
+                />
+                {page.subpages && page.subpages.length > 0 && renderRoutes(page.subpages, currentPath)}
+            </Route>
+        );
+    });
+};
+
 const AppContent = () => {
     const [pages, setPages] = useState([]);
     const { user, access, managerAccess, CheckAccess } = useUser();
@@ -73,7 +89,12 @@ const AppContent = () => {
                     ...(page.component ? { component: componentMap[page.component] || NotFound } : {}),
                     subpages: page.subpages.map((subpage) => ({
                         ...subpage,
-                        component: componentMap[subpage.component] || NotFound,
+                        ...(subpage.component ? { component: componentMap[subpage.component] || NotFound } : {}),
+                        subpages: subpage.subpages.map((subsubpage) => ({
+                            ...subsubpage,
+                            ...(subsubpage.component ? { component: componentMap[subsubpage.component] || NotFound } : {}),
+                            subpages: [],
+                        })),
                     })),
                 }));
                 setPages(mappedPages);
@@ -196,11 +217,20 @@ const AppContent = () => {
                             />
                             {page.subpages.map((subpage) => (
                                 <Route
-                                    key={`${page.path}/${subpage.path}`}
+                                    key={`${page.path}/${subpage.path}` || subpage.title}
                                     path={subpage.path ? `${subpage.path}` : ''}
                                     index={!subpage.path}
-                                    element={React.createElement(subpage.component)}
-                                />
+                                    element={subpage.component ? React.createElement(subpage.component) : <NotFound />}
+                                >
+                                    {subpage.subpages.map((subsubpage) => (
+                                        <Route
+                                            key={`${page.path}/${subpage.path}/${subsubpage.path}` || subsubpage.title}
+                                            path={subsubpage.path ? `${subsubpage.path}` : ''}
+                                            index={!subsubpage.path}
+                                            element={subsubpage.component ? React.createElement(subsubpage.component) : <NotFound />}
+                                        />
+                                    ))}
+                                </Route>
                             ))}
                         </Route>
                     ))}

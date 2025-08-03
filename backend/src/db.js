@@ -134,33 +134,31 @@ AppModule.hasMany(AppPage, { foreignKey: 'module', sourceKey: 'ID' });
 //
 // USER MODELS
 //
-
 const Role = sequelize.define('Role', {
     ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false
+        allowNull: false,
+        autoIncrement: true
     },
     name: {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    power: {
+        type: DataTypes.INTEGER,
+        defaultValue: 10,
+        allowNull: false,
+    },
     system_default: {
         type: DataTypes.BOOLEAN,
+        defaultValue: false,
         allowNull: true
     }
 }, {
     tableName: 'roles',
     timestamps: false
 });
-// ROLES:
-//      #1 Employee (system default)
-//      #2 Specialist
-//      #3 Team Leader
-//      #11 Manager
-//      #12 Project Manager
-//      #13 Branch Manager
-//      #99 Admin
 
 const User = sequelize.define('User', {
     ID: {
@@ -243,6 +241,25 @@ const UserConfigs = sequelize.define('UserConfigs', {
     timestamps: false
 });
 
+const UserRole = sequelize.define('UserRole', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'roles', key: 'ID' }
+    }
+}, {
+    tableName: 'user_roles',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['user', 'role'] }],
+    primaryKey: false
+});
+UserRole.removeAttribute('id');
+
 const Team = sequelize.define('Team', {
     ID: {
         type: DataTypes.INTEGER,
@@ -264,23 +281,6 @@ const Team = sequelize.define('Team', {
 }, {
     tableName: 'teams',
     timestamps: false
-});
-
-const UserRole = sequelize.define('UserRole', {
-    user: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'ID' }
-    },
-    role: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'roles', key: 'ID' }
-    }
-}, {
-    tableName: 'user_roles',
-    timestamps: false,
-    indexes: [{ unique: true, fields: ['user', 'role'] }]
 });
 
 const UserManager = sequelize.define('UserManager', {

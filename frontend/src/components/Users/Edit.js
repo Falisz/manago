@@ -12,48 +12,76 @@ const UserEdit = ({ userId, onSave }) => {
         password: '',
         first_name: '',
         last_name: '',
-        role: 0,
+        roleIds: [],
         active: true,
         manager_view_access: false,
     });
+    const [availableRoles, setAvailableRoles] = useState([]);
     const [loading, setLoading] = useState(!!userId);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
     useEffect(() => {
-        if (userId) {
-            const fetchUser = async () => {
-                try {
-                    const response = await axios.get(`/users/${userId}`, { withCredentials: true });
+        const fetchData = async () => {
+            try {
+                const rolesResponse = await axios.get('/roles', { withCredentials: true });
+                setAvailableRoles(rolesResponse.data || []);
+
+                if (userId) {
+                    const userResponse = await axios.get(`/users/${userId}`, { withCredentials: true });
+                    const userData = userResponse.data;
+
+                    const userRolesResponse = await axios.get(`/roles/user/${userId}/`, { withCredentials: true });
+                    const userRoleIds = userRolesResponse.data.map(role => role.ID);
+
                     setFormData({
-                        login: response.data.login || '',
-                        email: response.data.email || '',
+                        login: userData.login || '',
+                        email: userData.email || '',
                         password: '',
-                        first_name: response.data.first_name || '',
-                        last_name: response.data.last_name || '',
-                        role: response.data.role || 0,
-                        active: response.data.active || false,
-                        manager_view_access: response.data.manager_view_access || false,
+                        first_name: userData.first_name || '',
+                        last_name: userData.last_name || '',
+                        roleIds: userRoleIds || [],
+                        active: userData.active || false,
+                        manager_view_access: userData.manager_view_access || false,
                     });
-                    setLoading(false);
-                } catch (err) {
-                    console.error('Error fetching user:', err);
-                    setError('Failed to load user data. Please try again.');
-                    setLoading(false);
+                } else {
+                    setFormData({
+                        login: '',
+                        email: '',
+                        password: '',
+                        first_name: '',
+                        last_name: '',
+                        roleIds: [],
+                        active: true,
+                        manager_view_access: false,
+                    });
                 }
-            };
-            fetchUser().then();
-        } else {
-            setLoading(false);
-        }
+                setLoading(false);
+            } catch (err) {
+                console.error('Error fetching user:', err);
+                setError('Failed to load user data. Please try again.');
+                setLoading(false);
+            }
+        };
+        fetchData().then();
     }, [userId]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+        if (name === 'roleIds') {
+            const roleId = parseInt(value);
+            setFormData(prev => {
+                const newRoleIds = checked
+                    ? [...prev.roleIds, roleId]
+                    : prev.roleIds.filter(id => id !== roleId);
+                return { ...prev, roleIds: newRoleIds };
+            });
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -61,20 +89,49 @@ const UserEdit = ({ userId, onSave }) => {
         setError(null);
         setSuccess(null);
         try {
+            let newUserId = userId;
             if (userId) {
-                const response = await axios.put(`/users/${userId}`, formData, { withCredentials: true });
-                setSuccess(response.data.message);
-                onSave();
-                setTimeout(() => navigate(`/employees/${userId}`), 1500);
+
+                await axios.put(`/users/${userId}`, {
+                    login: formData.login,
+                    email: formData.email,
+                    password: formData.password,
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                    active: formData.active,
+                    manager_view_access: formData.manager_view_access
+                }, { withCredentials: true });
+
+                const roleResponse = await axios.put(`/roles/user/${userId}`, { roleIds: formData.roleIds }, { withCredentials: true });
+                setSuccess(roleResponse.data.message);
+
             } else {
-                const response = await axios.post('/users/new', formData, { withCredentials: true });
-                setSuccess(response.data.message);
-                onSave();
-                setTimeout(() => navigate(`/employees/${userId}`), 1500);
+
+                const userResponse = await axios.post('/users/new', {
+                    login: formData.login,
+                    email: formData.email,
+                    password: formData.password,
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                    active: formData.active,
+                    manager_view_access: formData.manager_view_access
+                }, { withCredentials: true });
+
+                newUserId = userResponse.data.user?.ID;
+                if (!newUserId) {
+                    setError('User ID not returned from server.');
+                    return;
+                }
+
+                const roleResponse = await axios.put(`/roles/user/${newUserId}`, { roleIds: formData.roleIds }, { withCredentials: true });
+                setSuccess(roleResponse.data.message);
             }
+            setTimeout(() => navigate(`/employees/${newUserId || userId}`), 1500);
         } catch (err) {
-            console.error('Error saving user:', err);
-            setError(err.response?.data?.message || 'Failed to save user. Please try again.');
+            console.error('Error saving user or roles:', err);
+            setError(err.response?.data?.message || 'Failed to save user or roles. Please try again.');
+        } finally {
+            onSave();
         }
     };
 
@@ -161,6 +218,27 @@ const UserEdit = ({ userId, onSave }) => {
                         />
                         Manager View Access
                     </label>
+                </div>
+                <div className="form-group">
+                    <label>Roles</label>
+                    <div className="roles-checklist">
+                        {availableRoles.length === 0 ? (
+                            <p>No roles available.</p>
+                        ) : (
+                            availableRoles.map(role => (
+                                <label key={role.ID} className="role-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="roleIds"
+                                        value={role.ID}
+                                        checked={formData.roleIds.includes(role.ID)}
+                                        onChange={handleChange}
+                                    />
+                                    {role.name} <span title={"Power"}>&nbsp;({role.power})</span>
+                                </label>
+                            ))
+                        )}
+                    </div>
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="save-button">

@@ -84,6 +84,7 @@ app.use((req, res, next) => {
 app.use('/', require('./api/utils'));
 app.use('/', require('./api/auth'));
 app.use('/users', require('./api/users'));
+app.use('/roles', require('./api/roles'));
 app.use('/posts', require('./api/posts'));
 
 const errorHandler = (err, req, res, _next) => {

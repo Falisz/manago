@@ -1,3 +1,4 @@
+// FRONTEND\components\Users\Index.js
 import React, {useEffect, useState, useMemo, useCallback} from 'react';
 import {useLocation, useNavigate, useParams} from "react-router-dom";
 import axios from 'axios';
@@ -8,27 +9,34 @@ import Modal from "../Modal";
 
 const UserDetail = ({ userId, handleDelete }) => {
     const [user, setUser] = useState(null);
+    const [userRoles, setUserRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                const res = await axios.get(`/users/${userId}`, { withCredentials: true });
-                if (res.data)
-                    setUser(res.data);
-                else
-                    setError('User not found');
-                setLoading(false);
-            } catch (err) {
-                console.error('Error fetching post:', err);
+    const fetchUser = useCallback(async () => {
+        try {
+            setLoading(true);
+            let res = await axios.get(`/users/${userId}`, { withCredentials: true });
+            if (res.data)
+                setUser(res.data);
+            else
                 setError('User not found!');
-                setLoading(false);
-            }
-        };
-        fetchPost().then();
+
+            res = await axios.get(`/roles/user/${userId}`, { withCredentials: true });
+            if (res.data)
+                setUserRoles(res.data);
+        } catch (err) {
+            console.error('Error fetching user:', err);
+            setError('User not found!');
+        } finally {
+            setLoading(false);
+        }
     }, [userId]);
+
+    useEffect(() => {
+        fetchUser().then();
+    }, [fetchUser]);
 
     if (loading) {
         return (
@@ -47,9 +55,21 @@ const UserDetail = ({ userId, handleDelete }) => {
             <h1>{user?.first_name + ' ' + user?.last_name}</h1>
             {error && <div className="error-message">{error}</div>}
             <div className="user-detail">
-                <pre>
-                    {JSON.stringify(user, ' ', 2)}
-                </pre>
+                <div className={"user-detail-label"}>ID</div>
+                <div className={"user-detail-data"}>{user.ID}</div>
+                <div className={"user-detail-label"}>Name</div>
+                <div className={"user-detail-data"}>{user.first_name} {user.last_name}</div>
+                <div className={"user-detail-label"}>Login</div>
+                <div className={"user-detail-data"}>{user.login}</div>
+                <div className={"user-detail-label"}>E-Mail</div>
+                <div className={"user-detail-data"}>{user.email}</div>
+                <div className={"user-detail-label"}>Active?</div>
+                {user.active ? <div className={"user-detail-data true"}><i className="material-symbols-outlined">check</i> Active</div>
+                    : <div className={"user-detail-data false"}><i className="material-symbols-outlined">close</i> Not Active</div>}
+                <div className={"user-detail-label"}>Roles</div>
+                {userRoles.length > 0 ? userRoles.map((role) => (
+                    <div className={"user-detail-data"} key={role.ID}>{role.name}</div>
+                )):<div className={"user-detail-data placeholder"}>Na roles assigned.</div>}
                 <button type="button" className="button" onClick={() => navigate('/employees/edit/' + user.user)}>
                     <i className={'material-symbols-outlined'}>edit</i> Edit Employee
                 </button>
@@ -247,7 +267,7 @@ const UsersIndex = () => {
         const isEditMode = location.pathname.includes('/new') || location.pathname.includes('/edit')
 
         if (userId) {
-            setSelectedUserId(parseInt(userId));
+            setSelectedUserId(userId);
             setShowDetailModal(true);
         } else {
             setSelectedUserId(null);
@@ -276,12 +296,10 @@ const UsersIndex = () => {
                 onClose={goBack}
                 closeButton={true}
                 key={'detail'}>
-                {selectedUserId &&
-                    <UserDetail
-                        userId={selectedUserId}
-                        handleDelete={()=>{handleDelete(selectedUserId).then()}}
-                    />
-                }
+                {selectedUserId && <UserDetail
+                    userId={selectedUserId}
+                    handleDelete={()=>{handleDelete(selectedUserId).then()}}
+                />}
             </Modal>
 
             <Modal

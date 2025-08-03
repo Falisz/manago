@@ -10,6 +10,7 @@ const {User} = require("../db");
 
 router.get('/', async (req, res) => {
     try {
+
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -27,9 +28,11 @@ router.get('/', async (req, res) => {
 
 router.get('/:userId', async (req, res) => {
     try {
+
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
+
         const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
@@ -50,6 +53,7 @@ router.get('/check-id/:userId', async (req, res) => {
     const { userId } = req.params;
 
     try {
+
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -65,6 +69,7 @@ router.get('/check-id/:userId', async (req, res) => {
         const isAvailable = !user;
 
         res.json({ available: isAvailable });
+
     } catch (err) {
         console.error(`Error checking user ID availability for ID ${userId}:`, err);
         res.status(500).json({ message: 'Server error.' });
@@ -73,11 +78,11 @@ router.get('/check-id/:userId', async (req, res) => {
 
 router.post('/new', async (req, res) => {
     try {
+
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        console.log(req.body);
         const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
 
         const result = await createUser({
@@ -95,8 +100,8 @@ router.post('/new', async (req, res) => {
             return res.status(result.status || 400).json({ message: result.message });
         }
 
-        const newUser = await getUserById(result.user);
-        res.status(201).json({ message: 'User created successfully!', user: newUser });
+        res.status(201).json({ message: result.message, user: result.user });
+
     } catch (err) {
         console.error('Error creating user:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -105,11 +110,13 @@ router.post('/new', async (req, res) => {
 
 router.put('/:userId', async (req, res) => {
     try {
+
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         const { userId } = req.params;
+
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
@@ -134,6 +141,7 @@ router.put('/:userId', async (req, res) => {
         }
 
         res.json({ message: result.message, user: result.user });
+
     } catch (err) {
         console.error('Error updating user:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -142,21 +150,25 @@ router.put('/:userId', async (req, res) => {
 
 router.delete('/:userId', async (req, res) => {
     try {
+
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         const { userId } = req.params;
+
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
         const result = await removeUser(parseInt(userId));
+
         if (!result.success) {
             return res.status(result.status || 400).json({ message: result.message });
         }
 
         res.json({ message: 'User removed successfully!' });
+
     } catch (err) {
         console.error('Error removing user:', err);
         res.status(500).json({ message: 'Server error.' });
