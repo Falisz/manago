@@ -113,7 +113,7 @@ router.put('/:roleId', async (req, res) => {
             return res.status(result.status || 400).json({ message: result.message });
         }
 
-        res.json({ message: result.message, post: result.post });
+        res.json({ message: result.message, role: result.role });
 
     } catch (err) {
         console.error('Error updating role:', err);
