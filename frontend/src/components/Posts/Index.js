@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {useParams, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import { Loader } from '../Loader';
+import Modal from "../Modal";
 import PostDetail from './Detail';
 
 const PostIndex = () => {
@@ -11,6 +12,7 @@ const PostIndex = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedPostId, setSelectedPostId] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -30,14 +32,17 @@ const PostIndex = () => {
 
     useEffect(() => {
         if (postId) {
+            setShowModal(true);
             setSelectedPostId(parseInt(postId));
         } else {
+            setShowModal(false);
             setSelectedPostId(null);
         }
     }, [postId]);
 
     const closePostModal = () => {
         setSelectedPostId(null);
+        setShowModal(false);
         navigate('/posts');
     };
 
@@ -62,7 +67,7 @@ const PostIndex = () => {
                                 </Link>
                             </h2>
                             <p>
-                                Posted by {post.User.first_name} {post.User.last_name} on{' '}
+                                Posted by {post.author?.first_name} {post.author?.last_name} on{' '}
                                 {new Date(post.createdAt).toLocaleDateString('en-US', {
                                     year: 'numeric',
                                     month: 'long',
@@ -71,7 +76,7 @@ const PostIndex = () => {
                                     minute: '2-digit'
                                 })}
                             </p>
-                            <p>Channel: {post.Channel.name}</p>
+                            <p>Channel: {post.channel?.name}</p>
                             <p>
                                 {post.content.length > 200
                                     ? `${post.content.substring(0, 200)}...`
@@ -93,9 +98,15 @@ const PostIndex = () => {
                     ))}
                 </ul>
             )}
-            {selectedPostId && (
-                <PostDetail postId={selectedPostId} onClose={closePostModal} />
-            )}
+            <Modal
+                hidden={!showModal}
+                onClose={closePostModal}
+                closeButton={true}
+            >
+                {selectedPostId && (
+                    <PostDetail postId={selectedPostId} />
+                )}
+            </Modal>
         </>
     );
 };
