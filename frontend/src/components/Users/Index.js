@@ -1,281 +1,74 @@
 // FRONTEND\components\Users\Index.js
-import React, {useEffect, useState, useMemo, useCallback} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useLocation, useNavigate, useParams} from "react-router-dom";
-import axios from 'axios';
-import Loader from "../Loader";
 import '../../assets/styles/Users.css';
 import UserEdit from "./Edit";
 import Modal from "../Modal";
-
-const UserDetail = ({ userId, handleDelete }) => {
-    const [user, setUser] = useState(null);
-    const [userRoles, setUserRoles] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-
-    const fetchUser = useCallback(async () => {
-        try {
-            setLoading(true);
-            let res = await axios.get(`/users/${userId}`, { withCredentials: true });
-            if (res.data)
-                setUser(res.data);
-            else
-                setError('User not found!');
-
-            res = await axios.get(`/roles/user/${userId}`, { withCredentials: true });
-            if (res.data)
-                setUserRoles(res.data);
-        } catch (err) {
-            console.error('Error fetching user:', err);
-            setError('User not found!');
-        } finally {
-            setLoading(false);
-        }
-    }, [userId]);
-
-    useEffect(() => {
-        fetchUser().then();
-    }, [fetchUser]);
-
-    if (loading) {
-        return (
-            <Loader />
-        );
-    }
-
-    if (error) {
-        return (
-            <h1>{error}</h1>
-        );
-    }
-
-    return (
-        <>
-            <h1>{user?.first_name + ' ' + user?.last_name}</h1>
-            {error && <div className="error-message">{error}</div>}
-            <div className="user-detail">
-                <div className={"user-detail-label"}>ID</div>
-                <div className={"user-detail-data"}>{user.ID}</div>
-                <div className={"user-detail-label"}>Name</div>
-                <div className={"user-detail-data"}>{user.first_name} {user.last_name}</div>
-                <div className={"user-detail-label"}>Login</div>
-                <div className={"user-detail-data"}>{user.login}</div>
-                <div className={"user-detail-label"}>E-Mail</div>
-                <div className={"user-detail-data"}>{user.email}</div>
-                <div className={"user-detail-label"}>Active?</div>
-                {user.active ? <div className={"user-detail-data true"}><i className="material-symbols-outlined">check</i> Active</div>
-                    : <div className={"user-detail-data false"}><i className="material-symbols-outlined">close</i> Not Active</div>}
-                <div className={"user-detail-label"}>Roles</div>
-                {userRoles.length > 0 ? userRoles.map((role) => (
-                    <div className={"user-detail-data"} key={role.ID}>{role.name}</div>
-                )):<div className={"user-detail-data placeholder"}>Na roles assigned.</div>}
-                <button type="button" className="button" onClick={() => navigate('/employees/edit/' + user.user)}>
-                    <i className={'material-symbols-outlined'}>edit</i> Edit Employee
-                </button>
-                <button type="button" className="delete-button" onClick={handleDelete}>
-                    <i className={'material-symbols-outlined'}>delete</i>  Delete Employee
-                </button>
-            </div>
-        </>
-    );
-};
-
-const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
-    return (
-        <div className="users-list-header-cell" key={header.key}>
-            <label>{header.title}</label>
-            <input
-                className="search"
-                title={header.title}
-                placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-                name={header.key}
-                value={filters[header.key] || ''}
-                onChange={handleFilter}
-            />
-            <button
-                className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-                name={header.key}
-                onClick={handleSorting}
-            >
-                {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
-            </button>
-        </div>
-    );
-}
-
-const UsersTable = ({ users, refreshUsers, loading, error }) => {
-    const [filters, setFilters] = useState({});
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'asc'
-    });
-    const navigate = useNavigate();
-
-    const headers = [
-        {title: 'First Name', key: 'first_name'},
-        {title: 'Last Name', key: 'last_name'},
-        {title: 'E-mail Address', key: 'email'},
-        {title: 'Active', key: 'active'}
-    ]
-
-    const handleFilter = (e) => {
-        const { name, value } = e.target;
-        setFilters(prev => ({
-            ...prev,
-            [name]: value
-        }));
-        if (value.trim() !== '') {
-            e.target.classList.add('non-empty');
-        } else {
-            e.target.classList.remove('non-empty');
-        }
-    };
-
-    const handleSorting = (e) => {
-        const field = e.target.name;
-        e.target.classList.add('active');
-        setSortConfig(prev => ({
-            key: field,
-            direction: prev.key === field && prev.direction === 'asc' ? 'desc' : 'asc'
-        }));
-    };
-
-    const filteredAndSortedUsers = useMemo(() => {
-        let result = [...users];
-
-        result = result.filter(user => {
-            return Object.entries(filters).every(([key, value]) => {
-                if (!value) return true;
-
-                if (key === 'active') {
-                    const filterValue = value.toLowerCase();
-                    return (filterValue === 'active' && user[key]) || (filterValue === 'not' && !user[key]);
-                }
-
-                return user[key]?.toLowerCase().includes(value.toLowerCase());
-            });
-        });
-
-        if (sortConfig.key) {
-            result.sort((a, b) => {
-                let aValue = a[sortConfig.key];
-                let bValue = b[sortConfig.key];
-
-                if (sortConfig.key === 'active') {
-                    aValue = aValue ? 'active' : 'not';
-                    bValue = bValue ? 'active' : 'not';
-                }
-
-                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-        }
-
-        return result;
-    }, [users, filters, sortConfig]);
-
-    useEffect(() => {
-        refreshUsers();
-    }, [refreshUsers]);
-
-    if (loading)
-        return <Loader />;
-
-    if (error)
-        return <>{error}</>;
-
-    return (
-        <div className="users-list">
-            <div className="users-list-header">
-                {headers.map((header) => (
-                    <UserTableHeader
-                        header={header}
-                        filters={filters}
-                        handleFilter={handleFilter}
-                        sortConfig={sortConfig}
-                        handleSorting={handleSorting}
-                        key={header.key}
-                    />
-                ))}
-            </div>
-            <div className="users-list-content">
-                { filteredAndSortedUsers.length === 0 ? (
-                    <p>No users found.</p>
-                ) : (filteredAndSortedUsers.map(user => (
-                    <div className="users-list-row" key={user.user} onClick={() => navigate('/employees/' + user.user)}>
-                        <div>{user.first_name}</div>
-                        <div>{user.last_name}</div>
-                        <div>{user.email}</div>
-                        <div>{user.active ? 'Active' : 'Not'}</div>
-                    </div>
-                )))}
-            </div>
-        </div>
-    );
-}
+import useUsers from "../../hooks/useUsers";
+import useUser from "../../hooks/useUser";
+import UserDetails from "./Details";
+import UsersTable from "./Table";
 
 const UsersIndex = () => {
     const { userId } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const [selectedUserId, setSelectedUserId] = useState(null);
-    const [showDetailModal, setShowDetailModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    const refreshUsers = useCallback(async () => {
-        try {
-            setLoading(true);
-            const response = await axios.get('/users', { withCredentials: true });
-            setUsers(response.data);
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            setError('Failed to load users. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    const handleDelete = async (userId) => {
-        if (!window.confirm('Are you sure you want to delete this user?')) return;
-        try {
-            await axios.delete(`/users/${userId}`, { withCredentials: true });
-        } catch (err) {
-            console.error('Error deleting user:', err);
-        } finally {
-            refreshUsers().then();
-            goBack();
-        }
-    };
-
-    const goBack = (userId) => {
-        if (showEditModal && userId) {
-            setShowEditModal(false);
-            navigate('/employees/' + userId);
-        } else {
-            setShowEditModal(false);
-            setShowDetailModal(false);
-            navigate('/employees/');
-        }
-    }
+    const { users, loading: usersLoading, fetchUsers } = useUsers();
+    const { user, loading: userLoading, fetchUser, deleteUser } = useUser();
+    const [ showDetailModal, setShowDetailModal] = useState(false);
+    const [ showEditModal, setShowEditModal] = useState(false);
 
     useEffect(() => {
-        const isEditMode = location.pathname.includes('/new') || location.pathname.includes('/edit')
-
-        if (userId) {
-            setSelectedUserId(userId);
-            setShowDetailModal(true);
-        } else {
-            setSelectedUserId(null);
+        if (!users) {
+            fetchUsers().then();
         }
+    }, [fetchUsers, users]);
+
+    useEffect(() => {
+        const isEditMode = location.pathname.includes('/new') || location.pathname.includes('/edit');
+
+        setShowDetailModal(!!userId);
 
         setShowEditModal(isEditMode);
 
-    }, [userId, location.pathname]);
+        if (userId) {
+            fetchUser(userId).then();
+        }
+    }, [userId, location.pathname, fetchUser]);
+
+    const handleSave = (newUserId) => {
+        fetchUsers(false).then();
+        if (newUserId) {
+            fetchUser(newUserId).then();
+            setShowEditModal(false);
+            navigate(`/employees/${newUserId}`);
+        } else {
+            fetchUser(userId, true).then();
+            setShowEditModal(false);
+            navigate(`/employees/${userId}`);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this role?')) return;
+        deleteUser(userId).then();
+        fetchUsers(false).then();
+        navigate('/employees');
+    };
+
+    const closeDetailsModal = () => {
+        setShowDetailModal(false);
+        navigate('/employees/');
+    };
+
+    const closeEditModal = () => {
+        setShowEditModal(false);
+        if (userId) {
+            navigate(`/employees/${userId}`);
+        } else {
+            navigate('/employees/');
+        }
+    };
 
     return (
         <>
@@ -286,30 +79,29 @@ const UsersIndex = () => {
 
             <UsersTable
                 users={users}
-                refreshUsers={refreshUsers}
-                loading={loading}
-                error={error}
+                loading={usersLoading}
             />
 
             <Modal
                 hidden={!showDetailModal}
-                onClose={goBack}
-                closeButton={true}
-                key={'detail'}>
-                {selectedUserId && <UserDetail
-                    userId={selectedUserId}
-                    handleDelete={()=>{handleDelete(selectedUserId).then()}}
-                />}
+                onClose={closeDetailsModal}
+                key={'detail'}
+            >
+                {userId &&
+                    <UserDetails
+                        user={user}
+                        loading={userLoading}
+                        handleDelete={handleDelete}
+                    />}
             </Modal>
 
             <Modal
                 hidden={!showEditModal}
-                onClose={() => {goBack(selectedUserId)}}
-                closeButton={true}
+                onClose={closeEditModal}
                 key={'edit-form'}>
                 <UserEdit
-                    userId={selectedUserId}
-                    onSave={refreshUsers}
+                    userId={userId}
+                    onSave={handleSave}
                 />
             </Modal>
         </>
