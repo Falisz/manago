@@ -56,13 +56,33 @@ router.get('/pages', async (req, res) => {
 router.post('/manager-view', async (req, res) => {
     try {
         if (!req.session.user) {
-            return res.status(401).json({message: 'Unauthorized. Please log in.'});
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized. Please log in.',
+                manager_view: false
+            });
         }
 
         const {manager_view} = req.body;
 
-        if (!req.body) {
-            return res.status(401).json({message: 'No toggle value provided.'});
+        if (typeof manager_view === 'undefined') {
+            return res.status(400).json({
+                success: false,
+                message: 'No toggle value provided.',
+                manager_view: false
+            });
+        }
+
+        const userConfig = await UserConfigs.findOne({
+            where: { user: req.session.user.ID }
+        });
+
+        if (!userConfig || !userConfig.manager_view_access) {
+            return res.status(403).json({
+                success: false,
+                message: 'Manager view access not permitted.',
+                manager_view: false
+            });
         }
 
         const [updated] = await UserConfigs.update(
@@ -72,17 +92,28 @@ router.post('/manager-view', async (req, res) => {
 
         if (updated === 1) {
             req.session.user.manager_view_enabled = manager_view;
-            res.json({ success: true, managerView: manager_view });
-        }
-        else {
-            res.status(401).json({ success: false }).json({message: 'Failed to update.'});
+            return res.json({
+                success: true,
+                message: 'Manager view updated successfully.',
+                manager_view: manager_view
+            });
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: 'Failed to update manager view.',
+                manager_view: userConfig.manager_view_enabled
+            });
         }
 
 
     } catch (err) {
 
         console.error('Error changing manager view state:', err);
-        res.status(500).json({ success: false, message: 'API Error.' });
+        return res.status(500).json({
+            success: false,
+            message: 'API Error.',
+            manager_view: false
+        });
 
     }
 });
