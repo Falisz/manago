@@ -15,6 +15,7 @@ const RoleDetail = ({ roleId, handleDelete }) => {
     useEffect(() => {
         const fetchRole = async () => {
             try {
+                setLoading(true);
                 const res = await axios.get(`/roles/${roleId}`, { withCredentials: true });
                 if (res.data) {
                     setRole(res.data);
@@ -66,6 +67,27 @@ const RoleDetail = ({ roleId, handleDelete }) => {
         </>
     );
 };
+
+const RolesList = ({roles, loading}) => {
+    const navigate = useNavigate();
+
+    if (loading)
+        return <Loader />;
+    return (
+        <div className="roles-list">
+            {roles.length === 0 ? (<p>No roles found.</p>) : (roles.map(role => (
+                <div
+                    className="roles-list-item"
+                    key={role.ID}
+                    onClick={() => navigate('/employees/roles/' + role.ID)}
+                >
+                    <div>{role.name}</div>
+                    <div>{role.power}</div>
+                </div>
+            )))}
+        </div>
+    )
+}
 
 const RolesIndex = () => {
     const { roleId } = useParams();
@@ -137,20 +159,7 @@ const RolesIndex = () => {
                 + Add Role
             </button>
 
-            <div className="roles-list">
-                {roles.length === 0 ? (
-                    <p>No roles found.</p>
-                ) : (roles.map(role => (
-                    <div
-                        className="roles-list-item"
-                        key={role.ID}
-                        onClick={() => navigate('/employees/roles/' + role.ID)}
-                    >
-                        <div>{role.name}</div>
-                        <div>{role.power}</div>
-                    </div>
-                )))}
-            </div>
+            <RolesList roles={roles} loading={loading} />
 
             <Modal
                 hidden={!showDetailModal}
