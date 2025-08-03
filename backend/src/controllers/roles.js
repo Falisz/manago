@@ -1,5 +1,5 @@
 //BACKEND/controller/roles.js
-const {  Role, sequelize, UserRole} = require('../db')
+const {  Role, sequelize, UserRole } = require('../db')
 
 async function getRoles(roleId = null) {
     if (roleId) {
@@ -22,9 +22,6 @@ async function getRoles(roleId = null) {
 
         const roles = await Role.findAll({order: [['ID', 'ASC']]});
 
-        if (!roles)
-            return null;
-
         return roles.map(role => {
             return {
                 ...role.toJSON(),
@@ -32,6 +29,30 @@ async function getRoles(roleId = null) {
         }) || null;
 
     }
+}
+
+async function getUserRoles(userId) {
+    if (!userId) {
+        return {success: false, message: "User ID not provided."};
+    }
+
+    const roles = await UserRole.findAll({
+        attributes: {exclude: ['id']},
+        where: { user: userId },
+        order: [['role', 'ASC']],
+        include: [
+            { model: Role }
+        ],
+    });
+
+    return roles.map(role => {
+        role = {
+            ...role.Role.toJSON(),
+        };
+        delete role.Role;
+        return role;
+    }) || null;
+
 }
 
 async function createRole(data) {
@@ -107,9 +128,65 @@ async function deleteRole(roleId) {
     return { success: true, message: "Role removed successfully." };
 }
 
+async function updateUserRoles(userId, roleIds) {
+    if (!userId || isNaN(userId)) {
+        return { success: false, message: "Invalid user ID provided.", status: 400 };
+    }
+
+    if (!Array.isArray(roleIds) || roleIds.some(id => isNaN(id))) {
+        return { success: false, message: "Invalid role IDs provided. Must be an array of integers.", status: 400 };
+    }
+
+    const transaction = await sequelize.transaction();
+
+    const existingRoles = await Role.findAll({
+        where: { ID: roleIds },
+        attributes: ['ID'],
+        transaction
+    });
+
+    const existingRoleIds = existingRoles.map(role => role.ID);
+    const invalidRoleIds = roleIds.filter(id => !existingRoleIds.includes(id));
+
+    if (invalidRoleIds.length > 0) {
+        await transaction.rollback();
+        return { success: false, message: `Invalid role IDs: ${invalidRoleIds.join(', ')}`, status: 400 };
+    }
+
+    const currentUserRoles = await UserRole.findAll({
+        where: { user: userId },
+        attributes: ['role'],
+        transaction
+    });
+
+    const currentRoleIds = currentUserRoles.map(ur => ur.role);
+
+    const rolesToAdd = roleIds.filter(id => !currentRoleIds.includes(id));
+    const rolesToRemove = currentRoleIds.filter(id => !roleIds.includes(id));
+
+    await Promise.all(
+        rolesToAdd.map(roleId =>
+            UserRole.create({ user: userId, role: roleId }, { transaction })
+        )
+    );
+
+    await UserRole.destroy({
+        where: {
+            user: userId,
+            role: rolesToRemove
+        },
+        transaction
+    });
+
+    await transaction.commit();
+    return { success: true, message: "User roles updated successfully." };
+}
+
 module.exports = {
     getRoles,
     createRole,
     updateRole,
     deleteRole,
+    getUserRoles,
+    updateUserRoles,
 };

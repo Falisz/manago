@@ -5,6 +5,8 @@ const {
     createRole,
     updateRole,
     deleteRole,
+    getUserRoles,
+    updateUserRoles,
 } = require('../controllers/roles');
 
 router.get('/', async (req, res) => {
@@ -40,6 +42,27 @@ router.get('/:roleId', async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching role:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/user/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+        const { userId } = req.params;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const roles = await getUserRoles(userId);
+
+        res.json(roles);
+
+    } catch (err) {
+        console.error('Error fetching roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 });
@@ -94,6 +117,33 @@ router.put('/:roleId', async (req, res) => {
 
     } catch (err) {
         console.error('Error updating role:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.put('/user/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { userId } = req.params;
+        const { roleIds } = req.body;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        console.log('Received data for updating user roles:', { userId, roleIds }); // Debug log
+        const result = await updateUserRoles(parseInt(userId), roleIds);
+
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        res.json({ message: result.message });
+    } catch (err) {
+        console.error('Error updating user roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 });

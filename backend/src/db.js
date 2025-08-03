@@ -241,6 +241,24 @@ const UserConfigs = sequelize.define('UserConfigs', {
     timestamps: false
 });
 
+const UserRole = sequelize.define('UserRole', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'ID' }
+    },
+    role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'roles', key: 'ID' }
+    }
+}, {
+    tableName: 'user_roles',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['user', 'role'] }],
+    primaryKey: false
+});
+
 const Team = sequelize.define('Team', {
     ID: {
         type: DataTypes.INTEGER,
@@ -262,23 +280,6 @@ const Team = sequelize.define('Team', {
 }, {
     tableName: 'teams',
     timestamps: false
-});
-
-const UserRole = sequelize.define('UserRole', {
-    user: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'ID' }
-    },
-    role: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'roles', key: 'ID' }
-    }
-}, {
-    tableName: 'user_roles',
-    timestamps: false,
-    indexes: [{ unique: true, fields: ['user', 'role'] }]
 });
 
 const UserManager = sequelize.define('UserManager', {
