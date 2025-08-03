@@ -27,13 +27,11 @@ const RoleEdit = ({ roleId, onSave }) => {
     }, [roleId, fetchRole]);
 
     useEffect(() => {
-        if (role) {
-            setFormData({
-                name: role.name || '',
-                power: role.power || '',
-                system_default: role.system_default || false,
-            });
-        }
+        setFormData({
+            name: role?.name || '',
+            power: role?.power || '',
+            system_default: role?.system_default || false,
+        });
     }, [role]);
 
     const handleChange = (e) => {

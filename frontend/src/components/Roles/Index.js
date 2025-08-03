@@ -51,7 +51,7 @@ const RolesIndex = () => {
             setShowEditModal(false);
             navigate(`/employees/roles/${newRoleId}`);
         } else {
-            fetchRole(roleId).then();
+            fetchRole(roleId, true).then();
             setShowEditModal(false);
             navigate(`/employees/roles/${roleId}`);
         }
