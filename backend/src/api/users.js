@@ -83,8 +83,6 @@ router.post('/new', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        console.log(req.body);
-
         const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
 
         const result = await createUser({

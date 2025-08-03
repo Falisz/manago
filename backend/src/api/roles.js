@@ -134,7 +134,6 @@ router.put('/user/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        console.log('Received data for updating user roles:', { userId, roleIds }); // Debug log
         const result = await updateUserRoles(parseInt(userId), roleIds);
 
         if (!result.success) {

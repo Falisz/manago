@@ -234,7 +234,7 @@ const UserEdit = ({ userId, onSave }) => {
                                         checked={formData.roleIds.includes(role.ID)}
                                         onChange={handleChange}
                                     />
-                                    {role.name} (Power: {role.power})
+                                    {role.name} <span title={"Power"}>&nbsp;({role.power})</span>
                                 </label>
                             ))
                         )}
