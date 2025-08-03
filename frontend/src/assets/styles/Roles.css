@@ -1,15 +1,21 @@
 
 .employees .new-role-button {
     position: absolute;
+    display: flex;
+    align-items: center;
     top: 25px;
     right: 20px;
     margin-top: 10px;
-    padding: 8px 16px;
+    padding: 8px;
     background: var(--link-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+.employees .new-role-button i {
+    font-size: 20px;
+    margin-right: 5px;
 }
 .roles-list {
     display: flex;
@@ -30,4 +36,97 @@
 }
 .roles-list-item > div {
     margin: 0 15px;
+}
+
+
+.role-detail {
+    padding: 10px;
+}
+.role-detail-label {
+    font-size: 1.25em;
+    font-weight: 200;
+    margin: 10px 0 5px;
+    text-transform: uppercase;
+}
+.role-detail-data {
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+}
+.role-detail-data i {
+    padding: 3px;
+    margin-right: 5px;
+    border-radius: 10px;
+}
+.role-detail-data.true i {
+    background-color: yellowgreen;
+}
+.role-detail-data.false i {
+    background-color: coral;
+}
+.role-detail-data.placeholder {
+    font-style: italic;
+    opacity: 0.6;
+}
+
+.role-form {
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    align-items: flex-start;
+}
+.role-form .form-group {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+}
+.role-form .form-group label {
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 300;
+    margin-bottom: 5px;
+}
+.role-form .form-group input {
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-left: 10px;
+    outline: none;
+    border: none;
+    background: var(--gray-dark);
+    color: white;
+    transition: 0.3s ease-in-out;
+}
+.role-form .roles-checklist {
+    display: flex;
+    flex-direction: column;
+}
+.role-form .roles-checklist .role-checkbox {
+    display: flex;
+    padding: 5px;
+    font-size: 1.25em;
+}
+.role-form .form-actions {
+    display: flex;
+    flex-direction: row;
+}
+.role-detail button,
+.role-form button {
+    display: inline-flex;
+    align-items: center;
+    margin: 10px 5px;
+    padding: 8px 10px;
+    background: var(--link-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.role-detail button i,
+.role-form button i {
+    margin-right: 5px;
+    font-size: 20px;
+}
+.role-detail .delete-button,
+.role-form .delete-button {
+    background: #ff4d4f;
 }
