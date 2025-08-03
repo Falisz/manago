@@ -258,6 +258,7 @@ const UserRole = sequelize.define('UserRole', {
     indexes: [{ unique: true, fields: ['user', 'role'] }],
     primaryKey: false
 });
+UserRole.removeAttribute('id');
 
 const Team = sequelize.define('Team', {
     ID: {
