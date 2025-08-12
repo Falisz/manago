@@ -23,8 +23,7 @@ const AppModule = sequelize.define('Modules', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
-        defaultValue: 0
+        allowNull: false
     },
     title: {
         type: DataTypes.STRING(50),
