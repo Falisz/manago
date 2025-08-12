@@ -6,7 +6,7 @@ require('dotenv').config();
 // SEQUELIZE
 //
 const sequelize = new Sequelize({
-    dialect: 'postgres',
+    dialect: process.env.DB_TYPE || 'postgres',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     username: process.env.DB_USERNAME || 'appagent',
@@ -22,6 +22,7 @@ const AppModule = sequelize.define('Modules', {
     ID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
+        autoIncrement: true,
         allowNull: false,
         defaultValue: 0
     },

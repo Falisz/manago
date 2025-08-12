@@ -1,99 +1,65 @@
 // BACKEND/src/seed-data.js
-const path = require('path');
-const csv = require('csv-parser');
 const {AppModule, AppPage, User, UserDetails, UserConfigs, Channel, Post, Role, sequelize, UserRole} = require('../db')
+const bcrypt = require('bcrypt');
+
+async function seedModel(model, tableName, data, itemsName = "records") {
+    let rowCount = await model.count();
+    if (rowCount > 0) {
+        console.log(`\t${rowCount} ${itemsName} found in \'${tableName}\' table. Seeding skipped.`);
+    } else {
+        await model.bulkCreate(data);
+        rowCount = await model.count();
+        console.log(`\t${rowCount} ${itemsName} seeded to \'${tableName}\' table.`);
+    }
+}
 
 async function seedData() {
     try {
+        console.log('🔄️ Starting data seeding...');
         await sequelize.sync();
 
-        const moduleCount = await AppModule.count();
-        if (moduleCount > 0) {
-            console.log('\tAppModules table is not empty, skipping seeding.');
-        } else {
-            const appModuleFilePath = path.join(__dirname, '..', '..', 'modules.csv');
-            const appModules = [];
-            const appModuleRows = await new Promise((resolve, reject) => {
-                const results = [];
-                require('fs').createReadStream(appModuleFilePath)
-                    .pipe(csv({
-                        headers: ['ID','title','enabled'],
-                        skipLines: 0
-                    }))
-                    .on('data', (data) => results.push(data))
-                    .on('end', () => resolve(results))
-                    .on('error', (err) => reject(err));
-            });
+        const appModules = [
+                {ID: 0, title: 'Main', enabled: true},
+                {ID: 1, title: 'Projects', enabled: true},
+                {ID: 2, title: 'Branches', enabled: true},
+                {ID: 3, title: 'Timesheets', enabled: true},
+                {ID: 4, title: 'Tasks', enabled: true},
+                {ID: 5, title: 'Trainings', enabled: true},
+                {ID: 6, title: 'Posts', enabled: true},
+                {ID: 7, title: 'Blogs', enabled: true}
+            ];
+        await seedModel(AppModule, 'app_modules', appModules, 'modules');
 
-            for (const row of appModuleRows) {
-                if (!row?.ID || !row.title) {
-                    console.warn('Skipping invalid App Modules row:', row);
-                    continue;
-                }
-                appModules.push({
-                    ID: parseInt(row.ID),
-                    title: row.title,
-                    enabled: row.enabled || false
-                });
-            }
+        const appPages = [
+                {ID: 0, view: 1, module: 0, parent: null, path: '/', title: 'Home', icon: 'home', component: 'ManagerDashboard', hidden: false},
+                {ID: 1, view: 1, module: 0, parent: null, path: 'employees', title: 'Employees', icon: 'people', component: 'UsersIndex', hidden: false},
+                {ID: 11, view: 1, module: 0, parent: 1, path: ':userId', title: 'Employee', icon: '', component: 'UsersIndex', hidden: true},
+                {ID: 12, view: 1, module: 0, parent: 1, path: 'new', title: 'New Employee', icon: '', component: 'UsersIndex', hidden: true},
+                {ID: 13, view: 1, module: 0, parent: 1, path: 'edit/:userId', title: 'Editing an Employee', icon: '', component: 'UsersIndex', hidden: true},
+                {ID: 14, view: 1, module: 0, parent: 1, path: 'roles', title: 'Security Roles', icon: '', component: 'RolesIndex', hidden: false},
+                {ID: 15, view: 1, module: 0, parent: 1, path: ':roleId', title: 'Role', icon: '', component: 'RolesIndex', hidden: true},
+                {ID: 16, view: 1, module: 0, parent: 1, path: 'new', title: '', icon: 'New Role', component: 'RolesIndex', hidden: true},
+                {ID: 17, view: 1, module: 0, parent: 1, path: 'edit/:roleId', title: 'Editing a Role', icon: '', component: 'RolesIndex', hidden: true},
+                {ID: 2, view: 1, module: 0, parent: null, path: 'teams', title: 'Teams', icon: 'groups', component: 'TeamsIndex', hidden: false},
+                {ID: 3, view: 1, module: 1, parent: null, path: 'branches', title: 'Branches', icon: 'hub', component: 'BranchIndex', hidden: false},
+                {ID: 4, view: 1, module: 2, parent: null, path: 'projects', title: 'Projects', icon: 'fact_check', component: 'ProjectIndex', hidden: false},
+                {ID: 5, view: 1, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'ScheduleShow', hidden: false},
+                {ID: 50, view: 1, module: 3, parent: 5, path: 'past', title: '', icon: 'Past Schedules', component: 'SchedulePast', hidden: false},
+                {ID: 6, view: 1, module: 6, parent: null, path: 'posts', title: 'Posts', icon: '', component: 'PostsIndex', hidden: false},
+                {ID: 60, view: 1, module: 6, parent: 6, path: ':postId', title: 'Post', icon: '', component: 'PostsIndex', hidden: true},
+                {ID: 61, view: 1, module: 6, parent: 6, path: 'new', title: 'New Post', icon: '', component: 'PostsIndex', hidden: true},
+                {ID: 62, view: 1, module: 6, parent: 6, path: 'edit/:postId', title: 'Editing a Post', icon: 'PostsIndex', component: '', hidden: true},
+                {ID: 63, view: 1, module: 6, parent: 6, path: 'archive', title: '', icon: '', component: 'PostsArchive', hidden: false},
+                {ID: 100, view: 0, module: 0, parent: null, path: '/', title: 'Home', icon: 'home', component: 'Dashboard', hidden: false},
+                {ID: 101, view: 0, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'Schedule', hidden: false},
+                {ID: 110, view: 0, module: 3, parent: 101, path: 'dispositions', title: 'Dispositions', icon: '', component: 'Dispositions', hidden: false},
+                {ID: 102, view: 0, module: 5, parent: null, path: 'trainings', title: 'Trainings', icon: 'school', component: 'Trainings', hidden: false},
+                {ID: 103, view: 0, module: 6, parent: null, path: 'posts', title: 'Posts', icon: 'forum', component: 'PostsIndex', hidden: false},
+                {ID: 130, view: 0, module: 6, parent: 103, path: ':postId', title: 'Post', icon: '', component: 'PostsIndex', hidden: true},
+            ];
+        await seedModel(AppPage, 'app_pages', appPages, 'pages');
 
-            if (appModules.length === 0) {
-                console.warn('No valid App Modules to seed from modules.csv');
-            } else {
-                await AppModule.bulkCreate(appModules);
-                console.log(`\tSeeded ${appModules.length} App Modules from modules.csv`);
-            }
-        }
-
-        const pagesCount = await AppPage.count();
-        if (pagesCount > 0) {
-            console.log('\tAppPages table is not empty, skipping seeding.');
-        } else {
-            const appPageFilePath = path.join(__dirname, '..', '..', 'pages.csv');
-            const appPages = [];
-            const appPageRows = await new Promise((resolve, reject) => {
-                const results = [];
-                require('fs').createReadStream(appPageFilePath)
-                    .pipe(csv({
-                        headers: ['ID','view','module','parent','path','title','icon','component','hidden'],
-                        skipLines: 0
-                    }))
-                    .on('data', (data) => results.push(data))
-                    .on('end', () => resolve(results))
-                    .on('error', (err) => reject(err));
-            });
-
-            for (const row of appPageRows) {
-                if (!row?.ID || !row.view || !row.module || !row.path || !row.title) {
-                    console.warn('Skipping invalid App Pages row:', row);
-                    continue;
-                }
-                appPages.push({
-                    ID: parseInt(row.ID),
-                    view: parseInt(row.view),
-                    module: parseInt(row.module),
-                    parent: parseInt(row.parent) || null,
-                    path: row.path,
-                    title: row.title,
-                    icon: row.icon || null,
-                    component: row.component || null,
-                    hidden: row.hidden ? true : null
-                });
-            }
-
-            if (appPages.length === 0) {
-                console.warn('\tNo valid Pages to seed from pages.csv');
-            } else {
-                await AppPage.bulkCreate(appPages);
-                console.log(`\tSeeded ${appPages.length} Pages from pages.csv`);
-            }
-        }
-
-        const roleCount = await Role.count();
-        if (roleCount > 0) {
-            console.log('\tRoles table is not empty, skipping seeding.');
-        } else {
-            await Role.bulkCreate([
+        const roles = [
                 { ID: 1, name: 'Employee', power: 10, system_default: true },
                 { ID: 2, name: 'Specialist', power: 20, system_default: false },
                 { ID: 3, name: 'Team Leader', power: 30, system_default: false },
@@ -102,80 +68,60 @@ async function seedData() {
                 { ID: 13, name: 'Project Manager', power: 70, system_default: false },
                 { ID: 50, name: 'CEO', power: 90, system_default: false },
                 { ID: 99, name: 'Admin', power: 100, system_default: false },
-            ]);
-            const roleCount = await Role.count();
-            console.log(`\tSeeded ${roleCount} Roles to the Roles table.`);
-        }
+            ];
+        await seedModel(Role, 'roles', roles, 'roles')
 
-        // Seed users, user_details, and user_configs
-        const userCount = await User.count();
+        let userCount = await User.count();
         if (userCount > 0) {
-            console.log('\tUsers table is not empty, skipping seeding.');
+            console.log(`\t${userCount} users found in \'users\' table. Seeding skipped.`);
         } else {
-            const csvFilePath = path.join(__dirname, '..', '..', 'users.csv');
+            const userRecords = [
+                {ID: 137500, first_name: 'Staff', last_name: 'Joe', login: 'staff', 
+                    email: 'staff.joe@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {ID: 353621, first_name: 'Manager', last_name: 'Smith', login: 'manager', 
+                    email: 'manager.smith@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {ID: 398285, first_name: 'Test', last_name: '1', login: 'test1', 
+                    email: 'test1@com.com', active: true, mv_acc: true, mv_en: false, mv_nav: false},
+                {ID: 475776, first_name: 'Test', last_name: '2', login: 'test2', 
+                    email: 'test2@com.com', active: false, mv_acc: false, mv_en: false, mv_nav: false},
+                {ID: 864434, first_name: 'Test', last_name: '3', login: 'test3', 
+                    email: 'test3@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+            ];
+            const defaultPassword = await bcrypt.hash('1234', 10);
+
             const users = [];
             const userDetails = [];
             const userConfigs = [];
-            const managerUserIds = [353621, 398285];
-            const userRows = await new Promise((resolve, reject) => {
-                const results = [];
-                require('fs').createReadStream(csvFilePath)
-                    .pipe(csv({
-                        headers: ['ID', 'first_name', 'last_name', 'login', 'email', 'role',
-                            'active', 'manager_view_enabled', 'manager_nav_collapsed', 'password'],
-                        skipLines: 0
-                    }))
-                    .on('data', (data) => results.push(data))
-                    .on('end', () => resolve(results))
-                    .on('error', (err) => reject(err));
-            });
 
-            for (const row of userRows) {
-                if (!row?.ID || !row.first_name || !row.last_name || !row.email || !row.role || !row.password) {
-                    console.warn('Skipping invalid user row:', row);
-                    continue;
-                }
-                const active = row.active ? (row.active === '1' || row.active.toLowerCase() === 'true') : false;
-                const manager_view_enabled = row.manager_view_enabled ? (row.manager_view_enabled === '1' || row.manager_view_enabled.toLowerCase() === 'true') : false;
-                const manager_nav_collapsed = row.manager_nav_collapsed ? (row.manager_nav_collapsed === '1' || row.manager_nav_collapsed.toLowerCase() === 'true') : false;
-
-                const userID = parseInt(row.ID) || Math.floor(Math.random() * 900000) + 100000;
-
+            for (const user of userRecords) {
                 users.push({
-                    ID: userID,
-                    login: row.login,
-                    email: row.email,
-                    active,
-                    password: row.password
+                    ID: user.ID,
+                    login: user.login,
+                    email: user.email,
+                    active: user.active,
+                    password: defaultPassword
                 });
                 userDetails.push({
-                    user: userID,
-                    first_name: row.first_name,
-                    last_name: row.last_name
+                    user: user.ID,
+                    first_name: user.first_name,
+                    last_name: user.last_name
                 });
                 userConfigs.push({
-                    user: userID,
-                    manager_view_access: managerUserIds.includes(userID),
-                    manager_view_enabled: managerUserIds.includes(userID) ? manager_view_enabled : false,
-                    manager_nav_collapsed
+                    user: user.ID,
+                    manager_view_access: user.mv_acc,
+                    manager_view_enabled: user.mv_en,
+                    manager_nav_collapsed: user.mv_en
                 });
             }
 
-            if (users.length === 0) {
-                console.warn('\tNo valid users to seed from users.csv');
-            } else {
-                await User.bulkCreate(users);
-                await UserDetails.bulkCreate(userDetails);
-                await UserConfigs.bulkCreate(userConfigs);
-                console.log(`\tSeeded ${users.length} users, ${userDetails.length} user_details, and ${userConfigs.length} user_configs from users.csv`);
-            }
+            await User.bulkCreate(users);
+            await UserDetails.bulkCreate(userDetails);
+            await UserConfigs.bulkCreate(userConfigs);
+            userCount = await User.count();
+            console.log(`\t${userCount} users seeded to \'users\' table and associated tables.`);
         }
-
-        const userRolesCount = await UserRole.count();
-        if (userRolesCount > 0) {
-            console.log('\tUsers Roles assignment table is not empty, skipping seeding.');
-        } else {
-            await UserRole.bulkCreate([
+        
+        const userRoles = [
                 {user: 137500, role: 1},
                 {user: 475776, role: 1},
                 {user: 475776, role: 2},
@@ -183,30 +129,19 @@ async function seedData() {
                 {user: 353621, role: 11},
                 {user: 353621, role: 12},
                 {user: 398285, role: 11},
-            ]);
-            const userRolesCount = await UserRole.count();
-            console.log(`\tSeeded ${userRolesCount} User Role assignments to the User Roles table.`);
+            ];
+        await seedModel(UserRole, 'user_roles', userRoles, 'user roles assignments');
 
-        }
-
-        // Seed channels
-        const channelCount = await Channel.count();
-        if (channelCount > 0) {
-            console.log('\tChannels table is not empty, skipping seeding.');
-        } else {
-            const channels = [
+        const channels = [
                 { name: 'General Discussion' },
                 { name: 'Announcements' },
                 { name: 'Ideas and Suggestions' }
             ];
-            await Channel.bulkCreate(channels);
-            console.log(`\tSeeded ${channels.length} channels.`);
-        }
+        await seedModel(Channel, 'channels', channels, 'channels');
 
-        // Seed posts
-        const postCount = await Post.count();
+        let postCount = await Post.count();
         if (postCount > 0) {
-            console.log('\tPosts table is not empty, skipping seeding.');
+            console.log(`\t${postCount} posts found in \'posts\' table. Seeding skipped.`);
         } else {
             const users = await User.findAll({ attributes: ['ID'] });
             const channels = await Channel.findAll({ attributes: ['ID'] });
@@ -241,12 +176,15 @@ async function seedData() {
                     }
                 ];
                 await Post.bulkCreate(posts);
-                console.log(`\tSeeded ${posts.length} posts.`);
+                postCount = await Post.count();
+                console.log(`\t${postCount} posts seeded to \'posts\' table.`);
             }
         }
     } catch (err) {
-        console.error('\tError seeding data:', err.message, err.stack);
+        console.error('\tError occurred while seeding data:', err.message, err.stack);
         throw err;
+    } finally { 
+        console.log('✅ Data seeding completed');
     }
 }
 

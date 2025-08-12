@@ -8,6 +8,34 @@ const dotenv = require('dotenv');
 dotenv.config();
 const { sequelize } = require('./db');
 const { seedData } = require('./utils/seed-data');
+const readline = require('readline');
+
+function waitForKeypress(keyToDetect, timeout) {
+    readline.emitKeypressEvents(process.stdin);
+    process.stdin.setRawMode(true);
+
+    return new Promise((resolve) => {
+        let keyPressed = false;
+
+        const timeoutId = setTimeout(() => {
+            if (!keyPressed) {
+                process.stdin.setRawMode(false); 
+                process.stdin.pause(); 
+                resolve(null); 
+            }
+        }, timeout);
+
+        process.stdin.on('keypress', (char, key) => {
+            if (key && key.name === keyToDetect) {
+                keyPressed = true;
+                clearTimeout(timeoutId);
+                process.stdin.setRawMode(false);
+                process.stdin.pause();
+                resolve(key.name);
+            }
+        });
+    });
+}
 
 const logger = winston.createLogger({
     level: 'info',
@@ -88,10 +116,13 @@ app.use('/roles', require('./api/roles'));
 app.use('/posts', require('./api/posts'));
 
 const errorHandler = (err, req, res, _next) => {
-    console.error('❌ Server error:', err.stack);
+    console.error('❌ Server error:\n', err.stack);
     res.status(500).json({ error: 'Internal server error' });
 };
 app.use(errorHandler);
+
+
+const PORT = process.env.PORT || 5000;
 
 async function startServer() {
     console.log('🔄️ Starting the server...');
@@ -105,12 +136,14 @@ async function startServer() {
 
         await store.sync();
         console.log('✅ Session store synced successfully');
-
-        console.log('🔄️ Starting data seeding...');
-        await seedData();
-        console.log('✅ Data seeding completed');
-
-        const PORT = process.env.PORT || 5000;
+        
+        console.log(`ℹ️ Press 'space' key within next two seconds to seed data...`);
+        const key = await waitForKeypress('space', 2000);
+        if (key) {
+            await seedData();
+        } else {
+            console.log('ℹ️ Data seeding skipped.');
+        }        
 
         app.listen(PORT, () => {
             console.log(`🚀 Server is up and running on port ${PORT}`);
