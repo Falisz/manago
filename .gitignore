@@ -1,10 +1,10 @@
 # Dependencies, libraries, testing and production builds #
 ##########################################################
-node_modules/
 /.pnp
 .pnp.js
-/coverage
-/build
+node_modules/
+coverage/
+build/
 
 # Compiled source #
 ###################
@@ -17,8 +17,6 @@ node_modules/
 
 # Packages #
 ############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
 *.7z
 *.dmg
 *.gz
@@ -36,7 +34,6 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/*.sql
 
 # OS generated files #
 ######################
