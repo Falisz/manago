@@ -33,6 +33,7 @@ async function authUser(login, password) {
         ...userData.UserDetails.toJSON(),
         ...userData.UserConfigs.toJSON(),
     }
+    delete user.password;
     delete user.UserDetails;
     delete user.UserConfigs;
 
@@ -57,6 +58,7 @@ async function refreshUser(user) {
         ...refreshedUser.UserDetails.toJSON(),
         ...refreshedUser.UserConfigs.toJSON(),
     }
+    delete result.password;
     delete result.UserDetails;
     delete result.UserConfigs;
 
