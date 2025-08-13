@@ -44,7 +44,7 @@ const StaffView = ({ pages, switchView }) => {
                                         {page.subpages
                                             .filter((subpage) => subpage.path !== '')
                                             .map((subpage) => (
-                                                <li key={`${page.path}/${subpage.path}`} className="submenu-item">
+                                                !subpage.hidden && <li key={`${page.path}/${subpage.path}`} className="submenu-item">
                                                     <Link
                                                         to={`${page.path}${subpage.path ? `/${subpage.path}` : ''}`}
                                                         className={`subpage-link ${
