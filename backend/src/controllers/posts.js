@@ -1,14 +1,27 @@
 //BACKEND/controller/pages.js
-const {Post, User, UserDetails, Channel} = require("../db");
+import {User, UserDetails} from '../models/user.js';
+import Post from '../models/post.js';
+import Channel from '../models/channel.js';
 
+/**
+ * @typedef {Object} RawPostData
+ * @property {Object} User - Sequelize User association
+ * @property {Object} Channel - Sequelize Channel association
+ * @property {Object} User.UserDetails - Sequelize UserDetails association
+ * @property {Object} author - Author
+ * @property {function} toJSON - Sequelize toJSON method
+ */
+/**
+ * Cleans up a post object by merging associations and removing redundant fields.
+ * @param {RawPostData} post - Raw post data from Sequelize query
+ * @returns {Object} Cleaned post object
+ */
 function postCleanUp(post) {
     post = {
         author: post.User ? post.User.toJSON() : null,
         channel: post.Channel ? post.Channel.toJSON() : null,
         ...post.toJSON(),
     };
-    delete post.channelID;
-    delete post.authorID;
     delete post.Channel;
     delete post.User;
 
@@ -22,7 +35,12 @@ function postCleanUp(post) {
     return post;
 }
 
-async function getPosts(postId = null) {
+/**
+ * Retrieves one or all posts.
+ * @param {number|null} postId - Optional post ID to fetch a specific post
+ * @returns {Promise<Object|Object[]|null>} Single post, array of posts, or null
+ */
+export async function getPosts(postId = null) {
 
     const commonConfig = {
         include: [
@@ -59,8 +77,16 @@ async function getPosts(postId = null) {
         return posts.map(post => (postCleanUp(post)));
     }
 }
-
-async function createPost(data) {
+/**
+ * Creates a new post.
+ * @param {Object} data - Post data
+ * @param {number} data.channelID - Channel ID
+ * @param {number} data.authorID - Author ID
+ * @param {string|null} data.title - Post title
+ * @param {string} data.content - Post content
+ * @returns {Promise<Object|null>} Created post or null if invalid
+ */
+export async function createPost(data) {
     const channel = await Channel.findOne({ where: { ID: data.channelID } });
     if (!channel) {
         return null;
@@ -81,7 +107,16 @@ async function createPost(data) {
         updatedAt: null
     });
 }
-async function updatePost(postId, data) {
+
+/**
+ * Updates an existing post.
+ * @param {number} postId - Post ID
+ * @param {Object} data - Post data to update
+ * @param {string|null} data.title - Post title
+ * @param {string} data.content - Post content
+ * @returns {Promise<Object|null>} Updated post or null if not found
+ */
+export async function updatePost(postId, data) {
     const post = await Post.findOne({ where: { ID: postId } });
 
     if (!post) {
@@ -96,7 +131,12 @@ async function updatePost(postId, data) {
     });
 }
 
-async function deletePost(postId) {
+/**
+ * Deletes a post.
+ * @param {number} postId - Post ID
+ * @returns {Promise<{valid: boolean, status?: number, message?: string}|Object>} Success object or error
+ */
+export async function deletePost(postId) {
     const post = await Post.findOne({ where: { ID: postId } });
 
     if (!post) {
@@ -105,10 +145,3 @@ async function deletePost(postId) {
 
     return await post.destroy();
 }
-
-module.exports = {
-    getPosts,
-    createPost,
-    updatePost,
-    deletePost
-};

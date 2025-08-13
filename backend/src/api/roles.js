@@ -1,13 +1,7 @@
 //BACKEND/api/roles.js
-const router = require('express').Router();
-const {
-    getRoles,
-    createRole,
-    updateRole,
-    deleteRole,
-    getUserRoles,
-    updateUserRoles,
-} = require('../controllers/roles');
+import express from 'express';
+import {getRoles, createRole, updateRole, deleteRole, getUserRoles, updateUserRoles} from "../controllers/roles.js";
+export const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
@@ -74,7 +68,6 @@ router.post('/new', async (req, res) => {
         }
 
         const { name, power, system_default } = req.body;
-
         const result = await createRole({
             name,
             power,
@@ -82,7 +75,7 @@ router.post('/new', async (req, res) => {
         });
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status(400).json({ message: result.message });
         }
 
         res.status(201).json({ message: result.message, role: result.role });
@@ -110,7 +103,7 @@ router.put('/:roleId', async (req, res) => {
         const result = await updateRole(parseInt(roleId), {name, power, system_default});
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status(400).json({ message: result.message });
         }
 
         res.json({ message: result.message, role: result.role });
@@ -163,7 +156,7 @@ router.delete('/:roleId', async (req, res) => {
         const result = await deleteRole(parseInt(roleId));
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status(400).json({ message: result.message });
         }
 
         res.json({ message: result.message });
@@ -174,4 +167,4 @@ router.delete('/:roleId', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

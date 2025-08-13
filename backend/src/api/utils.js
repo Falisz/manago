@@ -1,9 +1,9 @@
 //BACKEND/api/utils.js
-const router = require('express').Router();
-const {
-    getPages,
-} = require('../controllers/pages');
-const {UserConfigs} = require("../db");
+import express from 'express';
+import {getPages} from "../controllers/pages.js";
+// TODO: Separate model-updating/controller functionality from API endpoints.
+import {UserConfigs} from "../models/user.js";
+export const router = express.Router();
 
 //Server API endpoint
 router.get('/',  (req, res) => {
@@ -152,4 +152,4 @@ router.post('/toggle-nav', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

@@ -1,16 +1,33 @@
 //BACKEND/index.js
-const express = require('express');
-const session = require('express-session');
-const SequelizeStore = require('connect-session-sequelize')(session.Store);
-const cors = require('cors');
-const winston = require('winston');
-const dotenv = require('dotenv');
-dotenv.config();
-const { sequelize } = require('./db');
-const { seedData } = require('./utils/seed-data');
-const readline = require('readline');
+import express from 'express';
+import session from 'express-session';
+import SequelizeStore from 'connect-session-sequelize';
+import cors from 'cors';
+import winston from 'winston';
+import dotenv from 'dotenv';
+import sequelize from './db.js';
+import seedData from './utils/seed-data.js';
+import utilsRoutes from './api/utils.js';
+import authRoutes from './api/auth.js';
+import usersRoutes from './api/users.js';
+import rolesRoutes from './api/roles.js';
+import postsRoutes from './api/posts.js';
+import readline from 'readline';
 
+dotenv.config();
+
+/**
+ * Waits for a specific keypress within a timeout period.
+ * @param {string} keyToDetect - The key to detect (e.g., 'space')
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {Promise<string|null>} The detected key name or null if timeout occurs
+ */
 function waitForKeypress(keyToDetect, timeout) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
     readline.emitKeypressEvents(process.stdin);
     process.stdin.setRawMode(true);
 
@@ -20,7 +37,8 @@ function waitForKeypress(keyToDetect, timeout) {
         const timeoutId = setTimeout(() => {
             if (!keyPressed) {
                 process.stdin.setRawMode(false); 
-                process.stdin.pause(); 
+                process.stdin.pause();
+                rl.close();
                 resolve(null); 
             }
         }, timeout);
@@ -31,6 +49,7 @@ function waitForKeypress(keyToDetect, timeout) {
                 clearTimeout(timeoutId);
                 process.stdin.setRawMode(false);
                 process.stdin.pause();
+                rl.close();
                 resolve(key.name);
             }
         });
@@ -71,7 +90,8 @@ validateEnv();
 
 const app = express();
 
-const store = new SequelizeStore({
+const SequelizeStoreClass = SequelizeStore(session.Store);
+const store = new SequelizeStoreClass({
     db: sequelize,
     tableName: 'sessions',
     checkExpirationInterval: 15 * 60 * 1000,
@@ -109,11 +129,11 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/', require('./api/utils'));
-app.use('/', require('./api/auth'));
-app.use('/users', require('./api/users'));
-app.use('/roles', require('./api/roles'));
-app.use('/posts', require('./api/posts'));
+app.use('/', utilsRoutes);
+app.use('/', authRoutes);
+app.use('/users', usersRoutes);
+app.use('/roles', rolesRoutes);
+app.use('/posts', postsRoutes);
 
 const errorHandler = (err, req, res, _next) => {
     console.error('❌ Server error:\n', err.stack);
@@ -121,35 +141,38 @@ const errorHandler = (err, req, res, _next) => {
 };
 app.use(errorHandler);
 
-
 const PORT = process.env.PORT || 5000;
 
+/**
+ * Starts the Express server and initializes the database.
+ * @returns {Promise<void>}
+ */
 async function startServer() {
-    console.log('🔄️ Starting the server...');
+    console.log('[INFO] Starting the server...');
 
     try {
         await sequelize.authenticate();
-        console.log('✅ Database connection established');
+        console.log('[INFO] Database connection established');
 
         await sequelize.sync();
-        console.log('✅ Database models synced successfully');
+        console.log('[INFO] Database models synced successfully');
 
         await store.sync();
-        console.log('✅ Session store synced successfully');
+        console.log('[INFO] Session store synced successfully');
         
-        console.log(`ℹ️ Press 'space' key within next two seconds to seed data...`);
+        console.log(`[INFO] Press 'space' key within next two seconds to seed data...`);
         const key = await waitForKeypress('space', 2000);
         if (key) {
             await seedData();
         } else {
-            console.log('ℹ️ Data seeding skipped.');
+            console.log('\n[INFO] Data seeding skipped.');
         }        
 
         app.listen(PORT, () => {
-            console.log(`🚀 Server is up and running on port ${PORT}`);
+            console.log(`[INFO] Server is up and running on port ${PORT}`);
         });
     } catch (err) {
-        console.error('❌ Failed to start server:', err);
+        console.error('[ERROR] Failed to start server:', err);
         process.exit(1);
     }
 }

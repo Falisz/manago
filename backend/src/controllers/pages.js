@@ -1,7 +1,15 @@
 //BACKEND/controller/pages.js
-const {UserConfigs, AppPage, sequelize} = require("../db");
+import sequelize from '../db.js';
+import AppPage from '../models/app-page.js';
+import {UserConfigs} from '../models/user.js';
 
-async function getPages(user) {
+/**
+ * Retrieves pages for a user based on their manager view configuration.
+ * @param {Object} user - User object with ID
+ * @param {number} user.ID - User ID
+ * @returns {Promise<Object[]>} Array of page objects with nested subpages
+ */
+export async function getPages(user) {
     let userConfigs;
 
     try {
@@ -54,7 +62,3 @@ async function getPages(user) {
 
     return pages;
 }
-
-module.exports = {
-    getPages,
-};

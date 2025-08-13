@@ -1,7 +1,21 @@
-// BACKEND/src/seed-data.js
-const {AppModule, AppPage, User, UserDetails, UserConfigs, Channel, Post, Role, sequelize, UserRole} = require('../db')
-const bcrypt = require('bcrypt');
+// BACKEND/utils/seed-data.js
+import bcrypt from 'bcrypt';
+import sequelize from '../db.js';
+import AppModule from "../models/app-module.js";
+import AppPage from "../models/app-page.js";
+import Role from '../models/role.js';
+import User, {UserDetails, UserConfigs, UserRole} from '../models/user.js';
+import Channel from "../models/channel.js";
+import Post from "../models/post.js";
 
+/**
+ * Seeds data to a model if the table is empty.
+ * @param {Object} model - Sequelize model
+ * @param {string} tableName - Table name
+ * @param {Object[]} data - Data to seed
+ * @param {string} [itemsName="records"] - Name for logging (e.g., "records", "modules")
+ * @returns {Promise<void>}
+ */
 async function seedModel(model, tableName, data, itemsName = "records") {
     let rowCount = await model.count();
     if (rowCount > 0) {
@@ -13,9 +27,13 @@ async function seedModel(model, tableName, data, itemsName = "records") {
     }
 }
 
-async function seedData() {
+/**
+ * Seeds initial data to the database.
+ * @returns {Promise<void>}
+ */
+export async function seedData() {
     try {
-        console.log('🔄️ Starting data seeding...');
+        console.log('\n[INFO] Starting data seeding...');
         await sequelize.sync();
 
         const appModules = [
@@ -45,7 +63,7 @@ async function seedData() {
                 {ID: 4, view: 1, module: 2, parent: null, path: 'projects', title: 'Projects', icon: 'fact_check', component: 'ProjectIndex', hidden: false},
                 {ID: 5, view: 1, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'ScheduleShow', hidden: false},
                 {ID: 50, view: 1, module: 3, parent: 5, path: 'past', title: '', icon: 'Past Schedules', component: 'SchedulePast', hidden: false},
-                {ID: 6, view: 1, module: 6, parent: null, path: 'posts', title: 'Posts', icon: '', component: 'PostsIndex', hidden: false},
+                {ID: 6, view: 1, module: 6, parent: null, path: 'posts', title: 'Posts', icon: 'forum', component: 'PostsIndex', hidden: false},
                 {ID: 60, view: 1, module: 6, parent: 6, path: ':postId', title: 'Post', icon: '', component: 'PostsIndex', hidden: true},
                 {ID: 61, view: 1, module: 6, parent: 6, path: 'new', title: 'New Post', icon: '', component: 'PostsIndex', hidden: true},
                 {ID: 62, view: 1, module: 6, parent: 6, path: 'edit/:postId', title: 'Editing a Post', icon: 'PostsIndex', component: '', hidden: true},
@@ -88,7 +106,6 @@ async function seedData() {
                     email: 'test3@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
             ];
             const defaultPassword = await bcrypt.hash('1234', 10);
-
             const users = [];
             const userDetails = [];
             const userConfigs = [];
@@ -181,11 +198,11 @@ async function seedData() {
             }
         }
     } catch (err) {
-        console.error('\tError occurred while seeding data:', err.message, err.stack);
+        console.error('\t[ERROR] Error occurred while seeding data:', err.message, err.stack);
         throw err;
     } finally { 
-        console.log('✅ Data seeding completed');
+        console.log('[INFO] Data seeding completed');
     }
 }
 
-module.exports = {seedData};
+export default seedData;

@@ -1,11 +1,7 @@
 //BACKEND/api/posts.js
-const router = require('express').Router();
-const {
-    getPosts,
-    createPost,
-    updatePost,
-    deletePost
-} = require('../controllers/posts');
+import express from 'express';
+import {createPost, deletePost, getPosts, updatePost} from "../controllers/posts.js";
+export const router = express.Router();
 
 // Get All Posts
 router.get('/', async (req, res) => {
@@ -95,13 +91,13 @@ router.put('/:postId', async (req, res) => {
         }
 
         const user = req.session.user;
-        const post = await getPostById(parseInt(postId));
+        const post = await getPosts(parseInt(postId));
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if (post.authorID !== user.ID) {
+        if (post?.author.ID !== user.ID) {
             return res.status(403).json({ message: 'Forbidden: You are not the author of this post.' });
         }
 
@@ -128,13 +124,12 @@ router.delete('/:postId', async (req, res) => {
         }
 
         const user = req.session.user;
-        const post = await getPostById(parseInt(postId));
-
+        const post = await getPosts(parseInt(postId));
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if (post.authorID !== user.ID && user.role !== 10) {
+        if (post?.author.ID !== user.ID && user.role !== 10) {
             return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });
         }
 
@@ -147,4 +142,4 @@ router.delete('/:postId', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

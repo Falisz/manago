@@ -1,7 +1,12 @@
 # Staff Portal Project
 
 ## Overview
-This project is a full-stack web application with a React frontend and an Express.js backend, connected to a PostgreSQL database. It provides a staff management portal with API-driven functionality.
+The Staff Portal is a full-stack web application designed for staff management, featuring a React.js frontend and an Express.js backend, integrated with a PostgreSQL database.
+The application provides a user-friendly interface for managing employees, roles, posts, and other organizational resources, with a robust API-driven architecture to facilitate communication between the frontend and backend.
+
+The backend follows the Model-View-Controller (MVC) architectural pattern, leveraging Sequelize for database models, API endpoints as views, and controller functions for business logic.
+
+The frontend is a React.js single-page application (SPA) that consumes the backend API to deliver a dynamic and responsive user experience.
 
 ## Prerequisites
 - **Node.js**: Ensure Node.js is installed on your system.

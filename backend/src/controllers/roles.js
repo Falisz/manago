@@ -1,7 +1,19 @@
 //BACKEND/controller/roles.js
-const {  Role, sequelize, UserRole } = require('../db')
+import sequelize from '../db.js';
+import Role from "../models/role.js";
+import {UserRole} from '../models/user.js';
 
-async function getRoles(roleId = null) {
+/**
+ * @typedef {Object} UserRoleData
+ * @property {Object} Role - Sequelize Role association
+ * @property {function} toJSON - Sequelize toJSON method
+ */
+/**
+ * Retrieves one or all roles.
+ * @param {number|null} roleId - Optional role ID to fetch a specific role
+ * @returns {Promise<Object|Object[]|null>} Single role, array of roles, or null
+ */
+export async function getRoles(roleId = null) {
     if (roleId) {
 
         let role = await Role.findOne({
@@ -31,7 +43,12 @@ async function getRoles(roleId = null) {
     }
 }
 
-async function getUserRoles(userId) {
+/**
+ * Retrieves roles assigned to a user.
+ * @param {number} userId - User ID
+ * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
+ */
+export async function getUserRoles(userId) {
     if (!userId) {
         return {success: false, message: "User ID not provided."};
     }
@@ -55,7 +72,14 @@ async function getUserRoles(userId) {
 
 }
 
-async function createRole(data) {
+/**
+ * Creates a new role.
+ * @param {Object} data - Role data
+ * @param {string} data.name - Role name
+ * @param {number} data.power - Role power level
+ * @returns {Promise<{success: boolean, message: string, role?: Object}>}
+ */
+export async function createRole(data) {
 
     if (!data.name || !data.power) {
         return {success: false, message: "Mandatory data not provided."};
@@ -76,7 +100,13 @@ async function createRole(data) {
 
 }
 
-async function updateRole(roleId, data) {
+/**
+ * Updates an existing role.
+ * @param {number} roleId - Role ID
+ * @param {Object} data - Role data to update
+ * @returns {Promise<{success: boolean, message: string, role?: Object}>}
+ */
+export async function updateRole(roleId, data) {
     if (!roleId) {
         return {success: false, message: "Role ID not provided."};
     }
@@ -100,7 +130,12 @@ async function updateRole(roleId, data) {
     return {success: true, message: "Role updated successfully.", role: updatedRole.toJSON()};
 }
 
-async function deleteRole(roleId) {
+/**
+ * Deletes a role and its assignments.
+ * @param {number} roleId - Role ID
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function deleteRole(roleId) {
     if (!roleId) {
         return {success: false, message: "Role ID not provided."};
     }
@@ -132,7 +167,13 @@ async function deleteRole(roleId) {
     return { success: true, message: "Role removed successfully." };
 }
 
-async function updateUserRoles(userId, roleIds) {
+/**
+ * Updates roles assigned to a user.
+ * @param {number} userId - User ID
+ * @param {number[]} roleIds - Array of role IDs
+ * @returns {Promise<{success: boolean, message: string, status?: number}>}
+ */
+export async function updateUserRoles(userId, roleIds) {
     if (!userId || isNaN(userId)) {
         return { success: false, message: "Invalid user ID provided.", status: 400 };
     }
@@ -185,12 +226,3 @@ async function updateUserRoles(userId, roleIds) {
     await transaction.commit();
     return { success: true, message: "User roles updated successfully." };
 }
-
-module.exports = {
-    getRoles,
-    createRole,
-    updateRole,
-    deleteRole,
-    getUserRoles,
-    updateUserRoles,
-};

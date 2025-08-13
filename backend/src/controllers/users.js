@@ -1,9 +1,14 @@
 //BACKEND/controller/users.js
-const { User, UserDetails, UserConfigs, sequelize} = require('../db')
+import bcrypt from 'bcrypt';
+import sequelize from '../db.js';
+import User, {UserDetails, UserConfigs} from '../models/user.js';
 
-const bcrypt = require('bcrypt');
-
-async function getUsers(userId = null) {
+/**
+ * Retrieves one or all users.
+ * @param {number|null} userId - Optional user ID to fetch a specific user
+ * @returns {Promise<Object|Object[]|null>} Single user, array of users, or null
+ */
+export async function getUsers(userId = null) {
     if (userId) {
         let user = await User.findOne({
             attributes: { exclude: ['password', 'removed'] },
@@ -49,7 +54,18 @@ async function getUsers(userId = null) {
     }
 }
 
-async function createUser(data) {
+/**
+ * Creates a new user.
+ * @param {Object} data - User data
+ * @param {string|null} data.login - User login
+ * @param {string} data.email - User email
+ * @param {string} data.password - User password
+ * @param {string} data.first_name - First name
+ * @param {string} data.last_name - Last name
+ * @param {boolean} [data.manager_view_access=false] - Manager view access
+ * @returns {Promise<{success: boolean, message: string, user?: Object}>}
+ */
+export async function createUser(data) {
     if (!data.email || !data.password || !data.first_name || !data.last_name) {
         return {success: false, message: "Mandatory data not provided."};
     }
@@ -80,7 +96,13 @@ async function createUser(data) {
     return {success: true, message: "User created successfully.", user: user};
 }
 
-async function editUser(userId, data) {
+/**
+ * Edits an existing user.
+ * @param {number} userId - User ID
+ * @param {Object} data - User data to update
+ * @returns {Promise<{success: boolean, message: string, user?: Object}>}
+ */
+export async function editUser(userId, data) {
     if (!userId) {
         return {success: false, message: "User ID not provided."};
     }
@@ -128,7 +150,12 @@ async function editUser(userId, data) {
     return {success: true, message: "User updated successfully.", user: updatedUser};
 }
 
-async function removeUser(userId) {
+/**
+ * Removes a user by marking as removed and deleting details/configs.
+ * @param {number} userId - User ID
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function removeUser(userId) {
     const transaction = await sequelize.transaction();
 
     const user = await User.findOne({
@@ -167,10 +194,3 @@ async function removeUser(userId) {
 
     return {success: true, message: "User removed successfully."};
 }
-
-module.exports = {
-    getUsers,
-    createUser,
-    editUser,
-    removeUser
-};
