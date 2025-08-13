@@ -1,8 +1,24 @@
-//BACKEND/controller/auth.js
-const {User, UserDetails, UserConfigs} = require("../db");
-const bcrypt = require("bcrypt");
+//BACKEND/utils/auth.js
+import bcrypt from 'bcrypt';
+import User, {UserDetails, UserConfigs} from '../models/user.js';
 
-async function authUser(login, password) {
+/**
+ * @typedef {Object} UserData
+ * @property {Object} UserDetails - Sequelize UserDetails association
+ * @property {Object} UserConfigs - Sequelize UserConfigs association
+ * @property {string} password - User password
+ * @property {boolean} active - User active status
+ * @property {boolean} removed - User removed status
+ * @property {function} toJSON - Sequelize toJSON method
+ */
+
+/**
+ * Authenticates a user by login (ID, email, or login) and password.
+ * @param {string|number} login - User ID, email, or login name
+ * @param {string} password - User password
+ * @returns {Promise<{ valid: boolean, status?: number, message?: string, user?: Object }>}
+ */
+export async function authUser(login, password) {
     const isInteger = Number.isInteger(Number(login));
     const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
 
@@ -40,7 +56,13 @@ async function authUser(login, password) {
     return { valid: true, user: user };
 }
 
-async function refreshUser(user) {
+/**
+ * Refreshes user data by ID.
+ * @param {Object} user - User object with ID
+ * @param {number} user.ID - User ID
+ * @returns {Promise<Object|null>}
+ */
+export async function refreshUser(user) {
     if (!user?.ID) return null;
 
     const refreshedUser = await User.findOne({
@@ -65,7 +87,13 @@ async function refreshUser(user) {
     return result;
 }
 
-async function checkUserAccess(user) {
+/**
+ * Checks if a user is active.
+ * @param {Object} user - User object with ID
+ * @param {number} user.ID - User ID
+ * @returns {Promise<boolean>}
+ */
+export async function checkUserAccess(user) {
     const result = await User.findOne({
         attributes: ['active'],
         where: { ID: user.ID }
@@ -74,17 +102,16 @@ async function checkUserAccess(user) {
     return result ? result.active : false;
 }
 
-async function checkManagerAccess(user) {
+/**
+ * Checks if a user has manager view access.
+ * @param {Object} user - User object with ID
+ * @param {number} user.ID - User ID
+ * @returns {Promise<boolean>}
+ */
+export async function checkManagerAccess(user) {
     const result = await UserConfigs.findOne({
         where: { user: user.ID }
     });
 
     return result ? result.manager_view_access : false;
 }
-
-module.exports = {
-    authUser,
-    refreshUser,
-    checkUserAccess,
-    checkManagerAccess,
-};

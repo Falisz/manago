@@ -1,14 +1,11 @@
 //BACKEND/api/auth.js
-const router = require('express').Router();
-const {
-    authUser,
-    refreshUser,
-    checkUserAccess,
-    checkManagerAccess,
-} = require('../utils/auth');
-const {setManagerView} = require("../controllers/users");
-const {UserConfigs} = require("../db");
+import express from 'express';
+import {authUser, refreshUser, checkUserAccess, checkManagerAccess} from '../utils/auth.js';
+// TODO: Separate model-updating/controller functionality from API endpoints.
+import {UserConfigs} from "../models/user.js";
+export const router = express.Router();
 
+// Login endpoint
 router.post('/login', async (req, res) => {
     try {
 
@@ -36,6 +33,7 @@ router.post('/login', async (req, res) => {
 
 });
 
+// Logout endpoint
 router.get('/logout', (req, res) => {
     try {
 
@@ -59,6 +57,7 @@ router.get('/logout', (req, res) => {
 
 });
 
+// Access Check-up endpoint
 router.get('/access', async (req, res) => {
     try {
 
@@ -135,4 +134,4 @@ router.get('/access', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

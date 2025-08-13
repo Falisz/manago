@@ -1,12 +1,9 @@
 //BACKEND/api/users.js
-const router = require('express').Router();
-const {
-    getUsers,
-    createUser,
-    editUser,
-    removeUser
-} = require('../controllers/users');
-const {User} = require("../db");
+import express from 'express';
+import {createUser, editUser, getUsers, removeUser} from "../controllers/users.js";
+// TODO: Separate model-updating/controller functionality from API endpoints.
+import User from "../models/user.js";
+export const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
@@ -97,7 +94,7 @@ router.post('/new', async (req, res) => {
         });
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status(400).json({ message: result.message });
         }
 
         res.status(201).json({ message: result.message, user: result.user });
@@ -137,7 +134,7 @@ router.put('/:userId', async (req, res) => {
         });
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status( 400).json({ message: result.message });
         }
 
         res.json({ message: result.message, user: result.user });
@@ -164,7 +161,7 @@ router.delete('/:userId', async (req, res) => {
         const result = await removeUser(parseInt(userId));
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status( 400).json({ message: result.message });
         }
 
         res.json({ message: 'User removed successfully!' });
@@ -175,4 +172,4 @@ router.delete('/:userId', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

@@ -1,7 +1,21 @@
-// BACKEND/src/seed-data.js
-const {AppModule, AppPage, User, UserDetails, UserConfigs, Channel, Post, Role, sequelize, UserRole} = require('../db')
-const bcrypt = require('bcrypt');
+// BACKEND/utils/seed-data.js
+import bcrypt from 'bcrypt';
+import sequelize from '../db.js';
+import AppModule from "../models/app-module.js";
+import AppPage from "../models/app-page.js";
+import Role from '../models/role.js';
+import User, {UserDetails, UserConfigs, UserRole} from '../models/user.js';
+import Channel from "../models/channel.js";
+import Post from "../models/post.js";
 
+/**
+ * Seeds data to a model if the table is empty.
+ * @param {Object} model - Sequelize model
+ * @param {string} tableName - Table name
+ * @param {Object[]} data - Data to seed
+ * @param {string} [itemsName="records"] - Name for logging (e.g., "records", "modules")
+ * @returns {Promise<void>}
+ */
 async function seedModel(model, tableName, data, itemsName = "records") {
     let rowCount = await model.count();
     if (rowCount > 0) {
@@ -13,9 +27,13 @@ async function seedModel(model, tableName, data, itemsName = "records") {
     }
 }
 
-async function seedData() {
+/**
+ * Seeds initial data to the database.
+ * @returns {Promise<void>}
+ */
+export async function seedData() {
     try {
-        console.log('🔄️ Starting data seeding...');
+        console.log('\n[INFO] Starting data seeding...');
         await sequelize.sync();
 
         const appModules = [
@@ -37,19 +55,19 @@ async function seedData() {
                 {ID: 12, view: 1, module: 0, parent: 1, path: 'new', title: 'New Employee', icon: '', component: 'UsersIndex', hidden: true},
                 {ID: 13, view: 1, module: 0, parent: 1, path: 'edit/:userId', title: 'Editing an Employee', icon: '', component: 'UsersIndex', hidden: true},
                 {ID: 14, view: 1, module: 0, parent: 1, path: 'roles', title: 'Security Roles', icon: '', component: 'RolesIndex', hidden: false},
-                {ID: 15, view: 1, module: 0, parent: 1, path: ':roleId', title: 'Role', icon: '', component: 'RolesIndex', hidden: true},
-                {ID: 16, view: 1, module: 0, parent: 1, path: 'new', title: '', icon: 'New Role', component: 'RolesIndex', hidden: true},
-                {ID: 17, view: 1, module: 0, parent: 1, path: 'edit/:roleId', title: 'Editing a Role', icon: '', component: 'RolesIndex', hidden: true},
+                {ID: 15, view: 1, module: 0, parent: 14, path: ':roleId', title: 'Role', icon: '', component: 'RolesIndex', hidden: true},
+                {ID: 16, view: 1, module: 0, parent: 14, path: 'new', title: 'New Role', icon: '', component: 'RolesIndex', hidden: true},
+                {ID: 17, view: 1, module: 0, parent: 14, path: 'edit/:roleId', title: 'Editing a Role', icon: '', component: 'RolesIndex', hidden: true},
                 {ID: 2, view: 1, module: 0, parent: null, path: 'teams', title: 'Teams', icon: 'groups', component: 'TeamsIndex', hidden: false},
                 {ID: 3, view: 1, module: 1, parent: null, path: 'branches', title: 'Branches', icon: 'hub', component: 'BranchIndex', hidden: false},
                 {ID: 4, view: 1, module: 2, parent: null, path: 'projects', title: 'Projects', icon: 'fact_check', component: 'ProjectIndex', hidden: false},
                 {ID: 5, view: 1, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'ScheduleShow', hidden: false},
-                {ID: 50, view: 1, module: 3, parent: 5, path: 'past', title: '', icon: 'Past Schedules', component: 'SchedulePast', hidden: false},
-                {ID: 6, view: 1, module: 6, parent: null, path: 'posts', title: 'Posts', icon: '', component: 'PostsIndex', hidden: false},
+                {ID: 50, view: 1, module: 3, parent: 5, path: 'past', title: 'Past Schedules', icon: '', component: 'SchedulePast', hidden: false},
+                {ID: 6, view: 1, module: 6, parent: null, path: 'posts', title: 'Posts', icon: 'forum', component: 'PostsIndex', hidden: false},
                 {ID: 60, view: 1, module: 6, parent: 6, path: ':postId', title: 'Post', icon: '', component: 'PostsIndex', hidden: true},
                 {ID: 61, view: 1, module: 6, parent: 6, path: 'new', title: 'New Post', icon: '', component: 'PostsIndex', hidden: true},
-                {ID: 62, view: 1, module: 6, parent: 6, path: 'edit/:postId', title: 'Editing a Post', icon: 'PostsIndex', component: '', hidden: true},
-                {ID: 63, view: 1, module: 6, parent: 6, path: 'archive', title: '', icon: '', component: 'PostsArchive', hidden: false},
+                {ID: 62, view: 1, module: 6, parent: 6, path: 'edit/:postId', title: 'Editing a Post', icon: '', component: 'PostsIndex', hidden: true},
+                {ID: 63, view: 1, module: 6, parent: 6, path: 'archive', title: 'Posts Archive', icon: '', component: 'PostsArchive', hidden: false},
                 {ID: 100, view: 0, module: 0, parent: null, path: '/', title: 'Home', icon: 'home', component: 'Dashboard', hidden: false},
                 {ID: 101, view: 0, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'Schedule', hidden: false},
                 {ID: 110, view: 0, module: 3, parent: 101, path: 'dispositions', title: 'Dispositions', icon: '', component: 'Dispositions', hidden: false},
@@ -88,7 +106,6 @@ async function seedData() {
                     email: 'test3@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
             ];
             const defaultPassword = await bcrypt.hash('1234', 10);
-
             const users = [];
             const userDetails = [];
             const userConfigs = [];
@@ -181,11 +198,11 @@ async function seedData() {
             }
         }
     } catch (err) {
-        console.error('\tError occurred while seeding data:', err.message, err.stack);
+        console.error('\t[ERROR] Error occurred while seeding data:', err.message, err.stack);
         throw err;
     } finally { 
-        console.log('✅ Data seeding completed');
+        console.log('[INFO] Data seeding completed');
     }
 }
 
-module.exports = {seedData};
+export default seedData;
