@@ -5,7 +5,7 @@ import '../../assets/styles/Users.css';
 import useRole from "../../hooks/useRole";
 
 const RoleEdit = ({ roleId, onSave }) => {
-    const { role, loading, error, success, fetchRole, saveRole } = useRole();
+    const { role, loading, error, success, setLoading, fetchRole, saveRole } = useRole();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -20,11 +20,12 @@ const RoleEdit = ({ roleId, onSave }) => {
                 power: '',
                 system_default: false,
             });
+            setLoading(false);
             return;
         }
 
         fetchRole(roleId).then();
-    }, [roleId, fetchRole]);
+    }, [roleId, setLoading, fetchRole]);
 
     useEffect(() => {
         setFormData({

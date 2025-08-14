@@ -90,7 +90,7 @@ const useRole = () => {
         }
     }, []);
 
-    return { role, loading, error, success, fetchRole, saveRole, deleteRole };
+    return { role, loading, error, success, setLoading, fetchRole, saveRole, deleteRole };
 };
 
 export default useRole;
