@@ -1,6 +1,6 @@
 //BACKEND/api/users.js
 import express from 'express';
-import {createUser, editUser, getUsers, removeUser} from "../controllers/users.js";
+import {createUser, editUser, getUsers, removeUser, updateUserManagers} from "../controllers/users.js";
 // TODO: Separate model-updating/controller functionality from API endpoints.
 import User from "../models/user.js";
 export const router = express.Router();
@@ -162,6 +162,32 @@ router.put('/:userId', async (req, res) => {
 
     } catch (err) {
         console.error('Error updating user:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.put('/managers/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { userId } = req.params;
+        const { managerObjs } = req.body;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const result = await updateUserManagers(parseInt(userId), managerObjs);
+
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        res.json({ message: result.message });
+    } catch (err) {
+        console.error('Error updating user roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 });
