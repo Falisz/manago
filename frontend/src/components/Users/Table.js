@@ -36,9 +36,9 @@ const UsersTable = ({ users, loading }) => {
     })
 
     const headers = [
-        {title: 'First Name', key: 'first_name'},
-        {title: 'Last Name', key: 'last_name'},
+        {title: 'Name', key: 'name'},
         {title: 'E-mail Address', key: 'email'},
+        {title: 'Roles', key: 'roles'},
         {title: 'Active', key: 'active'}
     ]
 
@@ -73,6 +73,16 @@ const UsersTable = ({ users, loading }) => {
         result = result.filter(user => {
             return Object.entries(filters).every(([key, value]) => {
                 if (!value) return true;
+                
+                if (key === 'name') {
+                    return (user.first_name + ' ' + user.last_name)?.toLowerCase().includes(value.toLowerCase());
+                }
+
+                if (key === 'roles') {
+                    return user.roles?.some(role =>
+                        role.name?.toLowerCase().includes(value.toLowerCase())
+                    );
+                }
 
                 if (key === 'active') {
                     const filterValue = value.toLowerCase();
@@ -123,14 +133,34 @@ const UsersTable = ({ users, loading }) => {
             <div className="users-list-content">
                 { filteredAndSortedUsers.length === 0 ? (
                     <p>No users found.</p>
-                ) : (filteredAndSortedUsers.map(user => (
-                    <div className="users-list-row" key={user.user} onClick={() => navigate('/employees/' + user.user)}>
-                        <div>{user.first_name}</div>
-                        <div>{user.last_name}</div>
-                        <div>{user.email}</div>
-                        <div>{user.active ? 'Active' : 'Not'}</div>
-                    </div>
-                )))}
+                ) : (filteredAndSortedUsers.map(user => {
+                    const roles = user.roles || [];
+                    const displayedRoles = roles.slice(0, 2);
+                    const moreRolesCount = roles.length - 2;
+                    const moreRolesText = moreRolesCount > 0 ? `, +${moreRolesCount} other roles` : '';
+
+                    return (
+                        <div className="users-list-row" key={user.user}>
+                            <div onClick={() => navigate('/employees/' + user.user)}>{user.first_name} {user.last_name}</div>
+                            <div>{user.email}</div>
+                            <div>
+                                {displayedRoles.map((role, idx) => (
+                                    <React.Fragment key={role.ID}>
+                                        <span className="role-name"
+                                            onClick={() => navigate(`/employees/roles/${role.ID}`)}
+                                            style={{ marginRight: idx < displayedRoles.length - 1 ? 4 : 0 }}
+                                        >
+                                            {role.name}
+                                        </span>
+                                        {idx < displayedRoles.length - 1 && ', '}
+                                    </React.Fragment>
+                                ))}
+                                {moreRolesText}
+                            </div>
+                            <div>{user.active ? 'Active' : 'Not'}</div>
+                        </div>
+                    );
+                }))}
             </div>
         </div>
     );
