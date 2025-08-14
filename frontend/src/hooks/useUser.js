@@ -39,8 +39,8 @@ const useUser = () => {
                 return null;
             }
         } catch (err) {
-            console.error('Error fetching role:', err);
-            setError('Role not found!');
+            console.error('Error fetching user:', err);
+            setError('Error occurred while fetching user.');
             return null;
         } finally {
             setLoading(false);
@@ -48,7 +48,43 @@ const useUser = () => {
     }, [userCache]);
 
     const saveUser = useCallback(async (formData, userId = null) => {
-        return null;
+        try {
+            setLoading(true);
+            setError(null);
+            setSuccess(null);
+
+            let response;
+
+            if (userId) {
+                response = await axios.put(`/users/${userId}`, {
+                    login: formData.login,
+                    email: formData.email,
+                    password: formData.password,
+                    first_name: formData.first_name,
+                    last_name: formData.last_name,
+                    active: formData.active,
+                    manager_view_access: formData.manager_view_access
+                }, { withCredentials: true });
+            } else {
+                response = await axios.post('/users/new', formData, { withCredentials: true });
+            }
+
+            await axios.put(`/roles/user/${userId}`, { roleIds: formData.role_ids }, { withCredentials: true });
+
+            setSuccess(response.data.message);
+            setUser(response.data.user);
+            setUserCache((prev) => ({ ...prev, [response.data.user.ID]: response.data.user }));
+            return response.data.user;
+
+        } catch(err) {
+            console.error('Error fetching user:', err);
+            setError('Error occurred while fetching user.');
+            return null;
+        } finally {
+            setLoading(false);
+            setError(null);
+            setSuccess(null);
+        }
     }, []);
 
     const deleteUser = useCallback(async (userId) => {
@@ -65,8 +101,8 @@ const useUser = () => {
             });
             return true;
         } catch (err) {
-            console.error('Error deleting role:', err);
-            setError('Failed to delete role. Please try again.');
+            console.error('Error deleting user:', err);
+            setError('Failed to delete user. Please try again.');
             return false;
         } finally {
             setLoading(false);
@@ -75,6 +111,6 @@ const useUser = () => {
         }
     }, []);
 
-    return {user, loading, error, success, fetchUser, saveUser, deleteUser};
+    return {user, loading, error, success, setLoading, fetchUser, saveUser, deleteUser};
 }
 export default useUser;

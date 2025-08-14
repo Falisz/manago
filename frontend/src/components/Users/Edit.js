@@ -1,81 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
+import useUser from "../../hooks/useUser";
+import useRoles from "../../hooks/useRoles";
 
-// TODO: Use custom useUser hook instead of this intricate logics here.
 const UserEdit = ({ userId, onSave }) => {
-    const navigate = useNavigate();
+    const {user, loading, error, success, setLoading, fetchUser, saveUser} = useUser();
+    const {roles, fetchRoles} = useRoles();
+
     const [formData, setFormData] = useState({
         login: '',
         email: '',
         password: '',
         first_name: '',
         last_name: '',
-        roleIds: [],
+        role_ids: [],
         active: true,
         manager_view_access: false,
     });
-    const [availableRoles, setAvailableRoles] = useState([]);
-    const [loading, setLoading] = useState(!!userId);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const rolesResponse = await axios.get('/roles', { withCredentials: true });
-                setAvailableRoles(rolesResponse.data || []);
+        fetchRoles().then();
 
-                if (userId) {
-                    const userResponse = await axios.get(`/users/${userId}`, { withCredentials: true });
-                    const userData = userResponse.data;
+        if (!userId) {
+            setLoading(false);
+            return;
+        }
 
-                    const userRolesResponse = await axios.get(`/roles/user/${userId}/`, { withCredentials: true });
-                    const userRoleIds = userRolesResponse.data.map(role => role.ID);
+        fetchUser(userId).then();
+    }, [userId, setLoading, fetchRoles, fetchUser]);
 
-                    setFormData({
-                        login: userData.login || '',
-                        email: userData.email || '',
-                        password: '',
-                        first_name: userData.first_name || '',
-                        last_name: userData.last_name || '',
-                        roleIds: userRoleIds || [],
-                        active: userData.active || false,
-                        manager_view_access: userData.manager_view_access || false,
-                    });
-                } else {
-                    setFormData({
-                        login: '',
-                        email: '',
-                        password: '',
-                        first_name: '',
-                        last_name: '',
-                        roleIds: [],
-                        active: true,
-                        manager_view_access: false,
-                    });
-                }
-                setLoading(false);
-            } catch (err) {
-                console.error('Error fetching user:', err);
-                setError('Failed to load user data. Please try again.');
-                setLoading(false);
-            }
-        };
-        fetchData().then();
-    }, [userId]);
+    useEffect(() => {
+        setFormData({
+            login: user?.login || '',
+            email: user?.email || '',
+            password: user?.password || '',
+            first_name: user?.first_name || '',
+            last_name: user?.last_name || '',
+            role_ids: user?.roles?.map((role) => role.ID) || [],
+            active: user?.active || true,
+            manager_view_access: user?.manager_view_access || false,
+        });
+    }, [user]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         if (name === 'roleIds') {
             const roleId = parseInt(value);
             setFormData(prev => {
-                const newRoleIds = checked
-                    ? [...prev.roleIds, roleId]
-                    : prev.roleIds.filter(id => id !== roleId);
-                return { ...prev, roleIds: newRoleIds };
+                const newRoleIds = checked ? [...prev.role_ids, roleId] : prev.role_ids.filter(id => id !== roleId);
+                return { ...prev, role_ids: newRoleIds };
             });
         } else {
             setFormData(prev => ({
@@ -87,51 +61,10 @@ const UserEdit = ({ userId, onSave }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
-        setSuccess(null);
-        try {
-            let newUserId = userId;
-            if (userId) {
-
-                await axios.put(`/users/${userId}`, {
-                    login: formData.login,
-                    email: formData.email,
-                    password: formData.password,
-                    first_name: formData.first_name,
-                    last_name: formData.last_name,
-                    active: formData.active,
-                    manager_view_access: formData.manager_view_access
-                }, { withCredentials: true });
-
-                const roleResponse = await axios.put(`/roles/user/${userId}`, { roleIds: formData.roleIds }, { withCredentials: true });
-                setSuccess(roleResponse.data.message);
-
-            } else {
-
-                const userResponse = await axios.post('/users/new', {
-                    login: formData.login,
-                    email: formData.email,
-                    password: formData.password,
-                    first_name: formData.first_name,
-                    last_name: formData.last_name,
-                    active: formData.active,
-                    manager_view_access: formData.manager_view_access
-                }, { withCredentials: true });
-
-                newUserId = userResponse.data.user?.ID;
-                if (!newUserId) {
-                    setError('User ID not returned from server.');
-                    return;
-                }
-
-                const roleResponse = await axios.put(`/roles/user/${newUserId}`, { roleIds: formData.roleIds }, { withCredentials: true });
-                setSuccess(roleResponse.data.message);
-            }
-            setTimeout(() => navigate(`/employees/${newUserId || userId}`), 1500);
-        } catch (err) {
-            console.error('Error saving user or roles:', err);
-            setError(err.response?.data?.message || 'Failed to save user or roles. Please try again.');
-        } finally {
+        const response = await saveUser(formData, userId);
+        if (response && !userId) {
+            onSave(response.ID);
+        } else {
             onSave();
         }
     };
@@ -144,6 +77,14 @@ const UserEdit = ({ userId, onSave }) => {
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
             <form onSubmit={handleSubmit} className="user-form">
+                <pre>
+                    {'USER: '}
+                    {JSON.stringify(user, null, 2)}
+                    <br/>{'FORMDATA: '}
+                    {JSON.stringify(formData, null, 2)}
+                    <br/>{'ROLES: '}
+                    {JSON.stringify(roles, null, 2)}
+                </pre>
                 <div className="form-group">
                     <label>Login</label>
                     <input
@@ -155,7 +96,7 @@ const UserEdit = ({ userId, onSave }) => {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Email</label>
+                    <label>Email address</label>
                     <input
                         type="email"
                         name="email"
@@ -223,19 +164,19 @@ const UserEdit = ({ userId, onSave }) => {
                 <div className="form-group">
                     <label>Roles</label>
                     <div className="roles-checklist">
-                        {availableRoles.length === 0 ? (
+                        {roles?.length === 0 ? (
                             <p>No roles available.</p>
                         ) : (
-                            availableRoles.map(role => (
+                            roles?.map(role => (
                                 <label key={role.ID} className="role-checkbox">
                                     <input
                                         type="checkbox"
                                         name="roleIds"
                                         value={role.ID}
-                                        checked={formData.roleIds.includes(role.ID)}
+                                        checked={formData.role_ids.includes(role.ID)}
                                         onChange={handleChange}
                                     />
-                                    {role.name} <span title={"Power"}>&nbsp;({role.power})</span>
+                                    {role.name} <span title={"Power"}><small>&nbsp;({role.power})</small></span>
                                 </label>
                             ))
                         )}
@@ -244,11 +185,10 @@ const UserEdit = ({ userId, onSave }) => {
                 <div className="form-actions">
                     <button type="submit" className="save-button">
                         {userId ? (
-                            <><i className={'material-symbols-outlined'}>save</i> Save changes</>
+                            <><i className={'material-symbols-outlined'}>save</i>Save changes</>
                         ) : (
-                            <><i className={'material-symbols-outlined'}>add</i>Create Employee</>
-                        )
-                        }
+                            <><i className={'material-symbols-outlined'}>add</i>Add a new employee</>
+                        )}
                     </button>
                 </div>
             </form>
