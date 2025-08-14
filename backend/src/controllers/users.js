@@ -51,6 +51,7 @@ export async function getUsers(userId = null) {
             const userData = {
                 ...user.toJSON(),
                 ...user.UserDetails.toJSON(),
+                managers: await getUserManagers(user.ID),
                 roles: await getUserRoles(user.ID)
             };
             delete userData.UserDetails;
@@ -200,4 +201,97 @@ export async function removeUser(userId) {
     await transaction.commit();
 
     return {success: true, message: "User removed successfully."};
+}
+
+/**
+ * Retrieves managers assigned to a user.
+ * @param {number} userId - User ID
+ * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of managers or error
+ */
+export async function getUserManagers(userId) {
+    if (!userId) {
+        return { success: false, message: "User ID not provided." };
+    }
+
+    const managers = await UserManager.findAll({
+        where: { user: userId },
+        order: [['primary', 'DESC']],
+        include: [
+            {
+                model: User,
+                as: 'Manager',
+                attributes: ['ID'],
+                include: [{ model: UserDetails, as: 'UserDetails' }]
+            }
+        ]
+    });
+
+    if (!managers || managers.length === 0) {
+        return [];
+    }
+
+    return managers.map(m => ({
+        ID: m.Manager.ID,
+        first_name: m.Manager.UserDetails?.first_name,
+        last_name: m.Manager.UserDetails?.last_name,
+        primary: m.primary
+    }));
+}
+
+/**
+ * Updates managers assigned to a user.
+ * @param {number} userId - User ID
+ * @param {Array<{manager: number, primary?: boolean}>} managerObjs - Array of manager objects
+ * @returns {Promise<{success: boolean, message: string, status?: number}>}
+ */
+export async function updateUserManagers(userId, managerObjs) {
+    if (!userId || isNaN(userId)) {
+        return { success: false, message: "Invalid user ID provided.", status: 400 };
+    }
+
+    if (!Array.isArray(managerObjs) || managerObjs.some(m => isNaN(m.manager))) {
+        return { success: false, message: "Invalid manager IDs provided. Must be an array of objects with manager IDs.", status: 400 };
+    }
+
+    const managerIds = managerObjs.map(m => m.manager);
+
+    const existingManagers = await User.findAll({
+        where: { ID: managerIds },
+        attributes: ['ID']
+    });
+    const existingManagerIds = existingManagers.map(u => u.ID);
+    const invalidManagerIds = managerIds.filter(id => !existingManagerIds.includes(id));
+
+    if (invalidManagerIds.length > 0) {
+        return { success: false, message: `Invalid manager IDs: ${invalidManagerIds.join(', ')}`, status: 400 };
+    }
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        await UserManager.destroy({
+            where: { user: userId },
+            transaction
+        });
+
+        await Promise.all(
+            managerObjs.map(m =>
+                UserManager.create(
+                    {
+                        user: userId,
+                        manager: m.manager,
+                        primary: m.primary === true
+                    },
+                    { transaction }
+                )
+            )
+        );
+
+        await transaction.commit();
+
+        return { success: true, message: "User managers updated successfully." };
+    } catch (err) {
+        await transaction.rollback();
+        return { success: false, message: "Failed to update user managers." };
+    }
 }

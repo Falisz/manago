@@ -22,7 +22,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-
 router.get('/:userId', async (req, res) => {
     try {
 
@@ -39,6 +38,29 @@ router.get('/:userId', async (req, res) => {
         const user = await getUsers(parseInt(userId));
 
         res.json(user);
+
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/managers/:userId', async (req, res) => {
+    try {
+
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { userId } = req.params;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const managers = await getUserManagers(parseInt(userId));
+
+        res.json(managers);
 
     } catch (err) {
         console.error('Error fetching users:', err);
@@ -118,7 +140,7 @@ router.put('/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const { login, email, password, first_name, last_name, role, active, manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
+        const { login, email, password, first_name, last_name, active, manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
 
         const result = await editUser(parseInt(userId), {
             login,
@@ -126,7 +148,6 @@ router.put('/:userId', async (req, res) => {
             password,
             first_name,
             last_name,
-            role,
             active,
             manager_view_access,
             manager_view_enabled,
