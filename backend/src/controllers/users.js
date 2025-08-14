@@ -253,6 +253,11 @@ export async function updateUserManagers(userId, managerObjs) {
         return { success: false, message: "Invalid manager IDs provided. Must be an array of objects with manager IDs.", status: 400 };
     }
 
+    const primaryManagers = managerObjs.filter(m => m.primary === true);
+    if (primaryManagers.length > 1) {
+        return { success: false, message: "User can have only one primary manager assigned.", status: 400 };
+    }
+
     const managerIds = managerObjs.map(m => m.manager);
 
     const existingManagers = await User.findAll({
