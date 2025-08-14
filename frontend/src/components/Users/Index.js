@@ -50,7 +50,7 @@ const UsersIndex = () => {
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this role?')) return;
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
         deleteUser(userId).then();
         fetchUsers(false).then();
         navigate('/employees');
