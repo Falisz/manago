@@ -14,7 +14,8 @@ export async function getUsers(userId = null) {
             attributes: { exclude: ['password', 'removed'] },
             where: { ID: userId, removed: false },
             include: [
-                { model: UserDetails,  as: 'UserDetails' }
+                { model: UserDetails,  as: 'UserDetails' },
+                { model: UserConfigs,  as: 'UserConfigs' }
             ],
             order: [['ID', 'ASC']]
         });
@@ -24,10 +25,12 @@ export async function getUsers(userId = null) {
 
         user = {
             ...user.toJSON(),
-            ...user.UserDetails.toJSON()
+            ...user.UserDetails.toJSON(),
+            ...user.UserConfigs.toJSON()
         };
 
         delete user.UserDetails;
+        delete user.UserConfigs;
 
         return user;
     } else {
