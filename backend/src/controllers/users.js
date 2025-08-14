@@ -2,6 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
 import User, {UserDetails, UserConfigs} from '../models/user.js';
+import { getUserRoles } from './roles.js';
 
 /**
  * Retrieves one or all users.
@@ -34,7 +35,7 @@ export async function getUsers(userId = null) {
 
         return user;
     } else {
-        const users = await User.findAll({
+        let users = await User.findAll({
             attributes: { exclude: ['password', 'removed'] },
             where: {removed: false },
             include: [
@@ -46,14 +47,17 @@ export async function getUsers(userId = null) {
         if (!users)
             return null;
 
-        return users.map(user => {
+        users = await Promise.all(users.map(async user => {
             const userData = {
                 ...user.toJSON(),
-                ...user.UserDetails.toJSON()
+                ...user.UserDetails.toJSON(),
+                roles: await getUserRoles(user.ID)
             };
             delete userData.UserDetails;
             return userData;
-        }) || null;
+        }));
+
+        return users || null;
     }
 }
 
