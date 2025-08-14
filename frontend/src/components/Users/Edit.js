@@ -77,14 +77,6 @@ const UserEdit = ({ userId, onSave }) => {
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
             <form onSubmit={handleSubmit} className="user-form">
-                <pre>
-                    {'USER: '}
-                    {JSON.stringify(user, null, 2)}
-                    <br/>{'FORMDATA: '}
-                    {JSON.stringify(formData, null, 2)}
-                    <br/>{'ROLES: '}
-                    {JSON.stringify(roles, null, 2)}
-                </pre>
                 <div className="form-group">
                     <label>Login</label>
                     <input
