@@ -213,7 +213,6 @@ export async function getUserManagers(userId) {
     let managers;
     if (!userId) {
         managers = await User.findAll({
-            attributes: ['ID'],
             include: [
                 {
                     model: UserRole,
@@ -221,10 +220,10 @@ export async function getUserManagers(userId) {
                         {
                             model: Role,
                             where: {name: 'Manager'},
-                            attributes: []
+                            attributes: ['name']
                         }
                     ],
-                    attributes: []
+                    attributes: ['user', 'role']
                 },
                 {
                     model: UserDetails,
@@ -232,14 +231,17 @@ export async function getUserManagers(userId) {
                     attributes: ['first_name', 'last_name']
                 }
             ],
-            where: {removed: false, active: true}
-        });    
-        
+            where: {active: true},
+            attributes: ['ID']
+        });
+
         managers = managers?.map(m => ({
             ID: m.ID,
             first_name: m.UserDetails?.first_name,
             last_name: m.UserDetails?.last_name
         }));
+
+        console.log('Retrieved managers:', managers);
     } else {
         managers = await UserManager.findAll({
             where: { user: userId },
