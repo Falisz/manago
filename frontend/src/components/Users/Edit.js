@@ -3,9 +3,11 @@ import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 import useUser from "../../hooks/useUser";
 import useRoles from "../../hooks/useRoles";
+import useManagers from "../../hooks/useManagers";
 
 const UserEdit = ({ userId, onSave }) => {
     const {user, loading, error, success, setLoading, fetchUser, saveUser} = useUser();
+    const {managers, fetchManagers} = useManagers();
     const {roles, fetchRoles} = useRoles();
 
     const [formData, setFormData] = useState({
@@ -15,12 +17,14 @@ const UserEdit = ({ userId, onSave }) => {
         first_name: '',
         last_name: '',
         role_ids: [],
+        manager_ids: [],
         active: true,
         manager_view_access: false,
     });
 
     useEffect(() => {
         fetchRoles().then();
+        fetchManagers().then();
 
         if (!userId) {
             setLoading(false);
@@ -28,7 +32,7 @@ const UserEdit = ({ userId, onSave }) => {
         }
 
         fetchUser(userId).then();
-    }, [userId, setLoading, fetchRoles, fetchUser]);
+    }, [userId, setLoading, fetchRoles, fetchManagers, fetchUser]);
 
     useEffect(() => {
         setFormData({
@@ -38,6 +42,7 @@ const UserEdit = ({ userId, onSave }) => {
             first_name: user?.first_name || '',
             last_name: user?.last_name || '',
             role_ids: user?.roles?.map((role) => role.ID) || [],
+            manager_ids: user?.managers?.map((manager) => manager.ID) || [],
             active: user?.active || true,
             manager_view_access: user?.manager_view_access || false,
         });
@@ -169,6 +174,27 @@ const UserEdit = ({ userId, onSave }) => {
                                         onChange={handleChange}
                                     />
                                     {role.name} <span title={"Power"}><small>&nbsp;({role.power})</small></span>
+                                </label>
+                            ))
+                        )}
+                    </div>
+                </div>
+                <div className="form-group">
+                    <label>Managers</label>
+                    <div className="roles-checklist">
+                        {managers?.length === 0 ? (
+                            <p>No managers available.</p>
+                        ) : (
+                            managers?.map(manager => (
+                                <label key={manager.ID} className="role-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="managerIds"
+                                        value={manager.ID}
+                                        checked={formData.manager_ids.includes(manager.ID)}
+                                        onChange={handleChange}
+                                    />
+                                    {manager.first_name} {manager.last_name}
                                 </label>
                             ))
                         )}
