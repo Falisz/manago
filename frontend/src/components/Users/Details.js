@@ -29,6 +29,10 @@ const UserDetails = ({ user, loading, handleDelete }) => {
                 <div className={"user-detail-label"}>Active?</div>
                 {user.active ? <div className={"user-detail-data true"}><i className="material-symbols-outlined">check</i> Active</div>
                     : <div className={"user-detail-data false"}><i className="material-symbols-outlined">close</i> Not Active</div>}
+                <div className={"user-detail-label"}>Report to</div>
+                {user.managers.length > 0 ? user.managers.map((manager) => (
+                    <div className={"user-detail-data"} key={manager.ID} onClick={() => navigate('/employees/' + manager.ID)}>{manager.first_name} {manager.last_name}</div>
+                )):<div className={"user-detail-data placeholder"}>No manager assigned.</div>}
                 <div className={"user-detail-label"}>Roles</div>
                 {user.roles.length > 0 ? user.roles.map((role) => (
                     <div className={"user-detail-data"} key={role.ID}>{role.name}</div>
