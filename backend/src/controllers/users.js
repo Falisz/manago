@@ -209,22 +209,50 @@ export async function removeUser(userId) {
  * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of managers or error
  */
 export async function getUserManagers(userId) {
+    let managers;
     if (!userId) {
-        return { success: false, message: "User ID not provided." };
+        managers = await User.findAll({
+            attributes: ['ID'],
+            include: [
+                {
+                    model: UserRoles,
+                    include: [
+                        {
+                            model: Role,
+                            where: {name: 'Manager'},
+                            attributes: []
+                        }
+                    ],
+                    attributes: []
+                },
+                {
+                    model: UserDetails,
+                    as: 'UserDetails',
+                    attributes: ['first_name', 'last_name']
+                }
+            ],
+            where: {removed: false, active: true}
+        });    
+        managers = managers.map(m => ({
+            ID: m.ID,
+            first_name: m.UserDetails?.first_name,
+            last_name: m.UserDetails?.last_name
+        }));
+    } else {
+        const managers = await UserManager.findAll({
+            where: { user: userId },
+            order: [['primary', 'DESC']],
+            include: [
+                {
+                    model: User,
+                    as: 'Manager',
+                    attributes: ['ID'],
+                    include: [{ model: UserDetails, as: 'UserDetails' }]
+                }
+            ]
+        });
     }
 
-    const managers = await UserManager.findAll({
-        where: { user: userId },
-        order: [['primary', 'DESC']],
-        include: [
-            {
-                model: User,
-                as: 'Manager',
-                attributes: ['ID'],
-                include: [{ model: UserDetails, as: 'UserDetails' }]
-            }
-        ]
-    });
 
     if (!managers || managers.length === 0) {
         return [];
