@@ -36,7 +36,7 @@ const useUser = () => {
                     ...userData,
                     managers: res.data,
                 }
-                console.log(userData);
+                
                 setUser(userData);
                 setUserCache((prev) => ({ ...prev, [userId]: userData }));
                 return userData;
