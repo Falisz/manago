@@ -131,9 +131,9 @@ const UsersTable = ({ users, loading }) => {
                 ))}
             </div>
             <div className="users-list-content">
-                { filteredAndSortedUsers.length === 0 ? (
+                { filteredAndSortedUsers?.length === 0 ? (
                     <p>No users found.</p>
-                ) : (filteredAndSortedUsers.map(user => {
+                ) : (filteredAndSortedUsers?.map(user => {
                     const roles = user.roles || [];
                     const displayedRoles = roles.slice(0, 2);
                     const moreRolesCount = roles.length - 2;
