@@ -1,7 +1,8 @@
 //BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
-import User, {UserDetails, UserConfigs, UserManager} from '../models/user.js';
+import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
+import Role from '../models/role.js';
 import { getUserRoles } from './roles.js';
 
 /**
@@ -215,7 +216,7 @@ export async function getUserManagers(userId) {
             attributes: ['ID'],
             include: [
                 {
-                    model: UserRoles,
+                    model: UserRole,
                     include: [
                         {
                             model: Role,
@@ -233,13 +234,14 @@ export async function getUserManagers(userId) {
             ],
             where: {removed: false, active: true}
         });    
-        managers = managers.map(m => ({
+        
+        managers = managers?.map(m => ({
             ID: m.ID,
             first_name: m.UserDetails?.first_name,
             last_name: m.UserDetails?.last_name
         }));
     } else {
-        const managers = await UserManager.findAll({
+        managers = await UserManager.findAll({
             where: { user: userId },
             order: [['primary', 'DESC']],
             include: [
@@ -251,6 +253,13 @@ export async function getUserManagers(userId) {
                 }
             ]
         });
+
+        managers = managers.map(m => ({
+            ID: m.Manager.ID,
+            first_name: m.Manager.UserDetails?.first_name,
+            last_name: m.Manager.UserDetails?.last_name,
+            primary: m.primary
+    }));
     }
 
 
@@ -258,12 +267,7 @@ export async function getUserManagers(userId) {
         return [];
     }
 
-    return managers.map(m => ({
-        ID: m.Manager.ID,
-        first_name: m.Manager.UserDetails?.first_name,
-        last_name: m.Manager.UserDetails?.last_name,
-        primary: m.primary
-    }));
+    return managers;
 }
 
 /**

@@ -22,6 +22,44 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/managers', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const managers = await getUserManagers();
+
+        res.json(managers);
+
+    } catch (err) {
+        console.error('Error fetching managers:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/managers/:userId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { userId } = req.params;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ message: 'Invalid user ID.' });
+        }
+
+        const managers = await getUserManagers(parseInt(userId));
+
+        res.json(managers);
+
+    } catch (err) {
+        console.error('Error fetching managers:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
 router.get('/:userId', async (req, res) => {
     try {
 
@@ -38,34 +76,6 @@ router.get('/:userId', async (req, res) => {
         const user = await getUsers(parseInt(userId));
 
         res.json(user);
-
-    } catch (err) {
-        console.error('Error fetching users:', err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-});
-
-router.get('/managers/:userId', async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        const { userId } = req.params;
-        let managers;
-
-        if (!userId) {
-            managers = await getUserManagers();
-       
-        } else {     
-            if (isNaN(userId)) {
-                return res.status(400).json({ message: 'Invalid user ID.' });
-            }
-
-            managers = await getUserManagers(parseInt(userId));
-        }
-
-        res.json(managers);
 
     } catch (err) {
         console.error('Error fetching users:', err);
