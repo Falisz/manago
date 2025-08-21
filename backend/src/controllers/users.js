@@ -1,7 +1,7 @@
 //BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
-import User, {UserDetails, UserConfigs} from '../models/user.js';
+import User, {UserDetails, UserConfigs, UserManager} from '../models/user.js';
 import { getUserRoles } from './roles.js';
 
 /**
