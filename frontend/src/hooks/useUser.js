@@ -31,6 +31,12 @@ const useUser = () => {
                     ...userData,
                     roles: res.data,
                 }
+                res = await axios.get(`/users/managers/${userId}`, { withCredentials: true });
+                userData = {
+                    ...userData,
+                    managers: res.data,
+                }
+                console.log(userData);
                 setUser(userData);
                 setUserCache((prev) => ({ ...prev, [userId]: userData }));
                 return userData;
