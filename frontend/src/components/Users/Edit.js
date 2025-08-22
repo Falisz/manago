@@ -9,6 +9,7 @@ const UserEdit = ({ userId, onSave }) => {
     const {user, loading, error, success, setLoading, fetchUser, saveUser} = useUser();
     const {managers, fetchManagers} = useManagers();
     const {roles, fetchRoles} = useRoles();
+    const [showSecondaryManager, setShowSecondaryManager] = useState(false);
 
     const [formData, setFormData] = useState({
         login: '',
@@ -17,7 +18,8 @@ const UserEdit = ({ userId, onSave }) => {
         first_name: '',
         last_name: '',
         role_ids: [],
-        manager_ids: [],
+        primary_manager_id: '',
+        secondary_manager_id: '',
         active: true,
         manager_view_access: false,
     });
@@ -42,10 +44,12 @@ const UserEdit = ({ userId, onSave }) => {
             first_name: user?.first_name || '',
             last_name: user?.last_name || '',
             role_ids: user?.roles?.map((role) => role.ID) || [],
-            manager_ids: user?.managers?.map((manager) => manager.ID) || [],
+            primary_manager_id: user?.managers?.[0]?.ID || '',
+            secondary_manager_id: user?.managers?.[1]?.ID || '',
             active: user?.active || true,
             manager_view_access: user?.manager_view_access || false,
         });
+        setShowSecondaryManager(!!user?.managers?.[1]?.ID);
     }, [user]);
 
     const handleChange = (e) => {
@@ -73,6 +77,14 @@ const UserEdit = ({ userId, onSave }) => {
             onSave();
         }
     };
+
+    // Filter managers to exclude the current user
+    const availableManagers = managers?.filter(manager => manager.ID !== userId) || [];
+
+    // For secondary manager, also exclude the primary manager
+    const availableSecondaryManagers = availableManagers.filter(
+        manager => manager.ID !== parseInt(formData.primary_manager_id)
+    );
 
     if (loading) return <Loader />;
 
@@ -180,26 +192,48 @@ const UserEdit = ({ userId, onSave }) => {
                     </div>
                 </div>
                 <div className="form-group">
-                    <label>Managers</label>
-                    <div className="roles-checklist">
-                        {managers?.length === 0 ? (
-                            <p>No managers available.</p>
-                        ) : (
-                            managers?.map(manager => (
-                                <label key={manager.ID} className="role-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        name="managerIds"
-                                        value={manager.ID}
-                                        checked={formData.manager_ids.includes(manager.ID)}
-                                        onChange={handleChange}
-                                    />
-                                    {manager.first_name} {manager.last_name}
-                                </label>
-                            ))
-                        )}
-                    </div>
+                    <label>Primary Manager</label>
+                    <select
+                        name="primary_manager_id"
+                        value={formData.primary_manager_id}
+                        onChange={handleChange}
+                        className="manager-select"
+                    >
+                        <option value="">Select a manager</option>
+                        {availableManagers.map(manager => (
+                            <option key={manager.ID} value={manager.ID}>
+                                {manager.first_name} {manager.last_name}
+                            </option>
+                        ))}
+                    </select>
+                    {!showSecondaryManager && (
+                        <button
+                            type="button"
+                            className="add-manager-button"
+                            onClick={() => setShowSecondaryManager(true)}
+                        >
+                            <i className="material-symbols-outlined">add</i> Add Secondary Manager
+                        </button>
+                    )}
                 </div>
+                {showSecondaryManager && (
+                    <div className="form-group">
+                        <label>Secondary Manager</label>
+                        <select
+                            name="secondary_manager_id"
+                            value={formData.secondary_manager_id}
+                            onChange={handleChange}
+                            className="manager-select"
+                        >
+                            <option value="">Select a manager</option>
+                            {availableSecondaryManagers.map(manager => (
+                                <option key={manager.ID} value={manager.ID}>
+                                    {manager.first_name} {manager.last_name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 <div className="form-actions">
                     <button type="submit" className="save-button">
                         {userId ? (

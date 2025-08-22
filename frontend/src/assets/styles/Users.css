@@ -137,7 +137,8 @@
     font-weight: 300;
     margin-bottom: 5px;
 }
-.user-form .form-group input {
+.user-form .form-group input,
+.user-form .form-group select {
     border-radius: 5px;
     padding: 10px 15px;
     margin-left: 10px;
