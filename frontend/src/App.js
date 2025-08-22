@@ -60,13 +60,9 @@ const AppContent = () => {
     }, [setLoading, CheckAccess]);
 
     useEffect(() => {
-        if (!pages)
-            RefreshPages().then();
-    }, [pages, RefreshPages]);
-
-    useEffect(() => {
         setManagerView(user?.manager_view_enabled || false);
-    }, [user]);
+        RefreshPages().then();
+    }, [user, RefreshPages]);
 
     if (loading) {
         return <Loader />;
@@ -74,14 +70,6 @@ const AppContent = () => {
 
     if (!user) {
         return <Login />;
-    }
-
-    if (managerView) {
-        document.getElementById('root').classList.add('manager');
-        document.getElementById('root').classList.remove('staff');
-    } else {
-        document.getElementById('root').classList.add('staff');
-        document.getElementById('root').classList.remove('manager');
     }
 
     if (!access) {
@@ -106,6 +94,14 @@ const AppContent = () => {
         );
     }
 
+    if (managerView) {
+        document.getElementById('root').classList.add('manager');
+        document.getElementById('root').classList.remove('staff');
+    } else {
+        document.getElementById('root').classList.add('staff');
+        document.getElementById('root').classList.remove('manager');
+    }
+
     return (
         <>
             <Routes>
@@ -119,13 +115,13 @@ const AppContent = () => {
                         )
                     }
                 >
-                    {pages.map((page) => (
+                    {pages?.map((page) => (
                         <Route key={page.path} path={page.path}>
                             <Route
                                 index
                                 element={page.component ? React.createElement(page.component) : <NotFound />}
                             />
-                            {page.subpages.map((subpage) => (
+                            {page?.subpages?.map((subpage) => (
                                 <Route
                                     key={`${page.path}/${subpage.path}` || subpage.title}
                                     path={subpage.path ? `${subpage.path}` : ''}
