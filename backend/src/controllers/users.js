@@ -216,6 +216,7 @@ export async function getUserManagers(userId) {
             include: [
                 {
                     model: UserRole,
+                    required: true,
                     include: [
                         {
                             model: Role,
