@@ -242,7 +242,6 @@ export async function getUserManagers(userId) {
             last_name: m.UserDetails?.last_name
         }));
 
-        console.log('Retrieved managers:', managers);
     } else {
         managers = await UserManager.findAll({
             where: { user: userId },
