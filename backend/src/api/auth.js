@@ -2,6 +2,7 @@
 import express from 'express';
 import {authUser, refreshUser, checkUserAccess, checkManagerAccess} from '../utils/auth.js';
 import {setManagerView} from "../utils/manager-view.js";
+
 export const router = express.Router();
 
 // Login endpoint

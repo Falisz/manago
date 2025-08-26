@@ -1,4 +1,4 @@
-//BACKEND/controller/pages.js
+//BACKEND/controllers/pages.js
 import sequelize from '../db.js';
 import AppPage from '../models/app-page.js';
 
