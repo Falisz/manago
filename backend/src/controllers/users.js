@@ -6,6 +6,23 @@ import Role from '../models/role.js';
 import { getUserRoles } from './roles.js';
 
 /**
+ * @typedef {Object} Manager
+ * @property {number} ID - The ID of the manager
+ * @property {string} first_name - The first name of the manager
+ * @property {string} last_name - The last name of the manager
+ * @property {Object} UserDetails - UserDetails field of the manager user
+ */
+
+/**
+ * @typedef {Object} UserManager
+ * @property {number} ID - The ID of the manager
+ * @property {string} first_name - The first name of the manager
+ * @property {string} last_name - The last name of the manager
+ * @property {boolean} primary - Indicates if the manager is the primary manager
+ * @property {Manager} Manager - Managers field of the manager user
+ */
+
+/**
  * Retrieves one or all users.
  * @param {number|null} userId - Optional user ID to fetch a specific user
  * @returns {Promise<Object|Object[]|null>} Single user, array of users, or null
@@ -205,69 +222,76 @@ export async function removeUser(userId) {
 }
 
 /**
- * Retrieves managers assigned to a user.
+ * Retrieves all users with the 'Manager' role.
+ * @returns {Promise<Manager[]>} Array of managers
+ */
+export async function getManagers() {
+    /**
+     * @type {Manager[]}
+     */
+    let managers = await User.findAll({
+        include: [
+            {
+                model: UserRole,
+                required: true,
+                include: [
+                    {
+                        model: Role,
+                        where: { name: 'Manager' },
+                        attributes: ['name']
+                    }
+                ],
+                attributes: ['user', 'role']
+            },
+            {
+                model: UserDetails,
+                as: 'UserDetails',
+                attributes: ['first_name', 'last_name']
+            }
+        ],
+        where: { active: true },
+        attributes: ['ID']
+    });
+    managers = managers?.map(m => ({
+        ID: m.ID,
+        first_name: m.UserDetails?.first_name,
+        last_name: m.UserDetails?.last_name
+    })) || [];
+
+    return managers;
+}
+
+/**
+ * Retrieves managers assigned to a specific user.
  * @param {number} userId - User ID
- * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of managers or error
+ * @returns {Promise<UserManager[]>} Array of managers assigned to the user
  */
 export async function getUserManagers(userId) {
-    let managers;
     if (!userId) {
-        managers = await User.findAll({
-            include: [
-                {
-                    model: UserRole,
-                    required: true,
-                    include: [
-                        {
-                            model: Role,
-                            where: {name: 'Manager'},
-                            attributes: ['name']
-                        }
-                    ],
-                    attributes: ['user', 'role']
-                },
-                {
-                    model: UserDetails,
-                    as: 'UserDetails',
-                    attributes: ['first_name', 'last_name']
-                }
-            ],
-            where: {active: true},
-            attributes: ['ID']
-        });
-
-        managers = managers?.map(m => ({
-            ID: m.ID,
-            first_name: m.UserDetails?.first_name,
-            last_name: m.UserDetails?.last_name
-        }));
-
-    } else {
-        managers = await UserManager.findAll({
-            where: { user: userId },
-            order: [['primary', 'DESC']],
-            include: [
-                {
-                    model: User,
-                    as: 'Manager',
-                    attributes: ['ID'],
-                    include: [{ model: UserDetails, as: 'UserDetails' }]
-                }
-            ]
-        });
-
-        managers = managers.map(m => ({
-            ID: m.Manager.ID,
-            first_name: m.Manager.UserDetails?.first_name,
-            last_name: m.Manager.UserDetails?.last_name,
-            primary: m.primary
-    }));
-    }
-
-
-    if (!managers || managers.length === 0) {
         return [];
     }
+
+    /**
+     * @type {UserManager[]}
+     */
+    let managers = await UserManager.findAll({
+        where: { user: userId },
+        order: [['primary', 'DESC']],
+        include: [
+            {
+                model: User,
+                as: 'Manager',
+                attributes: ['ID'],
+                include: [{ model: UserDetails, as: 'UserDetails' }]
+            }
+        ]
+    });
+    managers = managers.map(m => ({
+        ID: m.Manager.ID,
+        first_name: m.Manager.UserDetails?.first_name,
+        last_name: m.Manager.UserDetails?.last_name,
+        primary: m.primary
+    }));
 
     return managers;
 }

@@ -1,6 +1,6 @@
 //BACKEND/api/users.js
 import express from 'express';
-import {createUser, editUser, getUsers, removeUser, getUserManagers, updateUserManagers} from "../controllers/users.js";
+import {createUser, editUser, getUsers, removeUser, getManagers, getUserManagers, updateUserManagers} from "../controllers/users.js";
 // TODO: Separate model-updating/controller functionality from API endpoints.
 import User from "../models/user.js";
 export const router = express.Router();
@@ -28,7 +28,7 @@ router.get('/managers', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const managers = await getUserManagers();
+        const managers = await getManagers();
 
         res.json(managers);
 
