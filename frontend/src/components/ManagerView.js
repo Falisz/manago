@@ -46,7 +46,7 @@ const MainNav = ({user, pages, location}) => {
                 <SiteLogo className={'app-logo '}/>
                 <SiteLogoSmall className={'app-logo-small '}/>
             </Link>
-            {pages
+            {pages && pages
                 .filter((page) => page.path !== "/")
                 .map((page) => (
                     <Link
@@ -123,9 +123,9 @@ const ManagerView = ({pages, switchView }) => {
     const { user } = useAuth();
     const location = useLocation();
 
-    const currentMainPage = pages.find((page) =>
+    const currentMainPage = pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || pages[0];
+    ) || pages?.[0] || null;
 
     return (
         <>
