@@ -5,6 +5,7 @@ import AppModule from "../models/app-module.js";
 import AppPage from "../models/app-page.js";
 import Role from '../models/role.js';
 import User, {UserDetails, UserConfigs, UserRole} from '../models/user.js';
+import Team from '../models/team.js';
 import Channel from "../models/channel.js";
 import Post from "../models/post.js";
 
@@ -148,6 +149,12 @@ export async function seedData() {
                 {user: 398285, role: 11},
             ];
         await seedModel(UserRole, 'user_roles', userRoles, 'user roles assignments');
+
+        const teams = [
+            {ID: 0, code_name: 'MS-PL-01'},
+            {ID: 1, code_name: 'MS-PL-02'},
+        ]
+        await seedModel(Team, 'teams', teams, 'teams');
 
         const channels = [
                 { name: 'General Discussion' },

@@ -5,20 +5,25 @@ import User from "./user.js";
 export const Team = sequelize.define('Team', {
     ID: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
     },
     project: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: true
     },
     parent_team: {
         type: DataTypes.INTEGER,
         allowNull: true
     },
-    name: {
+    code_name: {
         type: DataTypes.STRING(100),
         allowNull: false
+    },
+    name: {
+        type: DataTypes.STRING(100),
+        allowNull: true
     }
 }, {
     tableName: 'teams',
