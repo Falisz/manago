@@ -2,20 +2,29 @@
 import express from 'express';
 import {authUser, refreshUser, checkUserAccess, checkManagerAccess} from '../utils/auth.js';
 import {setManagerView} from "../utils/manager-view.js";
+import {securityLog} from "../utils/security-logs.js";
 
 export const router = express.Router();
 
 // Login endpoint
 router.post('/login', async (req, res) => {
     try {
+        const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
+        const host = req.headers.host || 'Unknown Host';
+
         const {username, password} = req.body;
 
         const userAuth = await authUser(username, password);
 
-        if (!userAuth.valid)
+        if (!userAuth.valid) {
+            if (userAuth.user?.ID)
+                await securityLog(userAuth.user?.ID, ip + " " + host,"Login","Failure: " + userAuth.message);
             return res.status(userAuth.status).json({message: userAuth.message});
+        }
 
         req.session.user = userAuth.user;
+
+        await securityLog(userAuth.user?.ID, ip + " " + host,"Login","Success.")
 
         return res.json({
             message: 'Login successful!',
@@ -30,7 +39,11 @@ router.post('/login', async (req, res) => {
 });
 
 // Logout endpoint
-router.get('/logout', (req, res) => {
+router.get('/logout', async (req, res) => {
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
+    const host = req.headers.host || 'Unknown Host';
+    const userId = req.session.user?.ID;
+
     try {
         req.session.destroy(err => {
             if (err) {
@@ -41,6 +54,8 @@ router.get('/logout', (req, res) => {
 
             return res.json({ message: 'Logged out' });
         });
+
+        await securityLog(userId, ip + " " + host,"Logout","Success.");
 
     } catch (err) {
         console.error('Logout error:', err);

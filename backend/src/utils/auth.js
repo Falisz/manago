@@ -37,11 +37,11 @@ export async function authUser(login, password) {
     const isPasswordValid = await bcrypt.compare(password, userData.password);
 
     if (!isPasswordValid) {
-        return { valid: false, status: 401, message: 'Invalid credentials, wrong password!' };
+        return { valid: false, status: 401, user: {ID: userData.ID}, message: 'Invalid credentials, wrong password!' };
     }
 
     if (!userData.active || userData.removed) {
-        return { valid: false, status: 403, message: 'User inactive.' };
+        return { valid: false, status: 403, user: {ID: userData.ID}, message: 'User inactive.' };
     }
 
     const user = {
