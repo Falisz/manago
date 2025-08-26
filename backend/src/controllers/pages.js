@@ -1,25 +1,13 @@
 //BACKEND/controller/pages.js
 import sequelize from '../db.js';
 import AppPage from '../models/app-page.js';
-import {UserConfigs} from '../models/user.js';
 
 /**
  * Retrieves pages for a user based on their manager view configuration.
- * @param {Object} user - User object with ID
- * @param {number} user.ID - User ID
+ * @param {number} view - 0 for Staff View and 1 for Manager View.
  * @returns {Promise<Object[]>} Array of page objects with nested subpages
  */
-export async function getPages(user) {
-    let userConfigs;
-
-    try {
-        userConfigs = await UserConfigs.findOne({ where: { user: user.ID } });
-    } catch (err) {
-        userConfigs = {};
-    }
-
-    const view = (userConfigs?.manager_view_enabled || false) ? 1 : 0;
-
+export async function getPages(view = 0) {
 
     const pages = [];
 
@@ -43,6 +31,7 @@ export async function getPages(user) {
             ...(row?.component ? { component: row.component } : {}),
             subpages: []
         };
+
         pageMap.set(row.ID, page);
 
         if (!row?.parent) {

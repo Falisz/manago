@@ -1,8 +1,7 @@
 //BACKEND/api/utils.js
 import express from 'express';
 import {getPages} from "../controllers/pages.js";
-// TODO: Separate model-updating/controller functionality from API endpoints.
-import {UserConfigs} from "../models/user.js";
+import {hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav} from "../utils/manager-view.js";
 export const router = express.Router();
 
 //Server API endpoint
@@ -34,15 +33,12 @@ router.get('/ping', async (req, res) => {
 //App Pages endpoint
 router.get('/pages', async (req, res) => {
     try {
-        if (!req.session.user) {
+        if (!req.session.user)
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
 
-        const user = req.session.user;
+        const managerView = await hasManagerView(req.session.user.ID) ? 1 : 0;
 
-        const pages = await getPages(user);
-
-        res.json(pages);
+        res.json(await getPages(managerView));
 
     } catch (err) {
 
@@ -73,11 +69,7 @@ router.post('/manager-view', async (req, res) => {
             });
         }
 
-        const userConfig = await UserConfigs.findOne({
-            where: { user: req.session.user.ID }
-        });
-
-        if (!userConfig || !userConfig.manager_view_access) {
+        if (! await hasManagerAccess(req.session.user.ID)) {
             return res.status(403).json({
                 success: false,
                 message: 'Manager view access not permitted.',
@@ -85,12 +77,9 @@ router.post('/manager-view', async (req, res) => {
             });
         }
 
-        const [updated] = await UserConfigs.update(
-            { manager_view_enabled: manager_view },
-            { where: { user: req.session.user.ID } }
-        );
+        const updated = await setManagerView(req.session.user.ID, manager_view);
 
-        if (updated === 1) {
+        if (updated) {
             req.session.user.manager_view_enabled = manager_view;
             return res.json({
                 success: true,
@@ -100,8 +89,7 @@ router.post('/manager-view', async (req, res) => {
         } else {
             return res.status(400).json({
                 success: false,
-                message: 'Failed to update manager view.',
-                manager_view: userConfig.manager_view_enabled
+                message: 'Failed to update manager view.'
             });
         }
 
@@ -131,17 +119,14 @@ router.post('/toggle-nav', async (req, res) => {
 
         const {nav_collapsed} = req.body;
 
-        const [updated] = await UserConfigs.update(
-            { manager_nav_collapsed: nav_collapsed },
-            { where: { user: req.session.user.ID } }
-        );
+        const updated = await toggleManagerNav(req.session.user.ID, nav_collapsed);
 
-        if (updated === 1) {
+        if (updated) {
             req.session.user.manager_nav_collapsed = nav_collapsed;
             res.json({ success: true, navCollapse: nav_collapsed});
         }
         else {
-            res.status(401).json({ success: false }).json({message: 'Failed to update.'});
+            res.status(401).json({ success: false, message: 'Failed to update.'});
         }
 
     } catch (err) {

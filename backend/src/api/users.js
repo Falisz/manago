@@ -1,13 +1,10 @@
 //BACKEND/api/users.js
 import express from 'express';
 import {createUser, editUser, getUsers, removeUser, getManagers, getUserManagers, updateUserManagers} from "../controllers/users.js";
-// TODO: Separate model-updating/controller functionality from API endpoints.
-import User from "../models/user.js";
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -62,7 +59,6 @@ router.get('/managers/:userId', async (req, res) => {
 
 router.get('/:userId', async (req, res) => {
     try {
-
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -87,7 +83,6 @@ router.get('/check-id/:userId', async (req, res) => {
     const { userId } = req.params;
 
     try {
-
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -96,9 +91,7 @@ router.get('/check-id/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const user = await User.findOne({
-            where: { ID: userId }
-        });
+        const user = await getUsers(parseInt(userId));
 
         const isAvailable = !user;
 
@@ -112,7 +105,6 @@ router.get('/check-id/:userId', async (req, res) => {
 
 router.post('/new', async (req, res) => {
     try {
-
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -146,7 +138,6 @@ router.post('/new', async (req, res) => {
 
 router.put('/:userId', async (req, res) => {
     try {
-
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
@@ -213,7 +204,6 @@ router.put('/managers/:userId', async (req, res) => {
 
 router.delete('/:userId', async (req, res) => {
     try {
-
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
