@@ -137,23 +137,17 @@ const UsersTable = ({ users, loading }) => {
                     const roles = user.roles || [];
                     const displayedRoles = roles.slice(0, 2);
                     const moreRolesCount = roles.length - 2;
-                    const moreRolesText = moreRolesCount > 0 ? `, +${moreRolesCount} other roles` : '';
+                    const moreRolesText = moreRolesCount > 0 ? `+${moreRolesCount} other roles` : '';
 
                     return (
                         <div className="users-list-row" key={user.user}>
                             <div onClick={() => navigate('/employees/' + user.user)}>{user.first_name} {user.last_name}</div>
                             <div>{user.email}</div>
                             <div>
-                                {displayedRoles.map((role, idx) => (
-                                    <React.Fragment key={role.ID}>
-                                        <span className="role-name"
-                                            onClick={() => navigate(`/employees/roles/${role.ID}`)}
-                                            style={{ marginRight: idx < displayedRoles.length - 1 ? 4 : 0 }}
-                                        >
-                                            {role.name}
-                                        </span>
-                                        {idx < displayedRoles.length - 1 && ', '}
-                                    </React.Fragment>
+                                {displayedRoles.map((role) => (
+                                    <span key={role.ID} className="role-name"
+                                          onClick={() => navigate(`/employees/roles/${role.ID}`)}
+                                    > {role.name} </span>
                                 ))}
                                 {moreRolesText}
                             </div>
