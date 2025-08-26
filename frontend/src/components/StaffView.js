@@ -10,9 +10,9 @@ const StaffView = ({ pages, switchView }) => {
     const { user, managerAccess } = useAuth();
     const location = useLocation();
 
-    const currentMainPage = pages.find((page) =>
+    const currentMainPage = pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || pages[0];
+    ) || pages?.[0] || null;
 
     return (
         <>
@@ -21,7 +21,7 @@ const StaffView = ({ pages, switchView }) => {
                     <SiteLogo class={'app-logo'}/>
                 </Link>
                 <ul className="app-pages">
-                    {pages
+                    {pages && pages
                         .filter((page) => page.path !== "/")
                         .map((page) => (
                             <li key={page.path} className={'page-link-item'}>

@@ -27,7 +27,7 @@ const MobileNav = ({ logoText, pages, user, hasManagerAccess, currentView, switc
                         left_panel_open
                     </span>
                 </li>
-                {pages
+                {pages && pages
                     .map((page) => (
                         <li key={`${page.path}`} className={'app-mobile-nav-link-item'}>
                             <Link
