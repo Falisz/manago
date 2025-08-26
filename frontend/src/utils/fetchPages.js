@@ -3,11 +3,10 @@ import axios from "axios";
 import NotFound from "../components/NotFound";
 
 const FetchPages = async () => {
-    const result = await axios.get('/pages', {withCredentials: true});
+    const pages = await axios.get('/pages', {withCredentials: true});
 
-    if (Array.isArray(result.data)) {
-
-        return result.data.map((page) => ({
+    if (Array.isArray(pages.data)) {
+        return pages.data.map((page) => ({
             ...page,
             ...(page.component ? {component: componentMap[page.component] || NotFound} : {}),
             subpages: page.subpages.map((subpage) => ({
@@ -20,11 +19,8 @@ const FetchPages = async () => {
                 })),
             })),
         }));
-
     } else {
-
         return [];
-
     }
 };
 
