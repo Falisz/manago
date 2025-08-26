@@ -5,11 +5,10 @@ import useUser from "../../hooks/useUser";
 import useRoles from "../../hooks/useRoles";
 import useManagers from "../../hooks/useManagers";
 
-const UserEdit = ({ userId, onSave }) => {
+const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
     const {user, loading, error, success, setLoading, fetchUser, saveUser} = useUser();
     const {managers, fetchManagers} = useManagers();
     const {roles, fetchRoles} = useRoles();
-    const [showSecondaryManager, setShowSecondaryManager] = useState(false);
 
     const [formData, setFormData] = useState({
         login: '',
@@ -29,12 +28,24 @@ const UserEdit = ({ userId, onSave }) => {
         fetchManagers().then();
 
         if (!userId) {
+            setFormData({
+                login: '',
+                email: '',
+                password: '',
+                first_name: '',
+                last_name: '',
+                role_ids: [],
+                primary_manager_id: '',
+                secondary_manager_id: '',
+                active: true,
+                manager_view_access: false,
+            });
             setLoading(false);
             return;
         }
 
         fetchUser(userId).then();
-    }, [userId, setLoading, fetchRoles, fetchManagers, fetchUser]);
+    }, [userId, setLoading, fetchRoles, fetchManagers, fetchUser, setFormData]);
 
     useEffect(() => {
         setFormData({
@@ -49,7 +60,6 @@ const UserEdit = ({ userId, onSave }) => {
             active: user?.active || true,
             manager_view_access: user?.manager_view_access || false,
         });
-        setShowSecondaryManager(!!user?.managers?.[1]?.ID);
     }, [user]);
 
     const handleChange = (e) => {
@@ -66,6 +76,7 @@ const UserEdit = ({ userId, onSave }) => {
                 [name]: type === 'checkbox' ? checked : value
             }));
         }
+        enableDiscardWarning();
     };
 
     const handleSubmit = async (e) => {
@@ -76,12 +87,21 @@ const UserEdit = ({ userId, onSave }) => {
         } else {
             onSave();
         }
+        setFormData({
+            login: '',
+            email: '',
+            password: '',
+            first_name: '',
+            last_name: '',
+            role_ids: [],
+            primary_manager_id: '',
+            secondary_manager_id: '',
+            active: true,
+            manager_view_access: false,
+        });
     };
 
-    // Filter managers to exclude the current user
-    const availableManagers = managers?.filter(manager => manager.ID !== userId) || [];
-
-    // For secondary manager, also exclude the primary manager
+    const availableManagers = managers?.filter(manager => parseInt(manager.ID) !== parseInt(userId)) || [];
     const availableSecondaryManagers = availableManagers.filter(
         manager => manager.ID !== parseInt(formData.primary_manager_id)
     );
@@ -199,41 +219,32 @@ const UserEdit = ({ userId, onSave }) => {
                         onChange={handleChange}
                         className="manager-select"
                     >
-                        <option value="">Select a manager</option>
+                        <option value="" hidden>Select a manager</option>
+                        <option value="0">None</option>
                         {availableManagers.map(manager => (
-                            <option key={manager.ID} value={manager.ID}>
+                            <option key={manager.ID} value={parseInt(manager.ID)}>
                                 {manager.first_name} {manager.last_name}
                             </option>
                         ))}
                     </select>
-                    {!showSecondaryManager && (
-                        <button
-                            type="button"
-                            className="add-manager-button"
-                            onClick={() => setShowSecondaryManager(true)}
-                        >
-                            <i className="material-symbols-outlined">add</i> Add Secondary Manager
-                        </button>
-                    )}
                 </div>
-                {showSecondaryManager && (
-                    <div className="form-group">
-                        <label>Secondary Manager</label>
-                        <select
-                            name="secondary_manager_id"
-                            value={formData.secondary_manager_id}
-                            onChange={handleChange}
-                            className="manager-select"
-                        >
-                            <option value="">Select a manager</option>
-                            {availableSecondaryManagers.map(manager => (
-                                <option key={manager.ID} value={manager.ID}>
-                                    {manager.first_name} {manager.last_name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+                <div className="form-group">
+                    <label>Secondary Manager</label>
+                    <select
+                        name="secondary_manager_id"
+                        value={formData.secondary_manager_id}
+                        onChange={handleChange}
+                        className="manager-select"
+                    >
+                        <option value="" hidden>Select a manager</option>
+                        <option value="0">None</option>
+                        {availableSecondaryManagers.map(manager => (
+                            <option key={manager.ID} value={parseInt(manager.ID)}>
+                                {manager.first_name} {manager.last_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className="form-actions">
                     <button type="submit" className="save-button">
                         {userId ? (

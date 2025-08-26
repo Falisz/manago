@@ -130,6 +130,7 @@
     display: flex;
     flex-direction: column;
     margin: 10px 0;
+    width: 100%;
 }
 .user-form .form-group label {
     text-transform: uppercase;
@@ -137,8 +138,8 @@
     font-weight: 300;
     margin-bottom: 5px;
 }
-.user-form .form-group input,
-.user-form .form-group select {
+.user-form .form-group>input,
+.user-form .form-group>select {
     border-radius: 5px;
     padding: 10px 15px;
     margin-left: 10px;
@@ -147,6 +148,8 @@
     background: var(--gray-dark);
     color: white;
     transition: 0.3s ease-in-out;
+    width: 100%;
+    box-sizing: border-box;
 }
 .user-form .roles-checklist {
     display: flex;

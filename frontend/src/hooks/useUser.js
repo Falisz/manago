@@ -9,8 +9,8 @@ const useUser = () => {
     const [success, setSuccess] = useState(null);
     const [userCache, setUserCache] = useState({});
 
-    const fetchUser = useCallback(async (userId, forceLoad = false) => {
-        if (userCache[userId] && !forceLoad) {
+    const fetchUser = useCallback(async (userId, reload = false) => {
+        if (userCache[userId] && !reload) {
             setUser(userCache[userId]);
             setLoading(false);
             setError(null);
@@ -54,44 +54,55 @@ const useUser = () => {
     }, [userCache]);
 
     const saveUser = useCallback(async (formData, userId = null) => {
+        const newUser = !userId;
         try {
             setLoading(true);
             setError(null);
             setSuccess(null);
 
-            let response;
+            const userData = {
+                login: formData.login,
+                email: formData.email,
+                password: formData.password,
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                active: formData.active,
+                manager_view_access: formData.manager_view_access
+            }
 
-            if (userId) {
-                response = await axios.put(`/users/${userId}`, {
-                    login: formData.login,
-                    email: formData.email,
-                    password: formData.password,
-                    first_name: formData.first_name,
-                    last_name: formData.last_name,
-                    active: formData.active,
-                    manager_view_access: formData.manager_view_access
-                }, { withCredentials: true });
+            if (newUser) {
+                const res = await axios.post('/users/new', userData, { withCredentials: true });
+                userId = parseInt(res.data.user?.ID);
             } else {
-                response = await axios.post('/users/new', formData, { withCredentials: true });
+                await axios.put(`/users/${userId}`, userData, { withCredentials: true });
             }
 
             await axios.put(`/roles/user/${userId}`, { roleIds: formData.role_ids }, { withCredentials: true });
 
-            setSuccess(response.data.message);
-            setUser(response.data.user);
-            setUserCache((prev) => ({ ...prev, [response.data.user.ID]: response.data.user }));
-            return response.data.user;
+            const managerData = [{ manager: parseInt(formData.primary_manager_id), primary: true }];
+            if (formData.secondary_manager_id && formData.secondary_manager_id !== '0') {
+                managerData.push({
+                    manager: parseInt(formData.secondary_manager_id),
+                    primary: false,
+                });
+            }
+
+            await axios.put(`/users/managers/${userId}`, { managers: managerData }, { withCredentials: true });
+
+            setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
+
+            return fetchUser(userId, true);
 
         } catch(err) {
-            console.error('Error fetching user:', err);
-            setError('Error occurred while fetching user.');
+            console.error('Error saving new user data:', err);
+            setError('Error occurred while saving new user data.');
             return null;
         } finally {
             setLoading(false);
             setError(null);
             setSuccess(null);
         }
-    }, []);
+    }, [fetchUser]);
 
     const deleteUser = useCallback(async (userId) => {
         try {

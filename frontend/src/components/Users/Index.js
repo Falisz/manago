@@ -17,6 +17,7 @@ const UsersIndex = () => {
     const { user, loading: userLoading, fetchUser, deleteUser } = useUser();
     const [ showDetailModal, setShowDetailModal] = useState(false);
     const [ showEditModal, setShowEditModal] = useState(false);
+    const [ discardEditWarning, setDiscardEditWarning] = useState(false);
 
     useEffect(() => {
         if (!users) {
@@ -49,6 +50,10 @@ const UsersIndex = () => {
         }
     };
 
+    const setDiscardWarning = () => {
+        setDiscardEditWarning(true);
+    }
+
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         deleteUser(userId).then();
@@ -62,6 +67,10 @@ const UsersIndex = () => {
     };
 
     const closeEditModal = () => {
+        if (discardEditWarning) {
+            if (!window.confirm('Changes were made. Are you sure you want to discard them?')) return;
+        }
+        setDiscardEditWarning(false);
         setShowEditModal(false);
         if (userId) {
             navigate(`/employees/${userId}`);
@@ -102,6 +111,7 @@ const UsersIndex = () => {
                 <UserEdit
                     userId={userId}
                     onSave={handleSave}
+                    enableDiscardWarning={setDiscardWarning}
                 />
             </Modal>
         </>
