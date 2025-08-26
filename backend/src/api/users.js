@@ -134,7 +134,9 @@ router.post('/new', async (req, res) => {
             return res.status(400).json({ message: result.message });
         }
 
-        res.status(201).json({ message: result.message, user: result.user });
+        const user = await getUsers(parseInt(result.user.ID));
+
+        res.status(201).json({ message: result.message, user: user });
 
     } catch (err) {
         console.error('Error creating user:', err);
@@ -173,7 +175,9 @@ router.put('/:userId', async (req, res) => {
             return res.status( 400).json({ message: result.message });
         }
 
-        res.json({ message: result.message, user: result.user });
+        const user = await getUsers(parseInt(result.user.ID));
+
+        res.json({ message: result.message, user: user });
 
     } catch (err) {
         console.error('Error updating user:', err);
@@ -188,13 +192,13 @@ router.put('/managers/:userId', async (req, res) => {
         }
 
         const { userId } = req.params;
-        const { managerObjs } = req.body;
+        const { managers } = req.body;
 
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const result = await updateUserManagers(parseInt(userId), managerObjs);
+        const result = await updateUserManagers(parseInt(userId), managers);
 
         if (!result.success) {
             return res.status(result.status || 400).json({ message: result.message });
