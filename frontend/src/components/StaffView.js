@@ -18,7 +18,7 @@ const StaffView = ({ pages, switchView }) => {
         <>
             <div className="app-nav">
                 <Link to="/"  title={'Home'} className={`app-home`}>
-                    <SiteLogo class={'app-logo'}/>
+                    <SiteLogo className={'app-logo'}/>
                 </Link>
                 <ul className="app-pages">
                     {pages && pages
