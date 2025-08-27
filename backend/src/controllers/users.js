@@ -164,14 +164,12 @@ export async function editUser(userId, data) {
         );
     }
 
-    if (data.manager_view_access) {
-        await UserConfigs.update(
-            {
-                manager_view_access: data.manager_view_access,
-            },
-            { where: { user: userId } }
-        );
-    }
+    await UserConfigs.update(
+        {
+            manager_view_access: data.manager_view_access,
+        },
+        { where: { user: userId } }
+    );
 
     return {success: true, message: "User updated successfully.", user: updatedUser};
 }
