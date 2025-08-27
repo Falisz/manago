@@ -6,7 +6,7 @@ import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 import {useAuth} from "../contexts/AuthContext";
 
 const Login = () => {
-    const { Login: HandleLogin } = useAuth();
+    const { AuthUser } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -14,10 +14,8 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('/login', { username, password }, { withCredentials: true });
-            if (res.data.user) {
-                HandleLogin(res.data.user);
-            }
+            await axios.post('/login', { username, password }, { withCredentials: true });
+            await AuthUser(true);
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed!');
         }

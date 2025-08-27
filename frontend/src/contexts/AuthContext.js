@@ -1,5 +1,5 @@
 // FRONTEND/contexts/AuthContext.js
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useLoading } from './LoadingContext';
 
@@ -12,47 +12,40 @@ export const AuthProvider = ({ children }) => {
     const isCheckingRef = useRef(false);
     const { setLoading } = useLoading();
 
-    const CheckAccess = useCallback(async () => {
+    const AuthUser = useCallback(async (withLoader = false) => {
+        console.log("\tCheck access run", withLoader ? "with loader" : "");
         if (isCheckingRef.current) return;
 
         isCheckingRef.current = true;
 
         try {
+            if (withLoader) setLoading(true);
             const res = await axios.get('/access', { withCredentials: true });
-            setAccess(res.data.access);
-            setUser(res.data.user);
-            setManagerAccess(res.data.manager_access);
+            if (res.data.user) {
+                setUser(res.data.user);
+                setAccess(res.data.access);
+                setManagerAccess(res.data.manager_access);
+            }
         } catch (err) {
+            setUser(null);
             setAccess(false);
             setManagerAccess(false);
-            setUser(null);
+            if (withLoader) setLoading(false);
             console.error(err);
         } finally {
             isCheckingRef.current = false;
         }
 
-    }, []);
+    }, [setLoading]);
 
-    const Login = async (userData) => {
-        setLoading(true);
-        try {
-            setUser(userData);
-            await CheckAccess();
-        } catch (err) {
-            console.error('Login error', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const Logout = async () => {
+    const LogoutUser = async () => {
         setLoading(true);
         try {
             document.getElementById('root').classList.remove('staff', 'manager');
-            await axios.get('/logout', { withCredentials: true });
             setUser(null);
             setAccess(false);
             setManagerAccess(false);
+            await axios.get('/logout', { withCredentials: true });
         } catch (err) {
             console.error('Logout error', err);
         } finally {
@@ -60,19 +53,14 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        CheckAccess().then();
-    }, [CheckAccess]);
-
     return (
         <AuthContext.Provider
             value={{
                 user,
                 access,
                 managerAccess,
-                Login,
-                Logout,
-                CheckAccess,
+                AuthUser,
+                LogoutUser,
             }}
         >
             {children}

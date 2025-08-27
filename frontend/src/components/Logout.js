@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Logout = ({ onLogout }) => {
-    const { Logout: logoutFromContext } = useAuth();
+    const { LogoutUser: logoutFromContext } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {

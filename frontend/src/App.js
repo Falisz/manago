@@ -1,9 +1,9 @@
 //FRONTEND/App.js
 // MAIN IMPORTS
-import React, {useState, useEffect, useCallback} from 'react';
-import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
+import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './assets/styles/App.css';
-import { ConnectivityProvider } from './contexts/ConnectivityContext';
+import {ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -24,27 +24,24 @@ const color = process.env['REACT_APP_COLOR'] || 'blue';
 
 const AppContent = () => {
     const { loading, setLoading } = useLoading();
-    const { user, access, CheckAccess } = useAuth();
+    const { user, access, managerAccess, AuthUser } = useAuth();
+    const { isConnected } = useConnectivity();
     const [ pages, setPages ] = useState(null);
-    const [ managerView, setManagerView ] = useState(null);
+    const [ managerView, setManagerView ] = useState(false);
+    const didFetchRef = useRef(false);
 
     const RefreshPages = useCallback(async () => {
-        try {
-            setLoading(true);
-            setPages(await FetchPages());
-        } catch (err) {
-            console.error('Error fetching pages:', err);
-            setPages([]);
-        } finally {
-            setLoading(false);
+        if (!isConnected) {
+            throw new Error('No connection; cannot fetch pages.');
         }
-    }, [setLoading]);
+        return await FetchPages();
+    }, [isConnected]);
 
     const ToggleView = useCallback(async (isManagerView) => {
+        setLoading(true);
         try {
-            setLoading(true);
             setManagerView(await ToggleManagerView(isManagerView));
-            await RefreshPages();
+            setPages(await RefreshPages());
         } catch (err) {
             console.error('View switching error: ', err);
         } finally {
@@ -52,55 +49,61 @@ const AppContent = () => {
         }
     }, [setLoading, RefreshPages]);
 
+    // Effect 1: Check auth on mount (handles already-logged-in user)
     useEffect(() => {
-        document.getElementById('root').classList.add(theme);
-        document.getElementById('root').classList.add(color);
-        setLoading(true);
-        CheckAccess().then();
-    }, [setLoading, CheckAccess]);
+        console.log('Effect #1');
+        AuthUser();
+    }, [AuthUser]);
 
+    // Effect 2: Fetch pages and set managerView when user/access become available (post-login or initial)
     useEffect(() => {
-        setManagerView(user?.manager_view_enabled || false);
-        RefreshPages().then();
-    }, [user, RefreshPages]);
+        console.log('Effect #2');
+        const fetchIfAuthorized = async () => {
+            if (!user || !access || didFetchRef.current) return;
+            console.log('\tFetching pages for user', user.ID);
+            setLoading(true);
+            try {
+                setManagerView(managerAccess && user?.manager_view_enabled);
+                setPages(await RefreshPages());
+                didFetchRef.current = true;
+            } catch (err) {
+                console.error('Fetch pages error:', err);
+                setPages([]);
+            }
+        };
+        fetchIfAuthorized().then(() => setLoading(false));
+    }, [user, access, managerAccess, RefreshPages, setLoading]);
+
+    const viewClass = useMemo(() => {
+        return managerView ? 'manager' : 'staff';
+    }, [managerView]);
+
+    const root = document.getElementById('root');
+    document.getElementById('root').classList.add(theme);
+    document.getElementById('root').classList.add(color);
 
     if (loading) {
         return <Loader />;
     }
 
     if (!user) {
-        return <Login />;
+        return (
+            <Routes>
+                <Route path="*" element={<Login />} />
+            </Routes>
+        );
     }
 
     if (!access) {
         return (
-            <>
-                <Routes>
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                    <Route path="/" element={<NoAccess user={user} />} />
-                    <Route
-                        path="logout"
-                        element={
-                            <Logout
-                                onLogout={() => {
-                                    setManagerView(false);
-                                    setLoading(false);
-                                }}
-                            />
-                        }
-                    />
-                </Routes>
-            </>
+            <Routes>
+                <Route path="*" element={<NoAccess user={user} />} />
+                <Route path="/logout" element={<Logout onLogout={() => {setManagerView(false); didFetchRef.current = false;}} />} />
+            </Routes>
         );
     }
-
-    if (managerView) {
-        document.getElementById('root').classList.add('manager');
-        document.getElementById('root').classList.remove('staff');
-    } else {
-        document.getElementById('root').classList.add('staff');
-        document.getElementById('root').classList.remove('manager');
-    }
+    root.classList.add(viewClass);
+    root.classList.remove(viewClass === 'manager' ? 'staff' : 'manager');
 
     return (
         <>
@@ -142,7 +145,7 @@ const AppContent = () => {
                     ))}
                     <Route
                         path="logout"
-                        element={ <Logout onLogout={ () => { setManagerView(false); } }/> }
+                        element={ <Logout onLogout={ () => { setManagerView(false); didFetchRef.current = false; } }/> }
                     />
                     <Route path="*" element={<NotFound />} />
                 </Route>
