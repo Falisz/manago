@@ -79,15 +79,16 @@ const useUser = () => {
 
             await axios.put(`/roles/user/${userId}`, { roleIds: formData.role_ids }, { withCredentials: true });
 
-            const managerData = [{ manager: parseInt(formData.primary_manager_id), primary: true }];
-            if (formData.secondary_manager_id && formData.secondary_manager_id !== '0') {
-                managerData.push({
-                    manager: parseInt(formData.secondary_manager_id),
-                    primary: false,
-                });
+            if (formData.primary_manager_id && formData.primary_manager_id !== '0') {
+                const managerData = [{ manager: parseInt(formData.primary_manager_id), primary: true }];
+                if (formData.secondary_manager_id && formData.secondary_manager_id !== '0') {
+                    managerData.push({
+                        manager: parseInt(formData.secondary_manager_id),
+                        primary: false,
+                    });
+                }
+                await axios.put(`/users/managers/${userId}`, { managers: managerData }, { withCredentials: true });
             }
-
-            await axios.put(`/users/managers/${userId}`, { managers: managerData }, { withCredentials: true });
 
             setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
 
