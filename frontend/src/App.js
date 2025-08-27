@@ -51,27 +51,27 @@ const AppContent = () => {
 
     // Effect 1: Check auth on mount (handles already-logged-in user)
     useEffect(() => {
-        console.log('Effect #1');
         AuthUser();
     }, [AuthUser]);
 
     // Effect 2: Fetch pages and set managerView when user/access become available (post-login or initial)
     useEffect(() => {
-        console.log('Effect #2');
         const fetchIfAuthorized = async () => {
             if (!user || !access || didFetchRef.current) return;
-            console.log('\tFetching pages for user', user.ID);
-            setLoading(true);
+
             try {
+                setLoading(true);
                 setManagerView(managerAccess && user?.manager_view_enabled);
                 setPages(await RefreshPages());
                 didFetchRef.current = true;
             } catch (err) {
                 console.error('Fetch pages error:', err);
                 setPages([]);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchIfAuthorized().then(() => setLoading(false));
+        fetchIfAuthorized().then();
     }, [user, access, managerAccess, RefreshPages, setLoading]);
 
     const viewClass = useMemo(() => {

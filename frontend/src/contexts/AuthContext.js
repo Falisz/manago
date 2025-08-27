@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
     const { setLoading } = useLoading();
 
     const AuthUser = useCallback(async (withLoader = false) => {
-        console.log("\tCheck access run", withLoader ? "with loader" : "");
         if (isCheckingRef.current) return;
 
         isCheckingRef.current = true;
@@ -26,6 +25,7 @@ export const AuthProvider = ({ children }) => {
                 setAccess(res.data.access);
                 setManagerAccess(res.data.manager_access);
             }
+            setLoading(false);
         } catch (err) {
             setUser(null);
             setAccess(false);
