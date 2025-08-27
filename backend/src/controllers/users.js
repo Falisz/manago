@@ -166,6 +166,7 @@ export async function editUser(userId, data) {
 
     await UserConfigs.update(
         {
+            manager_view_enabled: user.UserConfigs.manager_view_enabled && data.manager_view_access,
             manager_view_access: data.manager_view_access,
         },
         { where: { user: userId } }
