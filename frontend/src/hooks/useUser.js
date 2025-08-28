@@ -1,25 +1,30 @@
 //FRONTEND:hooks/useUser.js
-import {useCallback, useState} from "react";
+import {useCallback, useRef, useState} from "react";
 import axios from "axios";
 
 const useUser = () => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-    const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-    const [userCache, setUserCache] = useState({});
+    const [warning, setWarning] = useState(null);
+    const [error, setError] = useState(null);
+    const userCacheRef = useRef({});
 
     const fetchUser = useCallback(async (userId, reload = false) => {
-        if (userCache[userId] && !reload) {
-            setUser(userCache[userId]);
+        if (!userId) return null;
+
+        if (userCacheRef.current[userId] && !reload) {
+            setUser(userCacheRef.current[userId]);
             setLoading(false);
             setError(null);
+            setWarning(null);
             setSuccess(null);
-            return userCache[userId];
+            return userCacheRef.current[userId];
         }
         try {
             setLoading(true);
             setError(null);
+            setWarning(null);
             setSuccess(null);
 
             let userData;
@@ -38,10 +43,10 @@ const useUser = () => {
                 }
                 
                 setUser(userData);
-                setUserCache((prev) => ({ ...prev, [userId]: userData }));
+                userCacheRef.current[userId] = userData;
                 return userData;
             } else {
-                setError('User not found!');
+                setError(`User #${userId} not found!`);
                 return null;
             }
         } catch (err) {
@@ -51,13 +56,13 @@ const useUser = () => {
         } finally {
             setLoading(false);
         }
-    }, [userCache]);
+    }, []);
 
     const saveUser = useCallback(async (formData, userId = null) => {
         const newUser = !userId;
         try {
-            setLoading(true);
             setError(null);
+            setWarning(null);
             setSuccess(null);
 
             const userData = {
@@ -91,6 +96,7 @@ const useUser = () => {
             }
 
             setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
+            console.log(`User ${newUser? 'created' : 'updated'} successfully.`);
 
             return fetchUser(userId, true);
 
@@ -101,6 +107,7 @@ const useUser = () => {
         } finally {
             setLoading(false);
             setError(null);
+            setWarning(null);
             setSuccess(null);
         }
     }, [fetchUser]);
@@ -109,14 +116,11 @@ const useUser = () => {
         try {
             setLoading(true);
             setError(null);
+            setWarning(null);
             setSuccess(null);
             await axios.delete(`/users/${userId}`, { withCredentials: true });
             setUser(null);
-            setUserCache((prev) => {
-                const newCache = { ...prev };
-                delete newCache[userId];
-                return newCache;
-            });
+            delete userCacheRef.current[userId];
             return true;
         } catch (err) {
             console.error('Error deleting user:', err);
@@ -125,10 +129,11 @@ const useUser = () => {
         } finally {
             setLoading(false);
             setError(null);
+            setWarning(null);
             setSuccess(null);
         }
     }, []);
 
-    return {user, loading, error, success, setLoading, fetchUser, saveUser, deleteUser};
+    return {user, loading, error, warning, success, setLoading, fetchUser, saveUser, deleteUser};
 }
 export default useUser;

@@ -1,5 +1,5 @@
 //FRONTEND:hooks/useRole.js
-import {useCallback, useState} from "react";
+import {useCallback, useRef, useState} from "react";
 import axios from "axios";
 
 const useRole = () => {
@@ -7,15 +7,15 @@ const useRole = () => {
     const [role, setRole] = useState(null);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-    const [roleCache, setRoleCache] = useState({});
+    const roleCacheRef = useRef({});
 
     const fetchRole = useCallback(async (roleId, forceLoad = false) => {
-        if (roleCache[roleId] && !forceLoad) {
-            setRole(roleCache[roleId]);
+        if (roleCacheRef.current[roleId] && !forceLoad) {
+            setRole(roleCacheRef.current[roleId]);
             setLoading(false);
             setError(null);
             setSuccess(null);
-            return roleCache[roleId];
+            return roleCacheRef.current[roleId];
         }
 
         try {
@@ -25,7 +25,7 @@ const useRole = () => {
             const res = await axios.get(`/roles/${roleId}`, { withCredentials: true });
             if (res.data) {
                 setRole(res.data);
-                setRoleCache((prev) => ({ ...prev, [roleId]: res.data }));
+                roleCacheRef.current[roleId] = res.data;
                 return res.data;
             } else {
                 setError('Role not found!');
@@ -38,7 +38,7 @@ const useRole = () => {
         } finally {
             setLoading(false);
         }
-    }, [roleCache]);
+    }, []);
 
     const saveRole = useCallback(async (formData, roleId = null) => {
         try {
@@ -53,7 +53,7 @@ const useRole = () => {
             }
             setSuccess(response.data.message);
             setRole(response.data.role);
-            setRoleCache((prev) => ({ ...prev, [response.data.role.ID]: response.data.role }));
+            roleCacheRef.current[response.data.role.ID] = response.data.role;
             return response.data.role;
         } catch (err) {
             console.error('Error saving role:', err);
@@ -73,11 +73,7 @@ const useRole = () => {
             setSuccess(null);
             await axios.delete(`/roles/${roleId}`, { withCredentials: true });
             setRole(null);
-            setRoleCache((prev) => {
-                const newCache = { ...prev };
-                delete newCache[roleId];
-                return newCache;
-            });
+            delete roleCacheRef.current[roleId];
             return true;
         } catch (err) {
             console.error('Error deleting role:', err);
