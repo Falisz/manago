@@ -1,11 +1,10 @@
-//FRONTEND:components/Roles/List.js
-import {useNavigate} from "react-router-dom";
-import Loader from "../Loader";
+// FRONTEND/components/Roles/List.js
 import React from "react";
+import { useModals } from "../../contexts/ModalContext";
+import Loader from "../Loader";
 
 const RolesList = ({ roles, loading }) => {
-
-    const navigate = useNavigate();
+    const { openModal } = useModals();
 
     if (loading) {
         return <Loader />;
@@ -20,7 +19,7 @@ const RolesList = ({ roles, loading }) => {
                     <div
                         className="roles-list-item"
                         key={role.ID}
-                        onClick={() => navigate('/employees/roles/' + role.ID)}
+                        onClick={() => openModal({ type: 'roleDetails', data: { id: role.ID } })}
                     >
                         <div>{role.name}</div>
                         <div>{role.power}</div>

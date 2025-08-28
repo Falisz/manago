@@ -1,18 +1,14 @@
+// FRONTEND/components/Posts/Index.js
 import React, { useEffect, useState } from 'react';
-import {useParams, useNavigate, Link} from 'react-router-dom';
 import axios from 'axios';
 import { Loader } from '../Loader';
-import Modal from "../Modal";
-import PostDetail from './Detail';
+import {useModals} from "../../contexts/ModalContext";
 
 const PostIndex = () => {
-    const { postId } = useParams();
-    const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedPostId, setSelectedPostId] = useState(null);
-    const [showModal, setShowModal] = useState(false);
+    const { openModal } = useModals();
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -26,25 +22,8 @@ const PostIndex = () => {
                 setLoading(false);
             }
         };
-
         fetchPosts().then();
     }, []);
-
-    useEffect(() => {
-        if (postId) {
-            setShowModal(true);
-            setSelectedPostId(parseInt(postId));
-        } else {
-            setShowModal(false);
-            setSelectedPostId(null);
-        }
-    }, [postId]);
-
-    const closePostModal = () => {
-        setSelectedPostId(null);
-        setShowModal(false);
-        navigate('/posts');
-    };
 
     if (loading) {
         return <Loader />;
@@ -58,13 +37,10 @@ const PostIndex = () => {
                 <ul className="post-list">
                     {posts.map(post => (
                         <li key={post.ID} className="post-item">
-                            <h2>
-                                <Link
-                                    to={`/posts/${post.ID}`}
-                                    className="post-title-button"
-                                >
-                                    {post.title || 'Untitled Post'}
-                                </Link>
+                            <h2
+                                className="post-title-button"
+                                onClick={() => openModal({ type: 'postDetails', data: { id: post.ID } })}>
+                                {post.title || 'Untitled Post'}
                             </h2>
                             <p>
                                 Posted by {post.author?.first_name} {post.author?.last_name} on{' '}
@@ -98,15 +74,6 @@ const PostIndex = () => {
                     ))}
                 </ul>
             )}
-            <Modal
-                hidden={!showModal}
-                onClose={closePostModal}
-                closeButton={true}
-            >
-                {selectedPostId && (
-                    <PostDetail postId={selectedPostId} />
-                )}
-            </Modal>
         </>
     );
 };

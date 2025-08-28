@@ -1,15 +1,17 @@
+// FRONTEND/components/Users/Edit.js
 import React, { useEffect, useState } from 'react';
-import Loader from '../Loader';
-import '../../assets/styles/Users.css';
+import { useModals } from "../../contexts/ModalContext";
 import useUser from "../../hooks/useUser";
 import useRoles from "../../hooks/useRoles";
 import useManagers from "../../hooks/useManagers";
+import Loader from '../Loader';
+import '../../assets/styles/Users.css';
 
-const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
+const UserEdit = ({ userId }) => {
     const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
     const {managers, fetchManagers} = useManagers();
     const {roles, fetchRoles} = useRoles();
-
+    const { closeTopModal, setDiscardWarning } = useModals();
     const [formData, setFormData] = useState({
         login: '',
         email: '',
@@ -78,16 +80,15 @@ const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
                 [name]: type === 'checkbox' ? checked : value
             }));
         }
-        enableDiscardWarning();
+        setDiscardWarning(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const response = await saveUser(formData, userId);
-        if (response && !userId) {
-            onSave(response.ID);
-        } else {
-            onSave();
+        if (response) {
+            setDiscardWarning(false);
+            closeTopModal();
         }
         setFormData({
             login: '',
@@ -256,6 +257,9 @@ const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
                         ) : (
                             <><i className={'material-symbols-outlined'}>add</i>Add a new employee</>
                         )}
+                    </button>
+                    <button type="button" className="cancel-button" onClick={() => closeTopModal()}>
+                        Cancel
                     </button>
                 </div>
             </form>

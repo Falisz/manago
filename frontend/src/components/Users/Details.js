@@ -1,10 +1,24 @@
-//FRONTEND:components/Users/Details.js
-import React from "react";
-import {useNavigate} from "react-router-dom";
+// FRONTEND/components/Users/Details.js
+import React, {useEffect} from "react";
 import Loader from "../Loader";
+import useUser from "../../hooks/useUser";
+import { useModals } from "../../contexts/ModalContext";
 
-const UserDetails = ({ user, loading, handleDelete }) => {
-    const navigate = useNavigate();
+const UserDetails = ({ userId }) => {
+    const { user, loading, fetchUser, deleteUser } = useUser();
+    const { openModal, closeTopModal } = useModals();
+
+    useEffect(() => {
+        if (userId) {
+            fetchUser(userId).then();
+        }
+    }, [userId, fetchUser]);
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this user?')) return;
+        deleteUser(userId).then();
+        closeTopModal();
+    };
 
     if (loading) {
         return <Loader />;
@@ -33,13 +47,15 @@ const UserDetails = ({ user, loading, handleDelete }) => {
                 : <div className={"user-detail-data false"}><i className="material-symbols-outlined">close</i> Employee does not have access to Manager View </div>}
             <div className={"user-detail-label"}>Report to</div>
             {user.managers.length > 0 ? user.managers.map((manager) => (
-                <div className={"user-detail-data"} key={manager.ID} onClick={() => navigate('/employees/' + manager.ID)}>{manager.first_name} {manager.last_name}</div>
+                <div className={"user-detail-data"} key={manager.ID} onClick={() => openModal({ type: 'userDetails', data: { id: manager.ID } })}>
+                    {manager.first_name} {manager.last_name}
+                </div>
             )):<div className={"user-detail-data placeholder"}>No manager assigned.</div>}
             <div className={"user-detail-label"}>Roles</div>
             {user.roles.length > 0 ? user.roles.map((role) => (
                 <div className={"user-detail-data"} key={role.ID}>{role.name}</div>
             )):<div className={"user-detail-data placeholder"}>Na roles assigned.</div>}
-            <button type="button" className="button" onClick={() => navigate('/employees/edit/' + user.user)}>
+            <button type="button" className="button" onClick={() => openModal({ type: 'userEdit', data: { id: user.ID } })}>
                 <i className={'material-symbols-outlined'}>edit</i> Edit Employee
             </button>
             <button type="button" className="delete-button" onClick={handleDelete}>
