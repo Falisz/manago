@@ -8,15 +8,20 @@
 }
 .employees .new-user-button {
     position: absolute;
+    display: flex;
+    gap: 5px;
     top: 25px;
     right: 20px;
     margin-top: 10px;
-    padding: 8px 16px;
+    padding: 8px;
     background: var(--link-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+}
+.employees .new-user-button i {
+    font-size: 15px;
 }
 .users-list {
     display: flex;

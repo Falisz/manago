@@ -2,7 +2,7 @@
 .employees .new-role-button {
     position: absolute;
     display: flex;
-    align-items: center;
+    gap: 5px;
     top: 25px;
     right: 20px;
     margin-top: 10px;
@@ -14,8 +14,7 @@
     cursor: pointer;
 }
 .employees .new-role-button i {
-    font-size: 20px;
-    margin-right: 5px;
+    font-size: 15px;
 }
 .roles-list {
     display: flex;
