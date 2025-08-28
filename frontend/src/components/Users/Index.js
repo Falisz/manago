@@ -108,11 +108,11 @@ const UsersIndex = () => {
                 hidden={!showEditModal}
                 onClose={closeEditModal}
                 key={'edit-form'}>
-                <UserEdit
+                { (location.pathname.includes('/new') || location.pathname.includes('/edit')) && <UserEdit
                     userId={userId}
                     onSave={handleSave}
                     enableDiscardWarning={setDiscardWarning}
-                />
+                />}
             </Modal>
         </>
     );
