@@ -1,7 +1,7 @@
-//FRONTEND:components/Users/Table.js
-import {useNavigate} from "react-router-dom";
+// FRONTEND/components/Users/Table.js
+import React, { useMemo, useState } from "react";
+import { useModals } from "../../contexts/ModalContext";
 import Loader from "../Loader";
-import React, {useMemo, useState} from "react";
 
 const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
     return (
@@ -27,7 +27,7 @@ const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
 }
 
 const UsersTable = ({ users, loading }) => {
-    const navigate = useNavigate();
+    const { openModal } = useModals();
 
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
@@ -73,7 +73,7 @@ const UsersTable = ({ users, loading }) => {
         result = result.filter(user => {
             return Object.entries(filters).every(([key, value]) => {
                 if (!value) return true;
-                
+
                 if (key === 'name') {
                     return (user.first_name + ' ' + user.last_name)?.toLowerCase().includes(value.toLowerCase());
                 }
@@ -141,12 +141,14 @@ const UsersTable = ({ users, loading }) => {
 
                     return (
                         <div className="users-list-row" key={user.user}>
-                            <div onClick={() => navigate('/employees/' + user.user)}>{user.first_name} {user.last_name}</div>
+                            <div onClick={() => openModal({ type: 'userDetails', data: { id: user.ID } })}> {/* CHANGED: Use openModal instead of navigate */}
+                                {user.first_name} {user.last_name}
+                            </div>
                             <div>{user.email}</div>
                             <div>
                                 {displayedRoles.map((role) => (
                                     <span key={role.ID} className="role-name"
-                                          onClick={() => navigate(`/employees/roles/${role.ID}`)}
+                                          onClick={() => openModal({ type: 'roleDetails', data: { id: role.ID } })} // Example for role; implement if needed
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
