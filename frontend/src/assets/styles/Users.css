@@ -103,6 +103,19 @@
 .user-detail {
     padding: 10px;
 }
+.user-detail-group {
+    margin: 10px 0 5px;
+}
+.user-detail-header {
+    font-size: 2em;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+}
+.user-detail-header .user-id {
+    font-size: 0.5em;
+}
 .user-detail-label {
     font-size: 1.25em;
     font-weight: 200;
@@ -115,6 +128,7 @@
     align-items: center;
 }
 .user-detail-data i {
+    font-size: 1.1em;
     padding: 3px;
     margin-right: 5px;
     border-radius: 10px;
