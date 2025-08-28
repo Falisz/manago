@@ -6,7 +6,7 @@ import useRoles from "../../hooks/useRoles";
 import useManagers from "../../hooks/useManagers";
 
 const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
-    const {user, loading, error, success, setLoading, fetchUser, saveUser} = useUser();
+    const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
     const {managers, fetchManagers} = useManagers();
     const {roles, fetchRoles} = useRoles();
 
@@ -26,7 +26,9 @@ const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
     useEffect(() => {
         fetchRoles().then();
         fetchManagers().then();
+    }, [fetchRoles, fetchManagers]);
 
+    useEffect(() => {
         if (!userId) {
             setFormData({
                 login: '',
@@ -45,7 +47,7 @@ const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
         }
 
         fetchUser(userId).then();
-    }, [userId, setLoading, fetchRoles, fetchManagers, fetchUser, setFormData]);
+    }, [userId, setLoading, fetchUser]);
 
     useEffect(() => {
         setFormData({
@@ -108,10 +110,12 @@ const UserEdit = ({ userId, onSave, enableDiscardWarning }) => {
 
     if (loading) return <Loader />;
 
+    if (error) return <div className="error-message">{error}</div>;
+
     return (
         <>
             <h1>{userId ? 'Edit Employee' : 'Add New Employee'}</h1>
-            {error && <div className="error-message">{error}</div>}
+            {warning && <div className="warning-message">{warning}</div>}
             {success && <div className="success-message">{success}</div>}
             <form onSubmit={handleSubmit} className="user-form">
                 <div className="form-group">
