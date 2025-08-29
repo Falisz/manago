@@ -9,7 +9,7 @@ const RolesList = ({ roles, loading }) => {
     if (loading) {
         return <Loader />;
     }
-
+    
     return (
         <div className="roles-list">
             {roles.length === 0 ? (
@@ -22,7 +22,7 @@ const RolesList = ({ roles, loading }) => {
                         onClick={() => openModal({ type: 'roleDetails', data: { id: role.ID } })}
                     >
                         <div>{role.name}</div>
-                        <div>{role.power}</div>
+                        <div>{role.users?.length > 0 ? role.users.length + " users with this role." : <i>No users with this role.</i>}</div>
                     </div>
                 ))
             )}
