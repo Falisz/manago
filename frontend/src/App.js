@@ -23,6 +23,11 @@ import ToggleManagerView from "./utils/toggleManagerView";
 const theme = process.env['REACT_APP_THEME'] || 'dark';
 const color = process.env['REACT_APP_COLOR'] || 'blue';
 
+// TODO: Initialization of the app with system_default theme and cookies for previously saved settings - before they're reloaded from the server.
+// TODO: Frontend logic utility for server-sided app config (theme, palette) and app modules - which ones are enabled - teams, branch, project, etc.
+// TODO: Custom useAppConfig hook with pages, settings, and server-sided user preferences
+// TODO: Implement teams CRUD features. Assignment of teams relations with other teams, branches, projects, users, etc.
+
 const AppContent = () => {
     const { loading, setLoading } = useLoading();
     const { user, access, managerAccess, AuthUser } = useAuth();
@@ -80,8 +85,8 @@ const AppContent = () => {
     }, [managerView]);
 
     const root = document.getElementById('root');
-    document.getElementById('root').classList.add(theme);
-    document.getElementById('root').classList.add(color);
+    root.classList.add(theme);
+    root.classList.add(color);
 
     if (loading) {
         return <Loader />;

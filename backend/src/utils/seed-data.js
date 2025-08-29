@@ -37,6 +37,7 @@ export async function seedData() {
         console.log('\n[INFO] Starting data seeding...');
         await sequelize.sync();
 
+        // TODO: Add Teams as a module - teams are not required - may not be applicalbe in some smaller businesses.
         const appModules = [
                 {ID: 0, title: 'Main', enabled: true},
                 {ID: 1, title: 'Projects', enabled: true},
