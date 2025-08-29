@@ -28,8 +28,6 @@ const RoleDetails = ({ roleId }) => {
         return <h1>Role not found!</h1>;
     }
 
-    console.log(role);
-
     return (
         <div className="role-detail">
             <div className="role-detail-header">
