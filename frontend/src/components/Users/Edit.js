@@ -11,7 +11,7 @@ const UserEdit = ({ userId }) => {
     const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
     const {managers, fetchManagers} = useManagers();
     const {roles, fetchRoles} = useRoles();
-    const { closeTopModal, setDiscardWarning } = useModals();
+    const { setDiscardWarning, closeTopModal } = useModals();
     const [formData, setFormData] = useState({
         login: '',
         email: '',

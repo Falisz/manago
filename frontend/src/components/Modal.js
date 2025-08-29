@@ -1,24 +1,9 @@
 // FRONTEND/components/Modal.js
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import '../assets/styles/Modal.css';
 
-const Modal = ({ children, onClose, hidden = false, closeButton = true, zIndex = 1000 }) => {
+const Modal = ({ children, isVisible = true, onClose, closeButton = true, zIndex = 1000 }) => {
     const modalRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(false);
-
-    const handleClose = useCallback(() => {
-        setIsVisible(false);
-        const timeout = setTimeout(() => {
-            onClose();
-        }, 300);
-        return () => clearTimeout(timeout);
-    }, [onClose]);
-
-    useEffect(() => {
-        if (!hidden) {
-            setIsVisible(true);
-        }
-    }, [hidden]);
 
     useEffect(() => {
         if (isVisible && modalRef.current) {
@@ -30,7 +15,7 @@ const Modal = ({ children, onClose, hidden = false, closeButton = true, zIndex =
 
             const handleKeyDown = (e) => {
                 if (e.key === 'Escape') {
-                    handleClose();
+                    onClose();
                     return;
                 }
                 if (e.key === 'Tab') {
@@ -51,27 +36,26 @@ const Modal = ({ children, onClose, hidden = false, closeButton = true, zIndex =
                 document.removeEventListener('keydown', handleKeyDown);
             };
         }
-    }, [isVisible, handleClose]);
+    }, [isVisible, onClose]);
 
     return (
         <>
             <div
                 className={`app-modal-overlay ${!isVisible ? 'hidden' : ''}`}
                 style={{ zIndex }}
-                onClick={() => handleClose()}
+                onClick={() => onClose()}
                 role="presentation"
             />
             <div
                 className={`app-modal-content ${!isVisible ? 'hidden' : ''}`}
                 style={{ zIndex: zIndex + 1 }}
-                role="dialog"
                 tabIndex="-1"
                 ref={modalRef}
             >
                 {children}
                 {closeButton && (
                     <button
-                        onClick={() => handleClose()}
+                        onClick={() => onClose()}
                         className="app-modal-close-button"
                         aria-label="Close modal"
                     >

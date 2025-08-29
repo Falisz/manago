@@ -1,7 +1,7 @@
 // FRONTEND/contexts/ModalContext.js
 import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Modal from '../components/Modal'; // Assuming your existing Modal component is at FRONTEND/components/Modal.js
+import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
 import UserEdit from '../components/Users/Edit';
 import RoleDetails from "../components/Roles/Details";
@@ -10,9 +10,10 @@ import PostDetails from "../components/Posts/Details";
 
 const ModalContext = createContext();
 
+const ANIMATION_DURATION = 300;
+
 export const ModalProvider = ({ children }) => {
     const [modalStack, setModalStack] = useState([]);
-    const [discardWarning, setDiscardWarning] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
 
     const openModal = (modal) => {
@@ -23,21 +24,45 @@ export const ModalProvider = ({ children }) => {
                     existing.data?.id === modal.data?.id
             );
             if (isDuplicate) return prev;
-            return [...prev, modal];
+            return [...prev, {...modal, isVisible: true }];
+        });
+    };
+
+    const setDiscardWarning = (value) => {
+        setModalStack((prev) => {
+            if (prev.length === 0) return prev;
+            const newStack = [...prev];
+            newStack[newStack.length - 1] = {
+                ...newStack[newStack.length - 1],
+                discardWarning: value,
+            };
+            return newStack;
         });
     };
 
     const closeTopModal = useCallback(() => {
-        if (discardWarning) {
-            if (!window.confirm('Changes were made. Are you sure you want to discard them?')) return;
-        }
-        setModalStack((prev) => prev.slice(0, -1));
-        setDiscardWarning(false);
-    }, [discardWarning]);
+        setModalStack((prev) => {
+            if (prev.length === 0) return prev;
 
-    const closeAllModals = () => {
-        setModalStack([]);
-    };
+            const topModal = prev[prev.length - 1];
+            if (topModal?.discardWarning) {
+                if (!window.confirm('Changes were made. Are you sure you want to discard them?')) {
+                    return prev;
+                }
+            }
+
+            const newStack = [...prev];
+            newStack[newStack.length - 1] = {
+                ...newStack[newStack.length - 1],
+                isVisible: false,
+            };
+            return newStack;
+        });
+
+        setTimeout(() => {
+            setModalStack((prev) => prev.slice(0, -1));
+        }, ANIMATION_DURATION);
+    }, []);
 
     useEffect(() => {
         const userDetails = searchParams.get('user');
@@ -94,14 +119,16 @@ export const ModalProvider = ({ children }) => {
         }
     };
 
+    console.log("Modal stack:", modalStack);
+
     return (
-        <ModalContext.Provider value={{ openModal, closeTopModal, closeAllModals, setDiscardWarning }}>
+        <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal }}>
             {children}
             {modalStack.map((modal, index) => (
                 <Modal
                     key={index}
-                    hidden={false}
                     onClose={closeTopModal}
+                    isVisible={modal.isVisible}
                     zIndex={1000 + index * 10}
                 >
                     {renderModalContent(modal)}
