@@ -41,6 +41,19 @@
 .role-detail {
     padding: 10px;
 }
+.role-detail-group {
+    margin: 10px 0 5px;
+}
+.role-detail-header {
+    font-size: 2em;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+}
+.role-detail-header .role-id {
+    font-size: 0.5em;
+}
 .role-detail-label {
     font-size: 1.25em;
     font-weight: 200;
@@ -52,18 +65,34 @@
     display: flex;
     align-items: center;
 }
-.role-detail-data i {
+.role-detail-data.link {
+    cursor: pointer;
+    background: var(--gray-darker);
+    border-radius: 10px;
+    transition: .3s ease-in-out;
+    width: fit-content;
+}
+.role-detail-data.link:hover {
+    background: var(--gray-dark);
+}
+.role-system-default {
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+}
+.role-system-default i {
+    font-size: 1.1em;
     padding: 3px;
     margin-right: 5px;
     border-radius: 10px;
 }
-.role-detail-data.true i {
+.role-system-default i.true {
     background-color: yellowgreen;
 }
-.role-detail-data.false i {
+.role-system-default i.false {
     background-color: coral;
 }
-.role-detail-data.placeholder {
+.role-system-default.placeholder {
     font-style: italic;
     opacity: 0.6;
 }
