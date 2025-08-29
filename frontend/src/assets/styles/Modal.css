@@ -29,6 +29,7 @@
     height: calc(100% - 50px);
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    outline: none;
     z-index: 1500;
     transition: ease-in-out 0.3s;
 }
