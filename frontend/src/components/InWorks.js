@@ -1,7 +1,7 @@
 //FRONTEND/components/InWorks.js
 import {Link, useLocation} from "react-router-dom";
 
-export const InWorks = ({ title, icon }) => {
+export const InWorks = ({ title, icon, description = null }) => {
     const location = useLocation();
     return (
         <div className="app-notice app-in-works">
@@ -10,6 +10,7 @@ export const InWorks = ({ title, icon }) => {
             <p>
                 This page is under construction. It will be available soon.
             </p>
+            { description && <p style={{ width: '66%' }}>{description}</p> }
             { location.pathname !== '/' && <Link to="/">Return to Dashboard</Link>}
         </div>
     )};

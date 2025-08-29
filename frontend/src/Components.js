@@ -11,7 +11,11 @@ const Schedule = () => <InWorks title={'Schedule'} icon={'schedule'}/>;
 const Trainings = () => <InWorks title={'Trainings'} icon={'school'} />;
 const Dispositions = () => <InWorks title={'Dispositions Dispositions'} icon={'punch_clock'} />;
 const ManagerDashboard = () => <InWorks title={'Manager Dashboard'} icon={'dashboard'} />;
-const TeamsIndex = () => <InWorks title={'Teams'} icon={'groups'} />;
+const TeamsIndex = () => <InWorks 
+    title={'Teams'}
+    icon={'groups'}
+    description={"There will be a table of teams with following collumns: team names, codename, managers and teamleaders. If the branch and projects modules are enabled they are also gonna be present there."} 
+/>;
 const BranchIndex = () => <InWorks title={'Branches'} icon={'graph_3'} />;
 const ProjectIndex = () => <InWorks title={'Projects'} icon={'fact_check'} />;
 const ScheduleShow = () => <InWorks title={'Work schedule'} icon={'schedule'} />;
