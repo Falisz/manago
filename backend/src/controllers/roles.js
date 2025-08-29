@@ -1,7 +1,7 @@
 //BACKEND/controller/roles.js
 import sequelize from '../db.js';
 import Role from "../models/role.js";
-import {UserRole} from '../models/user.js';
+import User, { UserDetails, UserRole } from '../models/user.js'; // Add User, UserDetails, UserRole import
 
 /**
  * @typedef {Object} UserRoleData
@@ -27,6 +27,7 @@ export async function getRoles(roleId = null) {
         role = {
             ...role.toJSON(),
         }
+        role.users = await getRoleUsers(roleId);
 
         return role;
 
@@ -34,11 +35,13 @@ export async function getRoles(roleId = null) {
 
         const roles = await Role.findAll({order: [['power', 'ASC']]});
 
-        return roles.map(role => {
-            return {
-                ...role.toJSON(),
-            };
-        }) || null;
+        return await Promise.all(
+            (roles || []).map(async role => {
+                const roleObj = { ...role.toJSON() };
+                roleObj.users = await getRoleUsers(roleObj.ID);
+                return roleObj;
+            })
+        );
 
     }
 }
@@ -70,6 +73,40 @@ export async function getUserRoles(userId) {
         return role;
     }) || null;
 
+}
+
+/**
+ * Retrieves all users for a given role ID.
+ * @param {number} roleId - Role ID
+ * @returns {Promise<Array<{ID: number, first_name: string, last_name: string}>>}
+ */
+export async function getRoleUsers(roleId) {
+    if (!roleId) return [];
+
+    const userRoles = await UserRole.findAll({
+        where: { role: roleId },
+        include: [
+            {
+                model: User,
+                attributes: ['ID'],
+                include: [
+                    {
+                        model: UserDetails,
+                        as: 'UserDetails',
+                        attributes: ['first_name', 'last_name']
+                    }
+                ]
+            }
+        ]
+    });
+
+    return userRoles
+        .map(ur => ({
+            ID: ur.User?.ID,
+            first_name: ur.User?.UserDetails?.first_name,
+            last_name: ur.User?.UserDetails?.last_name
+        }))
+        .filter(u => u.ID); // Filter out any nulls
 }
 
 /**
