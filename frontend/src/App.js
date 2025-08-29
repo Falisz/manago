@@ -1,4 +1,4 @@
-//FRONTEND/App.js
+// FRONTEND/App.js
 // MAIN IMPORTS
 import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
@@ -6,6 +6,7 @@ import './assets/styles/App.css';
 import {ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ModalProvider } from './contexts/ModalContext'; // NEW: Import ModalProvider
 
 // COMPONENTS
 import Login from './components/Login';
@@ -160,8 +161,10 @@ const App = () => {
             <LoadingProvider>
                 <AuthProvider>
                     <Router>
-                        <AppContent />
-                        <ConnectivityPopup />
+                        <ModalProvider>
+                            <AppContent />
+                            <ConnectivityPopup />
+                        </ModalProvider>
                     </Router>
                 </AuthProvider>
             </LoadingProvider>

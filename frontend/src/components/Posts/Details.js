@@ -1,8 +1,9 @@
+// FRONTEND/components/Posts/Details.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loader from "../Loader";
 
-const PostDetail = ({ postId }) => {
+const PostDetails = ({ postId }) => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -66,4 +67,4 @@ const PostDetail = ({ postId }) => {
     );
 };
 
-export default PostDetail;
+export default PostDetails;

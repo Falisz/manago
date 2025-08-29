@@ -1,6 +1,7 @@
+// FRONTEND/components/Button.js
 import React from 'react';
 
-const Button = ({className, onClick, label, icon=null}) => {
+const Button = ({children, className, onClick, label, icon=null}) => {
 
     return (
         <button
@@ -8,7 +9,7 @@ const Button = ({className, onClick, label, icon=null}) => {
             onClick={onClick}
         >
             {icon && <i className={"material-icons"}>{icon}</i>}
-            {label}
+            {children || label}
         </button>
     );
 

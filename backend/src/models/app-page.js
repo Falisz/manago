@@ -41,11 +41,6 @@ export const AppPage = sequelize.define('Pages', {
         type: DataTypes.STRING(100),
         allowNull: false,
         defaultValue: ''
-    },
-    hidden: {
-        type: DataTypes.BOOLEAN,
-        allowNull: true,
-        defaultValue: null
     }
 }, {
     tableName: 'app_pages',

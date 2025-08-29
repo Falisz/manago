@@ -1,10 +1,24 @@
-//FRONTEND:components/Roles/Details.js
-import React from 'react';
-import {useNavigate} from "react-router-dom";
+// FRONTEND/components/Roles/Details.js
+import React, {useEffect} from "react";
 import Loader from "../Loader";
+import useRole from "../../hooks/useRole";
+import {useModals} from "../../contexts/ModalContext";
 
-const RoleDetails = ({ role, loading, handleDelete }) => {
-    const navigate = useNavigate();
+const RoleDetails = ({ roleId }) => {
+    const { role, loading, fetchRole, deleteRole } = useRole();
+    const { openModal, closeTopModal } = useModals();
+
+    useEffect(() => {
+        if (roleId) {
+            fetchRole(roleId).then();
+        }
+    }, [roleId, fetchRole]);
+
+    const handleDelete = async () => {
+        if (!window.confirm('Are you sure you want to delete this role?')) return;
+        deleteRole(roleId).then();
+        closeTopModal();
+    };
 
     if (loading) {
         return <Loader />;
@@ -37,7 +51,7 @@ const RoleDetails = ({ role, loading, handleDelete }) => {
                 <button
                     type="button"
                     className="button"
-                    onClick={() => navigate('/employees/roles/edit/' + role.ID)}
+                    onClick={() => openModal({ type: 'roleEdit', data: { id: role.ID } })}
                 >
                     <i className="material-symbols-outlined">edit</i> Edit Role
                 </button>

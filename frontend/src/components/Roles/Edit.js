@@ -1,11 +1,13 @@
-//FRONTEND:components/Roles/Edit.js
+// FRONTEND/components/Roles/Edit.js
 import React, { useEffect, useState } from 'react';
+import {useModals} from "../../contexts/ModalContext";
+import useRole from "../../hooks/useRole";
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
-import useRole from "../../hooks/useRole";
 
-const RoleEdit = ({ roleId, onSave }) => {
+const RoleEdit = ({ roleId }) => {
     const { role, loading, error, success, setLoading, fetchRole, saveRole } = useRole();
+    const { closeTopModal, setDiscardWarning } = useModals();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -41,15 +43,15 @@ const RoleEdit = ({ roleId, onSave }) => {
             ...prev,
             [name]: type === 'checkbox' ? checked : value,
         }));
+        setDiscardWarning(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const response = await saveRole(formData, roleId);
-        if (response && !roleId) {
-            onSave(response.ID);
-        } else {
-            onSave();
+        if (response) {
+            setDiscardWarning(false);
+            closeTopModal();
         }
     };
 
@@ -58,6 +60,8 @@ const RoleEdit = ({ roleId, onSave }) => {
     return (
         <>
             <h1>{roleId ? 'Edit Role' : 'Add New Role'}</h1>
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
             <form onSubmit={handleSubmit} className="user-form">
                 <div className="form-group">
                     <label>Name</label>
@@ -104,10 +108,11 @@ const RoleEdit = ({ roleId, onSave }) => {
                             </>
                         )}
                     </button>
+                    <button type="button" className="cancel-button" onClick={() => closeTopModal()}>
+                        Cancel
+                    </button>
                 </div>
             </form>
-            {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">{success}</div>}
         </>
     );
 };

@@ -1,23 +1,14 @@
-//FRONTEND:components/Roles/Index.js
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+// FRONTEND/components/Roles/Index.js
+import React, { useEffect } from "react";
+import { useModals } from "../../contexts/ModalContext";
+import useRoles from "../../hooks/useRoles";
 import '../../assets/styles/Roles.css';
 import Button from "../Button";
-import Modal from "../Modal";
-import useRoles from "../../hooks/useRoles";
-import useRole from "../../hooks/useRole";
 import RolesList from "./List";
-import RoleDetails from "./Details";
-import RoleEdit from "./Edit";
 
 const RolesIndex = () => {
-    const { roleId } = useParams();
-    const location = useLocation();
-    const navigate = useNavigate();
+    const { openModal } = useModals();
     const { roles, loading: rolesLoading, fetchRoles } = useRoles();
-    const { role, loading: roleLoading, fetchRole, deleteRole } = useRole();
-    const [ showDetailModal, setShowDetailModal ] = useState(false);
-    const [ showEditModal, setShowEditModal ] = useState(false);
 
     useEffect(() => {
         if (!roles) {
@@ -25,90 +16,19 @@ const RolesIndex = () => {
         }
     }, [fetchRoles, roles]);
 
-    useEffect(() => {
-        const isEditMode = location.pathname.includes('/new') || location.pathname.includes('/edit');
-
-        setShowDetailModal(!!roleId);
-
-        setShowEditModal(isEditMode);
-
-        if (roleId) {
-            fetchRole(roleId).then();
-        }
-    }, [roleId, location.pathname, fetchRole]);
-
-    const handleSave = (newRoleId) => {
-        fetchRoles(false).then();
-        if (newRoleId) {
-            fetchRole(newRoleId).then();
-            setShowEditModal(false);
-            navigate(`/employees/roles/${newRoleId}`);
-        } else {
-            fetchRole(roleId, true).then();
-            setShowEditModal(false);
-            navigate(`/employees/roles/${roleId}`);
-        }
-    };
-
-    const handleDelete = () => {
-        if (!window.confirm('Are you sure you want to delete this role?')) return;
-        deleteRole(roleId).then();
-        fetchRoles(false).then();
-        navigate('/employees/roles');
-    };
-
-    const closeDetailsModal = () => {
-        setShowDetailModal(false);
-        navigate('/employees/roles');
-    };
-
-    const closeEditModal = () => {
-        setShowEditModal(false);
-        if (roleId) {
-            navigate(`/employees/roles/${roleId}`);
-        } else {
-            navigate('/employees/roles');
-        }
-    };
-
     return (
         <>
             <h1>Security Roles</h1>
-
             <Button
                 className="new-role-button"
-                onClick={() => navigate('/employees/roles/new')}
+                onClick={() => openModal({ type: 'userNew' })}
                 label={'Add Role'}
                 icon={'add'}
             />
-
             <RolesList
                 roles={roles}
                 loading={rolesLoading}
             />
-
-            <Modal
-                hidden={!showDetailModal}
-                onClose={closeDetailsModal}
-                key="detail"
-            >
-                {roleId &&
-                    <RoleDetails
-                        role={role}
-                        loading={roleLoading}
-                        handleDelete={handleDelete}
-                    />}
-            </Modal>
-            <Modal
-                hidden={!showEditModal}
-                onClose={closeEditModal}
-                key="edit-form"
-            >
-                <RoleEdit
-                    roleId={roleId}
-                    onSave={handleSave}
-                />
-            </Modal>
         </>
     );
 };
