@@ -119,8 +119,6 @@ export const ModalProvider = ({ children }) => {
         }
     };
 
-    console.log("Modal stack:", modalStack);
-
     return (
         <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal }}>
             {children}
