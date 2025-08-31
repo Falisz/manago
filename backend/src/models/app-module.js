@@ -2,7 +2,7 @@ import sequelize from "../db.js";
 import {DataTypes} from "sequelize";
 
 export const AppModule = sequelize.define('Modules', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
@@ -11,6 +11,11 @@ export const AppModule = sequelize.define('Modules', {
     title: {
         type: DataTypes.STRING(50),
         allowNull: false,
+        defaultValue: ''
+    },
+    icon: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
         defaultValue: ''
     },
     enabled: {

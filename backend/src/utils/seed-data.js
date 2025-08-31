@@ -2,7 +2,6 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
 import AppModule from "../models/app-module.js";
-import AppPage from "../models/app-page.js";
 import Role from '../models/role.js';
 import User, {UserDetails, UserConfigs, UserRole} from '../models/user.js';
 import Team from '../models/team.js';
@@ -37,37 +36,18 @@ export async function seedData() {
         console.log('\n[INFO] Starting data seeding...');
         await sequelize.sync();
 
-        // TODO: Add Teams as a module - teams are not required - may not be applicalbe in some smaller businesses.
         const appModules = [
-                {ID: 0, title: 'Main', enabled: true},
-                {ID: 1, title: 'Projects', enabled: true},
-                {ID: 2, title: 'Branches', enabled: true},
-                {ID: 3, title: 'Timesheets', enabled: true},
-                {ID: 4, title: 'Tasks', enabled: true},
-                {ID: 5, title: 'Trainings', enabled: true},
-                {ID: 6, title: 'Posts', enabled: true},
-                {ID: 7, title: 'Blogs', enabled: true}
+                {id: 0, title: 'Main', icon: 'dashboard', enabled: true},
+                {id: 1, title: 'Teams', icon: 'groups', enabled: true},
+                {id: 2, title: 'Projects', icon: 'fact_check', enabled: true},
+                {id: 3, title: 'Branches', icon: 'graph_3', enabled: false},
+                {id: 4, title: 'Timesheets', icon: 'calendar_month', enabled: false},
+                {id: 5, title: 'Tasks', icon: 'task_alt', enabled: false},
+                {id: 6, title: 'Trainings', icon: 'school', enabled: false},
+                {id: 7, title: 'Posts', icon: 'forum', enabled: false},
+                {id: 8, title: 'Blogs', icon: 'newsmode', enabled: false}
             ];
         await seedModel(AppModule, 'app_modules', appModules, 'modules');
-
-        const appPages = [
-                {ID: 0, view: 1, module: 0, parent: null, path: '/', title: 'Home', icon: 'home', component: 'ManagerDashboard'},
-                {ID: 1, view: 1, module: 0, parent: null, path: 'employees', title: 'Employees', icon: 'people', component: 'UsersIndex'},
-                {ID: 14, view: 1, module: 0, parent: 1, path: 'roles', title: 'Security Roles', icon: '', component: 'RolesIndex'},
-                {ID: 2, view: 1, module: 0, parent: null, path: 'teams', title: 'Teams', icon: 'groups', component: 'TeamsIndex'},
-                {ID: 3, view: 1, module: 1, parent: null, path: 'branches', title: 'Branches', icon: 'hub', component: 'BranchIndex'},
-                {ID: 4, view: 1, module: 2, parent: null, path: 'projects', title: 'Projects', icon: 'fact_check', component: 'ProjectIndex'},
-                {ID: 5, view: 1, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'ScheduleShow'},
-                {ID: 50, view: 1, module: 3, parent: 5, path: 'past', title: 'Past Schedules', icon: '', component: 'SchedulePast'},
-                {ID: 6, view: 1, module: 6, parent: null, path: 'posts', title: 'Posts', icon: 'forum', component: 'PostsIndex'},
-                {ID: 63, view: 1, module: 6, parent: 6, path: 'archive', title: 'Posts Archive', icon: '', component: 'PostsArchive'},
-                {ID: 100, view: 0, module: 0, parent: null, path: '/', title: 'Home', icon: 'home', component: 'Dashboard'},
-                {ID: 101, view: 0, module: 3, parent: null, path: 'schedule', title: 'Schedule', icon: 'calendar_month', component: 'Schedule'},
-                {ID: 110, view: 0, module: 3, parent: 101, path: 'dispositions', title: 'Dispositions', icon: '', component: 'Dispositions'},
-                {ID: 102, view: 0, module: 5, parent: null, path: 'trainings', title: 'Trainings', icon: 'school', component: 'Trainings'},
-                {ID: 103, view: 0, module: 6, parent: null, path: 'posts', title: 'Posts', icon: 'forum', component: 'PostsIndex'},
-            ];
-        await seedModel(AppPage, 'app_pages', appPages, 'pages');
 
         const roles = [
                 { ID: 1, name: 'Employee', power: 10, system_default: true },

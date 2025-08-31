@@ -1,6 +1,6 @@
 //BACKEND/api/utils.js
 import express from 'express';
-import {getPages} from "../controllers/pages.js";
+import {getModules, setModule, getPages} from "../controllers/app.js";
 import {hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav} from "../utils/manager-view.js";
 export const router = express.Router();
 
@@ -27,6 +27,65 @@ router.get('/ping', async (req, res) => {
     } catch (err) {
         console.error('Ping error:', err);
         res.status(500).json({ message: 'API Error.', connected: false });
+    }
+});
+
+//App Config endpoint
+router.get('/config', async (req, res) => {
+    try {
+        if (!req.session.user)
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+
+        return res.status(200).json({ app_theme: 'dark', app_palette: 'blue' });
+
+    } catch (err) {
+        console.error('Config fetching error:', err);
+        res.status(500).json({ message: 'Config fetching Error.', connected: false });
+    }
+});
+
+//App Modules endpoint
+router.get('/modules', async (req, res) => {
+    try {
+        if (!req.session.user)
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+
+        return res.status(200).json(await getModules());
+
+    } catch (err) {
+        console.error('Config fetching error:', err);
+        res.status(500).json({ message: 'Config fetching Error.', connected: false });
+    }
+});
+
+// Update module enabled status endpoint
+router.put('/modules/:id', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { id } = req.params;
+        const { enabled } = req.body;
+
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ message: 'Invalid enabled value.' });
+        }
+
+        if (!await hasManagerAccess(req.session.user.ID)) {
+            return res.status(403).json({ message: 'Access denied.' });
+        }
+
+        const updated = await setModule(parseInt(id), enabled);
+
+        if (updated[0] > 0) {
+            return res.json({ success: true });
+        } else {
+            return res.status(404).json({ message: 'Module not found.' });
+        }
+    } catch (err) {
+        console.error('Error updating module:', err);
+        return res.status(500).json({ message: 'API Error.' });
     }
 });
 

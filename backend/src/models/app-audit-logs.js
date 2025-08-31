@@ -2,7 +2,7 @@ import sequelize from "../db.js";
 import {DataTypes} from "sequelize";
 
 export const AppAuditLogs = sequelize.define('AuditLogs', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
@@ -44,7 +44,7 @@ export const AppAuditLogs = sequelize.define('AuditLogs', {
 });
 
 export const AppSecurityLogs = sequelize.define('AppSecurityLogs', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,

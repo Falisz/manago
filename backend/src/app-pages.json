@@ -1,0 +1,141 @@
+{
+  "manager_view": [
+    {
+      "path": "/",
+      "title": "Home",
+      "module": 0,
+      "icon": "home",
+      "component": "ManagerDashboard",
+      "subpages": []
+    },
+    {
+      "path": "employees",
+      "title": "Employees",
+      "module": 0,
+      "icon": "people",
+      "component": "UsersIndex",
+      "subpages": [
+        {
+          "path": "roles",
+          "title": "Security Roles",
+          "icon": "",
+          "component": "RolesIndex",
+          "subpages": []
+        }
+      ]
+    },
+    {
+      "path": "teams",
+      "title": "Teams",
+      "module": 1,
+      "icon": "groups",
+      "component": "TeamsIndex",
+      "subpages": []
+    },
+    {
+      "path": "projects",
+      "title": "Projects",
+      "module": 2,
+      "icon": "fact_check",
+      "component": "ProjectIndex",
+      "subpages": []
+    },
+    {
+      "path": "branches",
+      "title": "Branches",
+      "module": 3,
+      "icon": "hub",
+      "component": "BranchIndex",
+      "subpages": []
+    },
+    {
+      "path": "schedule",
+      "title": "Schedule",
+      "module": 4,
+      "icon": "calendar_month",
+      "component": "ScheduleShow",
+      "subpages": [
+        {
+          "path": "past",
+          "title": "Past Schedules",
+          "icon": "",
+          "component": "SchedulePast",
+          "subpages": []
+        }
+      ]
+    },
+    {
+      "path": "Leaves",
+      "title": "Leaves",
+      "module": 4,
+      "icon": "calendar_month",
+      "component": "EmployeeLeaves"
+    },
+    {
+      "path": "posts",
+      "title": "Posts",
+      "module": 7,
+      "icon": "forum",
+      "component": "PostsIndex",
+      "subpages": [
+        {
+          "path": "archive",
+          "title": "Posts Archive",
+          "icon": "",
+          "component": "PostsArchive",
+          "subpages": []
+        }
+      ]
+    },
+    {
+      "path": "app-modules",
+      "title": "App Modules",
+      "module": 0,
+      "icon": "dashboard",
+      "component": "AppModules",
+      "subpages": []
+    }
+  ],
+  "staff_view": [
+    {
+      "path": "/",
+      "title": "Home",
+      "module": 0,
+      "icon": "home",
+      "component": "Dashboard",
+      "subpages": []
+    },
+    {
+      "path": "schedule",
+      "title": "Schedule",
+      "module": 4,
+      "icon": "calendar_month",
+      "component": "Schedule",
+      "subpages": [
+        {
+          "path": "dispositions",
+          "title": "Dispositions",
+          "icon": "",
+          "component": "Dispositions",
+          "subpages": []
+        }
+      ]
+    },
+    {
+      "path": "trainings",
+      "title": "Trainings",
+      "module": 6,
+      "icon": "school",
+      "component": "Trainings",
+      "subpages": []
+    },
+    {
+      "path": "posts",
+      "title": "Posts",
+      "module": 7,
+      "icon": "forum",
+      "component": "PostsIndex",
+      "subpages": []
+    }
+  ]
+}
