@@ -25,6 +25,7 @@ import ConnectivityPopup from './components/ConnectivityPopup';
 // TODO: Frontend logic utility for server-sided app config (theme, palette) and app modules - which ones are enabled - teams, branch, project, etc.
 // TODO: Custom useAppConfig hook with pages, settings, and server-sided user preferences
 // TODO: Implement teams CRUD features. Assignment of teams relations with other teams, branches, projects, users, etc.
+// TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
 
 const AppContent = () => {
     const { loading } = useLoading();

@@ -3,6 +3,8 @@ import React from "react";
 import { useModals } from "../../contexts/ModalContext";
 import Loader from "../Loader";
 
+// TODO: Add Roles descriptions similarly as for the App Modules.
+// TODO: Implement role restriction over the UI.
 const RolesList = ({ roles, loading }) => {
     const { openModal } = useModals();
 

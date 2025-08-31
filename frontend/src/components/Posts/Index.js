@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Loader } from '../Loader';
 import {useModals} from "../../contexts/ModalContext";
 
+// TODO: Post Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 const PostIndex = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
