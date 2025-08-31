@@ -3,10 +3,12 @@
 import React, {useEffect, useMemo} from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './assets/styles/App.css';
-import {ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
+
+// APP CONTEXTS
+import { ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { AppCoreProvider, useAppCore} from './contexts/AppCoreContext';
+import { AppCoreProvider, useAppCore } from './contexts/AppCoreContext';
 import { ModalProvider } from './contexts/ModalContext';
 
 // REACT COMPONENTS
@@ -95,7 +97,7 @@ const AppContent = () => {
                                     index={!subpage.path}
                                     element={subpage.component ? React.createElement(subpage.component) : <NotFound />}
                                 >
-                                    {subpage.subpages.map((subsubpage) => (
+                                    {subpage?.subpages?.map((subsubpage) => (
                                         <Route
                                             key={`${page.path}/${subpage.path}/${subsubpage.path}` || subsubpage.title}
                                             path={subsubpage.path ? `${subsubpage.path}` : ''}
