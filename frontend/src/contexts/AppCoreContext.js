@@ -94,8 +94,11 @@ export const AppCoreProvider = ({ children }) => {
     const toggleView = useCallback(async (toggleValue) => {
         setLoading(true);
         try {
-            const result = await axios.post('/manager-view', { manager_view: toggleValue },
-                { withCredentials: true });
+            const result = await axios.post(
+                '/manager-view',
+                { manager_view: toggleValue },
+                { withCredentials: true }
+            );
 
             setManagerView(result.data?.manager_view);
 
@@ -114,6 +117,7 @@ export const AppCoreProvider = ({ children }) => {
                 fetchModules(),
                 (async () => {
                     try {
+                        setLoading(true);
                         setManagerView(managerAccess && user?.manager_view_enabled);
                         await refreshPages();
                         setDidFetch(true);
