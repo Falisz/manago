@@ -40,10 +40,8 @@ const mapPagesToComponents = (pages) => {
 const FetchPages = async () => {
     try {
         const res = await axios.get('/pages', { withCredentials: true });
-        console.log(res.data);
 
         if (Array.isArray(res.data)) {
-            // Map components to the fetched pages
             return mapPagesToComponents(res.data);
         } else {
             console.error('Fetched data is not an array:', res.data);

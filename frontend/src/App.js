@@ -111,8 +111,6 @@ const AppContent = () => {
     root.classList.add(viewClass);
     root.classList.remove(viewClass === 'manager' ? 'staff' : 'manager');
 
-    console.log("Modules", modules);
-
     return (
         <>
             <Routes>
