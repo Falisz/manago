@@ -5,9 +5,11 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
 import {useAuth} from "../contexts/AuthContext";
+import {useAppCore} from "../contexts/AppCoreContext";
 
-const StaffView = ({ pages, switchView }) => {
+const StaffView = () => {
     const { user, managerAccess } = useAuth();
+    const { pages, toggleView } = useAppCore();
     const location = useLocation();
 
     const currentMainPage = pages?.find((page) =>
@@ -70,7 +72,7 @@ const StaffView = ({ pages, switchView }) => {
                     <ul className='submenu'>
                         { managerAccess &&
                             <li className='submenu-item'>
-                                <Link to='#' onClick={() => switchView(true)}>Manager Portal</Link>
+                                <Link to='#' onClick={() => toggleView(true)}>Manager Portal</Link>
                             </li> }
                         <li className='submenu-item'>
                             <Link  to='/logout' className='logout'>Logout</Link>
@@ -80,11 +82,7 @@ const StaffView = ({ pages, switchView }) => {
             </div>
             <MobileNav
                 logoText={`Staff ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
-                pages={pages}
-                user={user}
-                hasManagerAccess={managerAccess}
                 currentView={'staff'}
-                switchView={switchView}
                 currentPath={location.pathname}
             />
             <div className="app-content">

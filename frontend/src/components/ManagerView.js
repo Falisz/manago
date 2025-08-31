@@ -7,8 +7,12 @@ import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from "axios";
 import MobileNav from './MobileNav';
 import {useAuth} from "../contexts/AuthContext";
+import {useAppCore} from "../contexts/AppCoreContext";
 
-const MainNav = ({user, pages, location}) => {
+const MainNav = () => {
+    const { user } = useAuth();
+    const { pages } = useAppCore();
+    const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
     useEffect(() => {
@@ -74,7 +78,10 @@ const MainNav = ({user, pages, location}) => {
     )
 }
 
-const SubNav = ({user, currentMainPage, location, switchView}) => {
+const SubNav = ({currentMainPage, location}) => {
+    const { user } = useAuth();
+    const { toggleView } = useAppCore();
+
     return (
         <nav className="app-subnav">
             <ul className="subpage-links">
@@ -104,7 +111,7 @@ const SubNav = ({user, currentMainPage, location, switchView}) => {
                 <i className="material-icons">keyboard_arrow_down</i>
                 <ul className="submenu">
                     <li className="submenu-item">
-                        <Link to="#" onClick={() => switchView(false)}>
+                        <Link to="#" onClick={() => toggleView(false)}>
                             Staff Portal
                         </Link>
                     </li>
@@ -119,8 +126,8 @@ const SubNav = ({user, currentMainPage, location, switchView}) => {
     )
 }
 
-const ManagerView = ({pages, switchView }) => {
-    const { user } = useAuth();
+const ManagerView = () => {
+    const { pages } = useAppCore();
     const location = useLocation();
 
     const currentMainPage = pages?.find((page) =>
@@ -129,29 +136,17 @@ const ManagerView = ({pages, switchView }) => {
 
     return (
         <>
-            <MainNav
-                pages={pages}
-                user={user}
-                location={location}
-            />
+            <MainNav/>
             <MobileNav
                 logoText={`Manager ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
-                pages={pages}
-                user={user}
-                hasManagerAccess={true}
                 currentView={'manager'}
-                switchView={switchView}
                 currentPath={location.pathname}
             />
-
             <div className="app-content">
                 <SubNav
-                    user={user}
                     currentMainPage={currentMainPage}
                     location={location}
-                    switchView={switchView}
                 />
-
                 <main className={currentMainPage?.path}>
                     <Outlet />
                 </main>

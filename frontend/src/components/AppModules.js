@@ -1,10 +1,10 @@
 //FRONTEND/Components/AppModules.js
 import React from 'react';
 import '../assets/styles/AppModules.css';
-import {useModules} from "../contexts/ModulesContext";
+import {useAppCore} from "../contexts/AppCoreContext";
 
 const AppModules = () => {
-    const { modules, handleToggle } = useModules();
+    const { modules, handleToggle } = useAppCore();
 
     return (
         <div className="app-modules">
