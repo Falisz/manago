@@ -195,6 +195,14 @@ export async function removeUser(userId) {
         where: { user: userId },
         transaction
     })
+    const userManagers = await UserManager.findOne({
+        where: { user: userId },
+        transaction
+    })
+    const userRoles = await UserRole.findOne({
+        where: { user: userId },
+        transaction
+    })
 
     if (!user) {
         return {success: false, message: "User not found."};
@@ -213,6 +221,14 @@ export async function removeUser(userId) {
 
     if (userConfigs) {
         await userConfigs.destroy({ transaction });
+    }
+
+    if (userManagers) {
+        await userManagers.destroy({ transaction });
+    }
+
+    if (userRoles) {
+        await userRoles.destroy({ transaction });
     }
 
     await transaction.commit();
