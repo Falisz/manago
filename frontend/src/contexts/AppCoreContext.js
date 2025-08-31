@@ -39,7 +39,7 @@ export const AppCoreProvider = ({ children }) => {
         const newEnabled = !enabled;
         if (window.confirm(`Are you sure you want to ${newEnabled ? 'enable' : 'disable'} the module #${moduleId}?`)) {
             await toggleModule(moduleId, newEnabled);
-            refreshPages.then();
+            await refreshPages();
         }
     }, [toggleModule]);
 
