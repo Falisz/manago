@@ -2,7 +2,7 @@
 import React, {useEffect, useRef} from 'react';
 import '../assets/styles/Modal.css';
 
-const Modal = ({ children, isVisible = true, onClose, closeButton = true, zIndex = 1000 }) => {
+const Modal = ({ children, isVisible = false, onClose, closeButton = true, zIndex = 1000 }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {

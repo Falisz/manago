@@ -25,8 +25,21 @@ export const ModalProvider = ({ children }) => {
                     existing.data?.id === modal.data?.id
             );
             if (isDuplicate) return prev;
-            return [...prev, {...modal, isVisible: true }];
+            return [...prev, { ...modal, isVisible: false }];
         });
+
+        setTimeout(() => {
+            setModalStack((prev) => {
+                const newStack = [...prev];
+                if (newStack.length > 0) {
+                    newStack[newStack.length - 1] = {
+                        ...newStack[newStack.length - 1],
+                        isVisible: true,
+                    };
+                }
+                return newStack;
+            });
+        }, ANIMATION_DURATION);
     };
 
     const setDiscardWarning = (value) => {
