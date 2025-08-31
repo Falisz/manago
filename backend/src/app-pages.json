@@ -104,17 +104,22 @@
     {
       "path": "Blogs",
       "title": "Blogs",
-      "module": 6,
+      "module": 8,
       "icon": "feed",
       "component": "Blogs"
     },
     {
-      "path": "app-modules",
-      "title": "App Modules",
+      "path": "app-settings",
+      "title": "App Settings",
       "module": 0,
-      "icon": "dashboard",
-      "component": "AppModules",
-      "subpages": []
+      "icon": "settings",
+      "subpages": [
+        {
+          "path": "modules",
+          "title": "Modules",
+          "component": "AppModules"
+        }
+      ]
     }
   ],
   "staff_view": [
