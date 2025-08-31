@@ -2,17 +2,12 @@ import sequelize from "../db.js";
 import {DataTypes} from "sequelize";
 import User from "./user.js";
 
-// TODO: Add MS Teams link for the team sync. Remove project relation - it will be handled by separate table for project assoc.s.
 export const Team = sequelize.define('Team', {
     ID: {
         type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true
-    },
-    project: {
-        type: DataTypes.INTEGER,
-        allowNull: true
     },
     parent_team: {
         type: DataTypes.INTEGER,
@@ -23,6 +18,10 @@ export const Team = sequelize.define('Team', {
         allowNull: false
     },
     name: {
+        type: DataTypes.STRING(100),
+        allowNull: true
+    },
+    ms_teams: {
         type: DataTypes.STRING(100),
         allowNull: true
     }
