@@ -1,68 +1,73 @@
 .app.manager .app-content main.modules {
     align-items: flex-start;
 }
-
-.modules > h2 {
-    margin: 25px 20px 10px;
-    font-weight: 100;
-    font-family: 'Roboto Condensed', sans-serif;
+.modules-notice {
+    border-radius: 10px;
+    transition: 0.3s ease-in-out;
+    padding: 10px;
+    margin: 10px auto;
+    cursor: default;
+    background-color: var(--background-color-2);
 }
 
-.app-modules {
+.modules-list {
     display: flex;
     margin: 0 auto;
     flex-direction: column;
     padding: 10px;
+    width: 80%;
 }
-
-.app-modules table {
-    width: 100%;
-    border-collapse: collapse;
+.modules-list .modules-list-row {
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    transition: 0.3s ease-in-out;
+    padding: 10px;
+    cursor: default;
 }
-
-.app-modules thead {
+.modules-list .modules-list-row:hover {
+    background-color: var(--background-color-2);
+}
+.modules-list .module-content {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+.modules-list .module-icon {
+    font-size: 2em;
+    padding: 10px;
+}
+.modules-list .module-title {
+    font-size: 1.5em;
+    margin-right: auto;
     text-transform: uppercase;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
 }
-
-.app-modules th {
+.modules-list .module-description {
     padding: 10px;
-    text-align: left;
-}
-
-.app-modules tbody tr {
-    border-radius: 10px;
-    transition: .3s ease-in-out;
-}
-
-.app-modules tbody tr:hover {
-    background-color: var(--background-color-2);
-}
-
-.app-modules td {
-    padding: 10px;
-}
-
-.app-modules td .material-symbols-outlined {
-    font-size: 1.2em;
+    font-style: italic;
+    color: var(--gray-light);
+    border-radius: 0 0 10px 10px;
 }
 
 /* Custom Toggle Switch */
-.app-modules .toggle-switch {
+.modules-list .module-switch {
     position: relative;
     display: inline-block;
     width: 50px;
     height: 24px;
 }
 
-.app-modules .toggle-switch input {
+.modules-list .module-switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.app-modules .toggle-slider {
+.modules-list .toggle-slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -71,10 +76,10 @@
     bottom: 0;
     background-color: var(--gray-darker);
     border-radius: 24px;
-    transition: .3s ease-in-out;
+    transition: 0.3s ease-in-out;
 }
 
-.app-modules .toggle-slider:before {
+.modules-list .toggle-slider:before {
     position: absolute;
     content: "";
     height: 18px;
@@ -83,23 +88,23 @@
     bottom: 3px;
     background-color: white;
     border-radius: 50%;
-    transition: .3s ease-in-out;
+    transition: 0.3s ease-in-out;
 }
 
-.app-modules input:checked + .toggle-slider {
+.modules-list input:checked + .toggle-slider {
     background-color: var(--link-color);
 }
 
-.app-modules input:checked + .toggle-slider:before {
+.modules-list input:checked + .toggle-slider:before {
     transform: translateX(26px);
 }
 
-.app-modules input:disabled + .toggle-slider {
+.modules-list input:disabled + .toggle-slider {
     background-color: var(--gray-dark);
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.app-modules input:disabled + .toggle-slider:before {
+.modules-list input:disabled + .toggle-slider:before {
     background-color: var(--gray-light);
 }
