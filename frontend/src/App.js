@@ -1,12 +1,12 @@
 // FRONTEND/App.js
 // MAIN IMPORTS
-import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './assets/styles/App.css';
 import {ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ModulesProvider } from './contexts/ModulesContext';
+import { AppCoreProvider, useAppCore} from './contexts/AppCoreContext';
 import { ModalProvider } from './contexts/ModalContext';
 
 // REACT COMPONENTS
@@ -18,8 +18,6 @@ import Loader from './components/Loader';
 import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
-import FetchPages from "./utils/fetchPages";
-import ToggleManagerView from "./utils/toggleManagerView";
 
 // TODO: Initialization of the app with system_default theme and cookies for previously saved settings - before they're reloaded from the server.
 // TODO: Frontend logic utility for server-sided app config (theme, palette) and app modules - which ones are enabled - teams, branch, project, etc.
@@ -27,56 +25,14 @@ import ToggleManagerView from "./utils/toggleManagerView";
 // TODO: Implement teams CRUD features. Assignment of teams relations with other teams, branches, projects, users, etc.
 
 const AppContent = () => {
-    const { loading, setLoading } = useLoading();
-    const { user, access, managerAccess, AuthUser } = useAuth();
-    const { isConnected, appConfig } = useConnectivity();
-    const [ pages, setPages ] = useState(null);
-    const [ managerView, setManagerView ] = useState(false);
-    const didFetchRef = useRef(false);
+    const { loading } = useLoading();
+    const { user, access, AuthUser } = useAuth();
+    const { appConfig } = useConnectivity();
+    const { pages, managerView } = useAppCore();
 
-    const RefreshPages = useCallback(async () => {
-        if (!isConnected) {
-            throw new Error('No connection; cannot fetch pages.');
-        }
-        return await FetchPages();
-    }, [isConnected]);
-
-    const ToggleView = useCallback(async (isManagerView) => {
-        setLoading(true);
-        try {
-            setManagerView(await ToggleManagerView(isManagerView));
-            setPages(await RefreshPages());
-        } catch (err) {
-            console.error('View switching error: ', err);
-        } finally {
-            setLoading(false);
-        }
-    }, [setLoading, RefreshPages]);
-
-    // Effect 1: Check auth on mount (handles already-logged-in user)
     useEffect(() => {
         AuthUser();
     }, [AuthUser]);
-
-    // Effect 2: Fetch pages and set managerView when user/access become available (post-login or initial)
-    useEffect(() => {
-        const fetchIfAuthorized = async () => {
-            if (!user || !access || didFetchRef.current) return;
-
-            try {
-                setLoading(true);
-                setManagerView(managerAccess && user?.manager_view_enabled);
-                setPages(await RefreshPages());
-                didFetchRef.current = true;
-            } catch (err) {
-                console.error('Fetch pages error:', err);
-                setPages([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchIfAuthorized().then();
-    }, [user, access, managerAccess, RefreshPages, setLoading]);
 
     useEffect(() => {
         const root = document.getElementById('root');
@@ -104,7 +60,7 @@ const AppContent = () => {
         return (
             <Routes>
                 <Route path="*" element={<NoAccess user={user} />} />
-                <Route path="/logout" element={<Logout onLogout={() => {setManagerView(false); didFetchRef.current = false;}} />} />
+                <Route path="logout" element={ <Logout/> } />
             </Routes>
         );
     }
@@ -120,9 +76,9 @@ const AppContent = () => {
                     path="/"
                     element={
                         managerView ? (
-                            <ManagerView pages={pages} switchView={ToggleView}/>
+                            <ManagerView/>
                         ) : (
-                            <StaffView pages={pages} switchView={ToggleView}/>
+                            <StaffView/>
                         )
                     }
                 >
@@ -151,10 +107,7 @@ const AppContent = () => {
                             ))}
                         </Route>
                     ))}
-                    <Route
-                        path="logout"
-                        element={ <Logout onLogout={ () => { setManagerView(false); didFetchRef.current = false; } }/> }
-                    />
+                    <Route path="logout" element={ <Logout/> } />
                     <Route path="*" element={<NotFound />} />
                 </Route>
             </Routes>
@@ -167,14 +120,14 @@ const App = () => {
         <ConnectivityProvider>
             <LoadingProvider>
                 <AuthProvider>
-                    <ModulesProvider>
+                    <AppCoreProvider>
                         <Router>
                             <ModalProvider>
                                 <AppContent />
                                 <ConnectivityPopup />
                             </ModalProvider>
                         </Router>
-                    </ModulesProvider>
+                    </AppCoreProvider>
                 </AuthProvider>
             </LoadingProvider>
         </ConnectivityProvider>
