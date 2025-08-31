@@ -7,6 +7,7 @@ import UserEdit from '../components/Users/Edit';
 import RoleDetails from "../components/Roles/Details";
 import RoleEdit from "../components/Roles/Edit";
 import PostDetails from "../components/Posts/Details";
+import InWorks from "../components/InWorks";
 
 const ModalContext = createContext();
 
@@ -114,6 +115,12 @@ export const ModalProvider = ({ children }) => {
                 return <RoleEdit roleId={modal.data.id} />;
             case 'postDetails':
                 return <PostDetails postId={modal.data.id} />;
+            case 'teamNew':
+                return <InWorks
+                    title={'Teams'}
+                    icon={'add'}
+                    description={"There will be a new team edit form here. Depending on enabled modules it may have project and/or branch fields."}
+                />;
             default:
                 return <div>Unknown modal type</div>;
         }
