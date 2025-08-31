@@ -18,6 +18,11 @@ export const AppModule = sequelize.define('Modules', {
         allowNull: true,
         defaultValue: ''
     },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: ''
+    },
     enabled: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

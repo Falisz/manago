@@ -37,15 +37,25 @@ export async function seedData() {
         await sequelize.sync();
 
         const appModules = [
-                {id: 0, title: 'Main', icon: 'dashboard', enabled: true},
-                {id: 1, title: 'Teams', icon: 'groups', enabled: true},
-                {id: 2, title: 'Projects', icon: 'fact_check', enabled: true},
-                {id: 3, title: 'Branches', icon: 'graph_3', enabled: false},
-                {id: 4, title: 'Timesheets', icon: 'calendar_month', enabled: false},
-                {id: 5, title: 'Tasks', icon: 'task_alt', enabled: false},
-                {id: 6, title: 'Trainings', icon: 'school', enabled: false},
-                {id: 7, title: 'Posts', icon: 'forum', enabled: false},
-                {id: 8, title: 'Blogs', icon: 'newsmode', enabled: false}
+                {id: 0, title: 'Main', icon: 'dashboard', enabled: true,
+                    description: "This module is responsible for basic logics in the App including user authorisation" +
+                        "and employee management. It cannot be turned off."},
+                {id: 1, title: 'Teams', icon: 'groups', enabled: true,
+                    description: "This module is responsible for teams assignment and management."},
+                {id: 2, title: 'Projects', icon: 'fact_check', enabled: true,
+                    description: "It can be used for project-related management allowing major logical divisions within the company."},
+                {id: 3, title: 'Branches', icon: 'graph_3', enabled: false,
+                    description: "Similarly to the projects, but it allows for major physical divisions for the company."},
+                {id: 4, title: 'Timesheets', icon: 'calendar_month', enabled: false,
+                    description: "This is powerful tool for timesheets, payroll and schedule planning, leaves and time offs."},
+                {id: 5, title: 'Tasks', icon: 'task_alt', enabled: false,
+                    description: "This module allows to-do and Kanban tasks and plans management."},
+                {id: 6, title: 'Trainings', icon: 'school', enabled: false,
+                    description: "This module allows for centralised employee training experience, assessments and progress tracking."},
+                {id: 7, title: 'Posts', icon: 'forum', enabled: false,
+                    description: "This module allows post threads and channels (general, teams, projects and/or branch related ones"},
+                {id: 8, title: 'Blogs', icon: 'newsmode', enabled: false,
+                    description: "Use this module for edited articles, like news or blogposts."}
             ];
         await seedModel(AppModule, 'app_modules', appModules, 'modules');
 
