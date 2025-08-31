@@ -72,6 +72,20 @@
       "component": "EmployeeLeaves"
     },
     {
+      "path": "Tasks",
+      "title": "Tasks",
+      "module": 5,
+      "icon": "task",
+      "component": "TasksDashboard"
+    },
+    {
+      "path": "Trainings",
+      "title": "Trainings",
+      "module": 6,
+      "icon": "school",
+      "component": "TrainingsDashboard"
+    },
+    {
       "path": "posts",
       "title": "Posts",
       "module": 7,
@@ -86,6 +100,13 @@
           "subpages": []
         }
       ]
+    },
+    {
+      "path": "Blogs",
+      "title": "Blogs",
+      "module": 6,
+      "icon": "feed",
+      "component": "Blogs"
     },
     {
       "path": "app-modules",
