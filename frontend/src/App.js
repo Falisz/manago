@@ -31,7 +31,7 @@ const color = process.env['REACT_APP_COLOR'] || 'blue';
 const AppContent = () => {
     const { loading, setLoading } = useLoading();
     const { user, access, managerAccess, AuthUser } = useAuth();
-    const { isConnected } = useConnectivity();
+    const { isConnected, modules } = useConnectivity();
     const [ pages, setPages ] = useState(null);
     const [ managerView, setManagerView ] = useState(false);
     const didFetchRef = useRef(false);
@@ -110,6 +110,8 @@ const AppContent = () => {
     }
     root.classList.add(viewClass);
     root.classList.remove(viewClass === 'manager' ? 'staff' : 'manager');
+
+    console.log("Modules", modules);
 
     return (
         <>
