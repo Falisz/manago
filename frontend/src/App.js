@@ -6,9 +6,10 @@ import './assets/styles/App.css';
 import {ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
 import { LoadingProvider, useLoading } from './contexts/LoadingContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { ModalProvider } from './contexts/ModalContext'; // NEW: Import ModalProvider
+import { ModulesProvider } from './contexts/ModulesContext';
+import { ModalProvider } from './contexts/ModalContext';
 
-// COMPONENTS
+// REACT COMPONENTS
 import Login from './components/Login';
 import Logout from './components/Logout';
 import NotFound from './components/NotFound';
@@ -20,9 +21,6 @@ import ConnectivityPopup from './components/ConnectivityPopup';
 import FetchPages from "./utils/fetchPages";
 import ToggleManagerView from "./utils/toggleManagerView";
 
-const theme = process.env['REACT_APP_THEME'] || 'dark';
-const color = process.env['REACT_APP_COLOR'] || 'blue';
-
 // TODO: Initialization of the app with system_default theme and cookies for previously saved settings - before they're reloaded from the server.
 // TODO: Frontend logic utility for server-sided app config (theme, palette) and app modules - which ones are enabled - teams, branch, project, etc.
 // TODO: Custom useAppConfig hook with pages, settings, and server-sided user preferences
@@ -31,7 +29,7 @@ const color = process.env['REACT_APP_COLOR'] || 'blue';
 const AppContent = () => {
     const { loading, setLoading } = useLoading();
     const { user, access, managerAccess, AuthUser } = useAuth();
-    const { isConnected, modules } = useConnectivity();
+    const { isConnected, appConfig } = useConnectivity();
     const [ pages, setPages ] = useState(null);
     const [ managerView, setManagerView ] = useState(false);
     const didFetchRef = useRef(false);
@@ -80,13 +78,15 @@ const AppContent = () => {
         fetchIfAuthorized().then();
     }, [user, access, managerAccess, RefreshPages, setLoading]);
 
+    useEffect(() => {
+        const root = document.getElementById('root');
+        root.classList.add(appConfig.theme);
+        root.classList.add(appConfig.palette);
+    }, [appConfig]);
+
     const viewClass = useMemo(() => {
         return managerView ? 'manager' : 'staff';
     }, [managerView]);
-
-    const root = document.getElementById('root');
-    root.classList.add(theme);
-    root.classList.add(color);
 
     if (loading) {
         return <Loader />;
@@ -108,6 +108,8 @@ const AppContent = () => {
             </Routes>
         );
     }
+
+    const root = document.getElementById('root');
     root.classList.add(viewClass);
     root.classList.remove(viewClass === 'manager' ? 'staff' : 'manager');
 
@@ -165,12 +167,14 @@ const App = () => {
         <ConnectivityProvider>
             <LoadingProvider>
                 <AuthProvider>
-                    <Router>
-                        <ModalProvider>
-                            <AppContent />
-                            <ConnectivityPopup />
-                        </ModalProvider>
-                    </Router>
+                    <ModulesProvider>
+                        <Router>
+                            <ModalProvider>
+                                <AppContent />
+                                <ConnectivityPopup />
+                            </ModalProvider>
+                        </Router>
+                    </ModulesProvider>
                 </AuthProvider>
             </LoadingProvider>
         </ConnectivityProvider>

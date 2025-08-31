@@ -23,24 +23,15 @@ router.get('/',  (req, res) => {
 //Server ping endpoint
 router.get('/ping', async (req, res) => {
     try {
-        res.json({ connected: true });
+        let responseData = { connected: true };
+        if (req.session.user) {
+            responseData.app_theme = 'dark';
+            responseData.app_palette = 'blue';
+        }
+        res.json(responseData);
     } catch (err) {
         console.error('Ping error:', err);
         res.status(500).json({ message: 'API Error.', connected: false });
-    }
-});
-
-//App Config endpoint
-router.get('/config', async (req, res) => {
-    try {
-        if (!req.session.user)
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-
-        return res.status(200).json({ app_theme: 'dark', app_palette: 'blue' });
-
-    } catch (err) {
-        console.error('Config fetching error:', err);
-        res.status(500).json({ message: 'Config fetching Error.', connected: false });
     }
 });
 

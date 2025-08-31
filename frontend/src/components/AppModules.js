@@ -1,10 +1,10 @@
 //FRONTEND/Components/AppModules.js
 import React from 'react';
-import { useConnectivity } from '../contexts/ConnectivityContext';
 import '../assets/styles/AppModules.css';
+import {useModules} from "../contexts/ModulesContext";
 
 const AppModules = () => {
-    const { modules, handleToggle } = useConnectivity();
+    const { modules, handleToggle } = useModules();
 
     return (
         <div className="app-modules">

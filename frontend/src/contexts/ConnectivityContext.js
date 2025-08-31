@@ -6,54 +6,30 @@ const ConnectivityContext = createContext();
 
 export const ConnectivityProvider = ({ children }) => {
     const [isConnected, setIsConnected] = useState(true);
-    const [modules, setModules] = useState([]);
+    const [appConfig, setAppConfig] = useState({ theme: process.env['REACT_APP_THEME'] || 'dark', palette: process.env['REACT_APP_COLOR'] || 'blue' });
 
-    const fetchModules = useCallback(async () => {
+    const checkConnection = useCallback(async () => {
         try {
-            const response = await axios.get('/modules', { withCredentials: true });
-            setModules(response.data);
+            const response = await axios.get('/ping', { withCredentials: true });
+            setIsConnected(response.data.connected);
+            if (response.data.app_theme && response.data.app_palette) {
+                setAppConfig({ theme: response.data.app_theme, palette: response.data.app_palette });
+            }
         } catch (error) {
-            console.error('Error fetching modules:', error);
-            setModules([]);
+            setIsConnected(false);
         }
     }, []);
 
-    const toggleModule = useCallback(async (id, enabled) => {
-        try {
-            await axios.put(`/modules/${id}`, { enabled }, { withCredentials: true });
-            await fetchModules();
-        } catch (error) {
-            console.error('Error toggling module:', error);
-        }
-    }, [fetchModules]);
-
-    const handleToggle = useCallback(async (moduleId, enabled) => {
-        const newEnabled = !enabled;
-        if (window.confirm(`Are you sure you want to ${newEnabled ? 'enable' : 'disable'} the module #${moduleId}?`)) {
-            await toggleModule(moduleId, newEnabled);
-        }
-    }, [toggleModule]);
-
     useEffect(() => {
-        const checkConnection = async () => {
-            try {
-                const response = await axios.get('/ping', { withCredentials: true });
-                setIsConnected(response.data.connected);
-            } catch (error) {
-                setIsConnected(false);
-            }
-        };
-
         checkConnection().then();
-        fetchModules().then();
 
         const interval = setInterval(checkConnection, 60000);
 
         return () => clearInterval(interval);
-    }, [fetchModules]);
+    }, [checkConnection]);
 
     return (
-        <ConnectivityContext.Provider value={{ isConnected, modules, handleToggle, toggleModule }}>
+        <ConnectivityContext.Provider value={{ isConnected, appConfig }}>
             {children}
         </ConnectivityContext.Provider>
     );
