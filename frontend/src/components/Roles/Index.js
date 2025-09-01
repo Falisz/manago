@@ -4,31 +4,61 @@ import { useModals } from "../../contexts/ModalContext";
 import useRoles from "../../hooks/useRoles";
 import '../../assets/styles/Roles.css';
 import Button from "../Button";
-import RolesList from "./List";
+import Loader from "../Loader";
+
+// TODO: Add Roles descriptions similarly as for the App Modules.
+// TODO: Implement role restriction over the UI.
+
+const RolesList = () => {
+    const { openModal } = useModals();
+    const { roles, loading, fetchRoles } = useRoles();
+
+    useEffect(() => {
+        if (!roles) fetchRoles().then();
+    }, [fetchRoles, roles]);
+
+    if (loading) {
+        return <Loader />;
+    }
+    
+    return (
+        <div className="roles-list">
+            {roles?.length === 0 ? (
+                <p>No roles found.</p>
+            ) : (
+                roles.map((role) => (
+                    <div
+                        className="roles-list-row"
+                        key={role.ID}
+                        onClick={() => openModal({ type: "roleDetails", data: { id: role.ID } })}
+                    >
+                        <div className="role-content">
+                            <div className="role-title">{role.name}</div>
+                            <div className="role-users">{role.users?.length > 0 ? role.users.length + " users with this role." : <i>No users with this role.</i>}</div>
+                        </div>
+                        {role.description && <div className="role-description">
+                            {role.description}
+                        </div>}
+                    </div>
+                ))
+            )}
+        </div>
+    );
+};
 
 const RolesIndex = () => {
     const { openModal } = useModals();
-    const { roles, loading: rolesLoading, fetchRoles } = useRoles();
-
-    useEffect(() => {
-        if (!roles) {
-            fetchRoles().then();
-        }
-    }, [fetchRoles, roles]);
 
     return (
         <>
             <h1>Security Roles</h1>
             <Button
                 className="new-role-button"
-                onClick={() => openModal({ type: 'userNew' })}
+                onClick={() => openModal({ type: 'roleNew' })}
                 label={'Add Role'}
                 icon={'add'}
             />
-            <RolesList
-                roles={roles}
-                loading={rolesLoading}
-            />
+            <RolesList/>
         </>
     );
 };
