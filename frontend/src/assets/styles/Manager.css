@@ -87,6 +87,7 @@
 }
 .app.manager .app-nav .app-nav-page-link-label {
     opacity: 1;
+    white-space: nowrap;
     transition: 0.3s ease-in-out;
 }
 .app.manager .app-nav-collapsed .app-nav-page-link-label {
