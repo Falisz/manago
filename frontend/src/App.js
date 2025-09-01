@@ -21,9 +21,6 @@ import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
 
 // TODO: Initialization of the app with system_default theme and cookies for previously saved settings - before they're reloaded from the server.
-// TODO: Frontend logic utility for server-sided app config (theme, palette) and app modules - which ones are enabled - teams, branch, project, etc.
-// TODO: Custom useAppConfig hook with pages, settings, and server-sided user preferences
-// TODO: Implement teams CRUD features. Assignment of teams relations with other teams, branches, projects, users, etc.
 // TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
 
 const AppContent = () => {
