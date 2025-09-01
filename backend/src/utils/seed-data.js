@@ -3,8 +3,8 @@ import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
 import AppModule from "../models/app-module.js";
 import Role from '../models/role.js';
-import User, {UserDetails, UserConfigs, UserRole} from '../models/user.js';
-import Team from '../models/team.js';
+import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
+import Team, {TeamUser} from '../models/team.js';
 import Channel from "../models/channel.js";
 import Post from "../models/post.js";
 
@@ -96,6 +96,90 @@ export async function seedData() {
                     email: 'test2@com.com', active: false, mv_acc: false, mv_en: false, mv_nav: false},
                 {id: 864434, first_name: 'Test', last_name: '3', login: 'test3', 
                     email: 'test3@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100001, first_name: 'John', last_name: 'Doe', login: 'ceo',
+                    email: 'ceo@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100002, first_name: 'Alice', last_name: 'Smith', login: 'mid1',
+                    email: 'mid1@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100003, first_name: 'Bob', last_name: 'Johnson', login: 'mid2',
+                    email: 'mid2@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100004, first_name: 'Charlie', last_name: 'Brown', login: 'low1',
+                    email: 'low1@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100005, first_name: 'David', last_name: 'Wilson', login: 'low2',
+                    email: 'low2@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100006, first_name: 'Eve', last_name: 'Davis', login: 'low3',
+                    email: 'low3@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100007, first_name: 'Frank', last_name: 'Green', login: 'leader1',
+                    email: 'leader1@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100008, first_name: 'Grace', last_name: 'Harris', login: 'leader2',
+                    email: 'leader2@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100009, first_name: 'Henry', last_name: 'Clark', login: 'leader3',
+                    email: 'leader3@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100010, first_name: 'Ivy', last_name: 'Lewis', login: 'leader4',
+                    email: 'leader4@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100011, first_name: 'Jack', last_name: 'Walker', login: 'leader5',
+                    email: 'leader5@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100012, first_name: 'Kathy', last_name: 'Hall', login: 'leader6',
+                    email: 'leader6@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
+                {id: 100013, first_name: 'Employee', last_name: 'One', login: 'emp1',
+                    email: 'emp1@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100014, first_name: 'Employee', last_name: 'Two', login: 'emp2',
+                    email: 'emp2@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100015, first_name: 'Employee', last_name: 'Three', login: 'emp3',
+                    email: 'emp3@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100016, first_name: 'Employee', last_name: 'Four', login: 'emp4',
+                    email: 'emp4@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100017, first_name: 'Employee', last_name: 'Five', login: 'emp5',
+                    email: 'emp5@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100018, first_name: 'Employee', last_name: 'Six', login: 'emp6',
+                    email: 'emp6@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100019, first_name: 'Employee', last_name: 'Seven', login: 'emp7',
+                    email: 'emp7@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100020, first_name: 'Employee', last_name: 'Eight', login: 'emp8',
+                    email: 'emp8@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100021, first_name: 'Employee', last_name: 'Nine', login: 'emp9',
+                    email: 'emp9@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100022, first_name: 'Employee', last_name: 'Ten', login: 'emp10',
+                    email: 'emp10@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100023, first_name: 'Employee', last_name: 'Eleven', login: 'emp11',
+                    email: 'emp11@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100024, first_name: 'Employee', last_name: 'Twelve', login: 'emp12',
+                    email: 'emp12@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100025, first_name: 'Employee', last_name: 'Thirteen', login: 'emp13',
+                    email: 'emp13@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100026, first_name: 'Employee', last_name: 'Fourteen', login: 'emp14',
+                    email: 'emp14@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100027, first_name: 'Employee', last_name: 'Fifteen', login: 'emp15',
+                    email: 'emp15@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100028, first_name: 'Employee', last_name: 'Sixteen', login: 'emp16',
+                    email: 'emp16@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100029, first_name: 'Employee', last_name: 'Seventeen', login: 'emp17',
+                    email: 'emp17@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100030, first_name: 'Employee', last_name: 'Eighteen', login: 'emp18',
+                    email: 'emp18@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100031, first_name: 'Employee', last_name: 'Nineteen', login: 'emp19',
+                    email: 'emp19@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100032, first_name: 'Employee', last_name: 'Twenty', login: 'emp20',
+                    email: 'emp20@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100033, first_name: 'Employee', last_name: 'TwentyOne', login: 'emp21',
+                    email: 'emp21@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100034, first_name: 'Employee', last_name: 'TwentyTwo', login: 'emp22',
+                    email: 'emp22@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100035, first_name: 'Employee', last_name: 'TwentyThree', login: 'emp23',
+                    email: 'emp23@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100036, first_name: 'Employee', last_name: 'TwentyFour', login: 'emp24',
+                    email: 'emp24@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100037, first_name: 'Employee', last_name: 'TwentyFive', login: 'emp25',
+                    email: 'emp25@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100038, first_name: 'Employee', last_name: 'TwentySix', login: 'emp26',
+                    email: 'emp26@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100039, first_name: 'Employee', last_name: 'TwentySeven', login: 'emp27',
+                    email: 'emp27@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100040, first_name: 'Employee', last_name: 'TwentyEight', login: 'emp28',
+                    email: 'emp28@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100041, first_name: 'Employee', last_name: 'TwentyNine', login: 'emp29',
+                    email: 'emp29@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
+                {id: 100042, first_name: 'Employee', last_name: 'Thirty', login: 'emp30',
+                    email: 'emp30@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
             ];
             const defaultPassword = await bcrypt.hash('1234', 10);
             const users = [];
@@ -138,14 +222,174 @@ export async function seedData() {
                 {user: 353621, role: 11},
                 {user: 353621, role: 12},
                 {user: 398285, role: 11},
+                {user: 100001, role: 50},
+                {user: 100002, role: 12},
+                {user: 100003, role: 12},
+                {user: 100004, role: 11},
+                {user: 100005, role: 11},
+                {user: 100006, role: 11},
+                {user: 100007, role: 3},
+                {user: 100008, role: 3},
+                {user: 100009, role: 3},
+                {user: 100010, role: 3},
+                {user: 100011, role: 3},
+                {user: 100012, role: 3},
+                {user: 100013, role: 1},
+                {user: 100014, role: 1},
+                {user: 100015, role: 1},
+                {user: 100016, role: 1},
+                {user: 100017, role: 1},
+                {user: 100018, role: 1},
+                {user: 100019, role: 1},
+                {user: 100020, role: 1},
+                {user: 100021, role: 1},
+                {user: 100022, role: 1},
+                {user: 100023, role: 1},
+                {user: 100024, role: 1},
+                {user: 100025, role: 1},
+                {user: 100026, role: 1},
+                {user: 100027, role: 1},
+                {user: 100028, role: 1},
+                {user: 100029, role: 1},
+                {user: 100030, role: 1},
+                {user: 100031, role: 1},
+                {user: 100032, role: 1},
+                {user: 100033, role: 1},
+                {user: 100034, role: 1},
+                {user: 100035, role: 1},
+                {user: 100036, role: 1},
+                {user: 100037, role: 1},
+                {user: 100038, role: 1},
+                {user: 100039, role: 1},
+                {user: 100040, role: 1},
+                {user: 100041, role: 1},
+                {user: 100042, role: 1},
             ];
         await seedModel(UserRole, 'user_roles', userRoles, 'user roles assignments');
 
         const teams = [
-            {id: 0, code_name: 'MS-PL-01'},
-            {id: 1, code_name: 'MS-PL-02'},
+            {id: 1, code_name: 'TEAM-01', name: 'Team 1'},
+            {id: 2, code_name: 'TEAM-02', name: 'Team 2'},
+            {id: 3, code_name: 'TEAM-03', name: 'Team 3'},
+            {id: 4, code_name: '01-LA', name: 'Los Angeles', parent_team: 1},
+            {id: 5, code_name: '01-WA', name: 'Washington', parent_team: 1},
+            {id: 6, code_name: '02-NY', name: 'New York', parent_team: 2},
+            {id: 7, code_name: '02-LV', name: 'Las Vegas', parent_team: 2},
+            {id: 8, code_name: '03-AT', name: 'Atlanta', parent_team: 3},
+            {id: 9, code_name: '03-PH', name: 'Philadelphia', parent_team: 3},
         ]
         await seedModel(Team, 'teams', teams, 'teams');
+        const teamUsers = [
+            // Parent team managers (role 2)
+            {team: 1, user: 100004, role: 2},
+            {team: 2, user: 100005, role: 2},
+            {team: 3, user: 100006, role: 2},
+            // Subteam leaders (role 1)
+            {team: 4, user: 100007, role: 1},
+            {team: 5, user: 100008, role: 1},
+            {team: 6, user: 100009, role: 1},
+            {team: 7, user: 100010, role: 1},
+            {team: 8, user: 100011, role: 1},
+            {team: 9, user: 100012, role: 1},
+            // Subteam employees (role 0)
+            // Sub 1.1
+            {team: 4, user: 100013, role: 0},
+            {team: 4, user: 100014, role: 0},
+            {team: 4, user: 100015, role: 0},
+            {team: 4, user: 100016, role: 0},
+            {team: 4, user: 100017, role: 0},
+            // Sub 1.2
+            {team: 5, user: 100018, role: 0},
+            {team: 5, user: 100019, role: 0},
+            {team: 5, user: 100020, role: 0},
+            {team: 5, user: 100021, role: 0},
+            {team: 5, user: 100022, role: 0},
+            // Sub 2.1
+            {team: 6, user: 100023, role: 0},
+            {team: 6, user: 100024, role: 0},
+            {team: 6, user: 100025, role: 0},
+            {team: 6, user: 100026, role: 0},
+            {team: 6, user: 100027, role: 0},
+            // Sub 2.2
+            {team: 7, user: 100028, role: 0},
+            {team: 7, user: 100029, role: 0},
+            {team: 7, user: 100030, role: 0},
+            {team: 7, user: 100031, role: 0},
+            {team: 7, user: 100032, role: 0},
+            // Sub 3.1
+            {team: 8, user: 100033, role: 0},
+            {team: 8, user: 100034, role: 0},
+            {team: 8, user: 100035, role: 0},
+            {team: 8, user: 100036, role: 0},
+            {team: 8, user: 100037, role: 0},
+            // Sub 3.2
+            {team: 9, user: 100038, role: 0},
+            {team: 9, user: 100039, role: 0},
+            {team: 9, user: 100040, role: 0},
+            {team: 9, user: 100041, role: 0},
+            {team: 9, user: 100042, role: 0},
+        ];
+        await seedModel(TeamUser, 'team_users', teamUsers, 'team user assignments');
+
+        const userManagers = [
+            // Employees report to their team leaders
+            // Sub 1.1 employees to leader1
+            {user: 100013, manager: 100007, primary: true},
+            {user: 100014, manager: 100007, primary: true},
+            {user: 100015, manager: 100007, primary: true},
+            {user: 100016, manager: 100007, primary: true},
+            {user: 100017, manager: 100007, primary: true},
+            // Sub 1.2 to leader2
+            {user: 100018, manager: 100008, primary: true},
+            {user: 100019, manager: 100008, primary: true},
+            {user: 100020, manager: 100008, primary: true},
+            {user: 100021, manager: 100008, primary: true},
+            {user: 100022, manager: 100008, primary: true},
+            // Sub 2.1 to leader3
+            {user: 100023, manager: 100009, primary: true},
+            {user: 100024, manager: 100009, primary: true},
+            {user: 100025, manager: 100009, primary: true},
+            {user: 100026, manager: 100009, primary: true},
+            {user: 100027, manager: 100009, primary: true},
+            // Sub 2.2 to leader4
+            {user: 100028, manager: 100010, primary: true},
+            {user: 100029, manager: 100010, primary: true},
+            {user: 100030, manager: 100010, primary: true},
+            {user: 100031, manager: 100010, primary: true},
+            {user: 100032, manager: 100010, primary: true},
+            // Sub 3.1 to leader5
+            {user: 100033, manager: 100011, primary: true},
+            {user: 100034, manager: 100011, primary: true},
+            {user: 100035, manager: 100011, primary: true},
+            {user: 100036, manager: 100011, primary: true},
+            {user: 100037, manager: 100011, primary: true},
+            // Sub 3.2 to leader6
+            {user: 100038, manager: 100012, primary: true},
+            {user: 100039, manager: 100012, primary: true},
+            {user: 100040, manager: 100012, primary: true},
+            {user: 100041, manager: 100012, primary: true},
+            {user: 100042, manager: 100012, primary: true},
+            // Team leaders report to low-managers
+            // Leaders 1 and 2 (Parent1) to low1
+            {user: 100007, manager: 100004, primary: true},
+            {user: 100008, manager: 100004, primary: true},
+            // Leaders 3 and 4 (Parent2) to low2
+            {user: 100009, manager: 100005, primary: true},
+            {user: 100010, manager: 100005, primary: true},
+            // Leaders 5 and 6 (Parent3) to low3
+            {user: 100011, manager: 100006, primary: true},
+            {user: 100012, manager: 100006, primary: true},
+            // Low-managers report to mid-managers
+            // Low1 and Low2 to Mid1
+            {user: 100004, manager: 100002, primary: true},
+            {user: 100005, manager: 100002, primary: true},
+            // Low3 to Mid2
+            {user: 100006, manager: 100003, primary: true},
+            // Mid-managers report to CEO
+            {user: 100002, manager: 100001, primary: true},
+            {user: 100003, manager: 100001, primary: true},
+        ];
+        await seedModel(UserManager, 'user_managers', userManagers, 'user manager assignments');
 
         const channels = [
                 { id:0, name: 'General Discussion' },
@@ -205,7 +449,8 @@ export async function seedData() {
 
 export default seedData;
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { fileURLToPath } from "url";
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log('[INFO] Running data seeding...');
     seedData()
         .then(() => {
