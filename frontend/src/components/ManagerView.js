@@ -11,7 +11,7 @@ import {useAppCore} from "../contexts/AppCoreContext";
 
 const MainNav = () => {
     const { user } = useAuth();
-    const { pages } = useAppCore();
+    const { pages, modules } = useAppCore();
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
@@ -65,7 +65,11 @@ const MainNav = () => {
                         }`}
                     >
                         {page.icon && <span className="app-nav-page-link-icon material-icons">{page.icon}</span>}
-                        <span className="app-nav-page-link-label">{page.title}</span>
+                        <span className="app-nav-page-link-label">
+                        {   (page.title.toLowerCase() === 'employees' && modules?.some(m => m.title === 'Teams' && m.enabled))
+                            ? 'Employees & Teams'
+                            : page.title}
+                        </span>
                     </Link>
                 ))}
             <span
