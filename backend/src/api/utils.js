@@ -63,7 +63,7 @@ router.put('/modules/:id', async (req, res) => {
             return res.status(400).json({ message: 'Invalid enabled value.' });
         }
 
-        if (!await hasManagerAccess(req.session.user.ID)) {
+        if (!await hasManagerAccess(req.session.user.id)) {
             return res.status(403).json({ message: 'Access denied.' });
         }
 
@@ -86,7 +86,7 @@ router.get('/pages', async (req, res) => {
         if (!req.session.user)
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
 
-        const managerView = await hasManagerView(req.session.user.ID) ? 1 : 0;
+        const managerView = await hasManagerView(req.session.user.id) ? 1 : 0;
 
         res.json(await getPages(managerView));
 
@@ -119,7 +119,7 @@ router.post('/manager-view', async (req, res) => {
             });
         }
 
-        if (! await hasManagerAccess(req.session.user.ID)) {
+        if (! await hasManagerAccess(req.session.user.id)) {
             return res.status(403).json({
                 success: false,
                 message: 'Manager view access not permitted.',
@@ -127,7 +127,7 @@ router.post('/manager-view', async (req, res) => {
             });
         }
 
-        const updated = await setManagerView(req.session.user.ID, manager_view);
+        const updated = await setManagerView(req.session.user.id, manager_view);
 
         if (updated) {
             req.session.user.manager_view_enabled = manager_view;
@@ -169,7 +169,7 @@ router.post('/toggle-nav', async (req, res) => {
 
         const {nav_collapsed} = req.body;
 
-        const updated = await toggleManagerNav(req.session.user.ID, nav_collapsed);
+        const updated = await toggleManagerNav(req.session.user.id, nav_collapsed);
 
         if (updated) {
             req.session.user.manager_nav_collapsed = nav_collapsed;

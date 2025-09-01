@@ -23,7 +23,7 @@ export async function authUser(login, password) {
     const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
 
     const userData = await User.findOne({
-        where: isInteger ? { ID: login } : (isEmailFormat ? { email: login } : { login: login }),
+        where: isInteger ? { id: login } : (isEmailFormat ? { email: login } : { login: login }),
         include: [
             { model: UserDetails, as: 'UserDetails' },
             { model: UserConfigs, as: 'UserConfigs' }
@@ -37,11 +37,11 @@ export async function authUser(login, password) {
     const isPasswordValid = await bcrypt.compare(password, userData.password);
 
     if (!isPasswordValid) {
-        return { valid: false, status: 401, user: {ID: userData.ID}, message: 'Invalid credentials, wrong password!' };
+        return { valid: false, status: 401, user: {id: userData.id}, message: 'Invalid credentials, wrong password!' };
     }
 
     if (!userData.active || userData.removed) {
-        return { valid: false, status: 403, user: {ID: userData.ID}, message: 'User inactive.' };
+        return { valid: false, status: 403, user: {id: userData.id}, message: 'User inactive.' };
     }
 
     const user = {
@@ -59,14 +59,14 @@ export async function authUser(login, password) {
 /**
  * Refreshes user data by ID.
  * @param {Object} user - User object with ID
- * @param {number} user.ID - User ID
+ * @param {number} user.id - User ID
  * @returns {Promise<Object|null>}
  */
 export async function refreshUser(user) {
-    if (!user?.ID) return null;
+    if (!user?.id) return null;
 
     const refreshedUser = await User.findOne({
-        where: { ID: user.ID },
+        where: { id: user.id },
         include: [
             { model: UserDetails, as: 'UserDetails' },
             { model: UserConfigs, as: 'UserConfigs' }
@@ -90,13 +90,13 @@ export async function refreshUser(user) {
 /**
  * Checks if a user is active.
  * @param {Object} user - User object with ID
- * @param {number} user.ID - User ID
+ * @param {number} user.id - User ID
  * @returns {Promise<boolean>}
  */
 export async function checkUserAccess(user) {
     const result = await User.findOne({
         attributes: ['active'],
-        where: { ID: user.ID }
+        where: { id: user.id }
     });
 
     return result ? result.active : false;
@@ -105,12 +105,12 @@ export async function checkUserAccess(user) {
 /**
  * Checks if a user has manager view access.
  * @param {Object} user - User object with ID
- * @param {number} user.ID - User ID
+ * @param {number} user.id - User ID
  * @returns {Promise<boolean>}
  */
 export async function checkManagerAccess(user) {
     const result = await UserConfigs.findOne({
-        where: { user: user.ID }
+        where: { user: user.id }
     });
 
     return result ? result.manager_view_access : false;

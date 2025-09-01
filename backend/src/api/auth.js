@@ -17,14 +17,16 @@ router.post('/login', async (req, res) => {
         const userAuth = await authUser(username, password);
 
         if (!userAuth.valid) {
-            if (userAuth.user?.ID)
-                await securityLog(userAuth.user?.ID, ip + " " + host,"Login","Failure: " + userAuth.message);
+            if (userAuth.user?.id)
+                await securityLog(userAuth.user?.id, ip + " " + host,"Login","Failure: " + userAuth.message);
             return res.status(userAuth.status).json({message: userAuth.message});
         }
 
         req.session.user = userAuth.user;
 
-        await securityLog(userAuth.user?.ID, ip + " " + host,"Login","Success.")
+        await securityLog(userAuth.user?.id, ip + " " + host,"Login","Success.")
+
+        console.log(`User ${userAuth.user?.username} logged in from ${ip} (${host})`);
 
         return res.json({
             message: 'Login successful!',
@@ -42,7 +44,7 @@ router.post('/login', async (req, res) => {
 router.get('/logout', async (req, res) => {
     const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
     const host = req.headers.host || 'Unknown Host';
-    const userId = req.session.user?.ID;
+    const userId = req.session.user?.id;
 
     try {
         req.session.destroy(err => {
@@ -101,7 +103,7 @@ router.get('/access', async (req, res) => {
         const managerAccess = await checkManagerAccess(user);
 
         if (!managerAccess && user.manager_view) {
-            await setManagerView(user.ID, false);
+            await setManagerView(user.id, false);
             req.session.user.manager_view = false;
             user.manager_view = false;
         }

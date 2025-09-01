@@ -164,7 +164,7 @@ router.post('/new', async (req, res) => {
             return res.status(400).json({ message: result.message });
         }
 
-        const user = await getUsers(parseInt(result.user.ID));
+        const user = await getUsers(parseInt(result.user.id));
 
         res.status(201).json({ message: result.message, user: user });
 
@@ -204,7 +204,7 @@ router.put('/:userId', async (req, res) => {
             return res.status( 400).json({ message: result.message });
         }
 
-        const user = await getUsers(parseInt(result.user.ID));
+        const user = await getUsers(parseInt(result.user.id));
 
         res.json({ message: result.message, user: user });
 

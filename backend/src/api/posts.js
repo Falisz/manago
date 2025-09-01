@@ -60,7 +60,7 @@ router.post('/new', async (req, res) => {
 
         const post = await createPost({
             boardID: parseInt(boardID),
-            authorID: req.session.user.ID,
+            authorID: req.session.user.id,
             title: title || null,
             content
         });
@@ -97,7 +97,7 @@ router.put('/:postId', async (req, res) => {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if (post?.author.ID !== user.ID) {
+        if (post?.author.id !== user.id) {
             return res.status(403).json({ message: 'Forbidden: You are not the author of this post.' });
         }
 
@@ -129,7 +129,7 @@ router.delete('/:postId', async (req, res) => {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if (post?.author.ID !== user.ID && user.role !== 10) {
+        if (post?.author.id !== user.id && user.role !== 10) {
             return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });
         }
 
