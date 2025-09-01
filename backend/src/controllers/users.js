@@ -264,16 +264,22 @@ export async function getEmployees() {
                 attributes: ['first_name', 'last_name']
             }
         ],
-        where: { active: true },
-        attributes: ['ID']
+        where: { removed: false },
+        attributes: { exclude: ['password', 'removed'] },
+        order: [['ID', 'ASC']]
     });
-    employees = employees?.map(e => ({
-        ID: e.ID,
-        first_name: e.UserDetails?.first_name,
-        last_name: e.UserDetails?.last_name
-    })) || [];
+    employees = await Promise.all(employees.map(async e => {
+        const userData = {
+            ...e.toJSON(),
+            ...e.UserDetails?.toJSON(),
+            roles: await getUserRoles(e.ID),
+            managers: await getUserManagers(e.ID)
+        };
+        delete userData.UserDetails;
+        return userData;
+    }));
 
-    return employees;
+    return employees || [];
 }
 
 /**
@@ -304,16 +310,23 @@ export async function getManagers() {
                 attributes: ['first_name', 'last_name']
             }
         ],
-        where: { active: true },
-        attributes: ['ID']
+        where: { removed: false },
+        attributes: { exclude: ['password', 'removed'] },
+        order: [['ID', 'ASC']]
     });
-    managers = managers?.map(m => ({
-        ID: m.ID,
-        first_name: m.UserDetails?.first_name,
-        last_name: m.UserDetails?.last_name
-    })) || [];
 
-    return managers;
+    managers = await Promise.all(managers.map(async m => {
+        const userData = {
+            ...m.toJSON(),
+            ...m.UserDetails?.toJSON(),
+            roles: await getUserRoles(m.ID),
+            managed_users: await getManagedUsers(m.ID)
+        };
+        delete userData.UserDetails;
+        return userData;
+    }));
+
+    return managers || [];
 }
 
 /**
