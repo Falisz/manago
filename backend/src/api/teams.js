@@ -1,6 +1,6 @@
 //BACKEND/api/teams.js
 import express from 'express';
-import { getTeams } from '../controllers/teams';
+import { getTeams } from '../controllers/teams.js';
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -18,3 +18,5 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Server error.' });
     }
 });
+
+export default router;

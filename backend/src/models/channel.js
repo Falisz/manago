@@ -3,7 +3,7 @@ import sequelize from "../db.js";
 import {DataTypes} from "sequelize";
 
 export const Channel = sequelize.define('Channel', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
@@ -18,7 +18,7 @@ export const Channel = sequelize.define('Channel', {
     timestamps: false
 });
 
-Channel.hasMany(Post, { foreignKey: 'channelID', sourceKey: 'ID' });
-Post.belongsTo(Channel, { foreignKey: 'channelID', targetKey: 'ID' });
+Channel.hasMany(Post, { foreignKey: 'channelID', sourceKey: 'id' });
+Post.belongsTo(Channel, { foreignKey: 'channelID', targetKey: 'id' });
 
 export default Channel;

@@ -11,6 +11,7 @@ import utilsRoutes from './api/utils.js';
 import authRoutes from './api/auth.js';
 import usersRoutes from './api/users.js';
 import rolesRoutes from './api/roles.js';
+import teamsRoutes from './api/teams.js';
 import postsRoutes from './api/posts.js';
 import readline from 'readline';
 
@@ -133,6 +134,7 @@ app.use('/', utilsRoutes);
 app.use('/', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/roles', rolesRoutes);
+app.use('/teams', teamsRoutes);
 app.use('/posts', postsRoutes);
 
 const errorHandler = (err, req, res, _next) => {

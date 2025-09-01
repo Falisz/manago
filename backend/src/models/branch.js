@@ -2,7 +2,7 @@ import {DataTypes} from "sequelize";
 import sequelize from "../db.js";
 
 export const Branch = sequelize.define('Branch', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false

@@ -3,7 +3,7 @@ import sequelize from "../db.js";
 import Role from "./role.js";
 
 export const User = sequelize.define('User', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
@@ -41,7 +41,7 @@ export const UserDetails = sequelize.define('UserDetails', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
-        references: { model: 'users', key: 'ID' }
+        references: { model: 'users', key: 'id' }
     },
     first_name: {
         type: DataTypes.STRING(50),
@@ -61,7 +61,7 @@ export const UserConfigs = sequelize.define('UserConfigs', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
-        references: { model: 'users', key: 'ID' }
+        references: { model: 'users', key: 'id' }
     },
     manager_view_access: {
         type: DataTypes.BOOLEAN,
@@ -87,12 +87,12 @@ export const UserRole = sequelize.define('UserRole', {
     user: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'ID' }
+        references: { model: 'users', key: 'id' }
     },
     role: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'roles', key: 'ID' }
+        references: { model: 'roles', key: 'id' }
     }
 }, {
     tableName: 'user_roles',
@@ -106,12 +106,12 @@ export const UserManager = sequelize.define('UserManager', {
     user: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'ID' }
+        references: { model: 'users', key: 'id' }
     },
     manager: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'ID' }
+        references: { model: 'users', key: 'id' }
     },
     primary: {
         type: DataTypes.BOOLEAN,
@@ -124,20 +124,20 @@ export const UserManager = sequelize.define('UserManager', {
     indexes: [{ unique: true, fields: ['user', 'manager'] }]
 });
 
-User.hasOne(UserDetails, { foreignKey: 'user', sourceKey: 'ID', as: 'UserDetails' });
-UserDetails.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
+User.hasOne(UserDetails, { foreignKey: 'user', sourceKey: 'id', as: 'UserDetails' });
+UserDetails.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 
-User.hasOne(UserConfigs, { foreignKey: 'user', sourceKey: 'ID', as: 'UserConfigs' });
-UserConfigs.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
+User.hasOne(UserConfigs, { foreignKey: 'user', sourceKey: 'id', as: 'UserConfigs' });
+UserConfigs.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 
-User.hasMany(UserManager, { foreignKey: 'user', sourceKey: 'ID', as: 'ManagedUsers' });
-UserManager.belongsTo(User, { foreignKey: 'user', targetKey: 'ID', as: 'User' });
-User.hasMany(UserManager, { foreignKey: 'manager', sourceKey: 'ID', as: 'Managers' });
-UserManager.belongsTo(User, { foreignKey: 'manager', targetKey: 'ID', as: 'Manager' });
+User.hasMany(UserManager, { foreignKey: 'user', sourceKey: 'id', as: 'ManagedUsers' });
+UserManager.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+User.hasMany(UserManager, { foreignKey: 'manager', sourceKey: 'id', as: 'Managers' });
+UserManager.belongsTo(User, { foreignKey: 'manager', targetKey: 'id', as: 'Manager' });
 
-User.hasMany(UserRole, { foreignKey: 'user', sourceKey: 'ID' });
-UserRole.belongsTo(User, { foreignKey: 'user', targetKey: 'ID' });
-Role.hasMany(UserRole, { foreignKey: 'role', sourceKey: 'ID' });
-UserRole.belongsTo(Role, { foreignKey: 'role', targetKey: 'ID' });
+User.hasMany(UserRole, { foreignKey: 'user', sourceKey: 'id' });
+UserRole.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+Role.hasMany(UserRole, { foreignKey: 'role', sourceKey: 'id' });
+UserRole.belongsTo(Role, { foreignKey: 'role', targetKey: 'id' });
 
 export default User;

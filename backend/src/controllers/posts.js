@@ -46,19 +46,19 @@ export async function getPosts(postId = null) {
         include: [
             {
                 model: User,
-                attributes: ['ID'],
+                attributes: ['id'],
                 include: [
                     { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
                 ]
             },
-            { model: Channel, attributes: ['ID', 'name'] }
+            { model: Channel, attributes: ['id', 'name'] }
         ]
     };
 
     if (postId) {
 
         let post = await Post.findOne({
-            where: { ID: postId },
+            where: { id: postId },
             ...commonConfig
         });
 
@@ -87,19 +87,19 @@ export async function getPosts(postId = null) {
  * @returns {Promise<Object|null>} Created post or null if invalid
  */
 export async function createPost(data) {
-    const channel = await Channel.findOne({ where: { ID: data.channelID } });
+    const channel = await Channel.findOne({ where: { id: data.channelID } });
     if (!channel) {
         return null;
     }
 
-    const user = await User.findOne({ where: { ID: data.authorID } });
+    const user = await User.findOne({ where: { id: data.authorID } });
     if (!user) {
         return null;
     }
 
     return await Post.create({
-        channelID: data.channelID,
-        authorID: data.authorID,
+        channelid: data.channelID,
+        authorid: data.authorID,
         title: data.title,
         content: data.content,
         createdAt: new Date(),
@@ -117,7 +117,7 @@ export async function createPost(data) {
  * @returns {Promise<Object|null>} Updated post or null if not found
  */
 export async function updatePost(postId, data) {
-    const post = await Post.findOne({ where: { ID: postId } });
+    const post = await Post.findOne({ where: { id: postId } });
 
     if (!post) {
         return null;
@@ -137,7 +137,7 @@ export async function updatePost(postId, data) {
  * @returns {Promise<{valid: boolean, status?: number, message?: string}|Object>} Success object or error
  */
 export async function deletePost(postId) {
-    const post = await Post.findOne({ where: { ID: postId } });
+    const post = await Post.findOne({ where: { id: postId } });
 
     if (!post) {
         return { valid: false, status: 404, message: 'Post not found.' };

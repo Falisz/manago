@@ -60,23 +60,23 @@ export async function seedData() {
         await seedModel(AppModule, 'app_modules', appModules, 'modules');
 
         const roles = [
-                { ID: 1, name: 'Employee', power: 10, system_default: true,
+                { id: 1, name: 'Employee', power: 10, system_default: true,
                     description: "Default role assigned to all users. Allows access to basic features and self-service options." },
-                { ID: 2, name: 'Specialist', power: 20, system_default: false,
+                { id: 2, name: 'Specialist', power: 20, system_default: false,
                     description: "Role for specialized users with access to advanced features." },
-                { ID: 3, name: 'Team Leader', power: 30, system_default: false,
+                { id: 3, name: 'Team Leader', power: 30, system_default: false,
                     description: "Role for team leaders with access to team management features." },
-                { ID: 11, name: 'Manager', power: 50, system_default: false,
+                { id: 11, name: 'Manager', power: 50, system_default: false,
                     description: "Role for managers with access to management features." },
-                { ID: 12, name: 'Branch Manager', power: 60, system_default: false,
+                { id: 12, name: 'Branch Manager', power: 60, system_default: false,
                     description: "Role for branch managers with access to branch management features." },
-                { ID: 13, name: 'Project Manager', power: 70, system_default: false,
+                { id: 13, name: 'Project Manager', power: 70, system_default: false,
                     description: "Role for project managers with access to project management features." },
-                { ID: 25, name: 'HR Rep', power: 80, system_default: false,
+                { id: 25, name: 'HR Rep', power: 80, system_default: false,
                     description: "Role for HR representatives with access to employee management features." },
-                { ID: 50, name: 'CEO', power: 90, system_default: false,
+                { id: 50, name: 'CEO', power: 90, system_default: false,
                     description: "Role for the CEO with access to all features." },
-                { ID: 99, name: 'Admin', power: 100, system_default: false,
+                { id: 99, name: 'Admin', power: 100, system_default: false,
                     description: "Role for administrators with full access to the system." },
             ];
         await seedModel(Role, 'roles', roles, 'roles')
@@ -86,15 +86,15 @@ export async function seedData() {
             console.log(`\t${userCount} users found in \'users\' table. Seeding skipped.`);
         } else {
             const userRecords = [
-                {ID: 137500, first_name: 'Staff', last_name: 'Joe', login: 'staff', 
+                {id: 137500, first_name: 'Staff', last_name: 'Joe', login: 'staff', 
                     email: 'staff.joe@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
-                {ID: 353621, first_name: 'Manager', last_name: 'Smith', login: 'manager', 
+                {id: 353621, first_name: 'Manager', last_name: 'Smith', login: 'manager', 
                     email: 'manager.smith@com.com', active: true, mv_acc: true, mv_en: true, mv_nav: false},
-                {ID: 398285, first_name: 'Test', last_name: '1', login: 'test1', 
+                {id: 398285, first_name: 'Test', last_name: '1', login: 'test1', 
                     email: 'test1@com.com', active: true, mv_acc: true, mv_en: false, mv_nav: false},
-                {ID: 475776, first_name: 'Test', last_name: '2', login: 'test2', 
+                {id: 475776, first_name: 'Test', last_name: '2', login: 'test2', 
                     email: 'test2@com.com', active: false, mv_acc: false, mv_en: false, mv_nav: false},
-                {ID: 864434, first_name: 'Test', last_name: '3', login: 'test3', 
+                {id: 864434, first_name: 'Test', last_name: '3', login: 'test3', 
                     email: 'test3@com.com', active: true, mv_acc: false, mv_en: false, mv_nav: false},
             ];
             const defaultPassword = await bcrypt.hash('1234', 10);
@@ -104,19 +104,19 @@ export async function seedData() {
 
             for (const user of userRecords) {
                 users.push({
-                    ID: user.ID,
+                    id: user.id,
                     login: user.login,
                     email: user.email,
                     active: user.active,
                     password: defaultPassword
                 });
                 userDetails.push({
-                    user: user.ID,
+                    user: user.id,
                     first_name: user.first_name,
                     last_name: user.last_name
                 });
                 userConfigs.push({
-                    user: user.ID,
+                    user: user.id,
                     manager_view_access: user.mv_acc,
                     manager_view_enabled: user.mv_en,
                     manager_nav_collapsed: user.mv_en
@@ -142,15 +142,15 @@ export async function seedData() {
         await seedModel(UserRole, 'user_roles', userRoles, 'user roles assignments');
 
         const teams = [
-            {ID: 0, code_name: 'MS-PL-01'},
-            {ID: 1, code_name: 'MS-PL-02'},
+            {id: 0, code_name: 'MS-PL-01'},
+            {id: 1, code_name: 'MS-PL-02'},
         ]
         await seedModel(Team, 'teams', teams, 'teams');
 
         const channels = [
-                { name: 'General Discussion' },
-                { name: 'Announcements' },
-                { name: 'Ideas and Suggestions' }
+                { id:0, name: 'General Discussion' },
+                { id:1, name: 'Announcements' },
+                { id:2, name: 'Ideas and Suggestions' }
             ];
         await seedModel(Channel, 'channels', channels, 'channels');
 
@@ -158,23 +158,23 @@ export async function seedData() {
         if (postCount > 0) {
             console.log(`\t${postCount} posts found in \'posts\' table. Seeding skipped.`);
         } else {
-            const users = await User.findAll({ attributes: ['ID'] });
-            const channels = await Channel.findAll({ attributes: ['ID'] });
+            const users = await User.findAll({ attributes: ['id'] });
+            const channels = await Channel.findAll({ attributes: ['id'] });
             if (users.length === 0 || channels.length === 0) {
                 console.warn('No users or channels found, skipping posts seeding.');
             } else {
                 const posts = [
                     {
-                        channelID: channels[0].ID,
-                        authorID: users[0].ID,
+                        channel: channels[0].id,
+                        author: users[0].id,
                         title: 'Welcome to the Forum',
                         content: 'This is the first post in our new forum. Feel free to share your thoughts!',
                         createdAt: new Date(),
                         isEdited: false
                     },
                     {
-                        channelID: channels[1].ID,
-                        authorID: users[0].ID,
+                        channel: channels[1].id,
+                        author: users[0].id,
                         title: 'Company Update',
                         content: 'We have some exciting news to share about upcoming projects!',
                         createdAt: new Date(Date.now() - 86400000), // 1 day ago
@@ -182,8 +182,8 @@ export async function seedData() {
                         updatedAt: new Date()
                     },
                     {
-                        channelID: channels[2].ID,
-                        authorID: users[1]?.ID || users[0].ID,
+                        channel: channels[2].id,
+                        author: users[1]?.id || users[0].id,
                         title: null,
                         content: 'I have an idea for improving our workflow. Let’s discuss!',
                         createdAt: new Date(Date.now() - 172800000), // 2 days ago

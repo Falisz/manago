@@ -7,7 +7,7 @@ import { getUserRoles } from './roles.js';
 
 /**
  * @typedef {Object} Manager
- * @property {number} ID - The ID of the manager
+ * @property {number} id - The ID of the manager
  * @property {string} first_name - The first name of the manager
  * @property {string} last_name - The last name of the manager
  * @property {Object} UserDetails - UserDetails field of the manager user
@@ -15,7 +15,7 @@ import { getUserRoles } from './roles.js';
 
 /**
  * @typedef {Object} UserManager
- * @property {number} ID - The ID of the manager
+ * @property {number} id - The ID of the manager
  * @property {string} first_name - The first name of the manager
  * @property {string} last_name - The last name of the manager
  * @property {boolean} primary - Indicates if the manager is the primary manager
@@ -31,12 +31,12 @@ export async function getUsers(userId = null) {
     if (userId) {
         let user = await User.findOne({
             attributes: { exclude: ['password', 'removed'] },
-            where: { ID: userId, removed: false },
+            where: { id: userId, removed: false },
             include: [
                 { model: UserDetails,  as: 'UserDetails' },
                 { model: UserConfigs,  as: 'UserConfigs' }
             ],
-            order: [['ID', 'ASC']]
+            order: [['id', 'ASC']]
         });
 
         if (!user)
@@ -59,7 +59,7 @@ export async function getUsers(userId = null) {
             include: [
                 { model: UserDetails,  as: 'UserDetails' }
             ],
-            order: [['ID', 'ASC']]
+            order: [['id', 'ASC']]
         });
 
         if (!users)
@@ -69,8 +69,8 @@ export async function getUsers(userId = null) {
             const userData = {
                 ...user.toJSON(),
                 ...user.UserDetails.toJSON(),
-                managers: await getUserManagers(user.ID),
-                roles: await getUserRoles(user.ID)
+                managers: await getUserManagers(user.id),
+                roles: await getUserRoles(user.id)
             };
             delete userData.UserDetails;
             return userData;
@@ -107,13 +107,13 @@ export async function createUser(data) {
     });
 
     await UserDetails.create({
-        user: user.ID,
+        user: user.id,
         first_name: data.first_name,
         last_name: data.last_name,
     });
 
     await UserConfigs.create({
-        user: user.ID,
+        user: user.id,
         manager_view_access: data.manager_view_access || false,
         manager_view_enabled: false,
         manager_nav_collapsed: false
@@ -134,7 +134,7 @@ export async function editUser(userId, data) {
     }
 
     const user = await User.findOne({
-        where: { ID: userId, removed: false },
+        where: { id: userId, removed: false },
         include: [
             { model: UserDetails,  as: 'UserDetails' },
             { model: UserConfigs,  as: 'UserConfigs' },
@@ -184,7 +184,7 @@ export async function removeUser(userId) {
     const transaction = await sequelize.transaction();
 
     const user = await User.findOne({
-        where: { ID: userId, removed: false },
+        where: { id: userId, removed: false },
         transaction
     });
     const userDetails = await UserDetails.findOne({
@@ -266,14 +266,14 @@ export async function getEmployees() {
         ],
         where: { removed: false },
         attributes: { exclude: ['password', 'removed'] },
-        order: [['ID', 'ASC']]
+        order: [['id', 'ASC']]
     });
     employees = await Promise.all(employees.map(async e => {
         const userData = {
             ...e.toJSON(),
             ...e.UserDetails?.toJSON(),
-            roles: await getUserRoles(e.ID),
-            managers: await getUserManagers(e.ID)
+            roles: await getUserRoles(e.id),
+            managers: await getUserManagers(e.id)
         };
         delete userData.UserDetails;
         return userData;
@@ -312,16 +312,16 @@ export async function getManagers() {
         ],
         where: { removed: false },
         attributes: { exclude: ['password', 'removed'] },
-        order: [['ID', 'ASC']]
+        order: [['id', 'ASC']]
     });
 
     managers = await Promise.all(managers.map(async m => {
         const userData = {
             ...m.toJSON(),
             ...m.UserDetails?.toJSON(),
-            roles: await getUserRoles(m.ID),
-            managers: await getUserManagers(m.ID),
-            managed_users: await getManagedUsers(m.ID)
+            roles: await getUserRoles(m.id),
+            managers: await getUserManagers(m.id),
+            managed_users: await getManagedUsers(m.id)
         };
         delete userData.UserDetails;
         return userData;
@@ -350,13 +350,13 @@ export async function getUserManagers(userId) {
             {
                 model: User,
                 as: 'Manager',
-                attributes: ['ID'],
+                attributes: ['id'],
                 include: [{ model: UserDetails, as: 'UserDetails' }]
             }
         ]
     });
     managers = managers.map(m => ({
-        ID: m.Manager.ID,
+        id: m.Manager.id,
         first_name: m.Manager.UserDetails?.first_name,
         last_name: m.Manager.UserDetails?.last_name,
         primary: m.primary
@@ -388,10 +388,10 @@ export async function updateUserManagers(userId, managerObjs) {
     const managerIds = managerObjs.map(m => m.manager);
 
     const existingManagers = await User.findAll({
-        where: { ID: managerIds },
-        attributes: ['ID']
+        where: { id: managerIds },
+        attributes: ['id']
     });
-    const existingManagerIds = existingManagers.map(u => u.ID);
+    const existingManagerIds = existingManagers.map(u => u.id);
     const invalidManagerIds = managerIds.filter(id => !existingManagerIds.includes(id));
 
     if (invalidManagerIds.length > 0) {
@@ -447,14 +447,14 @@ export async function getManagedUsers(managerId) {
             {
                 model: User,
                 as: 'User',
-                attributes: ['ID'],
+                attributes: ['id'],
                 include: [{ model: UserDetails, as: 'UserDetails' }]
             }
         ]
     });
 
     users = users.map(u => ({
-        ID: u.User.ID,
+        id: u.User.id,
         first_name: u.User.UserDetails?.first_name,
         last_name: u.User.UserDetails?.last_name,
         primary: u.primary

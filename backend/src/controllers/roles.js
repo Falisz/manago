@@ -17,7 +17,7 @@ export async function getRoles(roleId = null) {
     if (roleId) {
 
         let role = await Role.findOne({
-            where: { ID: roleId },
+            where: { id: roleId },
         });
 
         if (!role) {
@@ -38,7 +38,7 @@ export async function getRoles(roleId = null) {
         return await Promise.all(
             (roles || []).map(async role => {
                 const roleObj = { ...role.toJSON() };
-                roleObj.users = await getRoleUsers(roleObj.ID);
+                roleObj.users = await getRoleUsers(roleObj.id);
                 return roleObj;
             })
         );
@@ -78,7 +78,7 @@ export async function getUserRoles(userId) {
 /**
  * Retrieves all users for a given role ID.
  * @param {number} roleId - Role ID
- * @returns {Promise<Array<{ID: number, first_name: string, last_name: string}>>}
+ * @returns {Promise<Array<{id: number, first_name: string, last_name: string}>>}
  */
 export async function getRoleUsers(roleId) {
     if (!roleId) return [];
@@ -88,7 +88,7 @@ export async function getRoleUsers(roleId) {
         include: [
             {
                 model: User,
-                attributes: ['ID'],
+                attributes: ['id'],
                 include: [
                     {
                         model: UserDetails,
@@ -102,11 +102,11 @@ export async function getRoleUsers(roleId) {
 
     return userRoles
         .map(ur => ({
-            ID: ur.User?.ID,
+            id: ur.User?.id,
             first_name: ur.User?.UserDetails?.first_name,
             last_name: ur.User?.UserDetails?.last_name
         }))
-        .filter(u => u.ID); // Filter out any nulls
+        .filter(u => u.id); // Filter out any nulls
 }
 
 /**
@@ -149,7 +149,7 @@ export async function updateRole(roleId, data) {
     }
 
     const role = await Role.findOne({
-        where: { ID: roleId },
+        where: { id: roleId },
     });
 
     if (!role) {
@@ -180,7 +180,7 @@ export async function deleteRole(roleId) {
     const transaction = await sequelize.transaction();
 
     const role = await Role.findOne({
-        where: { ID: roleId },
+        where: { id: roleId },
         transaction
     });
 
@@ -222,12 +222,12 @@ export async function updateUserRoles(userId, roleIds) {
     const transaction = await sequelize.transaction();
 
     const existingRoles = await Role.findAll({
-        where: { ID: roleIds },
-        attributes: ['ID'],
+        where: { id: roleIds },
+        attributes: ['id'],
         transaction
     });
 
-    const existingRoleIds = existingRoles.map(role => role.ID);
+    const existingRoleIds = existingRoles.map(role => role.id);
     const invalidRoleIds = roleIds.filter(id => !existingRoleIds.includes(id));
 
     if (invalidRoleIds.length > 0) {

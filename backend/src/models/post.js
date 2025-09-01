@@ -3,17 +3,17 @@ import sequelize from "../db.js";
 import User from "./user.js";
 
 export const Post = sequelize.define('Post', {
-    ID: {
+    id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
         autoIncrement: true
     },
-    channelID: {
+    channel: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    authorID: {
+    author: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
@@ -44,7 +44,7 @@ export const Post = sequelize.define('Post', {
     timestamps: false
 });
 
-User.hasMany(Post, { foreignKey: 'authorID', sourceKey: 'ID' });
-Post.belongsTo(User, { foreignKey: 'authorID', targetKey: 'ID' });
+User.hasMany(Post, { foreignKey: 'author', sourceKey: 'id' });
+Post.belongsTo(User, { foreignKey: 'author', targetKey: 'id' });
 
 export default Post;

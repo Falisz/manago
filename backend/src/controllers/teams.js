@@ -1,9 +1,9 @@
 import Team from '../models/team.js';
 
-export async function getTeams(teamId) {
+export async function getTeams(id) {
     try {
-        if (teamId) {
-            const team = await Team.findOne({ where: { id: teamId } });
+        if (id) {
+            const team = await Team.findOne({ where: { id } });
             return team;
         }
         const teams = await Team.findAll();
