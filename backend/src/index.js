@@ -159,14 +159,18 @@ async function startServer() {
 
         await store.sync();
         console.log('[INFO] Session store synced successfully');
-        
-        console.log(`[INFO] Press 'space' key within next two seconds to seed data...`);
-        const key = await waitForKeypress('space', 2000);
-        if (key) {
-            await seedData();
+
+        if (process.stdin.isTTY) {
+            console.log(`[INFO] Press 'space' key within next two seconds to seed data...`);
+            const key = await waitForKeypress('space', 2000);
+            if (key) {
+                await seedData();
+            } else {
+                console.log('\n[INFO] Data seeding skipped.');
+            }
         } else {
-            console.log('\n[INFO] Data seeding skipped.');
-        }        
+            console.log(`[INFO] Backend script is being run without interactive terminal. Skipping data seeding.`);
+        }
 
         app.listen(PORT, () => {
             console.log(`[INFO] Server is up and running on port ${PORT}`);

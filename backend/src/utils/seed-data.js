@@ -34,7 +34,7 @@ async function seedModel(model, tableName, data, itemsName = "records") {
 export async function seedData() {
     try {
         console.log('\n[INFO] Starting data seeding...');
-        await sequelize.sync();
+        await sequelize.sync({ alter: true });
 
         const appModules = [
                 {id: 0, title: 'Main', icon: 'dashboard', enabled: true,
@@ -194,3 +194,16 @@ export async function seedData() {
 }
 
 export default seedData;
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    console.log('[INFO] Running data seeding...');
+    seedData()
+        .then(() => {
+            console.log('[INFO] Seeding finished successfully.');
+            process.exit(0);
+        })
+        .catch(err => {
+            console.error('[ERROR] Seeding failed:', err);
+            process.exit(1);
+        });
+}
