@@ -1,6 +1,6 @@
 //BACKEND/api/users.js
 import express from 'express';
-import {createUser, editUser, getUsers, removeUser, getManagers, getUserManagers, updateUserManagers} from "../controllers/users.js";
+import {createUser, editUser, getUsers, removeUser, getManagers, getEmployees, getUserManagers, getManagedUsers, updateUserManagers} from "../controllers/users.js";
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -35,6 +35,22 @@ router.get('/managers', async (req, res) => {
     }
 });
 
+router.get('/employees', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const employees = await getEmployees();
+
+        res.json(employees);
+
+    } catch (err) {
+        console.error('Error fetching employees:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
 router.get('/managers/:userId', async (req, res) => {
     try {
         if (!req.session.user) {
@@ -53,6 +69,28 @@ router.get('/managers/:userId', async (req, res) => {
 
     } catch (err) {
         console.error('Error fetching managers:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
+router.get('/managed-users/:managerId', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { managerId } = req.params;
+
+        if (!managerId || isNaN(managerId)) {
+            return res.status(400).json({ message: 'Invalid manager ID.' });
+        }
+
+        const managedUsers = await getManagedUsers(parseInt(managerId));
+
+        res.json(managedUsers);
+
+    } catch (err) {
+        console.error('Error fetching managed users:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 });

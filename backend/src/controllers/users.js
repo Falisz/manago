@@ -237,6 +237,46 @@ export async function removeUser(userId) {
 }
 
 /**
+ * Retrieves all users with the 'Employee', 'Team Leader', or 'Specialist' role.
+ * @returns {Promise<Manager[]>} Array of employees
+ */
+export async function getEmployees() {
+    /**
+     * @type {Manager[]}
+     */
+    let employees = await User.findAll({
+        include: [
+            {
+                model: UserRole,
+                required: true,
+                include: [
+                    {
+                        model: Role,
+                        where: { name: ['Employee', 'Team Leader', 'Specialist'] },
+                        attributes: ['name']
+                    }
+                ],
+                attributes: ['user', 'role']
+            },
+            {
+                model: UserDetails,
+                as: 'UserDetails',
+                attributes: ['first_name', 'last_name']
+            }
+        ],
+        where: { active: true },
+        attributes: ['ID']
+    });
+    employees = employees?.map(e => ({
+        ID: e.ID,
+        first_name: e.UserDetails?.first_name,
+        last_name: e.UserDetails?.last_name
+    })) || [];
+
+    return employees;
+}
+
+/**
  * Retrieves all users with the 'Manager' role.
  * @returns {Promise<Manager[]>} Array of managers
  */
@@ -252,7 +292,7 @@ export async function getManagers() {
                 include: [
                     {
                         model: Role,
-                        where: { name: 'Manager' },
+                        where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] },
                         attributes: ['name']
                     }
                 ],
@@ -372,4 +412,39 @@ export async function updateUserManagers(userId, managerObjs) {
         await transaction.rollback();
         return { success: false, message: "Failed to update user managers." };
     }
+}
+
+/**
+ * Retrieves users managed by a specific manager.
+ * @param {number} managerId - Manager ID
+ * @returns {Promise<UserManager[]>} Array of users managed by the manager
+ */
+export async function getManagedUsers(managerId) {
+    if (!managerId) {
+        return [];
+    }
+
+    /**
+     * @type {UserManager[]}
+     */
+    let users = await UserManager.findAll({
+        where: { manager: managerId },
+        include: [
+            {
+                model: User,
+                as: 'User',
+                attributes: ['ID'],
+                include: [{ model: UserDetails, as: 'UserDetails' }]
+            }
+        ]
+    });
+
+    users = users.map(u => ({
+        ID: u.User.ID,
+        first_name: u.User.UserDetails?.first_name,
+        last_name: u.User.UserDetails?.last_name,
+        primary: u.primary
+    }));
+
+    return users;
 }
