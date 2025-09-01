@@ -29,8 +29,8 @@ const RolesList = () => {
                 roles.map((role) => (
                     <div
                         className="roles-list-row"
-                        key={role.ID}
-                        onClick={() => openModal({ type: "roleDetails", data: { id: role.ID } })}
+                        key={role.id}
+                        onClick={() => openModal({ type: "roleDetails", data: { id: role.id } })}
                     >
                         <div className="role-content">
                             <div className="role-title">{role.name}</div>

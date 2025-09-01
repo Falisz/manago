@@ -145,8 +145,8 @@ const TeamsTable = ({ teams, loading }) => {
                 {filteredAndSortedTeams?.length === 0 ? (
                     <p>No teams found.</p>
                 ) : (filteredAndSortedTeams?.map(team => (
-                    <div className="teams-list-row" key={team.ID}>
-                        <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.ID } })}>
+                    <div className="teams-list-row" key={team.id}>
+                        <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
                             {team.codename}
                         </div>
                         <div>{team.name}</div>
@@ -155,8 +155,8 @@ const TeamsTable = ({ teams, loading }) => {
                             {(team.managers || []).length === 0
                                 ? <span>-</span>
                                 : (team.managers || []).map(manager =>
-                                    <span key={manager.ID} className="manager-name"
-                                        onClick={() => openModal({ type: 'userDetails', data: { id: manager.ID } })}
+                                    <span key={manager.id} className="manager-name"
+                                        onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
                                     >{manager.first_name} {manager.last_name}</span>
                                 ).reduce((prev, curr) => [prev, ', ', curr])
                             }
@@ -165,8 +165,8 @@ const TeamsTable = ({ teams, loading }) => {
                             {(team.teamleaders || []).length === 0
                                 ? <span>-</span>
                                 : (team.teamleaders || []).map(leader =>
-                                    <span key={leader.ID} className="teamleader-name"
-                                        onClick={() => openModal({ type: 'userDetails', data: { id: leader.ID } })}
+                                    <span key={leader.id} className="teamleader-name"
+                                        onClick={() => openModal({ type: 'userDetails', data: { id: leader.id } })}
                                     >{leader.first_name} {leader.last_name}</span>
                                 ).reduce((prev, curr) => [prev, ', ', curr])
                             }

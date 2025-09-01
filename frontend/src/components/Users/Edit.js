@@ -2,14 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { useModals } from "../../contexts/ModalContext";
 import useUser from "../../hooks/useUser";
+import useUsers from "../../hooks/useUsers";
 import useRoles from "../../hooks/useRoles";
-import useManagers from "../../hooks/useManagers";
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
 const UserEdit = ({ userId }) => {
     const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
-    const {managers, fetchManagers} = useManagers();
+    const {users: managers, fetchUsers: fetchManagers} = useUsers();
     const {roles, fetchRoles} = useRoles();
     const { setDiscardWarning, closeTopModal } = useModals();
     const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ const UserEdit = ({ userId }) => {
 
     useEffect(() => {
         fetchRoles().then();
-        fetchManagers().then();
+        fetchManagers('managers').then();
     }, [fetchRoles, fetchManagers]);
 
     useEffect(() => {
@@ -58,9 +58,9 @@ const UserEdit = ({ userId }) => {
             password: user?.password || '',
             first_name: user?.first_name || '',
             last_name: user?.last_name || '',
-            role_ids: user?.roles?.map((role) => role.ID) || [],
-            primary_manager_id: user?.managers?.[0]?.ID || '',
-            secondary_manager_id: user?.managers?.[1]?.ID || '',
+            role_ids: user?.roles?.map((role) => role.id) || [],
+            primary_manager_id: user?.managers?.[0]?.id || '',
+            secondary_manager_id: user?.managers?.[1]?.id || '',
             active: user?.active || true,
             manager_view_access: user?.manager_view_access || false,
         });
@@ -104,9 +104,9 @@ const UserEdit = ({ userId }) => {
         });
     };
 
-    const availableManagers = managers?.filter(manager => parseInt(manager.ID) !== parseInt(userId)) || [];
+    const availableManagers = managers?.filter(manager => parseInt(manager.id) !== parseInt(userId)) || [];
     const availableSecondaryManagers = availableManagers.filter(
-        manager => manager.ID !== parseInt(formData.primary_manager_id)
+        manager => manager.id !== parseInt(formData.primary_manager_id)
     );
 
     if (loading) return <Loader />;
@@ -202,12 +202,12 @@ const UserEdit = ({ userId }) => {
                             <p>No roles available.</p>
                         ) : (
                             roles?.map(role => (
-                                <label key={role.ID} className="role-checkbox">
+                                <label key={role.id} className="role-checkbox">
                                     <input
                                         type="checkbox"
                                         name="roleIds"
-                                        value={role.ID}
-                                        checked={formData.role_ids.includes(role.ID)}
+                                        value={role.id}
+                                        checked={formData.role_ids.includes(role.id)}
                                         onChange={handleChange}
                                     />
                                     {role.name} <span title={"Power"}><small>&nbsp;({role.power})</small></span>
@@ -227,7 +227,7 @@ const UserEdit = ({ userId }) => {
                         <option value="" hidden>Select a manager</option>
                         <option value="0">None</option>
                         {availableManagers.map(manager => (
-                            <option key={manager.ID} value={parseInt(manager.ID)}>
+                            <option key={manager.id} value={parseInt(manager.id)}>
                                 {manager.first_name} {manager.last_name}
                             </option>
                         ))}
@@ -244,7 +244,7 @@ const UserEdit = ({ userId }) => {
                         <option value="" hidden>Select a manager</option>
                         <option value="0">None</option>
                         {availableSecondaryManagers.map(manager => (
-                            <option key={manager.ID} value={parseInt(manager.ID)}>
+                            <option key={manager.id} value={parseInt(manager.id)}>
                                 {manager.first_name} {manager.last_name}
                             </option>
                         ))}

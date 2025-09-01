@@ -31,7 +31,7 @@ const RoleDetails = ({ roleId }) => {
     return (
         <div className="role-detail">
             <div className="role-detail-header">
-                <div className={"role-id"} title={"Role ID"}>#{role.ID}</div>
+                <div className={"role-id"} title={"Role ID"}>#{role.id}</div>
                 <div className={"role-name"} title={"Role Name"}>{role.name}</div>
             </div>
             <div className="role-detail-group">
@@ -53,8 +53,8 @@ const RoleDetails = ({ roleId }) => {
                 {role.users?.length > 0 ? role.users.map((user) => (
                     <div 
                         className={"user-detail-data link"} 
-                        key={user.ID} 
-                        onClick={() => openModal({ type: 'userDetails', data: { id: user.ID } })}
+                        key={user.id} 
+                        onClick={() => openModal({ type: 'userDetails', data: { id: user.id } })}
                     >
                         {user.first_name} {user.last_name}
                     </div>
@@ -64,7 +64,7 @@ const RoleDetails = ({ roleId }) => {
             <button
                 type="button"
                 className="button"
-                onClick={() => openModal({ type: 'roleEdit', data: { id: role.ID } })}
+                onClick={() => openModal({ type: 'roleEdit', data: { id: role.id } })}
             >
                 <i className="material-symbols-outlined">edit</i> Edit Role
             </button>

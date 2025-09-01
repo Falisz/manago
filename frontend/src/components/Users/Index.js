@@ -176,13 +176,13 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
 
                     return (
                         <div className="users-list-row" key={user.user}>
-                            <div onClick={() => openModal({ type: 'userDetails', data: { id: user.ID } })}> {/* CHANGED: Use openModal instead of navigate */}
+                            <div onClick={() => openModal({ type: 'userDetails', data: { id: user.id } })}> {/* CHANGED: Use openModal instead of navigate */}
                                 {user.first_name} {user.last_name}
                             </div>
                             <div>
                                 {displayedRoles.map((role) => (
-                                    <span key={role.ID} className="role-name"
-                                          onClick={() => openModal({ type: 'roleDetails', data: { id: role.ID } })} // Example for role; implement if needed
+                                    <span key={role.id} className="role-name"
+                                          onClick={() => openModal({ type: 'roleDetails', data: { id: role.id } })} // Example for role; implement if needed
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
@@ -192,8 +192,8 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                                     {(user.managers || []).length === 0
                                         ? <span>-</span>
                                         : (user.managers || []).map(manager =>
-                                            <span key={manager.ID} className="manager-name"
-                                                onClick={() => openModal({ type: 'userDetails', data: { id: manager.ID } })}
+                                            <span key={manager.id} className="manager-name"
+                                                onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
                                             >{manager.first_name} {manager.last_name}</span>
                                         ).reduce((prev, curr) => [prev, ', ', curr])
                                     }
