@@ -2,9 +2,11 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useModals } from "../../contexts/ModalContext";
 import useUsers from "../../hooks/useUsers";
-import '../../assets/styles/Users.css';
 import Loader from "../Loader";
 import Button from "../Button";
+import '../../assets/styles/Users.css';
+
+// TODO: List selections with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 
 const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
     return (
@@ -41,7 +43,6 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
     const headers = useMemo(() => {
         let baseHeaders = [
             { title: 'Name', key: 'name' },
-            { title: 'E-mail Address', key: 'email' },
             { title: 'Roles', key: 'roles' }
         ];
         if (managers) {
@@ -178,7 +179,6 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                             <div onClick={() => openModal({ type: 'userDetails', data: { id: user.ID } })}> {/* CHANGED: Use openModal instead of navigate */}
                                 {user.first_name} {user.last_name}
                             </div>
-                            <div>{user.email}</div>
                             <div>
                                 {displayedRoles.map((role) => (
                                     <span key={role.ID} className="role-name"
@@ -215,10 +215,6 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
         </div>
     );
 }
-// TODO: Make page division into Employees, Managers and AllUsers
-// TODO: Add Teams as sub-page of Employees - make the index page "Teams & Employees" with Add new... button for both Employees and Teams
-// TODO: Add table fields - Employees will have Managers field, while Manager will also have Reporting Users field
-// TODO: List selections with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 
 export const ManagersIndex = () => {
     const { openModal } = useModals();
