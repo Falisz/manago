@@ -29,21 +29,30 @@ const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
     );
 }
 
-const UsersTable = ({ users, loading }) => {
+const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
     const { openModal } = useModals();
 
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: 'asc'
-    })
+    });
 
-    const headers = [
-        {title: 'Name', key: 'name'},
-        {title: 'E-mail Address', key: 'email'},
-        {title: 'Roles', key: 'roles'},
-        {title: 'Active', key: 'active'}
-    ]
+    const headers = useMemo(() => {
+        let baseHeaders = [
+            { title: 'Name', key: 'name' },
+            { title: 'E-mail Address', key: 'email' },
+            { title: 'Roles', key: 'roles' }
+        ];
+        if (managers) {
+            baseHeaders.push({ title: 'Managers', key: 'managers' });
+        }
+        if (managed_users) {
+            baseHeaders.push({ title: 'Managed Users', key: 'managed_users' });
+        }
+        baseHeaders.push( { title: 'Active', key: 'active' });
+        return baseHeaders;
+    }, [managers, managed_users]);
 
     const handleFilter = (e) => {
         const { name, value } = e.target;
@@ -89,7 +98,21 @@ const UsersTable = ({ users, loading }) => {
 
                 if (key === 'active') {
                     const filterValue = value.toLowerCase();
-                    return (filterValue === 'active' && user[key]) || (filterValue === 'not' && !user[key]);
+                    const trueValues = ["active", "true", "yes", "1", 1, "y"];
+                    const falseValues = ["not", "non", "not-active", "no", "n", "false", "0", 0]
+                    return (trueValues.includes(filterValue.toLowerCase()) && user[key]) || (falseValues.includes(filterValue.toLowerCase()) && !user[key]);
+                }
+
+                if (key === 'managers') {
+                    return (user.managers || []).some(manager =>
+                        (manager.first_name + ' ' + manager.last_name).toLowerCase().includes(value.toLowerCase())
+                    );
+                }
+
+                if (key === 'managed_users') {
+                    return (user['managed_users'] || user['managed-users'] || []).some(mu =>
+                        (mu.first_name + ' ' + mu.last_name).toLowerCase().includes(value.toLowerCase())
+                    );
                 }
 
                 return user[key]?.toLowerCase().includes(value.toLowerCase());
@@ -106,6 +129,9 @@ const UsersTable = ({ users, loading }) => {
                 } else if (sortConfig.key === 'active') {
                     aValue = a.active ? 'active' : 'not';
                     bValue = b.active ? 'active' : 'not';
+                } else if (sortConfig.key === 'managers') {
+                    aValue = (a.managers || []).map(m => (m.first_name + ' ' + m.last_name).toLowerCase()).join(', ');
+                    bValue = (b.managers || []).map(m => (m.first_name + ' ' + m.last_name).toLowerCase()).join(', ');
                 } else {
                     aValue = a[sortConfig.key]?.toLowerCase?.() ?? '';
                     bValue = b[sortConfig.key]?.toLowerCase?.() ?? '';
@@ -161,6 +187,26 @@ const UsersTable = ({ users, loading }) => {
                                 ))}
                                 {moreRolesText}
                             </div>
+                            {managers && (
+                                <div>
+                                    {(user.managers || []).length === 0
+                                        ? <span>-</span>
+                                        : (user.managers || []).map(manager =>
+                                            <span key={manager.ID} className="manager-name"
+                                                onClick={() => openModal({ type: 'userDetails', data: { id: manager.ID } })}
+                                            >{manager.first_name} {manager.last_name}</span>
+                                        ).reduce((prev, curr) => [prev, ', ', curr])
+                                    }
+                                </div>
+                            )}
+                            {managed_users && (
+                                <div>
+                                    {((user.managed_users || user['managed-users']) || []).length === 0
+                                        ? <span>-</span>
+                                        : ((user.managed_users || user['managed-users']) || []).length
+                                    }
+                                </div>
+                            )}
                             <div>{user.active ? 'Active' : 'Not'}</div>
                         </div>
                     );
@@ -196,6 +242,7 @@ export const ManagersIndex = () => {
             <UsersTable
                 users={users}
                 loading={usersLoading}
+                managed_users={true}
             />
         </>
     );
