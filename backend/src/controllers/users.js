@@ -320,6 +320,7 @@ export async function getManagers() {
             ...m.toJSON(),
             ...m.UserDetails?.toJSON(),
             roles: await getUserRoles(m.ID),
+            managers: await getUserManagers(m.ID),
             managed_users: await getManagedUsers(m.ID)
         };
         delete userData.UserDetails;
