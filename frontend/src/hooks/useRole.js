@@ -53,7 +53,7 @@ const useRole = () => {
             }
             setSuccess(response.data.message);
             setRole(response.data.role);
-            roleCacheRef.current[response.data.role.ID] = response.data.role;
+            roleCacheRef.current[response.data.role.id] = response.data.role;
             return response.data.role;
         } catch (err) {
             console.error('Error saving role:', err);

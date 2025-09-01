@@ -77,7 +77,7 @@ const useUser = () => {
 
             if (newUser) {
                 const res = await axios.post('/users/new', userData, { withCredentials: true });
-                userId = parseInt(res.data.user?.ID);
+                userId = parseInt(res.data.user?.id);
             } else {
                 await axios.put(`/users/${userId}`, userData, { withCredentials: true });
             }
@@ -96,7 +96,6 @@ const useUser = () => {
             }
 
             setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
-            console.log(`User ${newUser? 'created' : 'updated'} successfully.`);
 
             return fetchUser(userId, true);
 
