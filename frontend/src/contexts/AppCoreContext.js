@@ -35,25 +35,7 @@ export const AppCoreProvider = ({ children }) => {
         }
     }, [fetchModules]);
 
-    const handleToggle = useCallback(async (moduleId, enabled) => {
-        const newEnabled = !enabled;
-        if (window.confirm(`Are you sure you want to ${newEnabled ? 'enable' : 'disable'} the module #${moduleId}?`)) {
-            await toggleModule(moduleId, newEnabled);
-            await refreshPages();
-        }
-    }, [toggleModule]);
-
     const refreshPages = useCallback(async () => {
-        /**
-         * Creates a component using InWorks with the specified title and icon.
-         * @param {string} title - The title for the InWorks component.
-         * @param {string} icon - The icon for the InWorks component.
-         * @returns {Function} A React component function.
-         */
-        const createInWorksComponent = (title, icon) => {
-            return () => <InWorks title={title} icon={icon} />;
-        };
-
         /**
          * Maps page data to include actual components from componentMap, defaulting to an InWorks component if not found.
          * @param {Object[]} pages - Array of page objects from the backend.
@@ -63,7 +45,7 @@ export const AppCoreProvider = ({ children }) => {
             return pages.map(page => {
                 const mappedPage = {
                     ...page,
-                    component: componentMap[page.component] || createInWorksComponent(page.title, page.icon)
+                    component: componentMap[page.component] || (() => <InWorks title={page.title} icon={page.icon} />)
                 };
 
                 if (page.subpages && page.subpages.length > 0) {
@@ -109,6 +91,14 @@ export const AppCoreProvider = ({ children }) => {
             setLoading(false);
         }
     }, [setLoading, refreshPages]);
+
+    const handleToggle = useCallback(async (moduleId, enabled) => {
+        const newEnabled = !enabled;
+        if (window.confirm(`Are you sure you want to ${newEnabled ? 'enable' : 'disable'} the module #${moduleId}?`)) {
+            await toggleModule(moduleId, newEnabled);
+            await refreshPages();
+        }
+    }, [refreshPages, toggleModule]);
 
     useEffect(() => {
         if (user && access && !didFetch) {

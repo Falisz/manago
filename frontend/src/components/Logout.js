@@ -17,7 +17,7 @@ const Logout = ({ onLogout }) => {
             navigate('/', { replace: true });
         };
         performLogout().then();
-    }, [logoutFromContext, navigate, onLogout]);
+    }, [logoutFromContext, setManagerView, setDidFetch, navigate, onLogout]);
 
     return null;
 };
