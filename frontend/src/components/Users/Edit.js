@@ -7,11 +7,11 @@ import useRoles from "../../hooks/useRoles";
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
-const UserEdit = ({ userId }) => {
+const UserEdit = ({ userId, refreshData }) => {
     const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
     const {users: managers, fetchUsers: fetchManagers} = useUsers();
     const {roles, fetchRoles} = useRoles();
-    const { setDiscardWarning, closeTopModal } = useModals();
+    const { openModal, setDiscardWarning, closeTopModal } = useModals();
     const [formData, setFormData] = useState({
         login: '',
         email: '',
@@ -88,7 +88,12 @@ const UserEdit = ({ userId }) => {
         const response = await saveUser(formData, userId);
         if (response) {
             setDiscardWarning(false);
+            refreshData('users', true);
+            refreshData('user', userId);
             closeTopModal();
+            if (!userId) {
+                openModal({ type: 'userDetails', data: { id: response.id } });
+            }
         }
         setFormData({
             login: '',
@@ -138,17 +143,6 @@ const UserEdit = ({ userId }) => {
                         onChange={handleChange}
                         placeholder="Enter email"
                         required
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder={userId ? 'Enter new password (optional)' : 'Enter password'}
-                        required={!userId}
                     />
                 </div>
                 <div className="form-group">

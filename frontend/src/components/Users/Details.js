@@ -6,7 +6,7 @@ import { useModals } from "../../contexts/ModalContext";
 
 const UserDetails = ({ userId }) => {
     const { user, loading, fetchUser, deleteUser } = useUser();
-    const { openModal, closeTopModal } = useModals();
+    const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {
         if (userId) {
@@ -14,9 +14,16 @@ const UserDetails = ({ userId }) => {
         }
     }, [userId, fetchUser]);
 
+    useEffect(() => {
+        if (refreshTriggers?.user?.data === parseInt(userId)) {
+            fetchUser(userId, true).then();
+        }
+    }, [userId, fetchUser, refreshTriggers]);
+
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         deleteUser(userId).then();
+        refreshData('users', { userId });
         closeTopModal();
     };
 

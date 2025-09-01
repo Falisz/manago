@@ -2,7 +2,7 @@
 import React, {useEffect, useRef} from 'react';
 import '../assets/styles/Modal.css';
 
-const Modal = ({ children, isVisible = false, onClose, closeButton = true, zIndex = 1000 }) => {
+const Modal = ({ children, isVisible = false, isPopUp = false, onClose, closeButton = true, zIndex = 1000 }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {
@@ -47,7 +47,7 @@ const Modal = ({ children, isVisible = false, onClose, closeButton = true, zInde
                 role="presentation"
             />
             <div
-                className={`app-modal-content ${!isVisible ? 'hidden' : ''}`}
+                className={`app-modal-content ${isPopUp ? 'pop-up' : ''} ${!isVisible ? 'hidden' : ''}`}
                 style={{ zIndex: zIndex + 1 }}
                 tabIndex="-1"
                 ref={modalRef}

@@ -217,7 +217,7 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
 }
 
 export const ManagersIndex = () => {
-    const { openModal } = useModals();
+    const { openModal, refreshTriggers } = useModals();
     const { users, loading: usersLoading, fetchUsers } = useUsers();
 
     useEffect(() => {
@@ -225,6 +225,12 @@ export const ManagersIndex = () => {
             fetchUsers('managers').then();
         }
     }, [fetchUsers, users]);
+
+    useEffect(() => {
+        if (refreshTriggers?.users) {
+            fetchUsers('managers').then();
+        }
+    }, [refreshTriggers, fetchUsers]);
 
     return (
         <>
@@ -245,7 +251,7 @@ export const ManagersIndex = () => {
 }
 
 export const EmployeesIndex = () => {
-    const { openModal } = useModals();
+    const { openModal, refreshTriggers } = useModals();
     const { users, loading: usersLoading, fetchUsers } = useUsers();
 
     useEffect(() => {
@@ -253,6 +259,12 @@ export const EmployeesIndex = () => {
             fetchUsers('employees').then();
         }
     }, [fetchUsers, users]);
+
+    useEffect(() => {
+        if (refreshTriggers?.users) {
+            fetchUsers('employees').then();
+        }
+    }, [refreshTriggers, fetchUsers]);
 
     return (
         <>
@@ -271,8 +283,8 @@ export const EmployeesIndex = () => {
     );
 };
 
-const UsersIndex = () => {
-    const { openModal } = useModals();
+export const UsersIndex = () => {
+    const { openModal, refreshTriggers } = useModals();
     const { users, loading: usersLoading, fetchUsers } = useUsers();
 
     useEffect(() => {
@@ -280,6 +292,12 @@ const UsersIndex = () => {
             fetchUsers().then();
         }
     }, [fetchUsers, users]);
+
+    useEffect(() => {
+        if (refreshTriggers?.users) {
+            fetchUsers().then();
+        }
+    }, [fetchUsers, refreshTriggers]);
 
     return (
         <>

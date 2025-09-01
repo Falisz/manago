@@ -37,6 +37,36 @@
     transform: translateX(100%);
     visibility: hidden;
 }
+
+
+.app-modal-content.pop-up {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: fit-content;
+    height: fit-content;
+    transform: translate(-50%, -50%) scale(1);
+    transition: ease-in-out 0.3s;
+}
+.app-modal-content.pop-up.hidden {
+    transform: translate(-50%, -50%) scale(0.01);
+    transform-origin: center center;
+    visibility: hidden;
+}
+.app-modal-content.pop-up .action-button {
+    display: inline-flex;
+    margin: 5px;
+    padding: 8px;
+    background: var(--link-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.app-modal-content.pop-up .action-button.discard {
+    background: orangered;
+}
+
 .app-modal-content>h1 {
     margin: 0 0 10px;
     font-weight: 300;

@@ -1,5 +1,5 @@
 // FRONTEND/contexts/ModalContext.js
-import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
+import React, {createContext, useContext, useState, useEffect, useCallback, useRef} from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
@@ -16,15 +16,23 @@ const ANIMATION_DURATION = 300;
 export const ModalProvider = ({ children }) => {
     const [modalStack, setModalStack] = useState([]);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [refreshTriggers, setRefreshTriggers] = useState({});
+    const modalStackRef = useRef([]);
 
-    const openModal = (modal) => {
+    useEffect(() => {
+        modalStackRef.current = modalStack;
+    }, [modalStack]);
+
+    const openModal = useCallback((modal) => {
         setModalStack((prev) => {
             const isDuplicate = prev.some(
                 (existing) =>
                     existing.type === modal.type &&
                     existing.data?.id === modal.data?.id
             );
-            if (isDuplicate) return prev;
+            if (isDuplicate) {
+                return prev;
+            }
             return [...prev, { ...modal, isVisible: false }];
         });
 
@@ -40,11 +48,13 @@ export const ModalProvider = ({ children }) => {
                 return newStack;
             });
         }, ANIMATION_DURATION);
-    };
+    }, []);
 
-    const setDiscardWarning = (value) => {
+    const setDiscardWarning = useCallback((value) => {
         setModalStack((prev) => {
             if (prev.length === 0) return prev;
+            const top = prev[prev.length - 1];
+            if (top.discardWarning === value) return prev;
             const newStack = [...prev];
             newStack[newStack.length - 1] = {
                 ...newStack[newStack.length - 1],
@@ -52,30 +62,57 @@ export const ModalProvider = ({ children }) => {
             };
             return newStack;
         });
-    };
+    }, []);
 
-    const closeTopModal = useCallback(() => {
+    const closeModal = useCallback(() => {
         setModalStack((prev) => {
-            if (prev.length === 0) return prev;
-
-            const topModal = prev[prev.length - 1];
-            if (topModal?.discardWarning) {
-                if (!window.confirm('Changes were made. Are you sure you want to discard them?')) {
-                    return prev;
-                }
-            }
-
             const newStack = [...prev];
+
             newStack[newStack.length - 1] = {
                 ...newStack[newStack.length - 1],
                 isVisible: false,
             };
+
             return newStack;
         });
 
         setTimeout(() => {
             setModalStack((prev) => prev.slice(0, -1));
         }, ANIMATION_DURATION);
+    }, []);
+
+    const closeTopModal = useCallback(() => {
+        const currentStack = modalStackRef.current;
+        if (currentStack.length === 0) {
+            return;
+        }
+        const topModal = currentStack[currentStack.length - 1];
+
+        if (topModal?.discardWarning) {
+            openModal({
+                type: 'confirm',
+                isPopUp: true,
+                message: 'Changes were made. Are you sure you want to discard them?',
+                onConfirm: () => {
+                    closeModal();
+                    setTimeout(() => {
+                        setDiscardWarning(false);
+                        closeModal();
+                    }, ANIMATION_DURATION);
+                },
+            });
+            return;
+        }
+
+        closeModal();
+
+    }, [closeModal, openModal, setDiscardWarning]);
+
+    const refreshData = useCallback((type, data) => {
+        setRefreshTriggers((prev) => ({
+            ...prev,
+            [type]: { data, timestamp: Date.now() },
+        }));
     }, []);
 
     useEffect(() => {
@@ -115,11 +152,11 @@ export const ModalProvider = ({ children }) => {
     const renderModalContent = (modal) => {
         switch (modal.type) {
             case 'userDetails':
-                return <UserDetails userId={modal.data.id} />;
+                return <UserDetails userId={modal.data.id} refreshData={refreshData} />;
             case 'userNew':
-                return <UserEdit />
+                return <UserEdit refreshData={refreshData} />;
             case 'userEdit':
-                return <UserEdit userId={modal.data.id} />;
+                return <UserEdit userId={modal.data.id} refreshData={refreshData} />;
             case 'roleDetails':
                 return <RoleDetails roleId={modal.data.id} />;
             case 'roleNew':
@@ -134,18 +171,27 @@ export const ModalProvider = ({ children }) => {
                     icon={'add'}
                     description={"There will be a new team edit form here. Depending on enabled modules it may have project and/or branch fields."}
                 />;
+            case 'confirm':
+                return (
+                    <div>
+                        <p>{modal.message}</p>
+                        <button className={'action-button'} onClick={modal.onConfirm}>Confirm</button>
+                        <button className={'action-button discard'} onClick={closeTopModal}>Cancel</button>
+                    </div>
+                );
             default:
                 return <div>Unknown modal type</div>;
         }
     };
 
     return (
-        <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal }}>
+        <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal, refreshData, refreshTriggers }}>
             {children}
             {modalStack.map((modal, index) => (
                 <Modal
                     key={index}
                     onClose={closeTopModal}
+                    isPopUp={modal.isPopUp}
                     isVisible={modal.isVisible}
                     zIndex={1000 + index * 10}
                 >
