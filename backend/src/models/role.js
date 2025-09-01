@@ -17,6 +17,10 @@ export const Role = sequelize.define('Role', {
         defaultValue: 10,
         allowNull: false,
     },
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
     system_default: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
