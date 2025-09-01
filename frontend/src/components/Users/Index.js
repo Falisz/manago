@@ -174,6 +174,60 @@ const UsersTable = ({ users, loading }) => {
 // TODO: Add table fields - Employees will have Managers field, while Manager will also have Reporting Users field
 // TODO: List selections with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 
+export const ManagersIndex = () => {
+    const { openModal } = useModals();
+    const { users, loading: usersLoading, fetchUsers } = useUsers();
+
+    useEffect(() => {
+        if (!users) {
+            fetchUsers('managers').then();
+        }
+    }, [fetchUsers, users]);
+
+    return (
+        <>
+            <h1>Managers of Zyrah</h1>
+            <Button
+                className="new-user-button"
+                onClick={() => openModal({ type: 'userNew' })}
+                label={'Add Manager'}
+                icon={'add'}
+            />
+            <UsersTable
+                users={users}
+                loading={usersLoading}
+            />
+        </>
+    );
+}
+
+export const EmployeesIndex = () => {
+    const { openModal } = useModals();
+    const { users, loading: usersLoading, fetchUsers } = useUsers();
+
+    useEffect(() => {
+        if (!users) {
+            fetchUsers('employees').then();
+        }
+    }, [fetchUsers, users]);
+
+    return (
+        <>
+            <h1>Employees of Zyrah</h1>
+            <Button
+                className="new-user-button"
+                onClick={() => openModal({ type: 'userNew' })}
+                label={'Add Employee'}
+                icon={'add'}
+            />
+            <UsersTable
+                users={users}
+                loading={usersLoading}
+            />
+        </>
+    );
+};
+
 const UsersIndex = () => {
     const { openModal } = useModals();
     const { users, loading: usersLoading, fetchUsers } = useUsers();

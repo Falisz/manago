@@ -7,11 +7,15 @@ const useUsers = () => {
     const [users, setUsers] = useState(null);
     const [error, setError] = useState(null);
 
-    const fetchUsers = useCallback(async (loading=true) => {
+    const fetchUsers = useCallback(async (type=null, loading=true) => {
         try {
             setLoading(loading);
             setError(null);
-            const response = await axios.get('/users', { withCredentials: true });
+
+            let url = '/users';
+            if (type === 'employees' || type === 'managers')
+                url = url + '/' + type;
+            const response = await axios.get(url, { withCredentials: true });
             setUsers(response.data);
             return response.data;
         } catch (err) {
