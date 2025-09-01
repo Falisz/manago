@@ -2,11 +2,16 @@
 import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
 import axios from 'axios';
 
-const ConnectivityContext = createContext();
+const AppStatusContext = createContext();
 
-export const ConnectivityProvider = ({ children }) => {
+export const AppStatusProvider = ({ children }) => {
     const [isConnected, setIsConnected] = useState(true);
-    const [appConfig, setAppConfig] = useState({ theme: process.env['REACT_APP_THEME'] || 'dark', palette: process.env['REACT_APP_COLOR'] || 'blue' });
+    const [appConfig, setAppConfig] = useState({
+        theme: process.env['REACT_APP_THEME'] || 'dark',
+        palette: process.env['REACT_APP_COLOR'] || 'blue'
+    });
+    const [loading, setLoading] = useState(true);
+
 
     const checkConnection = useCallback(async () => {
         try {
@@ -29,10 +34,15 @@ export const ConnectivityProvider = ({ children }) => {
     }, [checkConnection]);
 
     return (
-        <ConnectivityContext.Provider value={{ isConnected, appConfig }}>
+        <AppStatusContext.Provider value={{ 
+            isConnected, 
+            appConfig,
+            loading,
+            setLoading
+        }}>
             {children}
-        </ConnectivityContext.Provider>
+        </AppStatusContext.Provider>
     );
 };
 
-export const useConnectivity = () => useContext(ConnectivityContext);
+export const useAppStatus = () => useContext(AppStatusContext);

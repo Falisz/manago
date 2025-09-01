@@ -5,8 +5,7 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './assets/styles/App.css';
 
 // APP CONTEXTS
-import { ConnectivityProvider, useConnectivity} from './contexts/ConnectivityContext';
-import { LoadingProvider, useLoading } from './contexts/LoadingContext';
+import { AppStatusProvider, useAppStatus} from './contexts/AppStatusContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppCoreProvider, useAppCore } from './contexts/AppCoreContext';
 import { ModalProvider } from './contexts/ModalContext';
@@ -28,9 +27,8 @@ import ConnectivityPopup from './components/ConnectivityPopup';
 // TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
 
 const AppContent = () => {
-    const { loading } = useLoading();
+    const { appConfig, loading } = useAppStatus();
     const { user, access, AuthUser } = useAuth();
-    const { appConfig } = useConnectivity();
     const { pages, managerView } = useAppCore();
 
     useEffect(() => {
@@ -120,20 +118,18 @@ const AppContent = () => {
 
 const App = () => {
     return (
-        <ConnectivityProvider>
-            <LoadingProvider>
-                <AuthProvider>
-                    <AppCoreProvider>
-                        <Router>
-                            <ModalProvider>
-                                <AppContent />
-                                <ConnectivityPopup />
-                            </ModalProvider>
-                        </Router>
-                    </AppCoreProvider>
-                </AuthProvider>
-            </LoadingProvider>
-        </ConnectivityProvider>
+        <AppStatusProvider>
+            <AuthProvider>
+                <AppCoreProvider>
+                    <Router>
+                        <ModalProvider>
+                            <AppContent />
+                            <ConnectivityPopup />
+                        </ModalProvider>
+                    </Router>
+                </AppCoreProvider>
+            </AuthProvider>
+        </AppStatusProvider>
     );
 };
 

@@ -1,7 +1,7 @@
 // FRONTEND/contexts/AuthContext.js
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { useLoading } from './LoadingContext';
+import { useAppStatus } from './AppStatusContext';
 
 const AuthContext = createContext();
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     const [access, setAccess] = useState(null);
     const [managerAccess, setManagerAccess] = useState(null);
     const isCheckingRef = useRef(false);
-    const { setLoading } = useLoading();
+    const { setLoading } = useAppStatus();
 
     const AuthUser = useCallback(async (withLoader = false) => {
         if (isCheckingRef.current) return;

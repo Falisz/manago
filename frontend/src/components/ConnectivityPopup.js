@@ -1,10 +1,11 @@
 // FRONTEND/ConnectivityPopup.js
 import React from 'react';
-import { useConnectivity } from '../contexts/ConnectivityContext';
+import { useAppStatus } from '../contexts/AppStatusContext';
 import '../assets/styles/Connectivity.css';
+import Button from './Button';
 
 const ConnectivityPopup = () => {
-    const { isConnected } = useConnectivity();
+    const { isConnected } = useAppStatus();
 
     if (isConnected) return null;
 
@@ -14,6 +15,11 @@ const ConnectivityPopup = () => {
             <div className="connectivity-message">
                 <h4>Connection Lost</h4>
                 <p>No connection to the server. Please check your network.</p>
+                <Button
+                    onClick={() => window.location.reload()}
+                >
+                    Refresh
+                </Button>
             </div>
         </div>
     );

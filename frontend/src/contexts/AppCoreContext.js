@@ -1,7 +1,7 @@
 // FRONTEND/contexts/AppCoreContext.js
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useLoading } from './LoadingContext';
+import { useAppStatus } from './AppStatusContext';
 import { useAuth } from './AuthContext';
 import componentMap from "../Components";
 import InWorks from "../components/InWorks";
@@ -10,7 +10,7 @@ const AppCoreContext = createContext();
 
 export const AppCoreProvider = ({ children }) => {
     const { user, access, managerAccess } = useAuth();
-    const { setLoading } = useLoading();
+    const { setLoading } = useAppStatus();
     const [modules, setModules] = useState([]);
     const [pages, setPages] = useState(null);
     const [managerView, setManagerView] = useState(false);
