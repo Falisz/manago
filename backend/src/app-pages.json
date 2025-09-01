@@ -13,24 +13,34 @@
       "title": "Employees",
       "module": 0,
       "icon": "people",
-      "component": "UsersIndex",
+      "component": "EmployeesIndex",
       "subpages": [
+        {
+          "path": "managers",
+          "title": "Managers",
+          "icon": "",
+          "component": "ManagersIndex"
+        },
+        {
+          "path": "all-users",
+          "title": "All Users",
+          "icon": "",
+          "component": "UsersIndex"
+        },
+        {
+          "path": "teams",
+          "title": "Teams",
+          "module": 1,
+          "icon": "groups",
+          "component": "TeamsIndex"
+        },
         {
           "path": "roles",
           "title": "Security Roles",
           "icon": "",
-          "component": "RolesIndex",
-          "subpages": []
+          "component": "RolesIndex"
         }
       ]
-    },
-    {
-      "path": "teams",
-      "title": "Teams",
-      "module": 1,
-      "icon": "groups",
-      "component": "TeamsIndex",
-      "subpages": []
     },
     {
       "path": "projects",
