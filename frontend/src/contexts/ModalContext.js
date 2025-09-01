@@ -94,17 +94,17 @@ export const ModalProvider = ({ children }) => {
                 isPopUp: true,
                 message: 'Changes were made. Are you sure you want to discard them?',
                 onConfirm: () => {
-                    closeModal();
+                    closeModal(); // Closing-self (pop-up confirmation modal)
                     setTimeout(() => {
-                        setDiscardWarning(false);
-                        closeModal();
+                        setDiscardWarning(false); // Resetting discard warning from the topModal
+                        closeModal(); // Closing the topModal.
                     }, ANIMATION_DURATION);
                 },
             });
-            return;
+            return; // Escaping this callback - new pop-up confirmation modal will handle closing from now on.
         }
 
-        closeModal();
+        closeModal(); // Closing the topModal if there is no discardWarning on it.
 
     }, [closeModal, openModal, setDiscardWarning]);
 
@@ -165,6 +165,12 @@ export const ModalProvider = ({ children }) => {
                 return <RoleEdit roleId={modal.data.id} />;
             case 'postDetails':
                 return <PostDetails postId={modal.data.id} />;
+            case 'teamDetails':
+                return <InWorks
+                    title={'Teams'}
+                    icon={'info'}
+                    description={"There will be a new team details window here."}
+                />;
             case 'teamNew':
                 return <InWorks
                     title={'Teams'}
