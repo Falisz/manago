@@ -67,11 +67,10 @@ router.post('/new', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const { name, power, system_default } = req.body;
+        const { name, description } = req.body;
         const result = await createRole({
             name,
-            power,
-            system_default
+            description
         });
 
         if (!result.success) {
