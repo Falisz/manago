@@ -176,7 +176,6 @@ const TeamsTable = () => {
     if (loading) {
         return <Loader />;
     }
-    console.log(teams);
 
     return (
         <div className="teams-list">
