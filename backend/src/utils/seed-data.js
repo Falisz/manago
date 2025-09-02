@@ -79,7 +79,13 @@ export async function seedData() {
                 { id: 99, name: 'Admin', system_default: true,
                     description: "Role for administrators with full access to the system." },
             ];
-        await seedModel(Role, 'roles', roles, 'roles')
+        await seedModel(Role, 'roles', roles, 'roles');
+        await sequelize.query(`
+            SELECT setval(
+                pg_get_serial_sequence('roles', 'id'),
+                COALESCE((SELECT MAX(id) FROM roles), 1)
+            );
+        `);
 
         let userCount = await User.count();
         if (userCount > 0) {
