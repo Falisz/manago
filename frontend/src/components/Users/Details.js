@@ -23,7 +23,7 @@ const UserDetails = ({ userId }) => {
     const handleDelete = async () => {
         if (!window.confirm('Are you sure you want to delete this user?')) return;
         deleteUser(userId).then();
-        refreshData('users', { userId });
+        refreshData('users', true);
         closeTopModal();
     };
 

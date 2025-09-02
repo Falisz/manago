@@ -7,12 +7,7 @@ import useRoles from "../../hooks/useRoles";
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
-const UserEdit = ({ userId, refreshData }) => {
-    const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
-    const {users: managers, fetchUsers: fetchManagers} = useUsers();
-    const {roles, fetchRoles} = useRoles();
-    const { openModal, setDiscardWarning, closeTopModal } = useModals();
-    const [formData, setFormData] = useState({
+const FORM_CLEAN_STATE = {
         login: '',
         email: '',
         password: '',
@@ -23,7 +18,14 @@ const UserEdit = ({ userId, refreshData }) => {
         secondary_manager_id: '',
         active: true,
         manager_view_access: false,
-    });
+};
+
+const UserEdit = ({ userId }) => {
+    const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
+    const {users: managers, fetchUsers: fetchManagers} = useUsers();
+    const {roles, fetchRoles} = useRoles();
+    const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
+    const [formData, setFormData] = useState(FORM_CLEAN_STATE);
 
     useEffect(() => {
         fetchRoles().then();
@@ -32,18 +34,7 @@ const UserEdit = ({ userId, refreshData }) => {
 
     useEffect(() => {
         if (!userId) {
-            setFormData({
-                login: '',
-                email: '',
-                password: '',
-                first_name: '',
-                last_name: '',
-                role_ids: [],
-                primary_manager_id: '',
-                secondary_manager_id: '',
-                active: true,
-                manager_view_access: false,
-            });
+            setFormData(FORM_CLEAN_STATE);
             setLoading(false);
             return;
         }
@@ -95,18 +86,7 @@ const UserEdit = ({ userId, refreshData }) => {
                 openModal({ type: 'userDetails', data: { id: response.id } });
             }
         }
-        setFormData({
-            login: '',
-            email: '',
-            password: '',
-            first_name: '',
-            last_name: '',
-            role_ids: [],
-            primary_manager_id: '',
-            secondary_manager_id: '',
-            active: true,
-            manager_view_access: false,
-        });
+        setFormData(FORM_CLEAN_STATE);
     };
 
     const availableManagers = managers?.filter(manager => parseInt(manager.id) !== parseInt(userId)) || [];
