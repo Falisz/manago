@@ -5,35 +5,30 @@ import useRole from "../../hooks/useRole";
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
+const FORM_CLEAN_STATE = {
+        name: '',
+        description: ''
+    };
+
 const RoleEdit = ({ roleId }) => {
     const { role, loading, error, success, setLoading, fetchRole, saveRole } = useRole();
-    const { closeTopModal, setDiscardWarning } = useModals();
-
-    const [formData, setFormData] = useState({
-        name: '',
-        power: '',
-        system_default: false,
-    });
+    const { closeTopModal, setDiscardWarning, refreshData } = useModals();
+    const { openModal } = useModals();
+    const [formData, setFormData] = useState(FORM_CLEAN_STATE);
 
     useEffect(() => {
         if (!roleId) {
-            setFormData({
-                name: '',
-                power: '',
-                system_default: false,
-            });
+            setFormData(FORM_CLEAN_STATE);
             setLoading(false);
             return;
         }
-
         fetchRole(roleId).then();
     }, [roleId, setLoading, fetchRole]);
 
     useEffect(() => {
         setFormData({
             name: role?.name || '',
-            power: role?.power || '',
-            system_default: role?.system_default || false,
+            description: role?.description || '',
         });
     }, [role]);
 
@@ -51,7 +46,18 @@ const RoleEdit = ({ roleId }) => {
         const response = await saveRole(formData, roleId);
         if (response) {
             setDiscardWarning(false);
-            closeTopModal();
+            setTimeout(() => {
+                closeTopModal();
+                if (!roleId) {
+                setTimeout(() => {
+                        openModal({ type: 'roleDetails', data: { id: response.id } });
+                    }, 350);
+                } else {
+                    refreshData('role', roleId);
+                }
+                refreshData('roles', true);
+            }, 0);
+            
         }
     };
 
@@ -62,7 +68,7 @@ const RoleEdit = ({ roleId }) => {
             <h1>{roleId ? 'Edit Role' : 'Add New Role'}</h1>
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
-            <form onSubmit={handleSubmit} className="user-form">
+            <form onSubmit={handleSubmit} className="role-form">
                 <div className="form-group">
                     <label>Name</label>
                     <input
@@ -75,26 +81,13 @@ const RoleEdit = ({ roleId }) => {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Power</label>
-                    <input
-                        type="text"
-                        name="power"
-                        value={formData.power}
+                    <label>Description</label>
+                    <textarea
+                        name="description"
+                        value={formData.description}
                         onChange={handleChange}
-                        placeholder="Enter power level"
-                        required
+                        placeholder="Enter role description (optional)"
                     />
-                </div>
-                <div className="form-group">
-                    <label>
-                        <input
-                            type="checkbox"
-                            name="system_default"
-                            checked={formData.system_default}
-                            onChange={handleChange}
-                        />
-                        System Default
-                    </label>
                 </div>
                 <div className="form-actions">
                     <button type="submit" className="save-button">

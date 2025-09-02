@@ -10,23 +10,25 @@ import Loader from "../Loader";
 // TODO: Implement role restriction over the UI.
 
 const RolesList = () => {
-    const { openModal } = useModals();
+    const { openModal, refreshTriggers } = useModals();
     const { roles, loading, fetchRoles } = useRoles();
 
     useEffect(() => {
         if (!roles) fetchRoles().then();
     }, [fetchRoles, roles]);
 
-    if (loading) {
-        return <Loader />;
-    }
+    useEffect(() => {
+        if (refreshTriggers?.roles) fetchRoles(false).then();
+    }, [fetchRoles, refreshTriggers]);
+
+    if (loading) return <Loader />;
     
     return (
         <div className="roles-list">
-            {roles?.length === 0 ? (
+            {roles === null || roles?.length === 0 ? (
                 <p>No roles found.</p>
             ) : (
-                roles.map((role) => (
+                roles?.map((role) => (
                     <div
                         className="roles-list-row"
                         key={role.id}

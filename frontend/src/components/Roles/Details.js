@@ -6,7 +6,7 @@ import { useModals } from "../../contexts/ModalContext";
 
 const RoleDetails = ({ roleId }) => {
     const { role, loading, fetchRole, deleteRole } = useRole();
-    const { openModal, closeTopModal } = useModals();
+    const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {
         if (roleId) {
@@ -14,10 +14,26 @@ const RoleDetails = ({ roleId }) => {
         }
     }, [roleId, fetchRole]);
 
+    useEffect(() => {
+        if (refreshTriggers?.role?.data === parseInt(roleId)) {
+            fetchRole(roleId, true).then();
+        }
+    }, [roleId, fetchRole, refreshTriggers]);
+
     const handleDelete = async () => {
-        if (!window.confirm('Are you sure you want to delete this role?')) return;
-        deleteRole(roleId).then();
-        closeTopModal();
+        openModal({
+            type: 'confirm',
+            isPopUp: true,
+            message: 'Are you sure you want to delete this role? This action cannot be undone.',
+            onConfirm: () => {
+                closeTopModal();
+                setTimeout(() => {
+                    deleteRole(roleId).then();
+                    refreshData('roles', true);
+                    closeTopModal();
+                }, 300);
+            },
+        });
     };
 
     if (loading) {
@@ -36,16 +52,12 @@ const RoleDetails = ({ roleId }) => {
             </div>
             <div className="role-detail-group">
                 <div className={"role-detail-label"}>Role details</div>
-                <div className={"role-login"} title={"Power"}>Power: {role.power}</div>
+                <div className={"role-description"} title={"Role description"}> {role.description}</div>
                 {role.system_default ? (
                     <div className="role-system-default">
-                        <i className="material-symbols-outlined true">check</i> This is system default role.
+                        <i className="material-symbols-outlined true">check</i> This is system default role. You cannot edit nor delete it.
                     </div>
-                ) : (
-                    <div className="role-system-default">
-                        <i className="material-symbols-outlined false">close</i> This is not system default role.
-                    </div>
-                )}
+                ) : (null)}
                 </div>
             
             <div className="role-detail-group">
