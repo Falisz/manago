@@ -20,11 +20,15 @@ const RoleDetails = ({ roleId }) => {
         }
     }, [roleId, fetchRole, refreshTriggers]);
 
-    const handleDelete = async () => {
+    const handleDelete = async (users = 0) => {
+        let message = 'Are you sure you want to delete this role? This action cannot be undone.'
+        if (users > 0) {
+            message += ` This role is currently assigned to ${users} user${users > 1 ? 's' : ''}.`
+        }
         openModal({
             type: 'confirm',
             isPopUp: true,
-            message: 'Are you sure you want to delete this role? This action cannot be undone.',
+            message: message,
             onConfirm: () => {
                 closeTopModal();
                 setTimeout(() => {
@@ -73,16 +77,16 @@ const RoleDetails = ({ roleId }) => {
                 )) :
                 <div className={"user-detail-data placeholder"}>No users with this role.</div>}
             </div>
-            <button
-                type="button"
-                className="button"
-                onClick={() => openModal({ type: 'roleEdit', data: { id: role.id } })}
-            >
-                <i className="material-symbols-outlined">edit</i> Edit Role
-            </button>
-            <button type="button" className="delete-button" onClick={handleDelete}>
-                <i className="material-symbols-outlined">delete</i> Delete Role
-            </button>
+            {!role.system_default? (
+                <>
+                    <button type="button" className="button" onClick={() => openModal({ type: 'roleEdit', data: { id: role.id } })}>
+                        <i className="material-symbols-outlined">edit</i> Edit Role
+                    </button>
+                    <button type="button" className="delete-button" onClick={() => handleDelete(role.users?.length)}>
+                        <i className="material-symbols-outlined">delete</i> Delete Role
+                    </button>
+                </>
+            ) : (null)}
         </div>
     );
 };
