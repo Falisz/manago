@@ -26,8 +26,6 @@ router.post('/login', async (req, res) => {
 
         await securityLog(userAuth.user?.id, ip + " " + host,"Login","Success.")
 
-        console.log(`User ${userAuth.user?.username} logged in from ${ip} (${host})`);
-
         return res.json({
             message: 'Login successful!',
             user: userAuth,
