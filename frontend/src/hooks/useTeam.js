@@ -29,7 +29,7 @@ const useTeam = () => {
             setSuccess(null);
 
             let teamData;
-            let res = await axios.get(`/team/${teamId}`, { withCredentials: true });
+            let res = await axios.get(`/teams/${teamId}`, { withCredentials: true });
             if (res.data) {
                 teamData = res.data;
                 setTeam(teamData);
