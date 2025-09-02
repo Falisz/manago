@@ -28,14 +28,64 @@ const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
     </div>
 );
 
-const TeamsTable = ({ teams, loading }) => {
+const TeamItem = ({ team }) => {
     const { openModal } = useModals();
 
+    return (
+        <>
+            <div className="team-item">
+                <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
+                    {team.code_name}
+                </div>
+                <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
+                    {team.name}
+                </div>
+                <div>{team.members_count ?? (team.members ? team.members.length : 0)}</div>
+                <div>
+                    {(team.managers || []).length === 0
+                        ? (null)
+                        : (team.managers || []).map(manager =>
+                            <span key={manager.id} className="manager-name"
+                                onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
+                            >{manager.first_name} {manager.last_name}</span>
+                        ).reduce((prev, curr) => [prev, ', ', curr])
+                    }
+                </div>
+                <div>
+                    {(team.team_leaders || []).length === 0
+                        ? (null)
+                        : (team.team_leaders || []).map(leader =>
+                            <span key={leader.id} className="teamleader-name"
+                                onClick={() => openModal({ type: 'userDetails', data: { id: leader.id } })}
+                            >{leader.first_name} {leader.last_name}</span>
+                        ).reduce((prev, curr) => [prev, ', ', curr])
+                    }
+                </div>
+            </div>
+            {team.subteams && team.subteams?.length > 0 ? (
+                <div className="subteams">
+                    {team.subteams.map(subteam => (
+                        <TeamItem key={subteam.id} team={subteam} />
+                    ))}
+                </div>
+                ) : (null)}
+        </>
+    );
+}
+
+const TeamsTable = () => {
+    const { teams, loading, fetchTeams } = useTeams();
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: 'asc'
     });
+
+    useEffect(() => {
+        if (!teams) {
+            fetchTeams().then();
+        }
+    }, [fetchTeams, teams]);
 
     const headers = useMemo(() => [
         { title: 'Codename', key: 'codename' },
@@ -126,6 +176,7 @@ const TeamsTable = ({ teams, loading }) => {
     if (loading) {
         return <Loader />;
     }
+    console.log(teams);
 
     return (
         <div className="teams-list">
@@ -146,31 +197,7 @@ const TeamsTable = ({ teams, loading }) => {
                     <p>No teams found.</p>
                 ) : (filteredAndSortedTeams?.map(team => (
                     <div className="teams-list-row" key={team.id}>
-                        <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
-                            {team.codename}
-                        </div>
-                        <div>{team.name}</div>
-                        <div>{team.members_count ?? (team.members ? team.members.length : 0)}</div>
-                        <div>
-                            {(team.managers || []).length === 0
-                                ? <span>-</span>
-                                : (team.managers || []).map(manager =>
-                                    <span key={manager.id} className="manager-name"
-                                        onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
-                                    >{manager.first_name} {manager.last_name}</span>
-                                ).reduce((prev, curr) => [prev, ', ', curr])
-                            }
-                        </div>
-                        <div>
-                            {(team.teamleaders || []).length === 0
-                                ? <span>-</span>
-                                : (team.teamleaders || []).map(leader =>
-                                    <span key={leader.id} className="teamleader-name"
-                                        onClick={() => openModal({ type: 'userDetails', data: { id: leader.id } })}
-                                    >{leader.first_name} {leader.last_name}</span>
-                                ).reduce((prev, curr) => [prev, ', ', curr])
-                            }
-                        </div>
+                        <TeamItem team={team} />
                     </div>
                 )))}
             </div>
@@ -180,13 +207,6 @@ const TeamsTable = ({ teams, loading }) => {
 
 const TeamsIndex = () => {
     const { openModal } = useModals();
-    const { teams, loading: teamsLoading, fetchTeams } = useTeams();
-
-    useEffect(() => {
-        if (!teams) {
-            fetchTeams().then();
-        }
-    }, [fetchTeams, teams]);
 
     return (
         <>
@@ -197,10 +217,7 @@ const TeamsIndex = () => {
                 label={'Add new Team'}
                 icon={'add'}
             />
-            <TeamsTable
-                teams={teams}
-                loading={teamsLoading}
-            />
+            <TeamsTable/>
         </>
     );
 };

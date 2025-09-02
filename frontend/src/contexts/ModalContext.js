@@ -8,6 +8,7 @@ import RoleDetails from "../components/Roles/Details";
 import RoleEdit from "../components/Roles/Edit";
 import PostDetails from "../components/Posts/Details";
 import InWorks from "../components/InWorks";
+import TeamDetails from '../components/Teams/Details';
 
 const ModalContext = createContext();
 
@@ -173,13 +174,8 @@ export const ModalProvider = ({ children }) => {
                 return <RoleEdit roleId={modal.data.id} />;
             case 'roleNew':
                 return <RoleEdit/>;
-            case 'postDetails':
-                return <PostDetails postId={modal.data.id} />;
             case 'teamDetails':
-                return <InWorks
-                    title={'Teams'} icon={'info'} modal={true}
-                    description={"There will be a new team details window here."}
-                />;
+                return <TeamDetails teamId={modal.data.id} />;
             case 'teamEdit':
                 return <InWorks
                     title={'Teams'} icon={'info'} modal={true}
@@ -191,6 +187,8 @@ export const ModalProvider = ({ children }) => {
                     description={"There will be a new team edit form here." + 
                         "Depending on enabled modules it may have project and/or branch fields."}
                 />;
+            case 'postDetails':
+                return <PostDetails postId={modal.data.id} />;
             case 'confirm':
                 return (
                     <div>
