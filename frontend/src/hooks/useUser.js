@@ -103,11 +103,6 @@ const useUser = () => {
             console.error('Error saving new user data:', err);
             setError('Error occurred while saving new user data.');
             return null;
-        } finally {
-            setLoading(false);
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
         }
     }, [fetchUser]);
 

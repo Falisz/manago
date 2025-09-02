@@ -42,7 +42,6 @@ const useRole = () => {
 
     const saveRole = useCallback(async (formData, roleId = null) => {
         try {
-            setLoading(true);
             setError(null);
             setSuccess(null);
             let response;
@@ -59,10 +58,6 @@ const useRole = () => {
             console.error('Error saving role:', err);
             setError(err.response?.data?.message || 'Failed to save role. Please try again.');
             return null;
-        } finally {
-            setLoading(false);
-            setError(null);
-            setSuccess(null);
         }
     }, []);
 
