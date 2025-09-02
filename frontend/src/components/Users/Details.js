@@ -34,6 +34,7 @@ const UserDetails = ({ userId }) => {
     if (!user) {
         return <h1>User not found!</h1>;
     }
+    console.log(user);
 
     return (
         <div className="user-detail">
@@ -77,6 +78,16 @@ const UserDetails = ({ userId }) => {
                 )) :
                 <div className={"user-detail-data placeholder"}>No manager assigned.</div>}
             </div>
+            {user.managed_users.length > 0 ? (<div className="user-detail-group">
+                <div className={"user-detail-label"}>Reportees</div> {user.managed_users.map((user) => (
+                    <div 
+                        className={"user-detail-data link"} 
+                        key={user.id} 
+                        onClick={() => openModal({ type: 'userDetails', data: { id: user.id } })}
+                    >
+                        {user.first_name} {user.last_name}
+                    </div>
+                ))}</div>)  : (null)}
             <div className="user-detail-group">
                 <div className={"user-detail-label"}>Roles</div>
                 {user.roles.length > 0 ? user.roles.map((role) => (

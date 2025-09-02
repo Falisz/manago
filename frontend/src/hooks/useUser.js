@@ -42,6 +42,12 @@ const useUser = () => {
                     managers: res.data,
                 }
                 
+                res = await axios.get(`/users/managed-users/${userId}`, { withCredentials: true });
+                userData = {
+                    ...userData,
+                    managed_users: res.data,
+                }
+                
                 setUser(userData);
                 userCacheRef.current[userId] = userData;
                 return userData;
