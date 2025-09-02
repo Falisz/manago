@@ -121,14 +121,21 @@ export const ModalProvider = ({ children }) => {
         const editUser = searchParams.get('editUser');
         if (editUser) openModal({ type: 'userEdit', data: { id: editUser } });
         const newUser = searchParams.get('newUser');
-        if (newUser !== null) openModal({ type: 'newUser' });
+        if (newUser) openModal({ type: 'userNew' });
 
         const roleDetails = searchParams.get('role');
         if (roleDetails) openModal({ type: 'roleDetails', data: { id: roleDetails } });
         const editRole = searchParams.get('editRole');
         if (editRole) openModal({ type: 'roleEdit', data: { id: editRole } });
         const newRole = searchParams.get('newRole');
-        if (newRole !== null) openModal({ type: 'newRole' });
+        if (newRole) openModal({ type: 'roleNew' });
+
+        const teamDetails = searchParams.get('team');
+        if (teamDetails) openModal({ type: 'teamDetails', data: { id: teamDetails } });
+        const editTeam = searchParams.get('editTeam');
+        if (editTeam) openModal({ type: 'teamEdit', data: { id: editTeam } });
+        const newTeam = searchParams.get('newTeam');
+        if (newTeam) openModal({ type: 'teamNew' });
 
         const postDetails = searchParams.get('post');
         if (postDetails) openModal({ type: 'postDetails', data: { id: postDetails } });
@@ -140,10 +147,13 @@ export const ModalProvider = ({ children }) => {
         modalStack.forEach((modal) => {
             if (modal.type === 'userDetails') newParams.set('user', modal.data.id);
             if (modal.type === 'userEdit') newParams.set('editUser', modal.data.id);
-            if (modal.type === 'userNew') newParams.set('newUser', '');
+            if (modal.type === 'userNew') newParams.set('newUser', true);
             if (modal.type === 'roleDetails') newParams.set('role', modal.data.id);
             if (modal.type === 'roleEdit') newParams.set('editRole', modal.data.id);
-            if (modal.type === 'roleNew') newParams.set('newRole', '');
+            if (modal.type === 'roleNew') newParams.set('newRole', true);
+            if (modal.type === 'teamDetails') newParams.set('team', modal.data.id);
+            if (modal.type === 'teamEdit') newParams.set('editTeam', modal.data.id);
+            if (modal.type === 'teamNew') newParams.set('newTeam', true);
             if (modal.type === 'postDetails') newParams.set('post', modal.data.id);
         });
         setSearchParams(newParams, { replace: true });
@@ -152,30 +162,34 @@ export const ModalProvider = ({ children }) => {
     const renderModalContent = (modal) => {
         switch (modal.type) {
             case 'userDetails':
-                return <UserDetails userId={modal.data.id} refreshData={refreshData} />;
-            case 'userNew':
-                return <UserEdit refreshData={refreshData} />;
+                return <UserDetails userId={modal.data.id} />;
             case 'userEdit':
-                return <UserEdit userId={modal.data.id} refreshData={refreshData} />;
+                return <UserEdit userId={modal.data.id} />;
+            case 'userNew':
+                return <UserEdit />;
             case 'roleDetails':
                 return <RoleDetails roleId={modal.data.id} />;
-            case 'roleNew':
-                return <RoleEdit/>
             case 'roleEdit':
                 return <RoleEdit roleId={modal.data.id} />;
+            case 'roleNew':
+                return <RoleEdit/>;
             case 'postDetails':
                 return <PostDetails postId={modal.data.id} />;
             case 'teamDetails':
                 return <InWorks
-                    title={'Teams'}
-                    icon={'info'}
+                    title={'Teams'} icon={'info'} modal={true}
                     description={"There will be a new team details window here."}
+                />;
+            case 'teamEdit':
+                return <InWorks
+                    title={'Teams'} icon={'info'} modal={true}
+                    description={"There will be a new team edit window here."}
                 />;
             case 'teamNew':
                 return <InWorks
-                    title={'Teams'}
-                    icon={'add'}
-                    description={"There will be a new team edit form here. Depending on enabled modules it may have project and/or branch fields."}
+                    title={'Teams'} icon={'add'} modal={true}
+                    description={"There will be a new team edit form here." + 
+                        "Depending on enabled modules it may have project and/or branch fields."}
                 />;
             case 'confirm':
                 return (
