@@ -144,41 +144,53 @@ const errorHandler = (err, req, res, _next) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+const INFO = `\x1b[1;34m[INFO]\x1b[0m`;
+const ERROR = `\x1b[31m[ERROR]\x1b[0m`;
+const WARN = `\x1b[1;33m[WARN]\x1b[0m`;
 
 /**
  * Starts the Express server and initializes the database.
  * @returns {Promise<void>}
  */
 async function startServer() {
-    console.log('[INFO] Starting the server...');
+    console.log(INFO + ' Starting the server...');
 
     try {
-        await sequelize.authenticate();
-        console.log('[INFO] Database connection established');
+        try {
+            await sequelize.authenticate();
+        } catch (err) {
+            throw new Error(ERROR + ' Database authentication failed: ' + err.message);
+        }
+        try {
+            await sequelize.sync();
+        } catch (err) {
+            throw new Error(ERROR + ' Database model sync failed: ' + err.message);
+        }
+        try {
+            await store.sync();
+        } catch (err) {
+            throw new Error(ERROR + ' Session store sync failed: ' + err.message);
+        }
 
-        await sequelize.sync();
-        console.log('[INFO] Database models synced successfully');
-
-        await store.sync();
-        console.log('[INFO] Session store synced successfully');
+        console.log(INFO + ' Database connection established. Data models and stores synced successfully.');
 
         if (process.stdin.isTTY) {
-            console.log(`[INFO] Press 'space' key within next two seconds to seed data...`);
+            console.log(INFO + ' Press \'space\' key within next two seconds to seed data...');
             const key = await waitForKeypress('space', 2000);
             if (key) {
                 await seedData();
             } else {
-                console.log('\n[INFO] Data seeding skipped.');
+                console.log('\n' + INFO + ' Data seeding skipped.');
             }
         } else {
-            console.log(`[INFO] Backend script is being run without interactive terminal. Skipping data seeding.`);
+            console.log(INFO + ' Backend script is being run without interactive terminal. Skipping data seeding.');
         }
 
         app.listen(PORT, () => {
-            console.log(`[INFO] Server is up and running on port ${PORT}`);
+            console.log(INFO + ' Server is up and running on port ' + PORT);
         });
     } catch (err) {
-        console.error('[ERROR] Failed to start server:', err);
+        console.error(ERROR + ' Failed to start server:', err);
         process.exit(1);
     }
 }
