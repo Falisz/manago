@@ -5,17 +5,11 @@ export const Role = sequelize.define('Role', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        allowNull: false,
         autoIncrement: true
     },
     name: {
         type: DataTypes.STRING(50),
         allowNull: false
-    },
-    power: {
-        type: DataTypes.INTEGER,
-        defaultValue: 10,
-        allowNull: false,
     },
     description: {
         type: DataTypes.TEXT,
@@ -23,7 +17,6 @@ export const Role = sequelize.define('Role', {
     },
     system_default: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false,
         allowNull: true
     }
 }, {

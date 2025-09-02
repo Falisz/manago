@@ -1,6 +1,6 @@
 //BACKEND/api/roles.js
 import express from 'express';
-import {getRoles, createRole, updateRole, deleteRole, getUserRoles, updateUserRoles} from "../controllers/roles.js";
+import {getRoles, createRole, updateRole, deleteRole, getUsersWithRole, updateUserRoles} from "../controllers/roles.js";
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -51,7 +51,7 @@ router.get('/user/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const roles = await getUserRoles(userId);
+        const roles = await getUsersWithRole(userId);
 
         res.json(roles);
 
@@ -98,9 +98,9 @@ router.put('/:roleId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid role ID.' });
         }
 
-        const { name, power, system_default } = req.body;
+        const { name, description } = req.body;
 
-        const result = await updateRole(parseInt(roleId), {name, power, system_default});
+        const result = await updateRole(parseInt(roleId), {name, description});
 
         if (!result.success) {
             return res.status(400).json({ message: result.message });

@@ -27,18 +27,18 @@ export async function getRoles(roleId = null) {
         role = {
             ...role.toJSON(),
         }
-        role.users = await getRoleUsers(roleId);
+        role.users = await getUsersWithRole(roleId);
 
         return role;
 
     } else {
 
-        const roles = await Role.findAll({order: [['power', 'ASC']]});
+        const roles = await Role.findAll({order: [['id', 'ASC']]});
 
         return await Promise.all(
             (roles || []).map(async role => {
                 const roleObj = { ...role.toJSON() };
-                roleObj.users = await getRoleUsers(roleObj.id);
+                roleObj.users = await getUsersWithRole(roleObj.id);
                 return roleObj;
             })
         );
@@ -80,7 +80,7 @@ export async function getUserRoles(userId) {
  * @param {number} roleId - Role ID
  * @returns {Promise<Array<{id: number, first_name: string, last_name: string}>>}
  */
-export async function getRoleUsers(roleId) {
+export async function getUsersWithRole(roleId) {
     if (!roleId) return [];
 
     const userRoles = await UserRole.findAll({
@@ -113,12 +113,11 @@ export async function getRoleUsers(roleId) {
  * Creates a new role.
  * @param {Object} data - Role data
  * @param {string} data.name - Role name
- * @param {number} data.power - Role power level
  * @returns {Promise<{success: boolean, message: string, role?: Object}>}
  */
 export async function createRole(data) {
 
-    if (!data.name || !data.power) {
+    if (!data.name) {
         return {success: false, message: "Mandatory data not provided."};
     }
 
@@ -127,8 +126,8 @@ export async function createRole(data) {
     }
 
     const role = await Role.create({
-        name: data.name || null,
-        power: data.power,
+        name: data.name,
+        description: data.description || null,
         system_default: false,
     });
 
@@ -159,8 +158,8 @@ export async function updateRole(roleId, data) {
     const roleUpdate = {};
 
     if (data.name) roleUpdate.name = data.name;
-    if (data.power) roleUpdate.power = data.power;
-    if (data.system_default) roleUpdate.system_default = data.system_default;
+    if (data.description) roleUpdate.description = data.description;
+    roleUpdate.system_default = false;
 
     const updatedRole = await role.update(roleUpdate);
 
