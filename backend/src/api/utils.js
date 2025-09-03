@@ -10,9 +10,8 @@ router.get('/',  (req, res) => {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
-        return res.status(200).json({ message: 'This is API endpoint for the Staff Portal app.\n' +
+        return res.json({ message: 'This is API endpoint for the Staff Portal app.\n' +
                 'To make requests please use Staff Portal app.' });
-
     } catch (err) {
         console.error('API endpoint error:', err);
         res.status(500).json({ message: 'API Error.' });
@@ -21,16 +20,16 @@ router.get('/',  (req, res) => {
 })
 
 //Server ping endpoint
-router.get('/ping', async (req, res) => {
+router.get('/config', async (req, res) => {
     try {
-        let responseData = { connected: true };
-        if (req.session.user) {
-            responseData.app_theme = 'dark';
-            responseData.app_palette = 'blue';
-        }
+        const responseData = {
+            is_connected: true,
+            app_theme: 'dark',
+            app_palette: 'blue'
+        };
         res.json(responseData);
     } catch (err) {
-        console.error('Ping error:', err);
+        console.error('Config get API error:', err);
         res.status(500).json({ message: 'API Error.', connected: false });
     }
 });
@@ -38,8 +37,11 @@ router.get('/ping', async (req, res) => {
 //App Modules endpoint
 router.get('/modules', async (req, res) => {
     try {
-        if (!req.session.user)
+        if (!req.session.user) {
+            if (req.query['psthr'] === 'true')
+                return res.status(200).json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
 
         return res.status(200).json(await getModules());
 
@@ -83,8 +85,11 @@ router.put('/modules/:id', async (req, res) => {
 //App Pages endpoint
 router.get('/pages', async (req, res) => {
     try {
-        if (!req.session.user)
+        if (!req.session.user) {
+            if (req.query['psthr'] === 'true')
+                return res.status(200).json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
 
         const managerView = await hasManagerView(req.session.user.id) ? 1 : 0;
 
