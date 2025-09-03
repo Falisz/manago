@@ -1,9 +1,27 @@
 import React from 'react';
 import '../assets/styles/AppModules.css';
-import { useAppCore } from '../contexts/AppCoreContext';
+import useAppStatus from "../contexts/AppStatusContext";
+import { useModals } from "../contexts/ModalContext";
 
 const AppModules = () => {
-    const { modules, handleToggle } = useAppCore();
+    const { appConfig, toggleModule } = useAppStatus();
+    const { openModal, closeTopModal } = useModals();
+
+    const handleToggleConfirm = (id, value) => {
+        openModal({
+            type: 'confirm',
+            isPopUp: true,
+            message: 'Are you sure you want to disable this app module? All the data related to it will not be ' +
+                'accessible within the app until its reactivation.',
+            onConfirm: () => {
+                closeTopModal();
+                setTimeout(() => {
+                    toggleModule(id, value).then();
+                }, 300);
+            },
+        });
+
+    }
 
     return (
         <>
@@ -12,10 +30,10 @@ const AppModules = () => {
                 <br/><b>These settings should be changed only by a system admin.</b>
             </div>
             <div className="modules-list">
-                {modules.length === 0 ? (
+                {appConfig.modules?.length === 0 ? (
                     <p>No modules found.</p>
                 ) : (
-                    modules.map((module) => {
+                    appConfig.modules?.map((module) => {
                         const isMain = module.id === 0;
                         return (
                             <div className="modules-list-row" key={module.id}>
@@ -26,7 +44,7 @@ const AppModules = () => {
                                         <input
                                             type="checkbox"
                                             checked={module.enabled}
-                                            onChange={() => handleToggle(module.id, module.enabled)}
+                                            onChange={() => handleToggleConfirm(module.id, module.enabled)}
                                             disabled={isMain}
                                         />
                                         <span className="toggle-slider"></span>

@@ -2,13 +2,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
-import {useAuth} from "../contexts/AuthContext";
-import {useAppCore} from "../contexts/AppCoreContext";
+import useAppStatus from "../contexts/AppStatusContext";
 
 const MobileNav = ({ logoText, currentView, currentPath }) => {
     const [mobileNavExpanded, setMobileNavExpanded] = useState(false);
-    const { user, managerAccess } = useAuth();
-    const { pages, toggleView } = useAppCore();
+    const { user, appConfig, toggleView } = useAppStatus();
 
     return (
         <nav className={`app-mobile-nav ${mobileNavExpanded ? 'expanded' : ''}`}>
@@ -28,7 +26,7 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                         left_panel_open
                     </span>
                 </li>
-                {pages && pages
+                {appConfig.pages && appConfig.pages
                     .map((page) => (
                         <li key={`${page.path}`} className={'app-mobile-nav-link-item'}>
                             <Link
@@ -75,7 +73,7 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                         <span className="app-nav-page-link-label">{user?.first_name || 'User'}</span>
                     </Link>
                     <ul className="submenu">
-                        {managerAccess && (
+                        {user.manager_view_access && (
                             <li className="submenu-item">
                                 <Link to="#" onClick={() => { toggleView(currentView === 'staff'); setMobileNavExpanded(false); }}>
                                     {currentView === 'staff' ? 'Go to Manager Portal' : 'Go to Staff Portal'}

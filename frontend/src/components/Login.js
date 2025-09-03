@@ -3,19 +3,19 @@ import '../assets/styles/Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
-import {useAuth} from "../contexts/AuthContext";
+import useAppStatus from "../contexts/AppStatusContext";
 
 const Login = () => {
-    const { AuthUser } = useAuth();
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const { authUser } = useAppStatus();
+    const [ username, setUsername] = useState('');
+    const [ password, setPassword] = useState('');
+    const [ error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             await axios.post('/login', { username, password }, { withCredentials: true });
-            await AuthUser(true);
+            await authUser(true);
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed!');
         }

@@ -1,16 +1,14 @@
 // FRONTEND/App.js
 // MAIN IMPORTS
-import React, {useEffect, useMemo} from 'react';
+import React, {useEffect} from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './assets/styles/App.css';
 
 // APP CONTEXTS
-import { AppStatusProvider, useAppStatus} from './contexts/AppStatusContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { AppCoreProvider, useAppCore } from './contexts/AppCoreContext';
+import useAppStatus, { AppStatusProvider } from './contexts/AppStatusContext';
 import { ModalProvider } from './contexts/ModalContext';
 
-// REACT COMPONENTS
+// APP COMPONENTS
 import Login from './components/Login';
 import Logout from './components/Logout';
 import NotFound from './components/NotFound';
@@ -24,23 +22,13 @@ import ConnectivityPopup from './components/ConnectivityPopup';
 // TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
 
 const AppContent = () => {
-    const { appConfig, loading } = useAppStatus();
-    const { user, access, AuthUser } = useAuth();
-    const { pages, managerView } = useAppCore();
-
-    useEffect(() => {
-        AuthUser();
-    }, [AuthUser]);
+    const { loading, appConfig, user } = useAppStatus();
 
     useEffect(() => {
         const root = document.getElementById('root');
         root.classList.add(appConfig.theme);
         root.classList.add(appConfig.palette);
     }, [appConfig]);
-
-    const viewClass = useMemo(() => {
-        return managerView ? 'manager' : 'staff';
-    }, [managerView]);
 
     if (loading) {
         return <Loader />;
@@ -54,7 +42,7 @@ const AppContent = () => {
         );
     }
 
-    if (!access) {
+    if (!user.active) {
         return (
             <Routes>
                 <Route path="*" element={<NoAccess user={user} />} />
@@ -63,9 +51,12 @@ const AppContent = () => {
         );
     }
 
+    const viewClass = user?.manager_view_enabled ? 'manager' : 'staff';
     const root = document.getElementById('root');
     root.classList.add(viewClass);
     root.classList.remove(viewClass === 'manager' ? 'staff' : 'manager');
+
+    console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-config:\n", appConfig);
 
     return (
         <>
@@ -73,14 +64,14 @@ const AppContent = () => {
                 <Route
                     path="/"
                     element={
-                        managerView ? (
+                        user?.manager_view_enabled ? (
                             <ManagerView/>
                         ) : (
                             <StaffView/>
                         )
                     }
                 >
-                    {pages?.map((page) => (
+                    {appConfig.pages?.map((page) => (
                         <Route key={page.path} path={page.path}>
                             <Route
                                 index
@@ -116,16 +107,12 @@ const AppContent = () => {
 const App = () => {
     return (
         <AppStatusProvider>
-            <AuthProvider>
-                <AppCoreProvider>
-                    <Router>
-                        <ModalProvider>
-                            <AppContent />
-                            <ConnectivityPopup />
-                        </ModalProvider>
-                    </Router>
-                </AppCoreProvider>
-            </AuthProvider>
+            <Router>
+                <ModalProvider>
+                    <AppContent />
+                </ModalProvider>
+            </Router>
+            <ConnectivityPopup />
         </AppStatusProvider>
     );
 };

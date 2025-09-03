@@ -4,17 +4,15 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
-import {useAuth} from "../contexts/AuthContext";
-import {useAppCore} from "../contexts/AppCoreContext";
+import useAppStatus from "../contexts/AppStatusContext";
 
 const StaffView = () => {
-    const { user, managerAccess } = useAuth();
-    const { pages, toggleView } = useAppCore();
+    const { user, appConfig, toggleView } = useAppStatus();
     const location = useLocation();
 
-    const currentMainPage = pages?.find((page) =>
+    const currentMainPage = appConfig.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || pages?.[0] || null;
+    ) || appConfig.pages?.[0] || null;
 
     return (
         <>
@@ -23,7 +21,7 @@ const StaffView = () => {
                     <SiteLogo className={'app-logo'}/>
                 </Link>
                 <ul className="app-pages">
-                    {pages && pages
+                    {appConfig.pages && appConfig.pages
                         .filter((page) => page.path !== "/")
                         .map((page) => (
                             <li key={page.path} className={'page-link-item'}>
@@ -70,7 +68,7 @@ const StaffView = () => {
                     </span>
                     <i className="material-icons">keyboard_arrow_down</i>
                     <ul className='submenu'>
-                        { managerAccess &&
+                        { user.manager_view_access &&
                             <li className='submenu-item'>
                                 <Link to='#' onClick={() => toggleView(true)}>Manager Portal</Link>
                             </li> }

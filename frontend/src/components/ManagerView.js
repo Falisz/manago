@@ -6,12 +6,10 @@ import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from "axios";
 import MobileNav from './MobileNav';
-import {useAuth} from "../contexts/AuthContext";
-import {useAppCore} from "../contexts/AppCoreContext";
+import useAppStatus from "../contexts/AppStatusContext";
 
 const MainNav = () => {
-    const { user } = useAuth();
-    const { pages, modules } = useAppCore();
+    const { user, appConfig } = useAppStatus();
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
@@ -50,7 +48,7 @@ const MainNav = () => {
                 <SiteLogo className={'app-logo '}/>
                 <SiteLogoSmall className={'app-logo-small '}/>
             </Link>
-            {pages && pages
+            {appConfig.pages && appConfig.pages
                 .filter((page) => page.path !== "/")
                 .map((page) => (
                     <Link
@@ -66,7 +64,7 @@ const MainNav = () => {
                     >
                         {page.icon && <span className="app-nav-page-link-icon material-icons">{page.icon}</span>}
                         <span className="app-nav-page-link-label">
-                        {   (page.title.toLowerCase() === 'employees' && modules?.some(m => m.title === 'Teams' && m.enabled))
+                        {   (page.title.toLowerCase() === 'employees' && appConfig.modules?.some(m => m.title === 'Teams' && m.enabled))
                             ? 'Employees & Teams'
                             : page.title}
                         </span>
@@ -83,12 +81,12 @@ const MainNav = () => {
 }
 
 const SubNav = ({currentMainPage, location}) => {
-    const { user } = useAuth();
-    const { toggleView } = useAppCore();
+    const { user, toggleView } = useAppStatus();
 
     return (
         <nav className="app-subnav">
             <ul className="subpage-links">
+                {currentMainPage &&
                 <li
                     key={`${currentMainPage?.path}`}
                     className={`subpage-link ${location.pathname === '/' || location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}>
@@ -96,16 +94,16 @@ const SubNav = ({currentMainPage, location}) => {
                         {currentMainPage?.title}
                     </Link>
                 </li>
+                }
                 {currentMainPage?.subpages?.map((subpage) => (
-                    (!subpage.hidden &&
-                        <li
-                            key={subpage.path}
-                            className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
-                        >
-                            <Link to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}>
-                                {subpage.title}
-                            </Link>
-                        </li>)
+                    <li
+                        key={subpage.path}
+                        className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
+                    >
+                        <Link to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}>
+                            {subpage.title}
+                        </Link>
+                    </li>
                 ))}
             </ul>
             <div className="user-nav">
@@ -131,12 +129,12 @@ const SubNav = ({currentMainPage, location}) => {
 }
 
 const ManagerView = () => {
-    const { pages } = useAppCore();
+    const { appConfig } = useAppStatus();
     const location = useLocation();
 
-    const currentMainPage = pages?.find((page) =>
+    const currentMainPage = appConfig.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || pages?.[0] || null;
+    ) || appConfig.pages?.[0] || null;
 
     return (
         <>
