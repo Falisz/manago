@@ -1,4 +1,4 @@
-//BACKEND/api/utils.js
+//BACKEND/api/app.js
 import express from 'express';
 import {getModules, setModule, getPages} from "../controllers/app.js";
 import {hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav} from "../utils/manager-view.js";
@@ -10,7 +10,7 @@ router.get('/',  (req, res) => {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
-        return res.json({ message: 'This is API endpoint for the Staff Portal app.\n' +
+        return res.json({ message: 'This is API endpoint for the Staff Portal app. ' +
                 'To make requests please use Staff Portal app.' });
     } catch (err) {
         console.error('API endpoint error:', err);
@@ -19,15 +19,14 @@ router.get('/',  (req, res) => {
     }
 })
 
-//Server ping endpoint
+//App Config endpoint
 router.get('/config', async (req, res) => {
     try {
-        const responseData = {
+        res.json({
             is_connected: true,
             app_theme: 'dark',
             app_palette: 'blue'
-        };
-        res.json(responseData);
+        });
     } catch (err) {
         console.error('Config get API error:', err);
         res.status(500).json({ message: 'API Error.', connected: false });

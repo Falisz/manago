@@ -7,7 +7,7 @@ import winston from 'winston';
 import dotenv from 'dotenv';
 import sequelize from './db.js';
 import seedData from './utils/seed-data.js';
-import utilsRoutes from './api/utils.js';
+import appRoutes from './api/app.js';
 import authRoutes from './api/auth.js';
 import usersRoutes from './api/users.js';
 import rolesRoutes from './api/roles.js';
@@ -130,7 +130,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/', utilsRoutes);
+app.use('/', appRoutes);
 app.use('/', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/roles', rolesRoutes);
@@ -159,17 +159,17 @@ async function startServer() {
         try {
             await sequelize.authenticate();
         } catch (err) {
-            throw new Error(ERROR + ' Database authentication failed: ' + err.message);
+            new Error(ERROR + ' Database authentication failed: ' + err.message);
         }
         try {
             await sequelize.sync();
         } catch (err) {
-            throw new Error(ERROR + ' Database model sync failed: ' + err.message);
+            new Error(ERROR + ' Database model sync failed: ' + err.message);
         }
         try {
             await store.sync();
         } catch (err) {
-            throw new Error(ERROR + ' Session store sync failed: ' + err.message);
+            new Error(ERROR + ' Session store sync failed: ' + err.message);
         }
 
         console.log(INFO + ' Database connection established. Data models and stores synced successfully.');
@@ -185,6 +185,8 @@ async function startServer() {
         } else {
             console.log(INFO + ' Backend script is being run without interactive terminal. Skipping data seeding.');
         }
+
+        console.log(WARN + ' This backend build still in development stage.');
 
         app.listen(PORT, () => {
             console.log(INFO + ' Server is up and running on port ' + PORT);
