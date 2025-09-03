@@ -3,7 +3,7 @@ import '../assets/styles/Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
-import useAppStatus from "../contexts/AppStatusContext";
+import useAppStatus from '../contexts/AppStatusContext';
 
 const Login = () => {
     const { authUser } = useAppStatus();
@@ -22,30 +22,32 @@ const Login = () => {
     };
 
     return (
-        <div className="app-login">
+        <div className='app-login'>
             <AppLogo className='app-logo' />
             <form className='login-form' onSubmit={handleSubmit}>
                 <div className='input-field'>
                     <input
-                        type="text"
-                        placeholder="Login"
+                        type='text'
+                        autoComplete='username'
+                        placeholder='Login'
                         name='login'
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                     />
-                    <span className="input-icon material-icons">person</span>
+                    <span className='input-icon material-icons'>person</span>
                 </div>
                 <div className='input-field'>
                     <input
-                        type="password"
-                        placeholder="Password"
+                        type='password'
+                        autoComplete='current-password'
+                        placeholder='Password'
                         name='password'
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <span className="input-icon material-icons">lock</span>
+                    <span className='input-icon material-icons'>lock</span>
                 </div>
-                <button type="submit">Log in</button>
+                <button type='submit'>Log in</button>
                 { error && <p className='error'>{error}</p> }
             </form>
         </div>
