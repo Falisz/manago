@@ -152,11 +152,6 @@ export const AppStatusProvider = ({ children }) => {
         };
 
         handleConnectionCheck().then();
-        const interval = setInterval(handleConnectionCheck, 60000);
-        return () => clearInterval(interval);
-    }, [checkConnection]);
-
-    useEffect(() => {
         const handleAuth = async () => {
             try {
                 await authUser(true);
@@ -166,7 +161,10 @@ export const AppStatusProvider = ({ children }) => {
         };
 
         handleAuth().then();
-    }, [authUser]);
+
+        const interval = setInterval(handleConnectionCheck, 60000);
+        return () => clearInterval(interval);
+    }, [checkConnection, authUser]);
 
     useEffect(() => {
         if (user && user.active && !user.did_fetch) {
