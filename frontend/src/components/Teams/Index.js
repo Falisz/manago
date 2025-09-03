@@ -30,6 +30,7 @@ const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
 
 const TeamItem = ({ team }) => {
     const { openModal } = useModals();
+    team.members_count = team.members ? team.members.length : 0
 
     return (
         <>
@@ -40,10 +41,10 @@ const TeamItem = ({ team }) => {
                 <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
                     {team.name}
                 </div>
-                <div>{team.members_count ?? (team.members ? team.members.length : 0)}</div>
+                <div>{team.members_count}</div>
                 <div>
                     {(team.managers || []).length === 0
-                        ? (null)
+                        ? null
                         : (team.managers || []).map(manager =>
                             <span key={manager.id} className="manager-name"
                                 onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
@@ -53,7 +54,7 @@ const TeamItem = ({ team }) => {
                 </div>
                 <div>
                     {(team.team_leaders || []).length === 0
-                        ? (null)
+                        ? null
                         : (team.team_leaders || []).map(leader =>
                             <span key={leader.id} className="teamleader-name"
                                 onClick={() => openModal({ type: 'userDetails', data: { id: leader.id } })}
@@ -68,7 +69,7 @@ const TeamItem = ({ team }) => {
                         <TeamItem key={subteam.id} team={subteam} />
                     ))}
                 </div>
-                ) : (null)}
+                ) : null}
         </>
     );
 }
@@ -92,7 +93,7 @@ const TeamsTable = () => {
         { title: 'Name', key: 'name' },
         { title: 'Members', key: 'members_count' },
         { title: 'Managers', key: 'managers' },
-        { title: 'Team Leaders', key: 'teamleaders' }
+        { title: 'Team Leaders', key: 'team_leaders' }
     ], []);
 
     const handleFilter = (e) => {
@@ -126,7 +127,7 @@ const TeamsTable = () => {
                 if (!value) return true;
 
                 if (key === 'codename') {
-                    return team.codename?.toLowerCase().includes(value.toLowerCase());
+                    return team.code_name?.toLowerCase().includes(value.toLowerCase());
                 }
                 if (key === 'name') {
                     return team.name?.toLowerCase().includes(value.toLowerCase());
@@ -139,8 +140,8 @@ const TeamsTable = () => {
                         (manager.first_name + ' ' + manager.last_name).toLowerCase().includes(value.toLowerCase())
                     );
                 }
-                if (key === 'teamleaders') {
-                    return (team.teamleaders || []).some(leader =>
+                if (key === 'team_leaders') {
+                    return (team.team_leaders || []).some(leader =>
                         (leader.first_name + ' ' + leader.last_name).toLowerCase().includes(value.toLowerCase())
                     );
                 }
@@ -154,9 +155,9 @@ const TeamsTable = () => {
                 if (sortConfig.key === 'managers') {
                     aValue = (a.managers || []).map(m => (m.first_name + ' ' + m.last_name).toLowerCase()).join(', ');
                     bValue = (b.managers || []).map(m => (m.first_name + ' ' + m.last_name).toLowerCase()).join(', ');
-                } else if (sortConfig.key === 'teamleaders') {
-                    aValue = (a.teamleaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
-                    bValue = (b.teamleaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
+                } else if (sortConfig.key === 'team_leaders') {
+                    aValue = (a.team_leaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
+                    bValue = (b.team_leaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
                 } else if (sortConfig.key === 'members_count') {
                     aValue = a.members_count ?? 0;
                     bValue = b.members_count ?? 0;
