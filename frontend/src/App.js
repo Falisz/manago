@@ -18,9 +18,6 @@ import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
 
-// TODO: Initialization of the app with system_default theme and cookies for previously saved settings - before they're reloaded from the server.
-// TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
-
 const AppContent = () => {
     const { loading, appConfig, user } = useAppStatus();
 
@@ -34,6 +31,8 @@ const AppContent = () => {
         return <Loader />;
     }
 
+    // console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-config:\n", appConfig);
+
     if (!user) {
         return (
             <Routes>
@@ -45,31 +44,23 @@ const AppContent = () => {
     if (!user.active) {
         return (
             <Routes>
-                <Route path="*" element={<NoAccess user={user} />} />
-                <Route path="logout" element={ <Logout/> } />
+                <Route path="*" element={<NoAccess />} />
+                <Route path="logout" element={ <Logout /> } />
             </Routes>
         );
     }
 
-    const viewClass = user?.manager_view_enabled ? 'manager' : 'staff';
     const root = document.getElementById('root');
+    const viewClass = user?.manager_view_enabled ? 'manager' : 'staff';
     root.classList.add(viewClass);
     root.classList.remove(viewClass === 'manager' ? 'staff' : 'manager');
-
-    console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-config:\n", appConfig);
 
     return (
         <>
             <Routes>
                 <Route
                     path="/"
-                    element={
-                        user?.manager_view_enabled ? (
-                            <ManagerView/>
-                        ) : (
-                            <StaffView/>
-                        )
-                    }
+                    element={user?.manager_view_enabled ? <ManagerView /> : <StaffView />}
                 >
                     {appConfig.pages?.map((page) => (
                         <Route key={page.path} path={page.path}>

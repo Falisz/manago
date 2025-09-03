@@ -1,12 +1,33 @@
 // FRONTEND/contexts/AppStatusContext.js
 import React, { createContext, useContext, useCallback, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+
 import componentMap from "../Components";
 import InWorks from "../components/InWorks";
+
+const mapPagesToComponents = (pages) => {
+    return pages.map(page => {
+        const mappedPage = {
+            ...page,
+            component: componentMap[page.component] || (() => <InWorks title={page.title} icon={page.icon} />)
+        };
+
+        if (page.subpages && page.subpages.length > 0) {
+            mappedPage.subpages = mapPagesToComponents(page.subpages);
+        }
+
+        return mappedPage;
+    });
+};
 
 const AppStatusContext = createContext();
 
 export const AppStatusProvider = ({ children }) => {
+    // TODO: Retry merging all three states into an [appState and setAppState] = useState();
+    // TODO: Rename the context to AppStateContext as opposed to its inner component <AppContent>;
+    // TODO: Initialization of the app with system_default theme and cookies for previously saved settings -
+    //  before they're reloaded from the server.
+
     const isCheckingUserRef = useRef(false);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
@@ -18,22 +39,18 @@ export const AppStatusProvider = ({ children }) => {
         pages: []
     });
 
+    const checkAccess = useCallback(async () => {
+        const response = await axios.get('/access', { withCredentials: true });
+        return response.data.user;
+    }, []);
+
     const authUser = useCallback(async (withLoader = false) => {
         if (isCheckingUserRef.current) return;
-
         isCheckingUserRef.current = true;
-
         try {
             if (withLoader) setLoading(true);
-            const res = await axios.get('/access', { withCredentials: true });
-            if (res.data.user) {
-                setUser({
-                    ...res.data.user,
-                    active: res.data.access,
-                    manager_view_access: res.data.manager_access,
-                    did_fetch: false
-                });
-            }
+            const user = await checkAccess();
+            setUser(user);
             setLoading(false);
         } catch (err) {
             if (withLoader) setLoading(false);
@@ -41,7 +58,7 @@ export const AppStatusProvider = ({ children }) => {
         } finally {
             isCheckingUserRef.current = false;
         }
-    }, []);
+    }, [checkAccess]);
 
     const logoutUser = useCallback(async () => {
         setLoading(true);
@@ -56,74 +73,101 @@ export const AppStatusProvider = ({ children }) => {
         }
     }, []);
 
+    const getConfig = useCallback(async () => {
+        const response = await axios.get('/config', { withCredentials: true });
+        return response.data;
+    }, [])
+
+    const refreshConfig = useCallback(async () => {
+        try {
+            const config = await getConfig();
+            setAppConfig(prev => {
+                if (
+                    prev.is_connected === config.is_connected &&
+                    prev.theme === config.app_theme &&
+                    prev.palette === config.app_palette
+                ) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    is_connected: config.connected,
+                    theme: config.app_theme || prev.theme,
+                    palette: config.app_palette || prev.palette
+                };
+            });
+        } catch (error) {
+            console.error('Refreshing app config error', error);
+        }
+    }, [getConfig]);
+
     const checkConnection = useCallback(async () => {
         try {
-            const response = await axios.get('/ping', { withCredentials: true });
-            setAppConfig(prev => ({
-                ...prev,
-                is_connected: response.data.connected,
-                theme: response.data.app_theme || prev.theme,
-                palette: response.data.app_palette || prev.palette
-            }));
+            const config = await getConfig();
+            setAppConfig(prev => {
+                if (prev.is_connected === config.is_connected) {return prev;}
+                return {...prev, is_connected: config.is_connected};
+            });
         } catch (error) {
             setAppConfig(prev => ({ ...prev, is_connected: false }));
-            throw new Error(`Connection check failed: ${error.message}`);
         }
-    }, []);
+    }, [getConfig]);
 
-    const fetchModules = useCallback(async () => {
+    const getModules = useCallback(async () => {
         try {
-            const response = await axios.get('/modules', { withCredentials: true });
-            setAppConfig(prev => ({ ...prev, modules: response.data }));
+            const response = await axios.get('/modules?psthr=true', { withCredentials: true });
+            return response.data;
+        } catch(err) {
+            return [];
+        }
+    }, [])
+
+    const refreshModules = useCallback(async () => {
+        try {
+            const modules = await getModules();
+            setAppConfig(prev => {
+                if (prev.modules === modules) {return prev;}
+                return {...prev, modules: modules};
+            });
         } catch (error) {
             console.error('Error fetching modules:', error);
             setAppConfig(prev => ({ ...prev, modules: [] }));
         }
-    }, []);
+    }, [getModules]);
+
+    const getPages = useCallback(async () => {
+        try {
+            const response = await axios.get('/pages?psthr=true', { withCredentials: true });
+            return mapPagesToComponents(response.data);
+        } catch(err) {
+            return [];
+        }
+    }, [])
 
     const refreshPages = useCallback(async () => {
-        const mapPagesToComponents = (pages) => {
-            return pages.map(page => {
-                const mappedPage = {
-                    ...page,
-                    component: componentMap[page.component] || (() => <InWorks title={page.title} icon={page.icon} />)
-                };
-
-                if (page.subpages && page.subpages.length > 0) {
-                    mappedPage.subpages = mapPagesToComponents(page.subpages);
-                }
-
-                return mappedPage;
-            });
-        };
-
         try {
-            let fetchedPages;
-            const res = await axios.get('/pages', { withCredentials: true });
+            const pages = await getPages();
+            setAppConfig(prev => {
+                if (prev.pages === pages) {return prev;}
+                return {...prev, pages: pages};
+            });
 
-            if (Array.isArray(res.data)) {
-                fetchedPages = mapPagesToComponents(res.data);
-            } else {
-                console.error('Fetched data is not an array:', res.data);
-                fetchedPages = [];
-            }
-            setAppConfig(prev => ({ ...prev, pages: fetchedPages }));
         } catch (error) {
             console.error('Error fetching pages:', error);
             setAppConfig(prev => ({ ...prev, pages: [] }));
         }
-    }, []);
+    }, [getPages]);
 
     const toggleModule = useCallback(async (id, enabled) => {
         try {
             enabled = !enabled;
             await axios.put(`/modules/${id}`, { enabled }, { withCredentials: true });
-            await fetchModules();
+            await refreshModules();
             await refreshPages();
         } catch (error) {
             console.error('Error toggling module:', error);
         }
-    }, [fetchModules, refreshPages]);
+    }, [refreshModules, refreshPages]);
 
     const toggleView = useCallback(async (toggleValue) => {
         setLoading(true);
@@ -143,58 +187,39 @@ export const AppStatusProvider = ({ children }) => {
     }, [refreshPages]);
 
     useEffect(() => {
-        const handleConnectionCheck = async () => {
+        checkConnection().then();
+        const interval = setInterval(checkConnection, 60000);
+
+        const handleInit = async () => {
             try {
-                await checkConnection();
+                const user = await checkAccess();
+                setUser(user);
+                const appConfig = await getConfig();
+                const pages = await getPages();
+                const modules = await getModules();
+                setAppConfig({ ...appConfig, modules: modules, pages: pages });
+                setLoading(false);
             } catch (error) {
                 console.error(error.name, error.message);
             }
         };
 
-        handleConnectionCheck().then();
-        const handleAuth = async () => {
-            try {
-                await authUser(true);
-            } catch (error) {
-                console.error(error.name, error.message);
-            }
-        };
+        handleInit().then();
 
-        handleAuth().then();
-
-        const interval = setInterval(handleConnectionCheck, 60000);
         return () => clearInterval(interval);
-    }, [checkConnection, authUser]);
-
-    useEffect(() => {
-        if (user && user.active && !user.did_fetch) {
-            setLoading(true);
-            Promise.all([
-                fetchModules(),
-                (async () => {
-                    try {
-                        setLoading(true);
-                        await refreshPages();
-                        setUser(prev => prev ? { ...prev, did_fetch: true } : null);
-                    } catch (err) {
-                        console.error('Fetch pages error:', err);
-                        setAppConfig(prev => ({ ...prev, pages: [] }));
-                    }
-                })()
-            ]).finally(() => setLoading(false));
-        }
-    }, [user, user?.active, fetchModules, refreshPages]);
+    }, [checkAccess, checkConnection, getConfig, getModules, getPages]);
 
     return (
         <AppStatusContext.Provider value={{
-            user,
-            appConfig,
             loading,
             setLoading,
+            user,
             authUser,
             logoutUser,
+            appConfig,
+            refreshConfig,
             checkConnection,
-            fetchModules,
+            refreshModules,
             toggleModule,
             refreshPages,
             toggleView
