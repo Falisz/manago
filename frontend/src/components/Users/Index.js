@@ -175,14 +175,14 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     const moreRolesText = moreRolesCount > 0 ? `+${moreRolesCount} other roles` : '';
 
                     return (
-                        <div className="users-list-row" key={user.user}>
-                            <div onClick={() => openModal({ type: 'userDetails', data: { id: user.id } })}> {/* CHANGED: Use openModal instead of navigate */}
+                        <div className="users-list-row" key={user.id}>
+                            <div onClick={() => openModal({ type: 'userDetails', data: { id: user.id } })}>
                                 {user.first_name} {user.last_name}
                             </div>
                             <div>
                                 {displayedRoles.map((role) => (
                                     <span key={role.id} className="role-name"
-                                          onClick={() => openModal({ type: 'roleDetails', data: { id: role.id } })} // Example for role; implement if needed
+                                          onClick={() => openModal({ type: 'roleDetails', data: { id: role.id } })}
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
