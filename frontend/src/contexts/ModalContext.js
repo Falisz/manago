@@ -7,8 +7,8 @@ import UserEdit from '../components/Users/Edit';
 import RoleDetails from "../components/Roles/Details";
 import RoleEdit from "../components/Roles/Edit";
 import PostDetails from "../components/Posts/Details";
-import InWorks from "../components/InWorks";
 import TeamDetails from '../components/Teams/Details';
+import InWorks from "../components/InWorks";
 
 const ModalContext = createContext();
 
@@ -140,6 +140,9 @@ export const ModalProvider = ({ children }) => {
 
         const postDetails = searchParams.get('post');
         if (postDetails) openModal({ type: 'postDetails', data: { id: postDetails } });
+
+        const test = searchParams.get('test');
+        if (test) openModal({ type: 'test' });
         // eslint-disable-next-line
     }, []);
 
@@ -148,14 +151,15 @@ export const ModalProvider = ({ children }) => {
         modalStack.forEach((modal) => {
             if (modal.type === 'userDetails') newParams.set('user', modal.data.id);
             if (modal.type === 'userEdit') newParams.set('editUser', modal.data.id);
-            if (modal.type === 'userNew') newParams.set('newUser', true);
+            if (modal.type === 'userNew') newParams.set('newUser', '');
             if (modal.type === 'roleDetails') newParams.set('role', modal.data.id);
             if (modal.type === 'roleEdit') newParams.set('editRole', modal.data.id);
-            if (modal.type === 'roleNew') newParams.set('newRole', true);
+            if (modal.type === 'roleNew') newParams.set('newRole', '');
             if (modal.type === 'teamDetails') newParams.set('team', modal.data.id);
             if (modal.type === 'teamEdit') newParams.set('editTeam', modal.data.id);
-            if (modal.type === 'teamNew') newParams.set('newTeam', true);
+            if (modal.type === 'teamNew') newParams.set('newTeam', '');
             if (modal.type === 'postDetails') newParams.set('post', modal.data.id);
+            if (modal.type === 'test') newParams.set('test', '');
         });
         setSearchParams(newParams, { replace: true });
     }, [modalStack, setSearchParams]);
@@ -198,7 +202,7 @@ export const ModalProvider = ({ children }) => {
                     </div>
                 );
             default:
-                return <div>Unknown modal type</div>;
+                return <InWorks title={'Unknown modal.'} modal={true} />;
         }
     };
 
