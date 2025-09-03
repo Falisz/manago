@@ -8,6 +8,8 @@ import axios from "axios";
 import MobileNav from './MobileNav';
 import useAppStatus from "../contexts/AppStatusContext";
 
+// TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
+
 const MainNav = () => {
     const { user, appConfig } = useAppStatus();
     const location = useLocation();
