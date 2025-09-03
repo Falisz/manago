@@ -20,8 +20,9 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                 menu
             </span>
             <div className={`app-mobile-nav-backdrop ${mobileNavExpanded ? 'expanded' : ''}`}
+                 inert={mobileNavExpanded ? null : true}
                  onClick={() => setMobileNavExpanded(false)}></div>
-            <ul className={`app-mobile-nav-links ${mobileNavExpanded ? 'expanded' : ''}`}>
+            <ul className={`app-mobile-nav-links ${mobileNavExpanded ? 'expanded' : ''}`} inert={mobileNavExpanded ? null : true}>
                 <li className={'app-mobile-nav-link-item nav-collapse-button'} onClick={() => setMobileNavExpanded(false)}>
                     <span className={'material-symbols-outlined'}>
                         left_panel_open
