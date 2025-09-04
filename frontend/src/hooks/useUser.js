@@ -50,48 +50,23 @@ const useUser = () => {
             setError(null);
             setWarning(null);
             setSuccess(null);
-
-
-            const test = {
+            const userData = {
                 ...(await axios.get(`/users/${userId}`, { withCredentials: true })).data,
-                roles: (await axios.get(`/roles/user/${userId}`, { withCredentials: true })).data,
+                managed_users: (await axios.get(
+                    `/users/managed-users/${userId}`,
+                    { withCredentials: true })
+                ).data,
             }
-            console.log(test);
-
-
-            let userData;
-            let res = await axios.get(`/users/${userId}`, { withCredentials: true });
-            if (res.data) {
-                userData = res.data;
-                res = await axios.get(`/roles/user/${userId}`, { withCredentials: true });
-                console.log(res);
-                userData = {
-                    ...userData,
-                    roles: res.data,
-                }
-                res = await axios.get(`/users/managers/${userId}`, { withCredentials: true });
-                userData = {
-                    ...userData,
-                    managers: res.data,
-                }
-                
-                res = await axios.get(`/users/managed-users/${userId}`, { withCredentials: true });
-                userData = {
-                    ...userData,
-                    managed_users: res.data,
-                }
-                
-                setUser(userData);
-                userCacheRef.current[userId] = userData;
-                return userData;
-            } else {
-                setError(`User #${userId} not found!`);
-                return null;
-            }
+            setUser(userData);
+            userCacheRef.current[userId] = userData;
+            return userData;
         } catch (err) {
-            console.error('Error fetching user:', err);
-            setError('Error occurred while fetching user.');
-            return null;
+            if (err.status === 404) {
+                setError('User not found.');
+            } else {
+                setError('Error fetching the user.');
+                console.error('Error fetching the user:', err);
+            }
         } finally {
             setLoading(false);
         }
@@ -115,7 +90,7 @@ const useUser = () => {
             }
 
             if (newUser) {
-                const res = await axios.post('/users/new', userData, { withCredentials: true });
+                const res = await axios.post('/users', userData, { withCredentials: true });
                 userId = parseInt(res.data.user?.id);
             } else {
                 await axios.put(`/users/${userId}`, userData, { withCredentials: true });
@@ -173,10 +148,10 @@ const useUser = () => {
         fetchUsers,
         user,
         loading,
+        setLoading,
         error,
         warning,
         success,
-        setLoading,
         fetchUser,
         saveUser,
         deleteUser

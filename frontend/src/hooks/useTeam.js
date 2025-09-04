@@ -63,19 +63,20 @@ const useTeam = () => {
     }, []);
 
     const saveTeam = useCallback(async (formData, teamId = null) => {
+        const newTeam = !teamId;
         try {
             setError(null);
             setSuccess(null);
             let res;
-            if (teamId) {
-                res = await axios.put(`/teams/${teamId}`, formData, { withCredentials: true });
-            } else {
+            if (newTeam) {
                 res = await axios.post('/teams', formData, { withCredentials: true });
+                teamId = parseInt(res.data.team?.id);
+            } else {
+                await axios.put(`/teams/${teamId}`, formData, { withCredentials: true });
             }
-            setSuccess(res.data.message);
-            setTeam(res.data.role);
-            teamCacheRef.current[res.data.role.id] = res.data.role;
-            return res.data.role;
+            setSuccess(`Team ${newTeam? 'created' : 'updated'} successfully.`);
+
+            return fetchTeam(teamId, true);
         } catch (err) {
             console.error('Error saving the team:', err);
             setError(err.response?.data?.message || 'Failed to save the team. Please try again.');
@@ -108,6 +109,7 @@ const useTeam = () => {
         fetchTeams,
         team,
         loading,
+        setLoading,
         error,
         success,
         fetchTeam,

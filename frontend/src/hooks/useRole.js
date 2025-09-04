@@ -30,10 +30,10 @@ const useRole = () => {
     const [error, setError] = useState(null);
 
     // Single role related callbacks
-    const fetchRole = useCallback(async (roleId, forceLoad = false) => {
+    const fetchRole = useCallback(async (roleId, reload = false) => {
         if (!roleId) return null;
 
-        if (roleCacheRef.current[roleId] && !forceLoad) {
+        if (roleCacheRef.current[roleId] && !reload) {
             setRole(roleCacheRef.current[roleId]);
             setLoading(false);
             setError(null);
@@ -63,19 +63,20 @@ const useRole = () => {
     }, []);
 
     const saveRole = useCallback(async (formData, roleId = null) => {
+        const newRole = !roleId;
         try {
             setError(null);
             setSuccess(null);
             let res;
-            if (roleId) {
-                res = await axios.put(`/roles/${roleId}`, formData, { withCredentials: true });
-            } else {
+            if (newRole) {
                 res = await axios.post('/roles', formData, { withCredentials: true });
+                roleId = parseInt(res.data.role?.id);
+            } else {
+                await axios.put(`/roles/${roleId}`, formData, { withCredentials: true });
             }
-            setSuccess(res.data.message);
-            setRole(res.data.role);
-            roleCacheRef.current[res.data.role.id] = res.data.role;
-            return res.data.role;
+            setSuccess(`Role ${newRole? 'created' : 'updated'} successfully.`);
+
+            return fetchRole(roleId, true);
         } catch (err) {
             console.error('Error saving the role:', err);
             setError(err.response?.data?.message || 'Failed to save the role. Please try again.');
@@ -108,6 +109,7 @@ const useRole = () => {
         fetchRoles,
         role,
         loading,
+        setLoading,
         error,
         success,
         fetchRole,
