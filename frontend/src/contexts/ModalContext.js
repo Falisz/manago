@@ -115,7 +115,7 @@ export const ModalProvider = ({ children }) => {
     }, []);
 
     const renderModalContent = (modal) => {
-        switch (modal) {
+        switch (modal.content) {
             case 'userDetails':
                 return <UserDetails userId={modal.data.id} />;
             case 'userEdit':
