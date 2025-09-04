@@ -29,7 +29,7 @@ const PostIndex = () => {
     if (loading) {
         return <Loader />;
     }
-
+    console.log(posts);
     return (
         <>
             {posts.length === 0 || error ? (
@@ -37,10 +37,10 @@ const PostIndex = () => {
             ) : (
                 <ul className='post-list'>
                     {posts.map(post => (
-                        <li key={post.ID} className='post-item'>
+                        <li key={post.id} className='post-item'>
                             <h2
                                 className='post-title-button'
-                                onClick={() => openModal({ content: 'postDetails', type: 'dialog', data: { id: post.ID } })}>
+                                onClick={() => openModal({ content: 'postDetails', type: 'dialog', data: { id: post.id } })}>
                                 {post.title || 'Untitled Post'}
                             </h2>
                             <p>
