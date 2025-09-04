@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';
-import useUsers from '../../hooks/useUsers';
-import useRoles from '../../hooks/useRoles';
+import useRole from "../../hooks/useRole";
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
@@ -24,9 +23,9 @@ const FORM_CLEAN_STATE = {
 //  Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.
 
 const UserEdit = ({ userId }) => {
-    const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
-    const {users: managers, fetchUsers: fetchManagers} = useUsers();
-    const {roles, fetchRoles} = useRoles();
+    const { user, loading, error, warning, success, setLoading, fetchUser, saveUser } = useUser();
+    const { users: managers, fetchUsers: fetchManagers } = useUser();
+    const { roles, fetchRoles } = useRole();
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     const [formData, setFormData] = useState(FORM_CLEAN_STATE);
 

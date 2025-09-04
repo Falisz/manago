@@ -44,7 +44,6 @@ const UserDetails = ({ userId }) => {
     if (!user) {
         return <h1>User not found!</h1>;
     }
-    console.log(user);
 
     return (
         <div className='user-detail'>

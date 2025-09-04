@@ -1,14 +1,35 @@
-//FRONTEND:hooks/useRole.js
-import {useCallback, useRef, useState} from "react";
-import axios from "axios";
+// FRONTEND/hooks/useRole.js
+import { useCallback, useRef, useState } from 'react';
+import axios from 'axios';
 
 const useRole = () => {
-    const [loading, setLoading] = useState(true);
-    const [role, setRole] = useState(null);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
-    const roleCacheRef = useRef({});
+    // All roles related states
+    const [roles, setRoles] = useState(null);
+    const [rolesLoading, setRolesLoading] = useState(true);
 
+    // All roles related callbacks
+    const fetchRoles = useCallback(async (loading=true) => {
+        try {
+            setRolesLoading(loading);
+            const response = await axios.get('/roles', { withCredentials: true });
+            setRoles(response.data);
+            return response.data;
+        } catch (err) {
+            console.error('Error fetching roles:', err);
+            return null;
+        } finally {
+            setRolesLoading(false);
+        }
+    }, []);
+
+    // Single role related states
+    const [role, setRole] = useState(null);
+    const roleCacheRef = useRef({});
+    const [loading, setLoading] = useState(true);
+    const [success, setSuccess] = useState(null);
+    const [error, setError] = useState(null);
+
+    // Single role related callbacks
     const fetchRole = useCallback(async (roleId, forceLoad = false) => {
         if (roleCacheRef.current[roleId] && !forceLoad) {
             setRole(roleCacheRef.current[roleId]);
@@ -81,7 +102,19 @@ const useRole = () => {
         }
     }, []);
 
-    return { role, loading, error, success, setLoading, fetchRole, saveRole, deleteRole };
+    return {
+        roles,
+        rolesLoading,
+        fetchRoles,
+        role,
+        loading,
+        error,
+        success,
+        setLoading,
+        fetchRole,
+        saveRole,
+        deleteRole
+    };
 };
 
 export default useRole;

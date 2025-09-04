@@ -1,15 +1,35 @@
-//FRONTEND:hooks/useTeam.js
-import {useCallback, useRef, useState} from "react";
-import axios from "axios";
+// FRONTEND/hooks/useTeam.js
+import { useCallback, useRef, useState } from 'react';
+import axios from 'axios';
 
 const useTeam = () => {
-    const [loading, setLoading] = useState(true);
-    const [team, setTeam] = useState(null);
-    const [success, setSuccess] = useState(null);
-    const [warning, setWarning] = useState(null);
-    const [error, setError] = useState(null);
-    const teamCacheRef = useRef({});
+    // All teams related states
+    const [teams, setTeams] = useState(null);
+    const [teamsLoading, setTeamsLoading] = useState(true);
 
+    // All teams related callbacks
+    const fetchTeams = useCallback(async (loading=true) => {
+        try {
+            setTeamsLoading(loading);
+            const response = await axios.get('/teams', { withCredentials: true });
+            setTeams(response.data);
+            return response.data;
+        } catch (err) {
+            console.error('Error fetching teams:', err);
+            return null;
+        } finally {
+            setTeamsLoading(false);
+        }
+    }, []);
+
+    // Single team related states
+    const [team, setTeam] = useState(null);
+    const teamCacheRef = useRef({});
+    const [loading, setLoading] = useState(true);
+    const [success, setSuccess] = useState(null);
+    const [error, setError] = useState(null);
+
+    // Single team related callbacks
     const fetchTeam = useCallback(async (teamId, reload = false) => {
         if (!teamId) return null;
 
@@ -17,7 +37,6 @@ const useTeam = () => {
             setTeam(teamCacheRef.current[teamId]);
             setLoading(false);
             setError(null);
-            setWarning(null);
             setSuccess(null);
             return teamCacheRef.current[teamId];
         }
@@ -25,7 +44,6 @@ const useTeam = () => {
         try {
             setLoading(true);
             setError(null);
-            setWarning(null);
             setSuccess(null);
 
             let teamData;
@@ -48,7 +66,17 @@ const useTeam = () => {
         }
     }, []);
 
-    return { team, loading, error, warning, success, setLoading, fetchTeam };
+    return {
+        teams,
+        teamsLoading,
+        fetchTeams,
+        team,
+        loading,
+        error,
+        success,
+        setLoading,
+        fetchTeam
+    };
 };
 
 export default useTeam;

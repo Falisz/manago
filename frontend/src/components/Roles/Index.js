@@ -1,17 +1,17 @@
 // FRONTEND/components/Roles/Index.js
 import React, { useEffect } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import useRoles from '../../hooks/useRoles';
 import '../../assets/styles/Roles.css';
 import Button from '../Button';
 import Loader from '../Loader';
+import useRole from "../../hooks/useRole";
 
 // TODO: Add Roles descriptions similarly as for the App Modules.
 // TODO: Implement role restriction over the UI.
 
 const RolesList = () => {
     const { openModal, refreshTriggers } = useModals();
-    const { roles, loading, fetchRoles } = useRoles();
+    const { roles, rolesLoading, fetchRoles } = useRole();
 
     useEffect(() => {
         if (!roles) fetchRoles().then();
@@ -21,7 +21,7 @@ const RolesList = () => {
         if (refreshTriggers?.roles) fetchRoles(false).then();
     }, [fetchRoles, refreshTriggers]);
 
-    if (loading) return <Loader />;
+    if (rolesLoading) return <Loader />;
     
     return (
         <div className='roles-list'>

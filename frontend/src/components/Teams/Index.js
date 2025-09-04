@@ -1,7 +1,7 @@
 // FRONTEND/components/Teams/Index.js
 import React, { useEffect, useState, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import useTeams from '../../hooks/useTeams';
+import useTeam from '../../hooks/useTeam';
 import Loader from '../Loader';
 import Button from '../Button';
 import '../../assets/styles/Teams.css';
@@ -75,7 +75,7 @@ const TeamItem = ({ team }) => {
 }
 
 const TeamsTable = () => {
-    const { teams, loading, fetchTeams } = useTeams();
+    const { teams, teamsLoading, fetchTeams } = useTeam();
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
         key: null,
@@ -174,7 +174,7 @@ const TeamsTable = () => {
         return result;
     }, [teams, filters, sortConfig]);
 
-    if (loading) {
+    if (teamsLoading) {
         return <Loader />;
     }
 

@@ -1,15 +1,39 @@
-//FRONTEND:hooks/useUser.js
-import {useCallback, useRef, useState} from "react";
-import axios from "axios";
+// FRONTEND/hooks/useUser.js
+import { useCallback, useRef, useState } from 'react';
+import axios from 'axios';
 
 const useUser = () => {
-    const [loading, setLoading] = useState(true);
+    // All users related states
+    const [users, setUsers] = useState(null);
+    const [usersLoading, setUsersLoading] = useState(true);
+
+    // All users related callbacks
+    const fetchUsers = useCallback(async (type=null, loading=true) => {
+        try {
+            setUsersLoading(loading);
+            let url = '/users';
+            if (type === 'employees' || type === 'managers')
+                url = url + '/' + type;
+            const response = await axios.get(url, { withCredentials: true });
+            setUsers(response.data);
+            return response.data;
+        } catch (err) {
+            console.error('Error fetching users:', err);
+            return null;
+        } finally {
+            setUsersLoading(false);
+        }
+    }, []);
+
+    // Single user related states
     const [user, setUser] = useState(null);
+    const userCacheRef = useRef({});
+    const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(null);
     const [warning, setWarning] = useState(null);
     const [error, setError] = useState(null);
-    const userCacheRef = useRef({});
 
+    // Single user related callbacks
     const fetchUser = useCallback(async (userId, reload = false) => {
         if (!userId) return null;
 
@@ -134,6 +158,19 @@ const useUser = () => {
         }
     }, []);
 
-    return {user, loading, error, warning, success, setLoading, fetchUser, saveUser, deleteUser};
+    return {
+        users,
+        usersLoading,
+        fetchUsers,
+        user,
+        loading,
+        error,
+        warning,
+        success,
+        setLoading,
+        fetchUser,
+        saveUser,
+        deleteUser
+    };
 }
 export default useUser;

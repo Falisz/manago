@@ -1,7 +1,7 @@
 // FRONTEND/components/Users/Index.js
 import React, { useEffect, useState, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import useUsers from '../../hooks/useUsers';
+import useUser from '../../hooks/useUser';
 import Loader from '../Loader';
 import Button from '../Button';
 import '../../assets/styles/Users.css';
@@ -218,7 +218,7 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
 
 export const ManagersIndex = () => {
     const { openModal, refreshTriggers } = useModals();
-    const { users, loading: usersLoading, fetchUsers } = useUsers();
+    const { users, usersLoading, fetchUsers } = useUser();
 
     useEffect(() => {
         if (!users) {
@@ -252,7 +252,7 @@ export const ManagersIndex = () => {
 
 export const EmployeesIndex = () => {
     const { openModal, refreshTriggers } = useModals();
-    const { users, loading: usersLoading, fetchUsers } = useUsers();
+    const { users, usersLoading, fetchUsers } = useUser();
 
     useEffect(() => {
         if (!users) {
@@ -285,7 +285,7 @@ export const EmployeesIndex = () => {
 
 export const UsersIndex = () => {
     const { openModal, refreshTriggers } = useModals();
-    const { users, loading: usersLoading, fetchUsers } = useUsers();
+    const { users, usersLoading, fetchUsers } = useUser();
 
     useEffect(() => {
         if (!users) {
