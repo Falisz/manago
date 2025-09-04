@@ -1,7 +1,6 @@
 // FRONTEND/contexts/AppStatusContext.js
 import React, { createContext, useContext, useCallback, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-
 import componentMap from "../Components";
 import InWorks from "../components/InWorks";
 
@@ -23,7 +22,6 @@ const mapPagesToComponents = (pages) => {
 const AppStateContext = createContext();
 
 export const AppStateProvider = ({ children }) => {
-    // TODO: Retry merging all three states into an [appState and setAppState] = useState();
     // TODO: Initialization of the app with system_default theme and cookies for previously saved settings -
     //  before they're reloaded from the server.
 
@@ -32,10 +30,8 @@ export const AppStateProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [appState, setAppState] = useState({
         is_connected: true,
-        is_loading: true,
         theme: process.env['REACT_APP_THEME'] || 'dark',
         palette: process.env['REACT_APP_COLOR'] || 'blue',
-        user: null,
         modules: [],
         pages: []
     });
