@@ -29,7 +29,7 @@ const PostIndex = () => {
     if (loading) {
         return <Loader />;
     }
-    console.log(posts);
+
     return (
         <>
             {posts.length === 0 || error ? (
