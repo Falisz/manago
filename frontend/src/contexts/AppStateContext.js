@@ -25,6 +25,7 @@ export const AppStateProvider = ({ children }) => {
     // TODO: Initialization of the app with system_default theme and cookies for previously saved settings -
     //  before they're reloaded from the server.
 
+    // App's states
     const isCheckingUserRef = useRef(false);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
@@ -36,18 +37,42 @@ export const AppStateProvider = ({ children }) => {
         pages: []
     });
 
-    const checkAccess = useCallback(async () => {
+    // API Get calls.
+    const getUser = useCallback(async () => {
         const response = await axios.get('/access', { withCredentials: true });
         return response.data.user;
     }, []);
 
+    const getConfig = useCallback(async () => {
+        const response = await axios.get('/config', { withCredentials: true });
+        return response.data;
+    }, []);
+
+    const getModules = useCallback(async () => {
+        try {
+            const response = await axios.get('/modules?psthr=true', { withCredentials: true });
+            return response.data;
+        } catch(err) {
+            return [];
+        }
+    }, []);
+
+    const getPages = useCallback(async () => {
+        try {
+            const response = await axios.get('/pages?psthr=true', { withCredentials: true });
+            return mapPagesToComponents(response.data);
+        } catch(err) {
+            return [];
+        }
+    }, []);
+
+    // App's Callbacks
     const authUser = useCallback(async (withLoader = false) => {
         if (isCheckingUserRef.current) return;
         isCheckingUserRef.current = true;
         try {
             if (withLoader) setLoading(true);
-            const user = await checkAccess();
-            setUser(user);
+            setUser(await getUser());
             setLoading(false);
         } catch (err) {
             if (withLoader) setLoading(false);
@@ -55,7 +80,7 @@ export const AppStateProvider = ({ children }) => {
         } finally {
             isCheckingUserRef.current = false;
         }
-    }, [checkAccess]);
+    }, [getUser]);
 
     const logoutUser = useCallback(async () => {
         setLoading(true);
@@ -69,11 +94,6 @@ export const AppStateProvider = ({ children }) => {
             setLoading(false);
         }
     }, []);
-
-    const getConfig = useCallback(async () => {
-        const response = await axios.get('/config', { withCredentials: true });
-        return response.data;
-    }, [])
 
     const refreshConfig = useCallback(async () => {
         try {
@@ -102,7 +122,7 @@ export const AppStateProvider = ({ children }) => {
         try {
             const config = await getConfig();
             setAppState(prev => {
-                if (prev.is_connected === config.is_connected) {return prev;}
+                if (prev.is_connected === config.is_connected) { return prev; }
                 return {...prev, is_connected: config.is_connected};
             });
         } catch (error) {
@@ -110,20 +130,11 @@ export const AppStateProvider = ({ children }) => {
         }
     }, [getConfig]);
 
-    const getModules = useCallback(async () => {
-        try {
-            const response = await axios.get('/modules?psthr=true', { withCredentials: true });
-            return response.data;
-        } catch(err) {
-            return [];
-        }
-    }, [])
-
     const refreshModules = useCallback(async () => {
         try {
             const modules = await getModules();
             setAppState(prev => {
-                if (prev.modules === modules) {return prev;}
+                if (prev.modules === modules) { return prev; }
                 return {...prev, modules: modules};
             });
         } catch (error) {
@@ -132,20 +143,11 @@ export const AppStateProvider = ({ children }) => {
         }
     }, [getModules]);
 
-    const getPages = useCallback(async () => {
-        try {
-            const response = await axios.get('/pages?psthr=true', { withCredentials: true });
-            return mapPagesToComponents(response.data);
-        } catch(err) {
-            return [];
-        }
-    }, [])
-
     const refreshPages = useCallback(async () => {
         try {
             const pages = await getPages();
             setAppState(prev => {
-                if (prev.pages === pages) {return prev;}
+                if (prev.pages === pages) { return prev; }
                 return {...prev, pages: pages};
             });
 
@@ -189,12 +191,12 @@ export const AppStateProvider = ({ children }) => {
 
         const handleInit = async () => {
             try {
-                const user = await checkAccess();
-                setUser(user);
-                const appConfig = await getConfig();
-                const pages = await getPages();
-                const modules = await getModules();
-                setAppState({ ...appConfig, modules: modules, pages: pages });
+                setUser(await getUser());
+                setAppState({
+                    ...(await getConfig()),
+                    modules: await getModules(),
+                    pages: await getPages()
+                });
                 setLoading(false);
             } catch (error) {
                 console.error(error.name, error.message);
@@ -204,7 +206,7 @@ export const AppStateProvider = ({ children }) => {
         handleInit().then();
 
         return () => clearInterval(interval);
-    }, [checkAccess, checkConnection, getConfig, getModules, getPages]);
+    }, [checkConnection, getUser, getConfig, getModules, getPages]);
 
     return (
         <AppStateContext.Provider value={{
