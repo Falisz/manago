@@ -1,9 +1,9 @@
 // FRONTEND/components/Users/Edit.js
 import React, { useEffect, useState } from 'react';
-import { useModals } from "../../contexts/ModalContext";
-import useUser from "../../hooks/useUser";
-import useUsers from "../../hooks/useUsers";
-import useRoles from "../../hooks/useRoles";
+import { useModals } from '../../contexts/ModalContext';
+import useUser from '../../hooks/useUser';
+import useUsers from '../../hooks/useUsers';
+import useRoles from '../../hooks/useRoles';
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
@@ -19,6 +19,9 @@ const FORM_CLEAN_STATE = {
         active: true,
         manager_view_access: false,
 };
+
+// TODO: Rewrite the roles assignment logic and interface.
+//  Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.
 
 const UserEdit = ({ userId }) => {
     const {user, loading, error, warning, success, setLoading, fetchUser, saveUser} = useUser();
@@ -76,15 +79,20 @@ const UserEdit = ({ userId }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await saveUser(formData, userId);
-        if (response) {
+        const savedUser = await saveUser(formData, userId);
+        if (savedUser) {
             setDiscardWarning(false);
-            refreshData('users', true);
-            refreshData('user', userId);
-            closeTopModal();
-            if (!userId) {
-                openModal({ type: 'userDetails', data: { id: response.id } });
-            }
+            setTimeout(() => {
+                closeTopModal();
+                if (!userId) {
+                    setTimeout(() => {
+                        openModal({ content: 'userDetails', data: { id: savedUser.id } });
+                    }, 350);
+                } else {
+                    refreshData('user', userId);
+                }
+                refreshData('users', true);
+            }, 0);
         }
         setFormData(FORM_CLEAN_STATE);
     };
@@ -96,110 +104,110 @@ const UserEdit = ({ userId }) => {
 
     if (loading) return <Loader />;
 
-    if (error) return <div className="error-message">{error}</div>;
+    if (error) return <div className='error-message'>{error}</div>;
 
     return (
         <>
             <h1>{userId ? 'Edit Employee' : 'Add New Employee'}</h1>
-            {warning && <div className="warning-message">{warning}</div>}
-            {success && <div className="success-message">{success}</div>}
-            <form onSubmit={handleSubmit} className="user-form">
-                <div className="form-group">
+            {warning && <div className='warning-message'>{warning}</div>}
+            {success && <div className='success-message'>{success}</div>}
+            <form onSubmit={handleSubmit} className='user-form'>
+                <div className='form-group'>
                     <label>Login</label>
                     <input
-                        type="text"
-                        name="login"
+                        type='text'
+                        name='login'
                         value={formData.login}
                         onChange={handleChange}
-                        placeholder="Enter login (optional)"
+                        placeholder='Enter login (optional)'
                     />
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>Email address</label>
                     <input
-                        type="email"
-                        name="email"
+                        type='email'
+                        name='email'
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="Enter email"
+                        placeholder='Enter email'
                         required
                     />
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>First Name</label>
                     <input
-                        type="text"
-                        name="first_name"
+                        type='text'
+                        name='first_name'
                         value={formData.first_name}
                         onChange={handleChange}
-                        placeholder="Enter first name"
+                        placeholder='Enter first name'
                         required
                     />
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>Last Name</label>
                     <input
-                        type="text"
-                        name="last_name"
+                        type='text'
+                        name='last_name'
                         value={formData.last_name}
                         onChange={handleChange}
-                        placeholder="Enter last name"
+                        placeholder='Enter last name'
                         required
                     />
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>
                         <input
-                            type="checkbox"
-                            name="active"
+                            type='checkbox'
+                            name='active'
                             checked={formData.active}
                             onChange={handleChange}
                         />
                         Active
                     </label>
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>
                         <input
-                            type="checkbox"
-                            name="manager_view_access"
+                            type='checkbox'
+                            name='manager_view_access'
                             checked={formData.manager_view_access}
                             onChange={handleChange}
                         />
                         Manager View Access
                     </label>
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>Roles</label>
-                    <div className="roles-checklist">
+                    <div className='roles-checklist'>
                         {roles?.length === 0 ? (
                             <p>No roles available.</p>
                         ) : (
                             roles?.map(role => (
-                                <label key={role.id} className="role-checkbox">
+                                <label key={role.id} className='role-checkbox'>
                                     <input
-                                        type="checkbox"
-                                        name="roleIds"
+                                        type='checkbox'
+                                        name='roleIds'
                                         value={role.id}
                                         checked={formData.role_ids.includes(role.id)}
                                         onChange={handleChange}
                                     />
-                                    {role.name} <span title={"Power"}><small>&nbsp;({role.power})</small></span>
+                                    {role.name}
                                 </label>
                             ))
                         )}
                     </div>
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>Primary Manager</label>
                     <select
-                        name="primary_manager_id"
+                        name='primary_manager_id'
                         value={formData.primary_manager_id}
                         onChange={handleChange}
-                        className="manager-select"
+                        className='manager-select'
                     >
-                        <option value="" hidden>Select a manager</option>
-                        <option value="0">None</option>
+                        <option value='' hidden>Select a manager</option>
+                        <option value='0'>None</option>
                         {availableManagers.map(manager => (
                             <option key={manager.id} value={parseInt(manager.id)}>
                                 {manager.first_name} {manager.last_name}
@@ -207,16 +215,16 @@ const UserEdit = ({ userId }) => {
                         ))}
                     </select>
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>Secondary Manager</label>
                     <select
-                        name="secondary_manager_id"
+                        name='secondary_manager_id'
                         value={formData.secondary_manager_id}
                         onChange={handleChange}
-                        className="manager-select"
+                        className='manager-select'
                     >
-                        <option value="" hidden>Select a manager</option>
-                        <option value="0">None</option>
+                        <option value='' hidden>Select a manager</option>
+                        <option value='0'>None</option>
                         {availableSecondaryManagers.map(manager => (
                             <option key={manager.id} value={parseInt(manager.id)}>
                                 {manager.first_name} {manager.last_name}
@@ -224,15 +232,15 @@ const UserEdit = ({ userId }) => {
                         ))}
                     </select>
                 </div>
-                <div className="form-actions">
-                    <button type="submit" className="save-button">
+                <div className='form-actions'>
+                    <button type='submit' className='save-button'>
                         {userId ? (
                             <><i className={'material-symbols-outlined'}>save</i>Save changes</>
                         ) : (
                             <><i className={'material-symbols-outlined'}>add</i>Add a new employee</>
                         )}
                     </button>
-                    <button type="button" className="cancel-button" onClick={() => closeTopModal()}>
+                    <button type='button' className='cancel-button' onClick={() => closeTopModal()}>
                         Cancel
                     </button>
                 </div>

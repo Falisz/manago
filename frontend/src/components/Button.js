@@ -8,7 +8,7 @@ const Button = ({children, className, onClick, label, icon=null}) => {
             className={className}
             onClick={onClick}
         >
-            {icon && <i className={"material-icons"}>{icon}</i>}
+            {icon && <i className={'material-icons'}>{icon}</i>}
             {children || label}
         </button>
     );

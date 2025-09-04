@@ -1,8 +1,8 @@
 // FRONTEND/components/Teams/Details.js
-import React, {useEffect} from "react";
-import Loader from "../Loader";
-import useTeam from "../../hooks/useTeam";
-import { useModals } from "../../contexts/ModalContext";
+import React, {useEffect} from 'react';
+import Loader from '../Loader';
+import useTeam from '../../hooks/useTeam';
+import { useModals } from '../../contexts/ModalContext';
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam } = useTeam();
@@ -29,10 +29,10 @@ const TeamDetails = ({ teamId }) => {
     }
 
     return (
-        <div className="team-detail">
-            <div className="team-detail-header">
-                <div className={"team-id"} title={"Team ID"}>#{team.id}</div>
-                <div className={"team-name"} title={"Team Name"}>{team.name}</div>
+        <div className='team-detail'>
+            <div className='team-detail-header'>
+                <div className={'team-id'} title={'Team ID'}>#{team.id}</div>
+                <div className={'team-name'} title={'Team Name'}>{team.name}</div>
             </div>
         </div>
     );

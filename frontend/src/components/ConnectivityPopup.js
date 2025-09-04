@@ -10,9 +10,9 @@ const ConnectivityPopup = () => {
     if (appConfig?.is_connected) return null;
 
     return (
-        <div className="connectivity-popup">
-            <span className="material-icons connectivity-icon">cloud_off</span>
-            <div className="connectivity-message">
+        <div className='connectivity-popup'>
+            <span className='material-icons connectivity-icon'>cloud_off</span>
+            <div className='connectivity-message'>
                 <h1>Connection Lost</h1>
                 <p>No connection to the server. Please check your network.</p>
                 <Button

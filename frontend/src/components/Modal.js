@@ -2,7 +2,7 @@
 import React, {useEffect, useRef} from 'react';
 import '../assets/styles/Modal.css';
 
-const Modal = ({ children, isVisible = false, isPopUp = false, onClose, closeButton = true, zIndex = 1000 }) => {
+const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton = true, zIndex = 1000 }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {
@@ -44,22 +44,22 @@ const Modal = ({ children, isVisible = false, isPopUp = false, onClose, closeBut
                 className={`app-modal-overlay ${!isVisible ? 'hidden' : ''}`}
                 style={{ zIndex }}
                 onClick={() => onClose()}
-                role="presentation"
+                role='presentation'
             />
             <div
-                className={`app-modal-content ${isPopUp ? 'pop-up' : ''} ${!isVisible ? 'hidden' : ''}`}
+                className={`app-modal-content ${type} ${!isVisible ? 'hidden' : ''}`}
                 style={{ zIndex: zIndex + 1 }}
-                tabIndex="-1"
+                tabIndex='-1'
                 ref={modalRef}
             >
                 {children}
                 {closeButton && (
                     <button
                         onClick={() => onClose()}
-                        className="app-modal-close-button"
-                        aria-label="Close modal"
+                        className='app-modal-close-button'
+                        aria-label='Close modal'
                     >
-                        <i className="material-symbols-outlined">close</i>
+                        <i className='material-symbols-outlined'>close</i>
                     </button>
                 )}
             </div>

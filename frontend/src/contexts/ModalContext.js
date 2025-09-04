@@ -1,14 +1,15 @@
 // FRONTEND/contexts/ModalContext.js
-import React, {createContext, useContext, useState, useEffect, useCallback, useRef} from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
 import UserEdit from '../components/Users/Edit';
-import RoleDetails from "../components/Roles/Details";
-import RoleEdit from "../components/Roles/Edit";
-import PostDetails from "../components/Posts/Details";
+import RoleDetails from '../components/Roles/Details';
+import RoleEdit from '../components/Roles/Edit';
+import PostDetails from '../components/Posts/Details';
 import TeamDetails from '../components/Teams/Details';
-import InWorks from "../components/InWorks";
+import InWorks from '../components/InWorks';
+import ConfirmPrompt from "../components/ConfirmPrompt";
 
 const ModalContext = createContext();
 
@@ -28,7 +29,7 @@ export const ModalProvider = ({ children }) => {
         setModalStack((prev) => {
             const isDuplicate = prev.some(
                 (existing) =>
-                    existing.type === modal.type &&
+                    existing.content === modal.content &&
                     existing.data?.id === modal.data?.id
             );
             if (isDuplicate) {
@@ -91,15 +92,12 @@ export const ModalProvider = ({ children }) => {
 
         if (topModal?.discardWarning) {
             openModal({
-                type: 'confirm',
-                isPopUp: true,
+                content: 'confirm',
+                type: 'pop-up',
                 message: 'Changes were made. Are you sure you want to discard them?',
                 onConfirm: () => {
-                    closeModal(); // Closing-self (pop-up confirmation modal)
-                    setTimeout(() => {
-                        setDiscardWarning(false); // Resetting discard warning from the topModal
-                        closeModal(); // Closing the topModal.
-                    }, ANIMATION_DURATION);
+                    setDiscardWarning(false);
+                    closeModal();
                 },
             });
             return; // Escaping this callback - new pop-up confirmation modal will handle closing from now on.
@@ -109,63 +107,15 @@ export const ModalProvider = ({ children }) => {
 
     }, [closeModal, openModal, setDiscardWarning]);
 
-    const refreshData = useCallback((type, data) => {
+    const refreshData = useCallback((content, data) => {
         setRefreshTriggers((prev) => ({
             ...prev,
-            [type]: { data, timestamp: Date.now() },
+            [content]: { data, timestamp: Date.now() },
         }));
     }, []);
 
-    useEffect(() => {
-        const userDetails = searchParams.get('user');
-        if (userDetails) openModal({ type: 'userDetails', data: { id: userDetails } });
-        const editUser = searchParams.get('editUser');
-        if (editUser) openModal({ type: 'userEdit', data: { id: editUser } });
-        const newUser = searchParams.get('newUser');
-        if (newUser) openModal({ type: 'userNew' });
-
-        const roleDetails = searchParams.get('role');
-        if (roleDetails) openModal({ type: 'roleDetails', data: { id: roleDetails } });
-        const editRole = searchParams.get('editRole');
-        if (editRole) openModal({ type: 'roleEdit', data: { id: editRole } });
-        const newRole = searchParams.get('newRole');
-        if (newRole) openModal({ type: 'roleNew' });
-
-        const teamDetails = searchParams.get('team');
-        if (teamDetails) openModal({ type: 'teamDetails', data: { id: teamDetails } });
-        const editTeam = searchParams.get('editTeam');
-        if (editTeam) openModal({ type: 'teamEdit', data: { id: editTeam } });
-        const newTeam = searchParams.get('newTeam');
-        if (newTeam) openModal({ type: 'teamNew' });
-
-        const postDetails = searchParams.get('post');
-        if (postDetails) openModal({ type: 'postDetails', data: { id: postDetails } });
-
-        const test = searchParams.get('test');
-        if (test) openModal({ type: 'test' });
-        // eslint-disable-next-line
-    }, []);
-
-    useEffect(() => {
-        const newParams = new URLSearchParams();
-        modalStack.forEach((modal) => {
-            if (modal.type === 'userDetails') newParams.set('user', modal.data.id);
-            if (modal.type === 'userEdit') newParams.set('editUser', modal.data.id);
-            if (modal.type === 'userNew') newParams.set('newUser', '');
-            if (modal.type === 'roleDetails') newParams.set('role', modal.data.id);
-            if (modal.type === 'roleEdit') newParams.set('editRole', modal.data.id);
-            if (modal.type === 'roleNew') newParams.set('newRole', '');
-            if (modal.type === 'teamDetails') newParams.set('team', modal.data.id);
-            if (modal.type === 'teamEdit') newParams.set('editTeam', modal.data.id);
-            if (modal.type === 'teamNew') newParams.set('newTeam', '');
-            if (modal.type === 'postDetails') newParams.set('post', modal.data.id);
-            if (modal.type === 'test') newParams.set('test', '');
-        });
-        setSearchParams(newParams, { replace: true });
-    }, [modalStack, setSearchParams]);
-
     const renderModalContent = (modal) => {
-        switch (modal.type) {
+        switch (modal) {
             case 'userDetails':
                 return <UserDetails userId={modal.data.id} />;
             case 'userEdit':
@@ -183,28 +133,70 @@ export const ModalProvider = ({ children }) => {
             case 'teamEdit':
                 return <InWorks
                     title={'Teams'} icon={'info'} modal={true}
-                    description={"There will be a new team edit window here."}
+                    description={'There will be a new team edit window here.'}
                 />;
             case 'teamNew':
                 return <InWorks
                     title={'Teams'} icon={'add'} modal={true}
-                    description={"There will be a new team edit form here." + 
-                        "Depending on enabled modules it may have project and/or branch fields."}
+                    description={'There will be a new team edit form here.' +
+                        'Depending on enabled modules it may have project and/or branch fields.'}
                 />;
             case 'postDetails':
                 return <PostDetails postId={modal.data.id} />;
             case 'confirm':
-                return (
-                    <div>
-                        <p>{modal.message}</p>
-                        <button className={'action-button'} onClick={modal.onConfirm}>Confirm</button>
-                        <button className={'action-button discard'} onClick={closeTopModal}>Cancel</button>
-                    </div>
-                );
+                return <ConfirmPrompt message={modal.message} onConfirm={modal.onConfirm} />;
             default:
                 return <InWorks title={'Unknown modal.'} modal={true} />;
         }
     };
+
+    useEffect(() => {
+        const userDetails = searchParams.get('user');
+        if (userDetails) openModal({ content: 'userDetails', data: { id: userDetails } });
+        const editUser = searchParams.get('editUser');
+        if (editUser) openModal({ content: 'userEdit', data: { id: editUser } });
+        const newUser = searchParams.get('newUser');
+        if (newUser) openModal({ content: 'userNew' });
+
+        const roleDetails = searchParams.get('role');
+        if (roleDetails) openModal({ content: 'roleDetails', data: { id: roleDetails } });
+        const editRole = searchParams.get('editRole');
+        if (editRole) openModal({ content: 'roleEdit', data: { id: editRole } });
+        const newRole = searchParams.get('newRole');
+        if (newRole) openModal({ content: 'roleNew' });
+
+        const teamDetails = searchParams.get('team');
+        if (teamDetails) openModal({ content: 'teamDetails', data: { id: teamDetails } });
+        const editTeam = searchParams.get('editTeam');
+        if (editTeam) openModal({ content: 'teamEdit', data: { id: editTeam } });
+        const newTeam = searchParams.get('newTeam');
+        if (newTeam) openModal({ content: 'teamNew' });
+
+        const postDetails = searchParams.get('post');
+        if (postDetails) openModal({ content: 'postDetails', data: { id: postDetails } });
+
+        const test = searchParams.get('test');
+        if (test) openModal({ content: 'test' });
+        // eslint-disable-next-line
+    }, []);
+
+    useEffect(() => {
+        const newParams = new URLSearchParams();
+        modalStack.forEach((modal) => {
+            if (modal.content === 'userDetails') newParams.set('user', modal.data.id);
+            if (modal.content === 'userEdit') newParams.set('editUser', modal.data.id);
+            if (modal.content === 'userNew') newParams.set('newUser', '');
+            if (modal.content === 'roleDetails') newParams.set('role', modal.data.id);
+            if (modal.content === 'roleEdit') newParams.set('editRole', modal.data.id);
+            if (modal.content === 'roleNew') newParams.set('newRole', '');
+            if (modal.content === 'teamDetails') newParams.set('team', modal.data.id);
+            if (modal.content === 'teamEdit') newParams.set('editTeam', modal.data.id);
+            if (modal.content === 'teamNew') newParams.set('newTeam', '');
+            if (modal.content === 'postDetails') newParams.set('post', modal.data.id);
+            if (modal.content === 'test') newParams.set('test', '');
+        });
+        setSearchParams(newParams, { replace: true });
+    }, [modalStack, setSearchParams]);
 
     return (
         <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal, refreshData, refreshTriggers }}>
@@ -212,10 +204,10 @@ export const ModalProvider = ({ children }) => {
             {modalStack.map((modal, index) => (
                 <Modal
                     key={index}
-                    onClose={closeTopModal}
-                    isPopUp={modal.isPopUp}
+                    type={modal.type}
                     isVisible={modal.isVisible}
                     zIndex={1000 + index * 10}
+                    onClose={closeTopModal}
                 >
                     {renderModalContent(modal)}
                 </Modal>

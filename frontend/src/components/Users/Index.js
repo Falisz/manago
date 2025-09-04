@@ -1,19 +1,19 @@
 // FRONTEND/components/Users/Index.js
-import React, { useEffect, useState, useMemo } from "react";
-import { useModals } from "../../contexts/ModalContext";
-import useUsers from "../../hooks/useUsers";
-import Loader from "../Loader";
-import Button from "../Button";
+import React, { useEffect, useState, useMemo } from 'react';
+import { useModals } from '../../contexts/ModalContext';
+import useUsers from '../../hooks/useUsers';
+import Loader from '../Loader';
+import Button from '../Button';
 import '../../assets/styles/Users.css';
 
 // TODO: List selections with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 
 const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
     return (
-        <div className="users-list-header-cell" key={header.key}>
+        <div className='users-list-header-cell' key={header.key}>
             <label>{header.title}</label>
             <input
-                className="search"
+                className='search'
                 title={header.title}
                 placeholder={`Filter by the ${header.title.toLowerCase()}...`}
                 name={header.key}
@@ -99,8 +99,8 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
 
                 if (key === 'active') {
                     const filterValue = value.toLowerCase();
-                    const trueValues = ["active", "true", "yes", "1", 1, "y"];
-                    const falseValues = ["not", "non", "not-active", "no", "n", "false", "0", 0]
+                    const trueValues = ['active', 'true', 'yes', '1', 1, 'y'];
+                    const falseValues = ['not', 'non', 'not-active', 'no', 'n', 'false', '0', 0]
                     return (trueValues.includes(filterValue.toLowerCase()) && user[key]) || (falseValues.includes(filterValue.toLowerCase()) && !user[key]);
                 }
 
@@ -152,8 +152,8 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
     }
 
     return (
-        <div className="users-list">
-            <div className="users-list-header">
+        <div className='users-list'>
+            <div className='users-list-header'>
                 {headers.map((header) => (
                     <UserTableHeader
                         header={header}
@@ -165,7 +165,7 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     />
                 ))}
             </div>
-            <div className="users-list-content">
+            <div className='users-list-content'>
                 { filteredAndSortedUsers?.length === 0 ? (
                     <p>No users found.</p>
                 ) : (filteredAndSortedUsers?.map(user => {
@@ -175,14 +175,14 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     const moreRolesText = moreRolesCount > 0 ? `+${moreRolesCount} other roles` : '';
 
                     return (
-                        <div className="users-list-row" key={user.id}>
-                            <div onClick={() => openModal({ type: 'userDetails', data: { id: user.id } })}>
+                        <div className='users-list-row' key={user.id}>
+                            <div onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}>
                                 {user.first_name} {user.last_name}
                             </div>
                             <div>
                                 {displayedRoles.map((role) => (
-                                    <span key={role.id} className="role-name"
-                                          onClick={() => openModal({ type: 'roleDetails', data: { id: role.id } })}
+                                    <span key={role.id} className='role-name'
+                                          onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
@@ -192,8 +192,8 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                                     {(user.managers || []).length === 0
                                         ? <span>-</span>
                                         : (user.managers || []).map(manager =>
-                                            <span key={manager.id} className="manager-name"
-                                                onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
+                                            <span key={manager.id} className='manager-name'
+                                                onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
                                             >{manager.first_name} {manager.last_name}</span>
                                         ).reduce((prev, curr) => [prev, ', ', curr])
                                     }
@@ -236,8 +236,8 @@ export const ManagersIndex = () => {
         <>
             <h1>Managers of Zyrah</h1>
             <Button
-                className="new-user-button"
-                onClick={() => openModal({ type: 'userNew' })}
+                className='new-user-button'
+                onClick={() => openModal({ content: 'userNew' })}
                 label={'Add Manager'}
                 icon={'add'}
             />
@@ -270,8 +270,8 @@ export const EmployeesIndex = () => {
         <>
             <h1>Employees of Zyrah</h1>
             <Button
-                className="new-user-button"
-                onClick={() => openModal({ type: 'userNew' })}
+                className='new-user-button'
+                onClick={() => openModal({ content: 'userNew' })}
                 label={'Add Employee'}
                 icon={'add'}
             />
@@ -303,8 +303,8 @@ export const UsersIndex = () => {
         <>
             <h1>Users of Zyrah</h1>
             <Button
-                className="new-user-button"
-                onClick={() => openModal({ type: 'userNew' })}
+                className='new-user-button'
+                onClick={() => openModal({ content: 'userNew' })}
                 label={'Add User'}
                 icon={'add'}
             />

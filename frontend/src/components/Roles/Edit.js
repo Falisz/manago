@@ -1,7 +1,7 @@
 // FRONTEND/components/Roles/Edit.js
 import React, { useEffect, useState } from 'react';
-import {useModals} from "../../contexts/ModalContext";
-import useRole from "../../hooks/useRole";
+import {useModals} from '../../contexts/ModalContext';
+import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
 import '../../assets/styles/Users.css';
 
@@ -43,21 +43,21 @@ const RoleEdit = ({ roleId }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const response = await saveRole(formData, roleId);
-        if (response) {
+        const savedRole = await saveRole(formData, roleId);
+        if (savedRole) {
             setDiscardWarning(false);
             setTimeout(() => {
                 closeTopModal();
                 if (!roleId) {
                 setTimeout(() => {
-                        openModal({ type: 'roleDetails', data: { id: response.id } });
+                        openModal({ content: 'roleDetails', data: { id: savedRole.id } });
                     }, 350);
                 } else {
                     refreshData('role', roleId);
                 }
                 refreshData('roles', true);
             }, 0);
-            
+            setFormData(FORM_CLEAN_STATE);
         }
     };
 
@@ -66,42 +66,42 @@ const RoleEdit = ({ roleId }) => {
     return (
         <>
             <h1>{roleId ? 'Edit Role' : 'Add New Role'}</h1>
-            {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">{success}</div>}
-            <form onSubmit={handleSubmit} className="role-form">
-                <div className="form-group">
+            {error && <div className='error-message'>{error}</div>}
+            {success && <div className='success-message'>{success}</div>}
+            <form onSubmit={handleSubmit} className='role-form'>
+                <div className='form-group'>
                     <label>Name</label>
                     <input
-                        type="text"
-                        name="name"
+                        type='text'
+                        name='name'
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Enter role name"
+                        placeholder='Enter role name'
                         required
                     />
                 </div>
-                <div className="form-group">
+                <div className='form-group'>
                     <label>Description</label>
                     <textarea
-                        name="description"
+                        name='description'
                         value={formData.description}
                         onChange={handleChange}
-                        placeholder="Enter role description (optional)"
+                        placeholder='Enter role description (optional)'
                     />
                 </div>
-                <div className="form-actions">
-                    <button type="submit" className="save-button">
+                <div className='form-actions'>
+                    <button type='submit' className='save-button'>
                         {roleId ? (
                             <>
-                                <i className="material-symbols-outlined">save</i> Save Changes
+                                <i className='material-symbols-outlined'>save</i> Save Changes
                             </>
                         ) : (
                             <>
-                                <i className="material-symbols-outlined">add</i> Create Role
+                                <i className='material-symbols-outlined'>add</i> Create Role
                             </>
                         )}
                     </button>
-                    <button type="button" className="cancel-button" onClick={() => closeTopModal()}>
+                    <button type='button' className='cancel-button' onClick={() => closeTopModal()}>
                         Cancel
                     </button>
                 </div>

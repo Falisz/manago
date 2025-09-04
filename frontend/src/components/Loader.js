@@ -2,8 +2,8 @@
 import '../assets/styles/Loader.css';
 
 export const Loader = () => (
-    <div className="app-loading">
-        <div className="spinner"></div>
+    <div className='app-loading'>
+        <div className='spinner'></div>
     </div>
 );
 

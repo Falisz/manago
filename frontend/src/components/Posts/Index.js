@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Loader } from '../Loader';
-import {useModals} from "../../contexts/ModalContext";
+import { useModals } from '../../contexts/ModalContext';
 
 // TODO: Post Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 const PostIndex = () => {
@@ -35,12 +35,12 @@ const PostIndex = () => {
             {posts.length === 0 || error ? (
                 <p>No posts available.</p>
             ) : (
-                <ul className="post-list">
+                <ul className='post-list'>
                     {posts.map(post => (
-                        <li key={post.ID} className="post-item">
+                        <li key={post.ID} className='post-item'>
                             <h2
-                                className="post-title-button"
-                                onClick={() => openModal({ type: 'postDetails', data: { id: post.ID } })}>
+                                className='post-title-button'
+                                onClick={() => openModal({ content: 'postDetails', type: 'dialog', data: { id: post.ID } })}>
                                 {post.title || 'Untitled Post'}
                             </h2>
                             <p>

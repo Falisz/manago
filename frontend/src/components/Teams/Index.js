@@ -1,17 +1,17 @@
 // FRONTEND/components/Teams/Index.js
-import React, { useEffect, useState, useMemo } from "react";
-import { useModals } from "../../contexts/ModalContext";
-import useTeams from "../../hooks/useTeams"; // You need to implement this hook similar to useUsers
-import Loader from "../Loader";
-import Button from "../Button";
+import React, { useEffect, useState, useMemo } from 'react';
+import { useModals } from '../../contexts/ModalContext';
+import useTeams from '../../hooks/useTeams';
+import Loader from '../Loader';
+import Button from '../Button';
 import '../../assets/styles/Teams.css';
 
 // Table header component for Teams
 const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => (
-    <div className="teams-list-header-cell" key={header.key}>
+    <div className='teams-list-header-cell' key={header.key}>
         <label>{header.title}</label>
         <input
-            className="search"
+            className='search'
             title={header.title}
             placeholder={`Filter by the ${header.title.toLowerCase()}...`}
             name={header.key}
@@ -34,11 +34,11 @@ const TeamItem = ({ team }) => {
 
     return (
         <>
-            <div className="team-item">
-                <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
+            <div className='team-item'>
+                <div onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}>
                     {team.code_name}
                 </div>
-                <div onClick={() => openModal({ type: 'teamDetails', data: { id: team.id } })}>
+                <div onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}>
                     {team.name}
                 </div>
                 <div>{team.members_count}</div>
@@ -46,8 +46,8 @@ const TeamItem = ({ team }) => {
                     {(team.managers || []).length === 0
                         ? null
                         : (team.managers || []).map(manager =>
-                            <span key={manager.id} className="manager-name"
-                                onClick={() => openModal({ type: 'userDetails', data: { id: manager.id } })}
+                            <span key={manager.id} className='manager-name'
+                                onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
                             >{manager.first_name} {manager.last_name}</span>
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }
@@ -56,15 +56,15 @@ const TeamItem = ({ team }) => {
                     {(team.team_leaders || []).length === 0
                         ? null
                         : (team.team_leaders || []).map(leader =>
-                            <span key={leader.id} className="teamleader-name"
-                                onClick={() => openModal({ type: 'userDetails', data: { id: leader.id } })}
+                            <span key={leader.id} className='teamleader-name'
+                                onClick={() => openModal({ content: 'userDetails', data: { id: leader.id } })}
                             >{leader.first_name} {leader.last_name}</span>
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }
                 </div>
             </div>
             {team.subteams && team.subteams?.length > 0 ? (
-                <div className="subteams">
+                <div className='subteams'>
                     {team.subteams.map(subteam => (
                         <TeamItem key={subteam.id} team={subteam} />
                     ))}
@@ -179,8 +179,8 @@ const TeamsTable = () => {
     }
 
     return (
-        <div className="teams-list">
-            <div className="teams-list-header">
+        <div className='teams-list'>
+            <div className='teams-list-header'>
                 {headers.map((header) => (
                     <TeamTableHeader
                         header={header}
@@ -192,11 +192,11 @@ const TeamsTable = () => {
                     />
                 ))}
             </div>
-            <div className="teams-list-content">
+            <div className='teams-list-content'>
                 {filteredAndSortedTeams?.length === 0 ? (
                     <p>No teams found.</p>
                 ) : (filteredAndSortedTeams?.map(team => (
-                    <div className="teams-list-row" key={team.id}>
+                    <div className='teams-list-row' key={team.id}>
                         <TeamItem team={team} />
                     </div>
                 )))}
@@ -212,8 +212,8 @@ const TeamsIndex = () => {
         <>
             <h1>Teams in Zyrah</h1>
             <Button
-                className="new-team-button"
-                onClick={() => openModal({ type: 'teamNew' })}
+                className='new-team-button'
+                onClick={() => openModal({ content: 'teamNew' })}
                 label={'Add new Team'}
                 icon={'add'}
             />

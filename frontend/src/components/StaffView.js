@@ -4,7 +4,7 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
-import useAppStatus from "../contexts/AppStatusContext";
+import useAppStatus from '../contexts/AppStatusContext';
 
 const StaffView = () => {
     const { user, appConfig, toggleView } = useAppStatus();
@@ -16,13 +16,13 @@ const StaffView = () => {
 
     return (
         <>
-            <div className="app-nav">
-                <Link to="/"  title={'Home'} className={`app-home`}>
+            <div className='app-nav'>
+                <Link to='/'  title={'Home'} className={`app-home`}>
                     <SiteLogo className={'app-logo'}/>
                 </Link>
-                <ul className="app-pages">
+                <ul className='app-pages'>
                     {appConfig.pages && appConfig.pages
-                        .filter((page) => page.path !== "/")
+                        .filter((page) => page.path !== '/')
                         .map((page) => (
                             <li key={page.path} className={'page-link-item'}>
                             <Link
@@ -36,15 +36,15 @@ const StaffView = () => {
                                             : ''
                                 }`}
                             >
-                                {page.icon && <i className="page-icon material-icons">{page.icon}</i>}
-                                <span className="page-title">{page.title}</span>
+                                {page.icon && <i className='page-icon material-icons'>{page.icon}</i>}
+                                <span className='page-title'>{page.title}</span>
                             </Link>
                                 {page.subpages?.length >= 1 && (
-                                    <ul className="submenu">
+                                    <ul className='submenu'>
                                         {page.subpages
                                             .filter((subpage) => subpage.path !== '')
                                             .map((subpage) => (
-                                                !subpage.hidden && <li key={`${page.path}/${subpage.path}`} className="submenu-item">
+                                                !subpage.hidden && <li key={`${page.path}/${subpage.path}`} className='submenu-item'>
                                                     <Link
                                                         to={`${page.path}${subpage.path ? `/${subpage.path}` : ''}`}
                                                         className={`subpage-link ${
@@ -66,7 +66,7 @@ const StaffView = () => {
                     <span className='username'>
                         {user?.first_name || 'User'}
                     </span>
-                    <i className="material-icons">keyboard_arrow_down</i>
+                    <i className='material-icons'>keyboard_arrow_down</i>
                     <ul className='submenu'>
                         { user.manager_view_access &&
                             <li className='submenu-item'>
@@ -83,7 +83,7 @@ const StaffView = () => {
                 currentView={'staff'}
                 currentPath={location.pathname}
             />
-            <div className="app-content">
+            <div className='app-content'>
                 <main className={currentMainPage?.path}>
                     <Outlet />
                 </main>

@@ -4,9 +4,9 @@ import React, {useState, useEffect} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
-import axios from "axios";
+import axios from 'axios';
 import MobileNav from './MobileNav';
-import useAppStatus from "../contexts/AppStatusContext";
+import useAppStatus from '../contexts/AppStatusContext';
 
 // TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
 
@@ -46,12 +46,12 @@ const MainNav = () => {
 
     return (
         <nav className={`app-nav ${navCollapsed ? 'app-nav-collapsed' : ''}`}>
-            <Link to="/" className={`app-home-link ${location.pathname === '/' ? 'active' : ''}`}>
+            <Link to='/' className={`app-home-link ${location.pathname === '/' ? 'active' : ''}`}>
                 <SiteLogo className={'app-logo '}/>
                 <SiteLogoSmall className={'app-logo-small '}/>
             </Link>
             {appConfig.pages && appConfig.pages
-                .filter((page) => page.path !== "/")
+                .filter((page) => page.path !== '/')
                 .map((page) => (
                     <Link
                         key={page.path}
@@ -64,8 +64,8 @@ const MainNav = () => {
                                     : ''
                         }`}
                     >
-                        {page.icon && <span className="app-nav-page-link-icon material-icons">{page.icon}</span>}
-                        <span className="app-nav-page-link-label">
+                        {page.icon && <span className='app-nav-page-link-icon material-icons'>{page.icon}</span>}
+                        <span className='app-nav-page-link-label'>
                         {   (page.title.toLowerCase() === 'employees' && appConfig.modules?.some(m => m.title === 'Teams' && m.enabled))
                             ? 'Employees & Teams'
                             : page.title}
@@ -73,7 +73,7 @@ const MainNav = () => {
                     </Link>
                 ))}
             <span
-                className="nav-collapse-button material-symbols-outlined"
+                className='nav-collapse-button material-symbols-outlined'
                 onClick={toggleNavCollapse}
             >
                         {navCollapsed ? 'left_panel_open' : 'left_panel_close'}
@@ -86,8 +86,8 @@ const SubNav = ({currentMainPage, location}) => {
     const { user, toggleView } = useAppStatus();
 
     return (
-        <nav className="app-subnav">
-            <ul className="subpage-links">
+        <nav className='app-subnav'>
+            <ul className='subpage-links'>
                 {currentMainPage &&
                 <li
                     key={`${currentMainPage?.path}`}
@@ -108,19 +108,19 @@ const SubNav = ({currentMainPage, location}) => {
                     </li>
                 ))}
             </ul>
-            <div className="user-nav">
-                        <span className="username">
+            <div className='user-nav'>
+                        <span className='username'>
                             {user?.first_name || 'User'}
                         </span>
-                <i className="material-icons">keyboard_arrow_down</i>
-                <ul className="submenu">
-                    <li className="submenu-item">
-                        <Link to="#" onClick={() => toggleView(false)}>
+                <i className='material-icons'>keyboard_arrow_down</i>
+                <ul className='submenu'>
+                    <li className='submenu-item'>
+                        <Link to='#' onClick={() => toggleView(false)}>
                             Staff Portal
                         </Link>
                     </li>
-                    <li className="submenu-item">
-                        <Link to="/logout" className="logout">
+                    <li className='submenu-item'>
+                        <Link to='/logout' className='logout'>
                             Logout
                         </Link>
                     </li>
@@ -146,7 +146,7 @@ const ManagerView = () => {
                 currentView={'manager'}
                 currentPath={location.pathname}
             />
-            <div className="app-content">
+            <div className='app-content'>
                 <SubNav
                     currentMainPage={currentMainPage}
                     location={location}

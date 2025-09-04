@@ -1,7 +1,7 @@
 // FRONTEND/components/Posts/Details.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import Loader from "../Loader";
+import Loader from '../Loader';
 
 const PostDetails = ({ postId }) => {
     const [post, setPost] = useState(null);

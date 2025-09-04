@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
-import useAppStatus from "../contexts/AppStatusContext";
+import useAppStatus from '../contexts/AppStatusContext';
 
 const MobileNav = ({ logoText, currentView, currentPath }) => {
     const [mobileNavExpanded, setMobileNavExpanded] = useState(false);
@@ -10,7 +10,7 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
 
     return (
         <nav className={`app-mobile-nav ${mobileNavExpanded ? 'expanded' : ''}`}>
-            <Link to="/" className={`app-home-link ${currentPath === '/' ? 'active' : ''}`}>
+            <Link to='/' className={`app-home-link ${currentPath === '/' ? 'active' : ''}`}>
                 <SiteLogoMobile className={'app-logo-mobile'} />
             </Link>
             <div className={'app-mobile-nav-title'}>{logoText}</div>
@@ -41,15 +41,15 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                                 }`}
                                 onClick={() => setMobileNavExpanded(false)}
                             >
-                                {page.icon && <span className="app-nav-page-link-icon material-icons">{page.icon}</span>}
-                                <span className="app-nav-page-link-label">{page.title}</span>
+                                {page.icon && <span className='app-nav-page-link-icon material-icons'>{page.icon}</span>}
+                                <span className='app-nav-page-link-label'>{page.title}</span>
                             </Link>
                             {page.subpages?.length >= 1 && (
-                                <ul className="submenu">
+                                <ul className='submenu'>
                                     {page.subpages
                                         .filter((subpage) => subpage.path !== '')
                                         .map((subpage) => (!subpage.hidden &&
-                                            <li key={`${page.path}/${subpage.path}`} className="submenu-item">
+                                            <li key={`${page.path}/${subpage.path}`} className='submenu-item'>
                                                 <Link
                                                     to={`${page.path}${subpage.path ? `/${subpage.path}` : ''}`}
                                                     className={`${
@@ -68,20 +68,20 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                         </li>
                     ))}
                 <li className={'app-mobile-nav-link-item user-link'}>
-                    <Link className="app-nav-page-link" to="#">
-                        <span className="app-nav-page-link-icon material-icons">account_circle</span>
-                        <span className="app-nav-page-link-label">{user?.first_name || 'User'}</span>
+                    <Link className='app-nav-page-link' to='#'>
+                        <span className='app-nav-page-link-icon material-icons'>account_circle</span>
+                        <span className='app-nav-page-link-label'>{user?.first_name || 'User'}</span>
                     </Link>
-                    <ul className="submenu">
+                    <ul className='submenu'>
                         {user.manager_view_access && (
-                            <li className="submenu-item">
-                                <Link to="#" onClick={() => { toggleView(currentView === 'staff'); setMobileNavExpanded(false); }}>
+                            <li className='submenu-item'>
+                                <Link to='#' onClick={() => { toggleView(currentView === 'staff'); setMobileNavExpanded(false); }}>
                                     {currentView === 'staff' ? 'Go to Manager Portal' : 'Go to Staff Portal'}
                                 </Link>
                             </li>
                         )}
-                        <li className="submenu-item">
-                            <Link to="/logout" className="logout" onClick={() => setMobileNavExpanded(false)}>
+                        <li className='submenu-item'>
+                            <Link to='/logout' className='logout' onClick={() => setMobileNavExpanded(false)}>
                                 Logout
                             </Link>
                         </li>
