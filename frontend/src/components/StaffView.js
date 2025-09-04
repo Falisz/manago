@@ -4,15 +4,15 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 
 const StaffView = () => {
-    const { user, appConfig, toggleView } = useAppStatus();
+    const { user, appState, toggleView } = useAppState();
     const location = useLocation();
 
-    const currentMainPage = appConfig.pages?.find((page) =>
+    const currentMainPage = appState.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || appConfig.pages?.[0] || null;
+    ) || appState.pages?.[0] || null;
 
     return (
         <>
@@ -21,7 +21,7 @@ const StaffView = () => {
                     <SiteLogo className={'app-logo'}/>
                 </Link>
                 <ul className='app-pages'>
-                    {appConfig.pages && appConfig.pages
+                    {appState.pages && appState.pages
                         .filter((page) => page.path !== '/')
                         .map((page) => (
                             <li key={page.path} className={'page-link-item'}>

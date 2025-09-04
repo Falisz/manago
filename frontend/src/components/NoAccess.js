@@ -1,9 +1,9 @@
 //FRONTEND/components/NoAccess.js
 import {Link} from 'react-router-dom';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 
 export const NoAccess = () => {
-    const { user } = useAppStatus();
+    const { user } = useAppState();
 
     return (
         <div className='app-notice app-no-access'>

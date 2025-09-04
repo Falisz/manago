@@ -2,11 +2,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 
 const MobileNav = ({ logoText, currentView, currentPath }) => {
     const [mobileNavExpanded, setMobileNavExpanded] = useState(false);
-    const { user, appConfig, toggleView } = useAppStatus();
+    const { user, appState, toggleView } = useAppState();
 
     return (
         <nav className={`app-mobile-nav ${mobileNavExpanded ? 'expanded' : ''}`}>
@@ -26,7 +26,7 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                         left_panel_open
                     </span>
                 </li>
-                {appConfig.pages && appConfig.pages
+                {appState.pages && appState.pages
                     .map((page) => (
                         <li key={`${page.path}`} className={'app-mobile-nav-link-item'}>
                             <Link

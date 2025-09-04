@@ -20,21 +20,22 @@ const mapPagesToComponents = (pages) => {
     });
 };
 
-const AppStatusContext = createContext();
+const AppStateContext = createContext();
 
-export const AppStatusProvider = ({ children }) => {
+export const AppStateProvider = ({ children }) => {
     // TODO: Retry merging all three states into an [appState and setAppState] = useState();
-    // TODO: Rename the context to AppStateContext as opposed to its inner component <AppContent>;
     // TODO: Initialization of the app with system_default theme and cookies for previously saved settings -
     //  before they're reloaded from the server.
 
     const isCheckingUserRef = useRef(false);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-    const [appConfig, setAppConfig] = useState({
+    const [appState, setAppState] = useState({
         is_connected: true,
+        is_loading: true,
         theme: process.env['REACT_APP_THEME'] || 'dark',
         palette: process.env['REACT_APP_COLOR'] || 'blue',
+        user: null,
         modules: [],
         pages: []
     });
@@ -81,7 +82,7 @@ export const AppStatusProvider = ({ children }) => {
     const refreshConfig = useCallback(async () => {
         try {
             const config = await getConfig();
-            setAppConfig(prev => {
+            setAppState(prev => {
                 if (
                     prev.is_connected === config.is_connected &&
                     prev.theme === config.app_theme &&
@@ -104,12 +105,12 @@ export const AppStatusProvider = ({ children }) => {
     const checkConnection = useCallback(async () => {
         try {
             const config = await getConfig();
-            setAppConfig(prev => {
+            setAppState(prev => {
                 if (prev.is_connected === config.is_connected) {return prev;}
                 return {...prev, is_connected: config.is_connected};
             });
         } catch (error) {
-            setAppConfig(prev => ({ ...prev, is_connected: false }));
+            setAppState(prev => ({ ...prev, is_connected: false }));
         }
     }, [getConfig]);
 
@@ -125,13 +126,13 @@ export const AppStatusProvider = ({ children }) => {
     const refreshModules = useCallback(async () => {
         try {
             const modules = await getModules();
-            setAppConfig(prev => {
+            setAppState(prev => {
                 if (prev.modules === modules) {return prev;}
                 return {...prev, modules: modules};
             });
         } catch (error) {
             console.error('Error fetching modules:', error);
-            setAppConfig(prev => ({ ...prev, modules: [] }));
+            setAppState(prev => ({ ...prev, modules: [] }));
         }
     }, [getModules]);
 
@@ -147,14 +148,14 @@ export const AppStatusProvider = ({ children }) => {
     const refreshPages = useCallback(async () => {
         try {
             const pages = await getPages();
-            setAppConfig(prev => {
+            setAppState(prev => {
                 if (prev.pages === pages) {return prev;}
                 return {...prev, pages: pages};
             });
 
         } catch (error) {
             console.error('Error fetching pages:', error);
-            setAppConfig(prev => ({ ...prev, pages: [] }));
+            setAppState(prev => ({ ...prev, pages: [] }));
         }
     }, [getPages]);
 
@@ -197,7 +198,7 @@ export const AppStatusProvider = ({ children }) => {
                 const appConfig = await getConfig();
                 const pages = await getPages();
                 const modules = await getModules();
-                setAppConfig({ ...appConfig, modules: modules, pages: pages });
+                setAppState({ ...appConfig, modules: modules, pages: pages });
                 setLoading(false);
             } catch (error) {
                 console.error(error.name, error.message);
@@ -210,13 +211,13 @@ export const AppStatusProvider = ({ children }) => {
     }, [checkAccess, checkConnection, getConfig, getModules, getPages]);
 
     return (
-        <AppStatusContext.Provider value={{
+        <AppStateContext.Provider value={{
             loading,
             setLoading,
             user,
             authUser,
             logoutUser,
-            appConfig,
+            appState,
             refreshConfig,
             checkConnection,
             refreshModules,
@@ -225,9 +226,9 @@ export const AppStatusProvider = ({ children }) => {
             toggleView
         }}>
             {children}
-        </AppStatusContext.Provider>
+        </AppStateContext.Provider>
     );
 };
 
-export const useAppStatus = () => useContext(AppStatusContext);
-export default useAppStatus;
+export const useAppState = () => useContext(AppStateContext);
+export default useAppState;

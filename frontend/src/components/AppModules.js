@@ -1,10 +1,10 @@
 import React from 'react';
 import '../assets/styles/AppModules.css';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 import { useModals } from '../contexts/ModalContext';
 
 const AppModules = () => {
-    const { appConfig, toggleModule } = useAppStatus();
+    const { appState, toggleModule } = useAppState();
     const { openModal } = useModals();
 
     const handleToggleConfirm = (id, value) => {
@@ -24,7 +24,7 @@ const AppModules = () => {
                 <br/><b>These settings should be changed only by a system admin.</b>
             </div>
             <div className='modules-list'>
-                { appConfig.modules?.length > 0 ? (appConfig.modules?.map((module) => {
+                { appState.modules?.length > 0 ? (appState.modules?.map((module) => {
                     const isMain = module.id === 0;
                     return (
                         <div className='modules-list-row' key={module.id}>

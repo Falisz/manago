@@ -1,10 +1,10 @@
 // FRONTEND/components/Logout.js
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 
 const Logout = ({ onLogout }) => {
-    const { logoutUser } = useAppStatus();
+    const { logoutUser } = useAppState();
     const navigate = useNavigate();
 
     useEffect(() => {

@@ -5,7 +5,7 @@ import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import './assets/styles/App.css';
 
 // APP CONTEXTS
-import useAppStatus, { AppStatusProvider } from './contexts/AppStatusContext';
+import useAppState, { AppStateProvider } from './contexts/AppStateContext';
 import { ModalProvider } from './contexts/ModalContext';
 
 // APP COMPONENTS
@@ -19,19 +19,19 @@ import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
 
 const AppContent = () => {
-    const { loading, appConfig, user } = useAppStatus();
+    const { loading, appState, user } = useAppState();
 
     useEffect(() => {
         const root = document.getElementById('root');
-        root.classList.add(appConfig.theme);
-        root.classList.add(appConfig.palette);
-    }, [appConfig]);
+        root.classList.add(appState.theme);
+        root.classList.add(appState.palette);
+    }, [appState]);
 
     if (loading) {
         return <Loader />;
     }
 
-    // console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-config:\n", appConfig);
+    // console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-state:\n", appState);
 
     if (!user) {
         return (
@@ -62,7 +62,7 @@ const AppContent = () => {
                     path="/"
                     element={user?.manager_view_enabled ? <ManagerView /> : <StaffView />}
                 >
-                    {appConfig.pages?.map((page) => (
+                    {appState.pages?.map((page) => (
                         <Route key={page.path} path={page.path}>
                             <Route
                                 index
@@ -97,14 +97,14 @@ const AppContent = () => {
 
 const App = () => {
     return (
-        <AppStatusProvider>
+        <AppStateProvider>
             <Router>
                 <ModalProvider>
                     <AppContent />
                 </ModalProvider>
             </Router>
             <ConnectivityPopup />
-        </AppStatusProvider>
+        </AppStateProvider>
     );
 };
 

@@ -6,12 +6,12 @@ import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from 'axios';
 import MobileNav from './MobileNav';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 
 // TODO: Different logo per branch (?) e.g. if user is from Branch One they have diff logo than the user from Branch Two.
 
 const MainNav = () => {
-    const { user, appConfig } = useAppStatus();
+    const { user, appState } = useAppState();
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
@@ -50,7 +50,7 @@ const MainNav = () => {
                 <SiteLogo className={'app-logo '}/>
                 <SiteLogoSmall className={'app-logo-small '}/>
             </Link>
-            {appConfig.pages && appConfig.pages
+            {appState.pages && appState.pages
                 .filter((page) => page.path !== '/')
                 .map((page) => (
                     <Link
@@ -66,7 +66,7 @@ const MainNav = () => {
                     >
                         {page.icon && <span className='app-nav-page-link-icon material-icons'>{page.icon}</span>}
                         <span className='app-nav-page-link-label'>
-                        {   (page.title.toLowerCase() === 'employees' && appConfig.modules?.some(m => m.title === 'Teams' && m.enabled))
+                        {   (page.title.toLowerCase() === 'employees' && appState.modules?.some(m => m.title === 'Teams' && m.enabled))
                             ? 'Employees & Teams'
                             : page.title}
                         </span>
@@ -83,7 +83,7 @@ const MainNav = () => {
 }
 
 const SubNav = ({currentMainPage, location}) => {
-    const { user, toggleView } = useAppStatus();
+    const { user, toggleView } = useAppState();
 
     return (
         <nav className='app-subnav'>
@@ -131,12 +131,12 @@ const SubNav = ({currentMainPage, location}) => {
 }
 
 const ManagerView = () => {
-    const { appConfig } = useAppStatus();
+    const { appState } = useAppState();
     const location = useLocation();
 
-    const currentMainPage = appConfig.pages?.find((page) =>
+    const currentMainPage = appState.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || appConfig.pages?.[0] || null;
+    ) || appState.pages?.[0] || null;
 
     return (
         <>

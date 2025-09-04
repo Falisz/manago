@@ -3,10 +3,10 @@ import '../assets/styles/Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
-import useAppStatus from '../contexts/AppStatusContext';
+import useAppState from '../contexts/AppStateContext';
 
 const Login = () => {
-    const { authUser } = useAppStatus();
+    const { authUser } = useAppState();
     const [ username, setUsername] = useState('');
     const [ password, setPassword] = useState('');
     const [ error, setError] = useState('');
