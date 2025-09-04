@@ -44,17 +44,16 @@ const useRole = () => {
             setError(null);
             setSuccess(null);
             const res = await axios.get(`/roles/${roleId}`, { withCredentials: true });
-            if (res.data) {
-                setRole(res.data);
-                roleCacheRef.current[roleId] = res.data;
-                return res.data;
-            } else {
-                setError('Role not found!');
-                return null;
-            }
+            setRole(res.data);
+            roleCacheRef.current[roleId] = res.data;
+            return res.data;
         } catch (err) {
-            console.error('Error fetching role:', err);
-            setError('Role not found!');
+            if (err.status === 404) {
+                setError('Role not found.');
+            } else {
+                setError('Error fetching the role.');
+                console.error('Error fetching role:', err);
+            }
             return null;
         } finally {
             setLoading(false);
@@ -69,7 +68,7 @@ const useRole = () => {
             if (roleId) {
                 response = await axios.put(`/roles/${roleId}`, formData, { withCredentials: true });
             } else {
-                response = await axios.post('/roles/new', formData, { withCredentials: true });
+                response = await axios.post('/roles', formData, { withCredentials: true });
             }
             setSuccess(response.data.message);
             setRole(response.data.role);
@@ -87,9 +86,10 @@ const useRole = () => {
             setLoading(true);
             setError(null);
             setSuccess(null);
-            await axios.delete(`/roles/${roleId}`, { withCredentials: true });
             setRole(null);
+            await axios.delete(`/roles/${roleId}`, { withCredentials: true });
             delete roleCacheRef.current[roleId];
+            setSuccess('Role deleted successfully.');
             return true;
         } catch (err) {
             console.error('Error deleting role:', err);
@@ -97,8 +97,6 @@ const useRole = () => {
             return false;
         } finally {
             setLoading(false);
-            setError(null);
-            setSuccess(null);
         }
     }, []);
 

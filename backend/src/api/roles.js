@@ -32,6 +32,10 @@ router.get('/:roleId', async (req, res) => {
 
         const role = await getRoles(parseInt(roleId));
 
+        if (!role) {
+            return res.status(404).json({ message: 'Role not found.' });
+        }
+
         res.json(role);
 
     } catch (err) {
@@ -61,7 +65,7 @@ router.get('/user/:userId', async (req, res) => {
     }
 });
 
-router.post('/new', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
