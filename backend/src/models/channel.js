@@ -18,7 +18,7 @@ export const Channel = sequelize.define('Channel', {
     timestamps: false
 });
 
-Channel.hasMany(Post, { foreignKey: 'channelID', sourceKey: 'id' });
-Post.belongsTo(Channel, { foreignKey: 'channelID', targetKey: 'id' });
+Channel.hasMany(Post, { foreignKey: 'channel', sourceKey: 'id' });
+Post.belongsTo(Channel, { foreignKey: 'channel', targetKey: 'id' });
 
 export default Channel;

@@ -17,32 +17,30 @@ import Channel from '../models/channel.js';
  * @returns {Object} Cleaned post object
  */
 function postCleanUp(post) {
-    post = {
-        author: post.User ? post.User.toJSON() : null,
-        channel: post.Channel ? post.Channel.toJSON() : null,
+    let newPost = {
         ...post.toJSON(),
+        author: post.User?.toJSON(),
+        channel: post.Channel?.toJSON(),
     };
-    delete post.Channel;
-    delete post.User;
+    delete newPost.Channel;
+    delete newPost.User;
 
-    if (post.author && post.author.UserDetails)
-        post.author = {
-            ...post.author,
-            ...post.author.UserDetails,
+    if (newPost.author && newPost.author.UserDetails)
+        newPost.author = {
+            ...newPost.author,
+            ...newPost.author.UserDetails,
         }
-    delete post.author.UserDetails;
+    delete newPost.author.UserDetails;
 
-    return post;
+    return newPost;
 }
 
-/**
- * Retrieves one or all posts.
- * @param {number|null} postId - Optional post ID to fetch a specific post
- * @returns {Promise<Object|Object[]|null>} Single post, array of posts, or null
- */
-export async function getPosts(postId = null) {
+export async function getPost(postId) {
+    if (!postId)
+        return null;
 
-    const commonConfig = {
+    let post = await Post.findOne({
+        where: { id: postId },
         include: [
             {
                 model: User,
@@ -53,29 +51,31 @@ export async function getPosts(postId = null) {
             },
             { model: Channel, attributes: ['id', 'name'] }
         ]
-    };
+    });
 
-    if (postId) {
+    return postCleanUp(post);
+}
 
-        let post = await Post.findOne({
-            where: { id: postId },
-            ...commonConfig
-        });
+/**
+ * Retrieves all posts.
+ * @returns {Promise<Object[]|null>} Array of posts, or null
+ */
+export async function getPosts() {
+    const posts = await Post.findAll({
+        include: [
+            {
+                model: User,
+                attributes: ['id'],
+                include: [
+                    { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
+                ]
+            },
+            { model: Channel, attributes: ['id', 'name'] }
+        ],
+        order: [['createdAt', 'DESC']]
+    });
 
-        if (!post)
-            return null;
-
-        return postCleanUp(post);
-
-    } else {
-
-        const posts = await Post.findAll({
-            ...commonConfig,
-            order: [['createdAt', 'DESC']]
-        });
-
-        return posts.map(post => (postCleanUp(post)));
-    }
+    return posts.map(post => (postCleanUp(post)));
 }
 /**
  * Creates a new post.

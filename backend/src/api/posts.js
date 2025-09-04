@@ -1,6 +1,6 @@
 //BACKEND/api/posts.js
 import express from 'express';
-import {createPost, deletePost, getPosts, updatePost} from "../controllers/posts.js";
+import {createPost, deletePost, getPost, getPosts, updatePost} from "../controllers/posts.js";
 export const router = express.Router();
 
 // Get All Posts
@@ -32,7 +32,7 @@ router.get('/:postId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid post ID.' });
         }
 
-        const post = await getPosts(parseInt(postId));
+        const post = await getPost(parseInt(postId));
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });
