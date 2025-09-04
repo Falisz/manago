@@ -1,4 +1,4 @@
-//BACKEND/controller/users.js
+// BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
 import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
@@ -23,61 +23,66 @@ import { getUserRoles } from './roles.js';
  */
 
 /**
- * Retrieves one or all users.
- * @param {number|null} userId - Optional user ID to fetch a specific user
- * @returns {Promise<Object|Object[]|null>} Single user, array of users, or null
+ * Retrieves one user by their ID.
+ * @param {number} id - User ID to fetch a specific user
+ * @returns {Promise<Object|null>} Single user or null
  */
-export async function getUsers(userId = null) {
-    if (userId) {
-        let user = await User.findOne({
-            attributes: { exclude: ['password', 'removed'] },
-            where: { id: userId, removed: false },
-            include: [
-                { model: UserDetails,  as: 'UserDetails' },
-                { model: UserConfigs,  as: 'UserConfigs' }
-            ],
-            order: [['id', 'ASC']]
-        });
+export async function getUser(id) {
+    let user = await User.findOne({
+        attributes: { exclude: ['password', 'removed'] },
+        where: { id, removed: false },
+        include: [
+            { model: UserDetails,  as: 'UserDetails' },
+            { model: UserConfigs,  as: 'UserConfigs' }
+        ],
+        order: [['id', 'ASC']]
+    });
 
-        if (!user)
-            return null;
+    if (!user)
+        return null;
 
-        user = {
+    user = {
+        ...user.toJSON(),
+        ...user.UserDetails.toJSON(),
+        ...user.UserConfigs.toJSON(),
+        managers: await getUserManagers(user.id),
+        roles: await getUserRoles(user.id)
+    };
+
+    delete user.UserDetails;
+    delete user.UserConfigs;
+
+    return user;
+}
+/**
+ * Retrieves all users.
+ * @returns {Promise<Object|Object[]|null>} Array of users or null
+ */
+export async function getUsers() {
+    let users = await User.findAll({
+        attributes: { exclude: ['password', 'removed'] },
+        where: {removed: false },
+        include: [
+            { model: UserDetails,  as: 'UserDetails' }
+        ],
+        order: [['id', 'ASC']]
+    });
+
+    if (!users)
+        return null;
+
+    users = await Promise.all(users.map(async user => {
+        const userData = {
             ...user.toJSON(),
             ...user.UserDetails.toJSON(),
-            ...user.UserConfigs.toJSON()
+            managers: await getUserManagers(user.id),
+            roles: await getUserRoles(user.id)
         };
+        delete userData.UserDetails;
+        return userData;
+    }));
 
-        delete user.UserDetails;
-        delete user.UserConfigs;
-
-        return user;
-    } else {
-        let users = await User.findAll({
-            attributes: { exclude: ['password', 'removed'] },
-            where: {removed: false },
-            include: [
-                { model: UserDetails,  as: 'UserDetails' }
-            ],
-            order: [['id', 'ASC']]
-        });
-
-        if (!users)
-            return null;
-
-        users = await Promise.all(users.map(async user => {
-            const userData = {
-                ...user.toJSON(),
-                ...user.UserDetails.toJSON(),
-                managers: await getUserManagers(user.id),
-                roles: await getUserRoles(user.id)
-            };
-            delete userData.UserDetails;
-            return userData;
-        }));
-
-        return users || null;
-    }
+    return users || null;
 }
 
 /**
@@ -93,7 +98,7 @@ export async function getUsers(userId = null) {
  */
 export async function createUser(data) {
     if (!data.email || !data.password || !data.first_name || !data.last_name) {
-        return {success: false, message: "Mandatory data not provided."};
+        return {success: false, message: 'Mandatory data not provided.'};
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -119,7 +124,7 @@ export async function createUser(data) {
         manager_nav_collapsed: false
     });
 
-    return {success: true, message: "User created successfully.", user: user};
+    return {success: true, message: 'User created successfully.', user: user};
 }
 
 /**
@@ -130,7 +135,7 @@ export async function createUser(data) {
  */
 export async function editUser(userId, data) {
     if (!userId) {
-        return {success: false, message: "User ID not provided."};
+        return {success: false, message: 'User ID not provided.'};
     }
 
     const user = await User.findOne({
@@ -142,7 +147,7 @@ export async function editUser(userId, data) {
     });
 
     if (!user) {
-        return {success: false, message: "User not found."};
+        return {success: false, message: 'User not found.'};
     }
 
     const userUpdate = {};
@@ -172,7 +177,7 @@ export async function editUser(userId, data) {
         { where: { user: userId } }
     );
 
-    return {success: true, message: "User updated successfully.", user: updatedUser};
+    return {success: true, message: 'User updated successfully.', user: updatedUser};
 }
 
 /**
@@ -205,7 +210,7 @@ export async function removeUser(userId) {
     })
 
     if (!user) {
-        return {success: false, message: "User not found."};
+        return {success: false, message: 'User not found.'};
     }
 
     await user.update({
@@ -233,7 +238,7 @@ export async function removeUser(userId) {
 
     await transaction.commit();
 
-    return {success: true, message: "User removed successfully."};
+    return {success: true, message: 'User removed successfully.'};
 }
 
 /**
@@ -268,9 +273,10 @@ export async function getEmployees() {
         attributes: { exclude: ['password', 'removed'] },
         order: [['id', 'ASC']]
     });
+
     employees = await Promise.all(employees.map(async e => {
         const userData = {
-            ...e.toJSON(),
+            ...e?.toJSON(),
             ...e.UserDetails?.toJSON(),
             roles: await getUserRoles(e.id),
             managers: await getUserManagers(e.id)
@@ -317,7 +323,7 @@ export async function getManagers() {
 
     managers = await Promise.all(managers.map(async m => {
         const userData = {
-            ...m.toJSON(),
+            ...m?.toJSON(),
             ...m.UserDetails?.toJSON(),
             roles: await getUserRoles(m.id),
             managers: await getUserManagers(m.id),
@@ -373,16 +379,16 @@ export async function getUserManagers(userId) {
  */
 export async function updateUserManagers(userId, managerObjs) {
     if (!userId || isNaN(userId)) {
-        return { success: false, message: "Invalid user ID provided.", status: 400 };
+        return { success: false, message: 'Invalid user ID provided.', status: 400 };
     }
 
     if (!Array.isArray(managerObjs) || managerObjs.some(m => isNaN(m.manager))) {
-        return { success: false, message: "Invalid manager IDs provided. Must be an array of objects with manager IDs.", status: 400 };
+        return { success: false, message: 'Invalid manager IDs provided. Must be an array of objects with manager IDs.', status: 400 };
     }
 
     const primaryManagers = managerObjs.filter(m => m.primary === true);
     if (primaryManagers.length > 1) {
-        return { success: false, message: "User can have only one primary manager assigned.", status: 400 };
+        return { success: false, message: 'User can have only one primary manager assigned.', status: 400 };
     }
 
     const managerIds = managerObjs.map(m => m.manager);
@@ -421,10 +427,10 @@ export async function updateUserManagers(userId, managerObjs) {
 
         await transaction.commit();
 
-        return { success: true, message: "User managers updated successfully." };
+        return { success: true, message: 'User managers updated successfully.' };
     } catch (err) {
         await transaction.rollback();
-        return { success: false, message: "Failed to update user managers." };
+        return { success: false, message: 'Failed to update user managers.' };
     }
 }
 
@@ -454,9 +460,9 @@ export async function getManagedUsers(managerId) {
     });
 
     users = users.map(u => ({
-        id: u.User.id,
-        first_name: u.User.UserDetails?.first_name,
-        last_name: u.User.UserDetails?.last_name,
+        id: u?.User.id,
+        first_name: u?.User.UserDetails?.first_name,
+        last_name: u?.User.UserDetails?.last_name,
         primary: u.primary
     }));
 

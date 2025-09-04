@@ -11,9 +11,9 @@ const useRole = () => {
     const fetchRoles = useCallback(async (loading=true) => {
         try {
             setRolesLoading(loading);
-            const response = await axios.get('/roles', { withCredentials: true });
-            setRoles(response.data);
-            return response.data;
+            const res = await axios.get('/roles', { withCredentials: true });
+            setRoles(res.data);
+            return res.data;
         } catch (err) {
             console.error('Error fetching roles:', err);
             return null;
@@ -31,6 +31,8 @@ const useRole = () => {
 
     // Single role related callbacks
     const fetchRole = useCallback(async (roleId, forceLoad = false) => {
+        if (!roleId) return null;
+
         if (roleCacheRef.current[roleId] && !forceLoad) {
             setRole(roleCacheRef.current[roleId]);
             setLoading(false);
@@ -52,7 +54,7 @@ const useRole = () => {
                 setError('Role not found.');
             } else {
                 setError('Error fetching the role.');
-                console.error('Error fetching role:', err);
+                console.error('Error fetching the role:', err);
             }
             return null;
         } finally {
@@ -64,19 +66,19 @@ const useRole = () => {
         try {
             setError(null);
             setSuccess(null);
-            let response;
+            let res;
             if (roleId) {
-                response = await axios.put(`/roles/${roleId}`, formData, { withCredentials: true });
+                res = await axios.put(`/roles/${roleId}`, formData, { withCredentials: true });
             } else {
-                response = await axios.post('/roles', formData, { withCredentials: true });
+                res = await axios.post('/roles', formData, { withCredentials: true });
             }
-            setSuccess(response.data.message);
-            setRole(response.data.role);
-            roleCacheRef.current[response.data.role.id] = response.data.role;
-            return response.data.role;
+            setSuccess(res.data.message);
+            setRole(res.data.role);
+            roleCacheRef.current[res.data.role.id] = res.data.role;
+            return res.data.role;
         } catch (err) {
-            console.error('Error saving role:', err);
-            setError(err.response?.data?.message || 'Failed to save role. Please try again.');
+            console.error('Error saving the role:', err);
+            setError(err.response?.data?.message || 'Failed to save the role. Please try again.');
             return null;
         }
     }, []);
@@ -86,15 +88,15 @@ const useRole = () => {
             setLoading(true);
             setError(null);
             setSuccess(null);
+            const res = await axios.delete(`/roles/${roleId}`, { withCredentials: true });
+            setSuccess(res.data.message);
             setRole(null);
-            await axios.delete(`/roles/${roleId}`, { withCredentials: true });
             delete roleCacheRef.current[roleId];
-            setSuccess('Role deleted successfully.');
             return true;
         } catch (err) {
-            console.error('Error deleting role:', err);
-            setError('Failed to delete role. Please try again.');
-            return false;
+            console.error('Error deleting the role:', err);
+            setError('Failed to delete the role. Please try again.');
+            return null;
         } finally {
             setLoading(false);
         }
@@ -108,7 +110,6 @@ const useRole = () => {
         loading,
         error,
         success,
-        setLoading,
         fetchRole,
         saveRole,
         deleteRole

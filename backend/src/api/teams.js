@@ -1,4 +1,4 @@
-//BACKEND/api/teams.js
+// BACKEND/api/teams.js
 import express from 'express';
 import { getTeams, getTeam } from '../controllers/teams.js';
 export const router = express.Router();
@@ -32,6 +32,10 @@ router.get('/:teamId', async (req, res) => {
 
         const team = await getTeam(parseInt(teamId));
 
+        if (!team) {
+            return res.status(404).json({ message: 'Team not found.' });
+        }
+
         res.json(team);
 
     } catch (err) {
@@ -39,5 +43,17 @@ router.get('/:teamId', async (req, res) => {
         res.status(500).json({ message: 'Server error.' });
     }
 });
+
+router.post('/', async (req, res) => {
+    return res.status(500).json({message: 'To be implemented yet.'});
+})
+
+router.put('/:teamId', async (req, res) => {
+    return res.status(500).json({message: 'To be implemented yet.'});
+})
+
+router.delete('/:teamId', async (req, res) => {
+    return res.status(500).json({message: 'To be implemented yet.'});
+})
 
 export default router;

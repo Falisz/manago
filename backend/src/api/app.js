@@ -1,10 +1,10 @@
-//BACKEND/api/app.js
+// BACKEND/api/app.js
 import express from 'express';
-import {getModules, setModule, getPages} from "../controllers/app.js";
-import {hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav} from "../utils/manager-view.js";
+import { getModules, setModule, getPages } from '../controllers/app.js';
+import { hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav } from '../utils/manager-view.js';
 export const router = express.Router();
 
-//Server API endpoint
+// Server API endpoint
 router.get('/',  (req, res) => {
     try {
         if (!req.session.user) {
@@ -19,7 +19,7 @@ router.get('/',  (req, res) => {
     }
 })
 
-//App Config endpoint
+// App Config endpoint
 router.get('/config', async (req, res) => {
     try {
         res.json({
@@ -33,16 +33,16 @@ router.get('/config', async (req, res) => {
     }
 });
 
-//App Modules endpoint
+// App Modules endpoint
 router.get('/modules', async (req, res) => {
     try {
         if (!req.session.user) {
             if (req.query['psthr'] === 'true')
-                return res.status(200).json([]);
+                return res.json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        return res.status(200).json(await getModules());
+        return res.json(await getModules());
 
     } catch (err) {
         console.error('Config fetching error:', err);
@@ -81,12 +81,12 @@ router.put('/modules/:id', async (req, res) => {
     }
 });
 
-//App Pages endpoint
+// App Pages endpoint
 router.get('/pages', async (req, res) => {
     try {
         if (!req.session.user) {
             if (req.query['psthr'] === 'true')
-                return res.status(200).json([]);
+                return res.json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
@@ -102,7 +102,7 @@ router.get('/pages', async (req, res) => {
     }
 });
 
-//Manager View toggle endpoint
+// Manager View toggle endpoint
 router.post('/manager-view', async (req, res) => {
     try {
         if (!req.session.user) {
@@ -160,7 +160,7 @@ router.post('/manager-view', async (req, res) => {
     }
 });
 
-//Toggle ManagerView main nav endpoint
+// Toggle ManagerView main nav endpoint
 router.post('/toggle-nav', async (req, res) => {
     try {
         if (!req.session.user) {

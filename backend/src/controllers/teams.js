@@ -1,7 +1,12 @@
+// BACKEND/controller/teams.js
 import Team, { TeamUser } from '../models/team.js';
 import User, { UserDetails } from '../models/user.js';
 
-
+/**
+ * Retrieves one team by its ID.
+ * @param {number} id - Team ID to fetch a specific user
+ * @returns {Promise<Object|null>} Single team or null
+ */
 export async function getTeam(id) {
     if (!id) return null;
 
@@ -16,6 +21,11 @@ export async function getTeam(id) {
     };
 }
 
+/**
+ * Retrieves all teams and its subteams recursively.
+ * @param {number || null} parentId - Optional - ID of the parent team.
+ * @returns {Promise<Object[]|null>} Array of teams or null
+ */
 export async function getTeams(parentId = null) {
     let teams = await Team.findAll({ where: { parent_team: parentId }});
 
@@ -33,12 +43,13 @@ export async function getTeams(parentId = null) {
     }));
 
     return teams || null;
-};
+}
 
 /**
  * Retrieves members of a team, optionally filtered by role.
  * @param {number} teamId - Team ID
- * @param {number} [role] - Optional role filter (0: member, 1: leader, 2: manager)
+ * @param {number} [role] - Optional - Role filter (0: member, 1: leader, 2: manager)
+ * @param include_subteams {boolean} - Optional - should the result include subteams.
  * @returns {Promise<Array>} Array of user objects
  */
 export async function getTeamMembers(teamId, role = 0, include_subteams = false) {

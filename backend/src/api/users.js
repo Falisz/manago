@@ -1,6 +1,17 @@
-//BACKEND/api/users.js
+// BACKEND/api/users.js
 import express from 'express';
-import {createUser, editUser, getUsers, removeUser, getManagers, getEmployees, getUserManagers, getManagedUsers, updateUserManagers} from "../controllers/users.js";
+import {
+    getUsers,
+    getUser,
+    createUser,
+    editUser,
+    removeUser,
+    getManagers,
+    getEmployees,
+    getUserManagers,
+    getManagedUsers,
+    updateUserManagers,
+} from "../controllers/users.js";
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -107,7 +118,11 @@ router.get('/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const user = await getUsers(parseInt(userId));
+        const user = await getUser(parseInt(userId));
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
 
         res.json(user);
 
@@ -141,7 +156,7 @@ router.get('/check-id/:userId', async (req, res) => {
     }
 });
 
-router.post('/new', async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });

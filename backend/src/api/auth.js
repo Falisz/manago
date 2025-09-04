@@ -1,9 +1,8 @@
-//BACKEND/api/auth.js
+// BACKEND/api/auth.js
 import express from 'express';
-import {authUser, refreshUser, checkUserAccess, checkManagerAccess} from '../utils/auth.js';
-import {setManagerView} from "../utils/manager-view.js";
-import {securityLog} from "../utils/security-logs.js";
-
+import { authUser, refreshUser, checkUserAccess, checkManagerAccess } from '../utils/auth.js';
+import { setManagerView } from '../utils/manager-view.js';
+import { securityLog } from '../utils/security-logs.js';
 export const router = express.Router();
 
 // Login endpoint
@@ -18,13 +17,13 @@ router.post('/login', async (req, res) => {
 
         if (!userAuth.valid) {
             if (userAuth.user?.id)
-                await securityLog(userAuth.user?.id, ip + " " + host,"Login","Failure: " + userAuth.message);
+                await securityLog(userAuth.user?.id, ip + ' ' + host,'Login','Failure: ' + userAuth.message);
             return res.status(userAuth.status).json({message: userAuth.message});
         }
 
         req.session.user = userAuth.user;
 
-        await securityLog(userAuth.user?.id, ip + " " + host,"Login","Success.")
+        await securityLog(userAuth.user?.id, ip + ' ' + host,'Login','Success.')
 
         return res.json({
             message: 'Login successful!',
@@ -34,7 +33,7 @@ router.post('/login', async (req, res) => {
     } catch (err) {
         console.error('Login error:', err);
 
-        res.status(500).json({ message: "Internal Login error." });
+        res.status(500).json({ message: 'Internal Login error.' });
     }
 });
 
@@ -55,12 +54,12 @@ router.get('/logout', async (req, res) => {
             return res.json({ message: 'Logged out' });
         });
 
-        await securityLog(userId, ip + " " + host,"Logout","Success.");
+        await securityLog(userId, ip + ' ' + host,'Logout','Success.');
 
     } catch (err) {
         console.error('Logout error:', err);
 
-        res.status(500).json({ message: "Internal error." });
+        res.status(500).json({ message: 'Internal error.' });
     }
 });
 

@@ -1,6 +1,14 @@
-//BACKEND/api/roles.js
+// BACKEND/api/roles.js
 import express from 'express';
-import {getRoles, createRole, updateRole, deleteRole, getUsersWithRole, updateUserRoles} from "../controllers/roles.js";
+import {
+    getRoles,
+    createRole,
+    updateRole,
+    deleteRole,
+    getUserRoles,
+    updateUserRoles,
+    getRole
+} from '../controllers/roles.js';
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -30,7 +38,7 @@ router.get('/:roleId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid role ID.' });
         }
 
-        const role = await getRoles(parseInt(roleId));
+        const role = await getRole(parseInt(roleId));
 
         if (!role) {
             return res.status(404).json({ message: 'Role not found.' });
@@ -55,7 +63,7 @@ router.get('/user/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const roles = await getUsersWithRole(userId);
+        const roles = await getUserRoles(userId);
 
         res.json(roles);
 

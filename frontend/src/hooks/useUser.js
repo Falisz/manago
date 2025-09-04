@@ -14,9 +14,9 @@ const useUser = () => {
             let url = '/users';
             if (type === 'employees' || type === 'managers')
                 url = url + '/' + type;
-            const response = await axios.get(url, { withCredentials: true });
-            setUsers(response.data);
-            return response.data;
+            const res = await axios.get(url, { withCredentials: true });
+            setUsers(res.data);
+            return res.data;
         } catch (err) {
             console.error('Error fetching users:', err);
             return null;
@@ -51,11 +51,20 @@ const useUser = () => {
             setWarning(null);
             setSuccess(null);
 
+
+            const test = {
+                ...(await axios.get(`/users/${userId}`, { withCredentials: true })).data,
+                roles: (await axios.get(`/roles/user/${userId}`, { withCredentials: true })).data,
+            }
+            console.log(test);
+
+
             let userData;
             let res = await axios.get(`/users/${userId}`, { withCredentials: true });
             if (res.data) {
                 userData = res.data;
                 res = await axios.get(`/roles/user/${userId}`, { withCredentials: true });
+                console.log(res);
                 userData = {
                     ...userData,
                     roles: res.data,

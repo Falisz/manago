@@ -1,5 +1,5 @@
 //BACKEND/controllers/api.js
-import AppModule from "../models/app-module.js";
+import AppModule from '../models/app-module.js';
 import PagesData from '../app-pages.json' with { type: 'json' };
 
 /**
@@ -7,7 +7,7 @@ import PagesData from '../app-pages.json' with { type: 'json' };
  * @returns {Promise<Object[]>} Array of module objects.
  */
 export async function getModules() {
-    return await AppModule.findAll({ order: [["id", "ASC"]] });
+    return await AppModule.findAll({ order: [['id', 'ASC']] });
 }
 
 /**

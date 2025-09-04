@@ -11,9 +11,9 @@ const useTeam = () => {
     const fetchTeams = useCallback(async (loading=true) => {
         try {
             setTeamsLoading(loading);
-            const response = await axios.get('/teams', { withCredentials: true });
-            setTeams(response.data);
-            return response.data;
+            const res = await axios.get('/teams', { withCredentials: true });
+            setTeams(res.data);
+            return res.data;
         } catch (err) {
             console.error('Error fetching teams:', err);
             return null;
@@ -45,21 +45,57 @@ const useTeam = () => {
             setLoading(true);
             setError(null);
             setSuccess(null);
-
-            let teamData;
             let res = await axios.get(`/teams/${teamId}`, { withCredentials: true });
-            if (res.data) {
-                teamData = res.data;
-                setTeam(teamData);
-                teamCacheRef.current[teamId] = teamData;
-                return teamData;
-            } else {
-                setError(`Team #${teamId} not found!`);
-                return null;
-            }
+            setTeam(res.data);
+            teamCacheRef.current[teamId] = res.data;
+            return res.data;
         } catch (err) {
-            console.error('Error fetching user:', err);
-            setError('Error occurred while fetching user.');
+            if (err.status === 404) {
+                setError('Team not found.');
+            } else {
+                setError('Error fetching the team.');
+                console.error('Error fetching the team:', err);
+            }
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const saveTeam = useCallback(async (formData, teamId = null) => {
+        try {
+            setError(null);
+            setSuccess(null);
+            let res;
+            if (teamId) {
+                res = await axios.put(`/teams/${teamId}`, formData, { withCredentials: true });
+            } else {
+                res = await axios.post('/teams', formData, { withCredentials: true });
+            }
+            setSuccess(res.data.message);
+            setTeam(res.data.role);
+            teamCacheRef.current[res.data.role.id] = res.data.role;
+            return res.data.role;
+        } catch (err) {
+            console.error('Error saving the team:', err);
+            setError(err.response?.data?.message || 'Failed to save the team. Please try again.');
+            return null;
+        }
+    }, []);
+
+    const deleteTeam = useCallback( async (roleId) => {
+        try {
+            setLoading(true);
+            setError(null);
+            setSuccess(null);
+            const res = await axios.delete(`/teams/${roleId}`, { withCredentials: true });
+            setSuccess(res.data.message);
+            setTeam(null);
+            delete teamCacheRef.current[roleId];
+            return true;
+        } catch (err) {
+            console.error('Error deleting the team:', err);
+            setError('Failed to delete the team. Please try again.');
             return null;
         } finally {
             setLoading(false);
@@ -74,8 +110,9 @@ const useTeam = () => {
         loading,
         error,
         success,
-        setLoading,
-        fetchTeam
+        fetchTeam,
+        saveTeam,
+        deleteTeam
     };
 };
 

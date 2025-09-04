@@ -1,6 +1,6 @@
-//BACKEND/api/posts.js
+// BACKEND/api/posts.js
 import express from 'express';
-import {createPost, deletePost, getPost, getPosts, updatePost} from "../controllers/posts.js";
+import { createPost, deletePost, getPost, getPosts, updatePost } from '../controllers/posts.js';
 export const router = express.Router();
 
 // Get All Posts
@@ -91,13 +91,13 @@ router.put('/:postId', async (req, res) => {
         }
 
         const user = req.session.user;
-        const post = await getPosts(parseInt(postId));
+        const post = await getPost(parseInt(postId));
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if (post?.author.id !== user.id) {
+        if (post.author.id !== user.id) {
             return res.status(403).json({ message: 'Forbidden: You are not the author of this post.' });
         }
 
@@ -124,7 +124,8 @@ router.delete('/:postId', async (req, res) => {
         }
 
         const user = req.session.user;
-        const post = await getPosts(parseInt(postId));
+        const post = await getPost(parseInt(postId));
+
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });
         }
