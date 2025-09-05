@@ -1,5 +1,5 @@
 // FRONTEND/components/Teams/Index.js
-import React, { useEffect, useState, useMemo } from 'react';
+import React, {useEffect, useState, useMemo, useCallback} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useTeam from '../../hooks/useTeam';
 import Loader from '../Loader';
@@ -53,9 +53,9 @@ const TeamItem = ({ team }) => {
                     }
                 </div>
                 <div>
-                    {(team.team_leaders || []).length === 0
+                    {(team.leaders || []).length === 0
                         ? null
-                        : (team.team_leaders || []).map(leader =>
+                        : (team.leaders || []).map(leader =>
                             <span key={leader.id} className='teamleader-name'
                                 onClick={() => openModal({ content: 'userDetails', data: { id: leader.id } })}
                             >{leader.first_name} {leader.last_name}</span>
@@ -93,7 +93,7 @@ const TeamsTable = () => {
         { title: 'Name', key: 'name' },
         { title: 'Members', key: 'members_count' },
         { title: 'Managers', key: 'managers' },
-        { title: 'Team Leaders', key: 'team_leaders' }
+        { title: 'Team Leaders', key: 'leaders' }
     ], []);
 
     const handleFilter = (e) => {
@@ -118,6 +118,22 @@ const TeamsTable = () => {
         }));
     };
 
+    const collectTeamMembers = useCallback((team, type) => {
+        let members = [];
+        if (type === 'managers' && team.managers) {
+            members = [...team.managers];
+        } else if (type === 'leaders' && team.leaders) {
+            members = [...team.leaders];
+        }
+
+        if (team.subteams && team.subteams.length > 0) {
+            team.subteams.forEach(subteam => {
+                members = [...members, ...collectTeamMembers(subteam, type)];
+            });
+        }
+        return members;
+    }, []);
+
     const filteredAndSortedTeams = useMemo(() => {
         if (!teams) return null;
         let result = [...teams];
@@ -136,12 +152,14 @@ const TeamsTable = () => {
                     return String(team.members_count).includes(value);
                 }
                 if (key === 'managers') {
-                    return (team.managers || []).some(manager =>
+                    const allManagers = collectTeamMembers(team, 'managers');
+                    return allManagers.some(manager =>
                         (manager.first_name + ' ' + manager.last_name).toLowerCase().includes(value.toLowerCase())
                     );
                 }
-                if (key === 'team_leaders') {
-                    return (team.team_leaders || []).some(leader =>
+                if (key === 'leaders') {
+                    const allLeaders = collectTeamMembers(team, 'leaders');
+                    return allLeaders.some(leader =>
                         (leader.first_name + ' ' + leader.last_name).toLowerCase().includes(value.toLowerCase())
                     );
                 }
@@ -156,8 +174,8 @@ const TeamsTable = () => {
                     aValue = (a.managers || []).map(m => (m.first_name + ' ' + m.last_name).toLowerCase()).join(', ');
                     bValue = (b.managers || []).map(m => (m.first_name + ' ' + m.last_name).toLowerCase()).join(', ');
                 } else if (sortConfig.key === 'team_leaders') {
-                    aValue = (a.team_leaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
-                    bValue = (b.team_leaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
+                    aValue = (a.leaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
+                    bValue = (b.leaders || []).map(l => (l.first_name + ' ' + l.last_name).toLowerCase()).join(', ');
                 } else if (sortConfig.key === 'members_count') {
                     aValue = a.members_count ?? 0;
                     bValue = b.members_count ?? 0;
@@ -172,7 +190,7 @@ const TeamsTable = () => {
         }
 
         return result;
-    }, [teams, filters, sortConfig]);
+    }, [teams, filters, sortConfig, collectTeamMembers]);
 
     if (teamsLoading) {
         return <Loader />;
