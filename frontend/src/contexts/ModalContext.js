@@ -144,7 +144,13 @@ export const ModalProvider = ({ children }) => {
             case 'postDetails':
                 return <PostDetails postId={modal.data.id} />;
             case 'confirm':
-                return <ConfirmPrompt message={modal.message} onConfirm={modal.onConfirm} />;
+                return <ConfirmPrompt
+                    message={modal.message}
+                    onConfirm={modal.onConfirm}
+                    onConfirm2={modal.onConfirm2}
+                    confirmLabel={modal.confirmLabel}
+                    confirmLabel2={modal.confirmLabel2}
+                />;
             default:
                 return <InWorks title={'Unknown modal.'} modal={true} />;
         }
