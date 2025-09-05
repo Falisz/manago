@@ -82,7 +82,7 @@ const useRole = () => {
             setError(err.response?.data?.message || 'Failed to save the role. Please try again.');
             return null;
         }
-    }, []);
+    }, [fetchRole]);
 
     const deleteRole = useCallback( async (roleId) => {
         try {
