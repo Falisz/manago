@@ -39,13 +39,13 @@ const TeamDetails = ({ teamId }) => {
             <div className='team-detail-group'>
                 <div className={'team-detail-label'}>Team details</div>
                 <div className={'team-detail-row team-codename'} title={'Team codename'}><label>Code name</label> {team.code_name}</div>
-                {team.parent_team &&
+                {team.parent &&
                     <div className={'team-detail-row team-parent'} title={'Team codename'}><label>Parent Team</label>
                         <span
                             className={'team-detail-link'}
-                            onClick={() => openModal({ content: 'teamDetails', data: { id: team.parent_team.id } })}
+                            onClick={() => openModal({ content: 'teamDetails', data: { id: team.parent.id } })}
                         >
-                            {team.parent_team.name}
+                            {team.parent.name}
                         </span>
                     </div>
                 }
@@ -79,9 +79,9 @@ const TeamDetails = ({ teamId }) => {
                         ))}
                     </div>
                 }
-                {team.team_leaders && team.team_leaders?.length > 0 &&
-                    <div className={'team-detail-row team-leaders'} title={'Team leaders'}><label>Team Leader{ team.team_leaders?.length > 1 && "s" }</label>
-                        {team.team_leaders.map((leader) => (
+                {team.leaders && team.leaders?.length > 0 &&
+                    <div className={'team-detail-row team-leaders'} title={'Team leaders'}><label>Team Leader{ team.leaders?.length > 1 && "s" }</label>
+                        {team.leaders.map((leader) => (
                             <div
                                 key={leader.id}
                                 className={'team-member'}
