@@ -11,7 +11,8 @@ export const Team = sequelize.define('Team', {
     },
     parent_team: {
         type: DataTypes.INTEGER,
-        allowNull: true
+        allowNull: true,
+        references: { model: 'teams', key: 'id' }
     },
     code_name: {
         type: DataTypes.STRING(100),
@@ -30,6 +31,22 @@ export const Team = sequelize.define('Team', {
     timestamps: false
 });
 
+export const TeamRole = sequelize.define('TeamRole', {
+    id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    name: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+    }
+}, {
+    tableName: 'team_roles',
+    timestamps: false
+})
+
 export const TeamUser = sequelize.define('TeamUser', {
     team: {
         type: DataTypes.INTEGER,
@@ -44,7 +61,7 @@ export const TeamUser = sequelize.define('TeamUser', {
     role: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0 // 0 - member, 1 - leader, 2 - manager
+        references: { model: 'team_roles', key: 'id' },
     }
 }, {
     tableName: 'team_users',
@@ -52,9 +69,12 @@ export const TeamUser = sequelize.define('TeamUser', {
     indexes: [{ unique: true, fields: ['team', 'user'] }]
 });
 
+
 Team.hasMany(TeamUser, { foreignKey: 'team', sourceKey: 'id' });
 TeamUser.belongsTo(Team, { foreignKey: 'team', targetKey: 'id' });
 User.hasMany(TeamUser, { foreignKey: 'user', sourceKey: 'id' });
 TeamUser.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+TeamRole.hasMany(TeamUser, { foreignKey: 'role', sourceKey: 'id' });
+TeamUser.belongsTo(TeamRole, {foreignKey: 'role', targetKey: 'id' });
 
 export default Team;

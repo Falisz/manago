@@ -4,7 +4,7 @@ import sequelize from '../db.js';
 import AppModule from "../models/app-module.js";
 import Role from '../models/role.js';
 import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
-import Team, {TeamUser} from '../models/team.js';
+import Team, {TeamRole, TeamUser} from '../models/team.js';
 import Channel from "../models/channel.js";
 import Post from "../models/post.js";
 
@@ -285,6 +285,14 @@ export async function seedData() {
             {id: 9, code_name: '03-PH', name: 'Philadelphia', parent_team: 3},
         ]
         await seedModel(Team, 'teams', teams, 'teams');
+
+        const teamRoles = [
+            {id: 0, name: 'Member'},
+            {id: 1, name: 'Team Leader'},
+            {id: 2, name: 'Team Manager'},
+        ]
+        await seedModel(TeamRole, 'team_roles', teamRoles, 'team roles');
+
         const teamUsers = [
             // Parent team managers (role 2)
             {team: 1, user: 100004, role: 2},
