@@ -82,7 +82,7 @@ const useTeam = () => {
             setError(err.response?.data?.message || 'Failed to save the team. Please try again.');
             return null;
         }
-    }, []);
+    }, [fetchTeam]);
 
     const deleteTeam = useCallback( async (roleId) => {
         try {
