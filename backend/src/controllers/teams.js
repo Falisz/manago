@@ -11,19 +11,23 @@ import sequelize from "../db.js";
  * @returns {Promise<Object|null>} Single team or null
  */
 export async function getTeam(id, getMembers=true) {
-    if (!id) return null;
+    if (!id || isNaN(id))
+        return null;
 
     let team = await Team.findOne({ where: { id } });
-    if (!team) return null;
+
+    if (!team)
+        return null;
 
     team = {
-        ...team.toJSON()
+        ...team.toJSON(),
+        sub_teams: await getTeams(id, false),
     };
 
     if (team.parent_team) {
         team = {
             ...team,
-            parent_team: await getTeam(team.parent_team, false),
+            parent: await getTeam(team.parent_team, false),
         }
     }
 
@@ -31,8 +35,8 @@ export async function getTeam(id, getMembers=true) {
         team = {
             ...team,
             members: await getTeamMembers(team.id, 0, true),
-            team_leaders: await getTeamMembers(team.id, 1, true),
-            managers: await getTeamMembers(team.id, 2, true),
+            leaders: await getTeamMembers(team.id, 1, true),
+            managers: await getTeamMembers(team.id, 2, true, true),
         }
 
     return team;
@@ -41,22 +45,28 @@ export async function getTeam(id, getMembers=true) {
 /**
  * Retrieves all teams and its subteams recursively.
  * @param {number || null} parentId - Optional - ID of the parent team.
+ * @param {bool} getMembers - Optional - Should be members fetched with the Teams?
  * @returns {Promise<Object[]|null>} Array of teams or null
  */
-export async function getTeams(parentId = null) {
+export async function getTeams(parentId = null, getMembers=true) {
     let teams = await Team.findAll({ where: { parent_team: parentId }});
 
     if (!teams)
         return null;
 
     teams = await Promise.all(teams.map(async team => {
-        return {
+        let teamData = {
             ...team.toJSON(),
-            members: await getTeamMembers(team.id, 0, true),
-            team_leaders: await getTeamMembers(team.id, 1),
-            managers: await getTeamMembers(team.id, 2),
-            subteams: await getTeams(team.id)
+            subteams: await getTeams(team.id, true)
         };
+        if (getMembers)
+            teamData = {
+                ...teamData,
+                members: await getTeamMembers(team.id, 0, true),
+                leaders: await getTeamMembers(team.id, 1),
+                managers: await getTeamMembers(team.id, 2),
+            }
+        return teamData;
     }));
 
     return teams || null;
@@ -185,34 +195,64 @@ export async function deleteTeam(id) {
  * @property {User} User - The associated user
  */
 /**
- * Retrieves members of a team, optionally filtered by role.
+ * Retrieves members of a team, optionally filtered by role and can include sub and sup teams' members.
  * @param {number} teamId - Team ID
  * @param {number} [role] - Optional - Role filter (0: member, 1: leader, 2: manager)
- * @param include_subteams {boolean} - Optional - should the result include subteams.
+ * @param include_subteams {boolean} - Optional - Should the result include subteams.
+ * @param include_parent_teams {boolean} - Optional - Should the result include parent teams.
  * @returns {Promise<Array>} Array of user objects
  */
-export async function getTeamMembers(teamId, role = 0, include_subteams = false) {
-    // TODO: Transform this function to be properly recursive upwards and downwards.
+export async function getTeamMembers(teamId, role = null, include_subteams = false, include_parent_teams = false) {
     if (!teamId) return [];
+
+    async function getParentIds(teamId) {
+        const parentIds = [];
+
+        const thisTeam = await Team.findOne({
+            where: { id: teamId },
+            attributes: ['parent_team']
+        });
+
+        if (thisTeam && thisTeam.parent_team) {
+            parentIds.push(thisTeam.parent_team);
+            const ancestors = await getParentIds(thisTeam.parent_team);
+            return parentIds.concat(ancestors);
+        }
+
+        return parentIds;
+    }
+
+    async function getSubTeamIds(teamId) {
+        let subTeamIds = [];
+        const subTeams = await Team.findAll({
+            where: { parent_team: teamId },
+            attributes: ['id']
+        });
+        for (const team of subTeams) {
+            subTeamIds.push(team.id);
+
+            const descendants = await getSubTeamIds(team.id);
+            subTeamIds = subTeamIds.concat(descendants);
+        }
+
+        return subTeamIds;
+    }
+
     let teamIds = [teamId];
+    if (include_subteams)
+        teamIds = teamIds.concat(await getSubTeamIds(teamId));
+    if (include_parent_teams)
+        teamIds = teamIds.concat(await getParentIds(teamId));
 
-    if (include_subteams) {
-        const subTeams = await Team.findAll({ where: { parent_team: teamId }, attributes: ['id'] });
-        if (subTeams.length > 0) {
-            teamIds = subTeams.map(team => team.id);
-            teamIds.push(teamId);
-        }
+    teamIds = [...new Set(teamIds)];
+
+    const where = { team: teamIds };
+    if (role !== undefined && role !== null) {
+        where.role = role;
     }
 
-    if (role === 2) {
-        const thisTeam = await Team.findOne({ where: { id: teamId }, attributes: ['parent_team'] });
-        if (thisTeam) {
-            teamIds.push(thisTeam.parent_team);
-        }
-    }
-
-    let teamUsers = await TeamUser.findAll({
-        where: { team: teamIds, role: role },
+    let teamMembers = await TeamUser.findAll({
+        where,
         include: [
             {
                 model: Team,
@@ -221,19 +261,21 @@ export async function getTeamMembers(teamId, role = 0, include_subteams = false)
             {
                 model: User,
                 attributes: ['id'],
-                include: [{ model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }]
+                include: [{
+                    model: UserDetails,
+                    as: 'UserDetails',
+                    attributes: ['first_name', 'last_name']
+                }]
             },
         ],
     });
 
-    teamUsers = teamUsers.map(tu => ({
+    return teamMembers.map(tu => ({
         id: tu.User.id,
         first_name: tu.User.UserDetails?.first_name,
         last_name: tu.User.UserDetails?.last_name,
-        team: tu.Team.toJSON(),
+        team: { id: tu.Team.id, name: tu.Team.name },
     }));
-
-    return teamUsers; 
 }
 
 /**
