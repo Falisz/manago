@@ -7,20 +7,35 @@ import sequelize from "../db.js";
 /**
  * Retrieves one team by its ID.
  * @param {number} id - Team ID to fetch a specific user
+ * @param {bool} getMembers - optional - fetchAllMembers
  * @returns {Promise<Object|null>} Single team or null
  */
-export async function getTeam(id) {
+export async function getTeam(id, getMembers=true) {
     if (!id) return null;
 
-    const team = await Team.findOne({ where: { id } });
+    let team = await Team.findOne({ where: { id } });
     if (!team) return null;
 
-    return {
-        ...team.toJSON(),
-        members: await getTeamMembers(team.id),
-        team_leaders: await getTeamMembers(team.id, 1),
-        managers: await getTeamMembers(team.id, 2)
+    team = {
+        ...team.toJSON()
     };
+
+    if (team.parent_team) {
+        team = {
+            ...team,
+            parent_team: await getTeam(team.parent_team, false),
+        }
+    }
+
+    if (getMembers)
+        team = {
+            ...team,
+            members: await getTeamMembers(team.id, 0, true),
+            team_leaders: await getTeamMembers(team.id, 1, true),
+            managers: await getTeamMembers(team.id, 2, true),
+        }
+
+    return team;
 }
 
 /**
@@ -143,7 +158,32 @@ export async function deleteTeam(id) {
 
     return { success: true, message: 'Team removed successfully.' };
 }
+/**
+ * @typedef {Object} Team
+ * @property {number} id - The team ID
+ * @property {string} name - The team name
+ */
 
+/**
+ * @typedef {Object} UserDetails
+ * @property {string} first_name - The user's first name
+ * @property {string} last_name - The user's last name
+ */
+
+/**
+ * @typedef {Object} User
+ * @property {number} id - The user ID
+ * @property {UserDetails} [UserDetails] - The user's details
+ */
+
+/**
+ * @typedef {Object} TeamUser
+ * @property {number} team - The team ID
+ * @property {number} user - The user ID
+ * @property {number} role - The role type (0: member, 1: leader, 2: manager)
+ * @property {Team} Team - The associated team
+ * @property {User} User - The associated user
+ */
 /**
  * Retrieves members of a team, optionally filtered by role.
  * @param {number} teamId - Team ID
@@ -152,6 +192,7 @@ export async function deleteTeam(id) {
  * @returns {Promise<Array>} Array of user objects
  */
 export async function getTeamMembers(teamId, role = 0, include_subteams = false) {
+    // TODO: Transform this function to be properly recursive upwards and downwards.
     if (!teamId) return [];
     let teamIds = [teamId];
 
@@ -161,23 +202,35 @@ export async function getTeamMembers(teamId, role = 0, include_subteams = false)
             teamIds = subTeams.map(team => team.id);
             teamIds.push(teamId);
         }
-    } 
+    }
+
+    if (role === 2) {
+        const thisTeam = await Team.findOne({ where: { id: teamId }, attributes: ['parent_team'] });
+        if (thisTeam) {
+            teamIds.push(thisTeam.parent_team);
+        }
+    }
 
     let teamUsers = await TeamUser.findAll({
         where: { team: teamIds, role: role },
         include: [
             {
+                model: Team,
+                attributes: ['id', 'name'],
+            },
+            {
                 model: User,
                 attributes: ['id'],
                 include: [{ model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }]
-            }
-        ]
+            },
+        ],
     });
 
     teamUsers = teamUsers.map(tu => ({
         id: tu.User.id,
         first_name: tu.User.UserDetails?.first_name,
-        last_name: tu.User.UserDetails?.last_name
+        last_name: tu.User.UserDetails?.last_name,
+        team: tu.Team.toJSON(),
     }));
 
     return teamUsers; 
