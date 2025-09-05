@@ -72,6 +72,7 @@ code {
   --color: #0671ba;
   --color-dark: #004577;
   --color-bright: #3ca8ec;
+  --color-brighter: #71c2f8;
   --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
 }
 
@@ -79,11 +80,14 @@ code {
   --color: #e6007e;
   --color-dark: #a6005c;
   --color-bright: #ea529d;
+  --color-brighter: #f4a3cc;
   --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
 }
 
 .app {
-  --link-color: var(--color);
+  --button-color: var(--color);
+  --link-color: var(--color-bright);
+  --link-hover-color: var(--color-brighter);
   --highlight-color: var(--color-bright);
   color: var(--text-color);
   background: var(--background-color);

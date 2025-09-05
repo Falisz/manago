@@ -3,6 +3,7 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useUser from '../../hooks/useUser';
 import { useModals } from '../../contexts/ModalContext';
+import '../../assets/styles/Details.css';
 
 const UserDetails = ({ userId }) => {
     const { user, loading, fetchUser, deleteUser } = useUser();
@@ -46,76 +47,104 @@ const UserDetails = ({ userId }) => {
     }
 
     return (
-        <div className='user-detail'>
-            <div className='user-detail-header'>
-                <div className={'user-id'} title={'Employee ID'}>#{user.id}</div>
-                <div className={'user-name'} title={'Full Name'}>{user.first_name} {user.last_name}</div>
+        <div className='detail-content'>
+            <div className='detail-header'>
+                <div className={'detail-title-prefix user-id'} title={'Employee ID'}>#{user.id}</div>
+                <div className={'detail-title user-name'} title={'Full Name'}>{user.first_name} {user.last_name}</div>
+                <button
+                    className={'action-button edit-button'}
+                    onClick={() => {openModal({content: 'userEdit', data: { id: user.id}})}}
+                    title={'Edit User details'}
+                >
+                    <i className='material-icons'>edit</i>
+                </button>
+                <button
+                    className={'action-button delete-button'}
+                    onClick={handleDelete}
+                    title={'Delete the User'}
+                >
+                    <i className='material-icons'>delete</i>
+                </button>
             </div>
-            <div className='user-detail-group'>
-                <div className={'user-detail-label'}>Login details</div>
-                <div className={'user-login'} title={'Login ID'}>Login ID: {user.id}</div>
-                <div className={'user-login'} title={'Login alias'}>Login alias: {user.login}</div>
-                <div className={'user-login'} title={'Login e-mail'}>Login e-mail: {user.email}</div>
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Login details</div>
+                <div className={'detail-row user-id'} title={'Login ID'}>
+                    <label>Login ID</label> {user.id}
+                </div>
+                <div className={'detail-row user-login'} title={'Login alias'}>
+                    <label>Login alias</label> {user.login}
+                </div>
+                <div className={'detail-row user-email'} title={'Login e-mail'}>
+                    <label>Login e-mail</label> {user.email}
+                </div>
             </div>
-            <div className='user-detail-group'>
-                <div className={'user-detail-label'}>Status</div>
-                {user.active ? 
-                    <div className={'user-detail-data true'}>
-                        <i className='material-symbols-outlined'>check</i> Employee's account is active
+
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Roles</div>
+                {user.roles.length > 0 ? user.roles.map((role) => (
+                        <div
+                            key={role.id}
+                            className={'detail-row'}
+                        >
+                            <span
+                                className={'detail-link'}
+                                onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
+                            >
+                                {role.name}
+                            </span>
+
+                        </div>
+                    )) :
+                    <div className={'detail-data-placeholder'}>Na roles assigned.</div>}
+            </div>
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Status</div>
+                {user.active ?
+                    <div className={'detail-row linear'}>
+                        <i className='material-symbols-outlined true'>check</i> Employee's account is active
                     </div> : 
-                    <div className={'user-detail-data false'}>
-                        <i className='material-symbols-outlined'>close</i> Employee's account is not active
+                    <div className={'detail-row linear'}>
+                        <i className='material-symbols-outlined false'>close</i> Employee's account is not active
                     </div> }
                 {user.manager_view_access ?
-                    <div className={'user-detail-data true'}>
-                        <i className='material-symbols-outlined'>check</i> Employee has access to Manager View
+                    <div className={'detail-row linear'}>
+                        <i className='material-symbols-outlined true'>check</i> Employee has access to Manager View
                     </div> : 
-                    <div className={'user-detail-data false'}>
-                        <i className='material-symbols-outlined'>close</i> Employee does not have access to Manager View
+                    <div className={'detail-row linear'}>
+                        <i className='material-symbols-outlined false'>close</i> Employee does not have access to Manager View
                     </div> }
             </div>
-            <div className='user-detail-group'>
-                <div className={'user-detail-label'}>Reports to</div>
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Reports to</div>
                 {user.managers.length > 0 ? user.managers.map((manager) => (
-                    <div 
-                        className={'user-detail-data link'} 
-                        key={manager.id} 
-                        onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
+                    <div
+                        key={manager.id}
+                        className={'detail-row'}
                     >
-                        {manager.first_name} {manager.last_name}
+                        <span
+                            className={'detail-link'}
+                            onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
+                        >
+                            {manager.first_name} {manager.last_name}
+                        </span>
                     </div>
                 )) :
-                <div className={'user-detail-data placeholder'}>No manager assigned.</div>}
+                <div className={'detail-data-placeholder'}>No manager assigned.</div>}
             </div>
-            {user.managed_users.length > 0 ? (<div className='user-detail-group'>
-                <div className={'user-detail-label'}>Reportees</div> {user.managed_users.map((user) => (
-                    <div 
-                        className={'user-detail-data link'} 
-                        key={user.id} 
-                        onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}
+            {user.managed_users.length > 0 ? (<div className='detail-section'>
+                <div className={'detail-subheader'}>Reportees</div> {user.managed_users.map((user) => (
+                    <div
+                        key={user.id}
+                        className={'detail-row'}
                     >
-                        {user.first_name} {user.last_name}
+                        <span
+                            className={'detail-link'}
+                            onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}
+                        >
+                            {user.first_name} {user.last_name}
+                        </span>
                     </div>
                 ))}</div>)  : null}
-            <div className='user-detail-group'>
-                <div className={'user-detail-label'}>Roles</div>
-                {user.roles.length > 0 ? user.roles.map((role) => (
-                    <div
-                        className={'user-detail-data link'}
-                        key={role.id}
-                        onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
-                    >
-                        {role.name}
-                    </div>
-                )) :
-                <div className={'user-detail-data placeholder'}>Na roles assigned.</div>}
-            </div>
-            <button type='button' className='button' onClick={() => openModal({ content: 'userEdit', data: { id: user.id } })}>
-                <i className={'material-symbols-outlined'}>edit</i> Edit Employee
-            </button>
-            <button type='button' className='delete-button' onClick={handleDelete}>
-                <i className={'material-symbols-outlined'}>delete</i>  Delete Employee
-            </button>
         </div>
     );
 };

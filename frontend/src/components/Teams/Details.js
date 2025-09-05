@@ -3,6 +3,7 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useTeam from '../../hooks/useTeam';
 import { useModals } from '../../contexts/ModalContext';
+import '../../assets/styles/Details.css';
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam } = useTeam();
@@ -58,10 +59,10 @@ const TeamDetails = ({ teamId }) => {
     }
 
     return (
-        <div className='team-detail'>
-            <div className='team-detail-header'>
-                <div className={'team-id'} title={'Team ID'}>#{team.id}</div>
-                <div className={'team-name'} title={'Team Name'}>{team.name}</div>
+        <div className='detail-content'>
+            <div className='detail-header'>
+                <div className={'detail-title-prefix team-id'} title={'Team ID'}>#{team.id}</div>
+                <div className={'detail-title team-name'} title={'Team Name'}>{team.name}</div>
                 <button
                     className={'action-button edit-button'}
                     onClick={() => {openModal({content: 'teamEdit', data: { id: team.id}})}}
@@ -80,13 +81,13 @@ const TeamDetails = ({ teamId }) => {
                     <i className='material-icons'>delete</i>
                 </button>
             </div>
-            <div className='team-detail-group'>
-                <div className={'team-detail-label'}>Team details</div>
-                <div className={'team-detail-row team-codename'} title={'Team codename'}><label>Code name</label> {team.code_name}</div>
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Team details</div>
+                <div className={'detail-row team-codename'} title={'Team codename'}><label>Code name</label> {team.code_name}</div>
                 {team.parent &&
-                    <div className={'team-detail-row team-parent'} title={'Team codename'}><label>Parent Team</label>
+                    <div className={'detail-row team-parent'} title={'Team codename'}><label>Parent Team</label>
                         <span
-                            className={'team-detail-link'}
+                            className={'detail-link'}
                             onClick={() => openModal({ content: 'teamDetails', data: { id: team.parent.id } })}
                         >
                             {team.parent.name}
@@ -94,15 +95,15 @@ const TeamDetails = ({ teamId }) => {
                     </div>
                 }
                 {team.sub_teams && team.sub_teams.length > 0 &&
-                    <div className={'team-detail-row team-parent'} title={'Team codename'}><label>Subteams</label>
+                    <div className={'detail-row team-parent'} title={'Team\'s subteams'}><label>Subteams</label>
                         {team.sub_teams.map((subteam) => (
                             <div
                                 key={subteam.id}
-                                className={'subteam'}
+                                className={'detail-row'}
                             >
                                 <span
                                     key={subteam.id}
-                                    className={'team-detail-link'}
+                                    className={'detail-link'}
                                     onClick={() => openModal({ content: 'teamDetails', data: { id: subteam.id } })}
                                 >
                                     {subteam.name}
@@ -113,88 +114,103 @@ const TeamDetails = ({ teamId }) => {
                     </div>
                 }
             </div>
-            <div className='team-detail-group'>
-                <div className={'team-detail-label'}>Team members</div>
-                {team.managers && team.managers?.length > 0 &&
-                    <div className={'team-detail-row team-managers'} title={'Team managers'}><label>Team Manager{ team.managers?.length > 1 && "s" }</label>
-                        {team.managers.map((manager) => (
-                            <div
-                                key={manager.id}
-                                className={'team-member'}
-                            >
-                                <span
-                                    key={manager.id}
-                                    className={'team-detail-link'}
-                                    onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
-                                >
-                                    {manager.first_name} {manager.last_name}
-                                </span>
-                                {manager.team.id !== teamId && <small>&nbsp;&nbsp;
-                                    (manager of whole {<span
-                                        key={manager.id}
-                                        className={'team-detail-link'}
-                                        onClick={() => openModal({ content: 'teamDetails', data: { id: manager.team.id } })}
-                                    >
-                                        {manager.team.name}
-                                    </span>})
-                                </small>}
-                            </div>
-                        ))}
+            {team.managers && team.managers?.length > 0 &&
+                <div className='detail-section'>
+                    <div
+                        className={'detail-subheader'}
+                        title={'Team managers'}
+                    >
+                        Team Manager{ team.managers?.length > 1 && "s" }
                     </div>
-                }
-                {team.leaders && team.leaders?.length > 0 &&
-                    <div className={'team-detail-row team-leaders'} title={'Team leaders'}><label>Team Leader{ team.leaders?.length > 1 && "s" }</label>
-                        {team.leaders.map((leader) => (
-                            <div
-                                key={leader.id}
-                                className={'team-member'}
-                            >
-                                <span
-                                    key={leader.id}
-                                    className={'team-detail-link'}
-                                    onClick={() => openModal({ content: 'userDetails', data: { id: leader.id } })}
-                                >
-                                    {leader.first_name} {leader.last_name}
-                                </span>
-                                {leader.team.id !== teamId && <small>&nbsp;&nbsp;
-                                    ({<span
-                                        key={leader.id}
-                                        className={'team-detail-link'}
-                                        onClick={() => openModal({ content: 'teamDetails', data: { id: leader.team.id } })}
-                                    >
-                                        {leader.team.name}
-                                    </span>} sub-team)
-                                </small>}
-                            </div>
-                        ))}
-                    </div>
-                }
-                <div className={'team-detail-row team-members'} title={'Team members'}><label>Team Members</label>
-                    {team.members.map((member) => (
+                    {team.managers.map((manager) => (
                         <div
-                            key={member.id}
-                            className={'team-member'}
+                            key={manager.id}
+                            className={'detail-row linear'}
                         >
                             <span
-                                key={member.id}
-                                className={'team-detail-link'}
-                                onClick={() => openModal({ content: 'userDetails', data: { id: member.id } })}
+                                key={manager.id}
+                                className={'detail-link'}
+                                onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
                             >
-                                {member.first_name} {member.last_name}
+                                {manager.first_name} {manager.last_name}
                             </span>
-                            {member.team.id !== teamId && <small>&nbsp;&nbsp;
-                                ({<span
-                                    key={member.id}
-                                    className={'team-detail-link'}
-                                    onClick={() => openModal({ content: 'teamDetails', data: { id: member.team.id } })}
+                            {manager.team.id !== teamId && <small>&nbsp;&nbsp;
+                                (manager of whole {<span
+                                    key={manager.id}
+                                    className={'detail-link'}
+                                    onClick={() => openModal({ content: 'teamDetails', data: { id: manager.team.id } })}
                                 >
-                                        {member.team.name}
-                                </span>} sub-team)
-                            </small>
-                            }
+                                    {manager.team.name}
+                                </span>})
+                            </small>}
                         </div>
                     ))}
                 </div>
+            }
+            {team.leaders && team.leaders?.length > 0 &&
+                <div className='detail-section'>
+                    <div
+                        className={'detail-subheader'}
+                        title={'Team leaders'}
+                    >
+                        Team Leader{ team.leaders?.length > 1 && "s" }
+                    </div>
+                    {team.leaders.map((leader) => (
+                        <div
+                            key={leader.id}
+                            className={'detail-row linear'}
+                        >
+                            <span
+                                key={leader.id}
+                                className={'detail-link'}
+                                onClick={() => openModal({ content: 'userDetails', data: { id: leader.id } })}
+                            >
+                                {leader.first_name} {leader.last_name}
+                            </span>
+                            {leader.team.id !== teamId && <small>&nbsp;&nbsp;
+                                ({<span
+                                    key={leader.id}
+                                    className={'detail-link'}
+                                    onClick={() => openModal({ content: 'teamDetails', data: { id: leader.team.id } })}
+                                >
+                                    {leader.team.name}
+                                </span>} sub-team)
+                            </small>}
+                        </div>
+                    ))}
+                </div>
+            }
+            <div className='detail-section'>
+                <div
+                    className={'detail-subheader'}
+                    title={'Team Members'}
+                >
+                    Team Member{ team.members?.length > 1 && "s" }
+                </div>
+                {team.members.map((member) => (
+                    <div
+                        key={member.id}
+                        className={'detail-row linear'}
+                    >
+                        <span
+                            key={member.id}
+                            className={'detail-link'}
+                            onClick={() => openModal({ content: 'userDetails', data: { id: member.id } })}
+                        >
+                            {member.first_name} {member.last_name}
+                        </span>
+                        {member.team.id !== teamId && <small>&nbsp;&nbsp;
+                            ({<span
+                                key={member.id}
+                                className={'detail-link'}
+                                onClick={() => openModal({ content: 'teamDetails', data: { id: member.team.id } })}
+                            >
+                                    {member.team.name}
+                            </span>} sub-team)
+                        </small>
+                        }
+                    </div>
+                ))}
             </div>
         </div>
     );

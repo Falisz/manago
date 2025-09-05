@@ -3,6 +3,7 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useRole from '../../hooks/useRole';
 import { useModals } from '../../contexts/ModalContext';
+import '../../assets/styles/Details.css';
 
 const RoleDetails = ({ roleId }) => {
     const { role, loading, fetchRole, deleteRole } = useRole();
@@ -46,44 +47,64 @@ const RoleDetails = ({ roleId }) => {
     }
 
     return (
-        <div className='role-detail'>
-            <div className='role-detail-header'>
-                <div className={'role-id'} title={'Role ID'}>#{role.id}</div>
-                <div className={'role-name'} title={'Role Name'}>{role.name}</div>
+        <div className='detail-content'>
+            <div className='detail-header'>
+                <div className={'detail-title-prefix role-id'} title={'Role ID'}>#{role.id}</div>
+                <div className={'detail-title role-name'} title={'Role Name'}>{role.name}</div>
+                {!role.system_default? (
+                    <>
+                        <button
+                            className={'action-button edit-button'}
+                            type='button'
+                            onClick={() => openModal({ content: 'roleEdit', data: { id: role.id } })}
+                            title={'Edit Role'}
+                        >
+                            <i className='material-icons'>edit</i>
+                        </button>
+                        <button
+                            className='action-button delete-button'
+                            type='button'
+                            onClick={() => handleDelete(role.users?.length)}
+                            title={'Delete Role'}
+                        >
+                            <i className='material-icons'>delete</i>
+                        </button>
+                    </>
+                ) : null}
             </div>
-            <div className='role-detail-group'>
-                <div className={'role-detail-label'}>Role details</div>
-                <div className={'role-description'} title={'Role description'}> {role.description}</div>
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Role details</div>
+                <div className={'detail-row role-description'} title={'Role description'}>
+                    <label>Description</label> {role.description ?? <div className={'detail-data-placeholder'}>This role has no description.</div>}
+                </div>
                 {role.system_default ? (
-                    <div className='role-system-default'>
-                        <i className='material-symbols-outlined true'>check</i> This is system default role. You cannot edit nor delete it.
+                    <div className='detail-row' title={'Role type'}>
+                        <label>Role type</label>
+                        <div className='detail-row linear'>
+                            <i className='material-symbols-outlined true'>check</i> This is system default role. You cannot edit nor delete it.
+                        </div>
                     </div>
                 ) : null}
                 </div>
             
-            <div className='role-detail-group'>
-                <div className={'role-detail-label'}>Users with this role</div>
+            <div className='detail-section'>
+                <div className={'detail-subheader'}>Users with this role</div>
                 {role.users?.length > 0 ? role.users.map((user) => (
-                    <div 
-                        className={'user-detail-data link'} 
-                        key={user.id} 
-                        onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}
+                    <div
+                        key={user.id}
+                        className={'detail-row linear'}
                     >
-                        {user.first_name} {user.last_name}
+                        <span
+                            className={'detail-link'}
+                            onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}
+                        >
+                            {user.first_name} {user.last_name}
+                        </span>
                     </div>
                 )) :
-                <div className={'user-detail-data placeholder'}>No users with this role.</div>}
+                <div className={'detail-data-placeholder'}>No users with this role.</div>}
             </div>
-            {!role.system_default? (
-                <>
-                    <button type='button' className='button' onClick={() => openModal({ content: 'roleEdit', data: { id: role.id } })}>
-                        <i className='material-symbols-outlined'>edit</i> Edit Role
-                    </button>
-                    <button type='button' className='delete-button' onClick={() => handleDelete(role.users?.length)}>
-                        <i className='material-symbols-outlined'>delete</i> Delete Role
-                    </button>
-                </>
-            ) : null}
+
         </div>
     );
 };

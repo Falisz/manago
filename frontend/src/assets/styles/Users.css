@@ -69,7 +69,7 @@
     margin-right: 10px;
     outline: none;
     border: none;
-    background: var(--link-color);
+    background: var(--button-color);
     opacity: 0.5;
     color: black;
     transition: 0.3s ease-in-out;
@@ -103,60 +103,6 @@
 }
 .users-list .users-list-row .role-name:hover {
     background: var(--gray-dark);
-}
-
-.user-detail {
-    padding: 10px;
-}
-.user-detail-group {
-    margin: 10px 0 5px;
-}
-.user-detail-header {
-    font-size: 2em;
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 10px;
-}
-.user-detail-header .user-id {
-    font-size: 0.5em;
-}
-.user-detail-label {
-    font-size: 1.25em;
-    font-weight: 200;
-    margin: 10px 0 5px;
-    text-transform: uppercase;
-}
-.user-detail-data {
-    padding: 5px 10px;
-    display: flex;
-    align-items: center;
-}
-.user-detail-data.link {
-    cursor: pointer;
-    background: var(--gray-darker);
-    border-radius: 10px;
-    transition: .3s ease-in-out;
-    width: fit-content;
-}
-.user-detail-data.link:hover {
-    background: var(--gray-dark);
-}
-.user-detail-data i {
-    font-size: 1.1em;
-    padding: 3px;
-    margin-right: 5px;
-    border-radius: 10px;
-}
-.user-detail-data.true i {
-    background-color: yellowgreen;
-}
-.user-detail-data.false i {
-    background-color: coral;
-}
-.user-detail-data.placeholder {
-    font-style: italic;
-    opacity: 0.6;
 }
 
 .user-form {
@@ -209,7 +155,7 @@
     align-items: center;
     margin: 10px 5px;
     padding: 8px 10px;
-    background: var(--link-color);
+    background: var(--button-color);
     color: white;
     border: none;
     border-radius: 4px;

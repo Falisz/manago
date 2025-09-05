@@ -1,0 +1,94 @@
+.detail-content {
+    padding: 10px;
+}
+.detail-header {
+    font-size: 2em;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+.detail-header .detail-title-prefix {
+    cursor: help;
+    font-size: 0.5em;
+    margin-right: 10px;
+}
+.detail-header .detail-title {
+    margin-right: 20px;
+}
+.detail-header .action-button {
+    color: var(--white-darker);
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: .3s ease-in-out;
+    width: fit-content;
+    border-radius: 12px;
+    padding: 10px;
+}
+.detail-header button:hover {
+    background: var(--gray-dark);
+}
+.detail-header .edit-button:hover {
+    background-color: var(--link-color);
+}
+.detail-header .delete-button:hover {
+    background-color: firebrick;
+}
+
+.detail-section {
+    margin: 10px 0 5px;
+    padding-left: 5px;
+}
+.detail-subheader {
+    font-size: 1.25em;
+    font-weight: 200;
+    margin: 15px 0 5px;
+    text-transform: uppercase;
+}
+.detail-section .detail-subheader {
+    margin-left: -5px;
+}
+.detail-row {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 5px;
+}
+.detail-row.linear {
+    flex-direction: row;
+    align-items: center;
+}
+.detail-row label {
+    margin-left: -5px;
+    margin-bottom: 5px;
+    margin-top: 10px;
+    font-weight: bold;
+}
+.detail-subheader+.detail-row label {
+    margin-top: 0;
+}
+.detail-link {
+    color: var(--link-color);
+    cursor: pointer;
+    transition: .3s ease-in-out;
+    width: fit-content;
+}
+.detail-link:hover {
+    color: var(--link-hover-color);
+}
+.detail-row i {
+    font-size: 1.1em;
+    padding: 3px;
+    margin-right: 5px;
+    border-radius: 10px;
+}
+.detail-row i.true {
+    background-color: yellowgreen;
+}
+.detail-row i.false {
+    background-color: coral;
+}
+.detail-data-placeholder {
+    font-style: italic;
+    opacity: 0.6;
+}
