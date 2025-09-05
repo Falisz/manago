@@ -6,7 +6,7 @@ import { useModals } from '../../contexts/ModalContext';
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam } = useTeam();
-    const { openModal, refreshTriggers } = useModals();
+    const { openModal, refreshTriggers, closeTopModal } = useModals();
 
     useEffect(() => {
         if (teamId) {
@@ -20,6 +20,35 @@ const TeamDetails = ({ teamId }) => {
         }
     }, [teamId, fetchTeam, refreshTriggers]);
 
+    const handleDelete = async (users = 0, subteams = 0) => {
+        let message = `Are you sure you want to delete this role? This action cannot be undone.`
+        if (subteams > 0) {
+            message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}.`
+        }
+        if (users > 0) {
+            message += ` There are currently ${users === 1 ? 'a' : users} user${users > 1 ? 's' : ''} assigned to this team.`
+        }
+        openModal({
+            content: 'confirm',
+            type: 'pop-up',
+            message: message,
+            onConfirm: () => {
+                console.log('Deleting team not implemented yet.');
+                // deleteTeam(teamId).then();
+                // refreshData('teams', true);
+                closeTopModal();
+            },
+            onConfirm2: subteams > 0 ? () => {
+                console.log('Deleting team and subteams not implemented yet.');
+                // deleteTeam(teamId, true).then();
+                // refreshData('teams', true);
+                closeTopModal();
+            } : null,
+            confirmLabel: 'Delete the team',
+            confirmLabel2: 'Delete team and subteams',
+        });
+    };
+
     if (loading) {
         return <Loader />;
     }
@@ -28,13 +57,28 @@ const TeamDetails = ({ teamId }) => {
         return <h1>Team not found!</h1>;
     }
 
-    console.log(team);
-
     return (
         <div className='team-detail'>
             <div className='team-detail-header'>
                 <div className={'team-id'} title={'Team ID'}>#{team.id}</div>
                 <div className={'team-name'} title={'Team Name'}>{team.name}</div>
+                <button
+                    className={'action-button edit-button'}
+                    onClick={() => {openModal({content: 'teamEdit', data: { id: team.id}})}}
+                    title={'Edit Team details'}
+                >
+                    <i className='material-icons'>edit</i>
+                </button>
+                <button
+                    className={'action-button delete-button'}
+                    onClick={() => handleDelete(
+                        (team.members.length+team.managers.length+team.leaders.length),
+                        (team.sub_teams.length)
+                    )}
+                    title={'Delete the Team'}
+                >
+                    <i className='material-icons'>delete</i>
+                </button>
             </div>
             <div className='team-detail-group'>
                 <div className={'team-detail-label'}>Team details</div>
@@ -47,6 +91,25 @@ const TeamDetails = ({ teamId }) => {
                         >
                             {team.parent.name}
                         </span>
+                    </div>
+                }
+                {team.sub_teams && team.sub_teams.length > 0 &&
+                    <div className={'team-detail-row team-parent'} title={'Team codename'}><label>Subteams</label>
+                        {team.sub_teams.map((subteam) => (
+                            <div
+                                key={subteam.id}
+                                className={'subteam'}
+                            >
+                                <span
+                                    key={subteam.id}
+                                    className={'team-detail-link'}
+                                    onClick={() => openModal({ content: 'teamDetails', data: { id: subteam.id } })}
+                                >
+                                    {subteam.name}
+                                </span>
+                            </div>
+                            )
+                        )}
                     </div>
                 }
             </div>

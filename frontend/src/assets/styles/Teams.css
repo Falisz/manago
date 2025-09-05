@@ -120,15 +120,32 @@
     display: flex;
     flex-direction: row;
     align-items: baseline;
-    gap: 10px;
 }
 .team-detail-header .team-id {
     font-size: 0.5em;
+    margin-right: 10px;
+}
+.team-detail-header .team-name {
+    margin-right: 20px;
+}
+.team-detail-header button {
+    color: var(--white-darker);
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: .3s ease-in-out;
+    width: fit-content;
+    border-radius: 12px;
+    padding: 10px;
+}
+.team-detail-header button:hover {
+    background: var(--gray-dark);
 }
 .team-detail-label {
     font-size: 1.25em;
     font-weight: 200;
-    margin: 10px 0 5px;
+    margin: 20px 0 5px;
     text-transform: uppercase;
 }
 .team-detail-row {
@@ -139,6 +156,10 @@
 .team-detail-row label {
     margin-left: -5px;
     font-weight: bold;
+}
+.team-detail-row .team-member,
+.team-detail-row .subteam {
+    margin: 3px 0;
 }
 .team-detail-data {
     padding: 5px 10px;
