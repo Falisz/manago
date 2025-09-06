@@ -16,7 +16,7 @@ const StaffView = () => {
 
     return (
         <>
-            <div className='app-nav'>
+            <nav className='app-nav seethrough'>
                 <Link to='/'  title={'Home'} className={`app-home`}>
                     <SiteLogo className={'app-logo'}/>
                 </Link>
@@ -40,14 +40,15 @@ const StaffView = () => {
                                 <span className='page-title'>{page.title}</span>
                             </Link>
                                 {page.subpages?.length >= 1 && (
-                                    <ul className='submenu'>
+                                    <nav className='sub-menu'>
                                         {page.subpages
                                             .filter((subpage) => subpage.path !== '')
                                             .map((subpage) => (
-                                                !subpage.hidden && <li key={`${page.path}/${subpage.path}`} className='submenu-item'>
+                                                !subpage.hidden &&
                                                     <Link
+                                                        key={`${page.path}/${subpage.path}`}
                                                         to={`${page.path}${subpage.path ? `/${subpage.path}` : ''}`}
-                                                        className={`subpage-link ${
+                                                        className={`sub-menu-link ${
                                                             location.pathname === `/${page.path}${subpage.path ? `/${subpage.path}` : ''}`
                                                                 ? 'active'
                                                                 : ''
@@ -55,9 +56,8 @@ const StaffView = () => {
                                                     >
                                                         {subpage.title}
                                                     </Link>
-                                                </li>
                                             ))}
-                                    </ul>
+                                    </nav>
                                 )}
                             </li>
                     ))}
@@ -67,17 +67,34 @@ const StaffView = () => {
                         {user?.first_name || 'User'}
                     </span>
                     <i className='material-icons'>keyboard_arrow_down</i>
-                    <ul className='submenu'>
+                    <nav className='sub-menu'>
+                        <Link
+                            key='settings'
+                            className='sub-menu-link'
+                            to='#'
+                        >
+                            Settings
+                        </Link>
                         { user.manager_view_access &&
-                            <li className='submenu-item'>
-                                <Link to='#' onClick={() => toggleView(true)}>Manager Portal</Link>
-                            </li> }
-                        <li className='submenu-item'>
-                            <Link  to='/logout' className='logout'>Logout</Link>
-                        </li>
-                    </ul>
+                            <Link
+                                key='toggle-view'
+                                className='sub-menu-link'
+                                to='#'
+                                onClick={() => toggleView(true)}
+                            >
+                                Manager View
+                            </Link>
+                        }
+                        <Link
+                            key='logout'
+                            className='sub-menu-link logout'
+                            to='/logout'
+                        >
+                            Logout
+                        </Link>
+                    </nav>
                 </div>
-            </div>
+            </nav>
             <MobileNav
                 logoText={`Staff ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}
                 currentView={'staff'}

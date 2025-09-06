@@ -13,21 +13,31 @@
     flex-direction: column;
     align-items: stretch;
     background: var(--background-gradient-2);
-    color: var(--text-color);
+    color: var(--text-color-2);
     width: 250px;
     box-shadow: 0 0 10px 5px rgba(0, 0, 0, .15);
-    transition: width 0.3s ease-in-out;
+    transition: 0.3s ease-in-out;
     transform: translateZ(0);
     margin: 0;
     padding: 0;
     border: 0;
 }
+.app.manager.glass .app-nav {
+    margin: 10px;
+    border-radius: var(--def-border-radius);
+    box-shadow: var(--weak-shade);
+    background: var(--seethrough-background);
+}
 .app.manager .app-nav-collapsed {
     width: 70px;
 }
 .app.manager .app-nav a {
-    color: var(--text-color);
+    color: var(--text-color-2);
     text-decoration: none;
+}
+.app.manager ::selection {
+    color: unset;
+    background: unset;
 }
 .app.manager .app-nav .app-home-link {
     display: block;
@@ -58,7 +68,7 @@
 }
 .app.manager .app-nav .app-home-link.active #AppLogoSymbol,
 .app.manager .app-nav .app-home-link:hover #AppLogoSymbol {
-    fill: var(--link-color);
+    fill: var(--button-color);
     transition: ease-in-out 0.3s;
 }
 .app.manager .app-nav-collapsed .app-logo {
@@ -107,40 +117,35 @@
     align-self: flex-start;
     font-size: 30px;
 }
+.app.manager.glass .app-nav .app-nav-page-link.active,
+.app.manager.glass .app-nav .app-nav-page-link:hover {
+    color: var(--link-color);
+    background: var(--seethrough-background-2);
+    box-shadow: var(--weak-shade);
+}
 
-/************/
-/*APP SUBNAV*/
-/************/
-.app.manager .app-subnav {
+/*************/
+/*APP SUB-NAV*/
+/*************/
+.app.manager .app-sub-nav {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     background: var(--color-gradient);
     padding: 0;
     margin: 0;
+}
+.app.manager.glass .app-sub-nav {
+    margin: 10px 10px 10px 0;
+    border-radius: var(--def-border-radius);
+    box-shadow: var(--weak-shade);
+    background: var(--seethrough-background);
+}
+.app.manager .app-sub-nav .subpage-link {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-}
-.app.manager .app-subnav a {
     color: white;
     text-decoration: none;
-}
-.app.manager .app-subnav .submenu a {
-    color: #333;
-}
-.app.manager .app-subnav .submenu-item:hover a {
-    color: var(--color);
-}
-.app.manager .subpage-links {
-    list-style: none;
-    display: flex;
-    flex-direction: row;
-    margin: 0 10px;
-    padding: 0;
-}
-.app.manager .subpage-link,
-.app.manager .username {
-    color: white;
-    text-decoration: none;
-    display: block;
     margin: 0 10px;
     padding: 5px 0;
     font-size: 16px;
@@ -152,75 +157,82 @@
     border: 3px solid transparent;
     transition: ease-in-out 0.3s;
 }
-.app.manager .subpage-link.selected,
-.app.manager .subpage-link.selected a {
-    cursor: default;
+.app.manager .app-sub-nav .user-link {
+    margin-left: auto;
 }
-.app.manager .subpage-link.selected,
-.app.manager .subpage-link:hover {
-    border-bottom-color: white;
-    transition: ease-in-out 0.3s;
-}
-.app.manager .user-nav {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-right: 20px;
-    margin-left: auto
-}
-.app.manager .user-nav .username {
+.app.manager.glass .app-sub-nav .subpage-link {
     margin: 0;
+    color: var(--text-color-2);
+    padding: 10px;
+    border: none;
 }
-.app.manager .user-nav i {
-    cursor: pointer;
-    font-size: 20px;
+.app.manager.glass .app-sub-nav .user-link {
+    margin-left: auto;
+}
+.app.manager .subpage-link:not(.user-link).selected,
+.app.manager .subpage-link:not(.user-link):hover {
+    border-bottom-color: white;
 }
 
-.app.manager .app-subnav .submenu {
-    list-style: none;
+.app.manager.glass .subpage-link:not(.user-link).selected,
+.app.manager.glass .subpage-link:not(.user-link):hover {
+    color: var(--link-color);
+    background: var(--seethrough-background-2);
+    box-shadow: var(--weak-shade);
+}
+.app.manager .subpage-link.selected {
+    cursor: default;
+}
+
+.app.manager .app-sub-nav .sub-menu {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
     position: absolute;
     visibility: hidden;
     opacity: 0;
-    transition: 0.3s;
-    z-index: 1500;
-    padding: 5px;
-    top: 45px;
-    left: 50%;
-    transform: translateX(-50%);
+    z-index: 2000;
+    top: 30px;
+    right: 0;
     background: linear-gradient(45deg, var(--gray-light), white);
-    border: 1px solid #dee2e6;
+    border: none;
+    margin: 0;
+    padding: 15px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    margin: 0;
-    min-width: 150px;
+    transition: ease-in-out 0.3s;
 }
-.app.manager .app-subnav .submenu {
-    top: 30px;
+.app.glass .app-sub-nav .sub-menu {
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,.75);
 }
-.app.manager .app-subnav .user-nav:hover .submenu,
-.app.manager .app-subnav .username:hover~.submenu,
-.app.manager .app-subnav .submenu:hover {
+.app.manager .app-sub-nav .subpage-link:hover .sub-menu,
+.app.manager .app-sub-nav .sub-menu:hover {
     opacity: 1;
     visibility: visible;
-    margin-top: 5px;
+    margin-top: 10px;
 }
-.app.manager .app-subnav .submenu-item {
-    padding: 10px 15px;
-    white-space: nowrap;
-}
-.app.manager .app-subnav .submenu-item a {
+.app.manager .app-sub-nav .sub-menu-link {
     display: block;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
     width: 100%;
-    text-align: left;
+    text-align: right;
     background: none;
     border: none;
-    padding: 0;
     font-size: 16px;
     text-transform: uppercase;
     font-weight: 500;
     color: #333;
     text-decoration: none;
     cursor: pointer;
+}
+.app.manager .app-sub-nav .sub-menu-link:hover {
+    color: var(--button-color);
+}
+.app.manager .app-sub-nav .sub-menu-link:not(:last-child) {
+    margin-bottom: 15px;
 }
 
 /*************/
@@ -247,6 +259,7 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
+
 .app.manager .app-content main::-webkit-scrollbar {
     width: 20px;
 }

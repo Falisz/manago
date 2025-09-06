@@ -23,8 +23,9 @@ const AppContent = () => {
 
     useEffect(() => {
         const root = document.getElementById('root');
-        root.classList.add(appState.theme);
-        root.classList.add(appState.palette);
+        if (appState.style) root.classList.add(appState.style);
+        if (appState.theme) root.classList.add(appState.theme);
+        if (appState.palette) root.classList.add(appState.palette);
     }, [appState]);
 
     if (loading) {

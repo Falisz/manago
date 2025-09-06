@@ -39,6 +39,15 @@
 }
 
 
+.app.glass .app-modal-content.pane {
+    backdrop-filter: blur(10px);
+    background: var(--seethrough-background-2);
+    top: 10px;
+    right: 10px;
+    height: calc(100% - 70px);
+}
+
+
 .app-modal-content.pop-up {
     position: absolute;
     top: 50%;
@@ -48,6 +57,12 @@
     transform: translate(-50%, -50%) scale(1);
     transition: ease-in-out 0.3s;
 }
+
+.app.glass .app-modal-content.pop-up {
+    backdrop-filter: blur(10px);
+    background: var(--seethrough-background);
+}
+
 .app-modal-content.pop-up.hidden {
     transform: translate(-50%, -50%) scale(0.01);
     transform-origin: center center;
@@ -74,7 +89,7 @@
 
 /* Close button */
 .app-modal-close-button {
-    position: absolute;
+    position: fixed;
     top: 15px;
     right: 15px;
     margin: 0;

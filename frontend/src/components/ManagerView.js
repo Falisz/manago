@@ -86,46 +86,57 @@ const SubNav = ({currentMainPage, location}) => {
     const { user, toggleView } = useAppState();
 
     return (
-        <nav className='app-subnav'>
-            <ul className='subpage-links'>
-                {currentMainPage &&
-                <li
-                    key={`${currentMainPage?.path}`}
-                    className={`subpage-link ${location.pathname === '/' || location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}>
-                    <Link to={`${currentMainPage?.path}`}>
-                        {currentMainPage?.title}
-                    </Link>
-                </li>
-                }
-                {currentMainPage?.subpages?.map((subpage) => (
-                    <li
-                        key={subpage.path}
-                        className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
-                    >
-                        <Link to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}>
-                            {subpage.title}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-            <div className='user-nav'>
-                        <span className='username'>
-                            {user?.first_name || 'User'}
-                        </span>
+        <nav className='app-sub-nav seethrough'>
+            {currentMainPage &&
+            <Link
+                key={`${currentMainPage?.path}`}
+                className={`subpage-link ${location.pathname === '/' || location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}
+                to={`${currentMainPage?.path}`}
+            >
+                {currentMainPage?.title}
+            </Link>
+            }
+            {currentMainPage?.subpages?.map((subpage) => (
+                <Link
+                    key={subpage.path}
+                    className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
+                    to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}
+                >
+                    {subpage.title}
+                </Link>
+            ))}
+            <Link
+                key={user?.first_name || 'user'}
+                className='subpage-link user-link'
+                to='#'
+            >
+                <span className={'username'} >{user?.first_name || 'User'}</span>
                 <i className='material-icons'>keyboard_arrow_down</i>
-                <ul className='submenu'>
-                    <li className='submenu-item'>
-                        <Link to='#' onClick={() => toggleView(false)}>
-                            Staff Portal
-                        </Link>
-                    </li>
-                    <li className='submenu-item'>
-                        <Link to='/logout' className='logout'>
-                            Logout
-                        </Link>
-                    </li>
-                </ul>
-            </div>
+                <nav className='sub-menu'>
+                    <Link
+                        key='settings'
+                        className='sub-menu-link'
+                        to='#'
+                    >
+                        Settings
+                    </Link>
+                    <Link
+                        key='toggle-view'
+                        className='sub-menu-link'
+                        to='#'
+                        onClick={() => toggleView(false)}
+                    >
+                        Staff View
+                    </Link>
+                    <Link
+                        key='logout'
+                        className='sub-menu-link logout'
+                        to='/logout'
+                    >
+                        Logout
+                    </Link>
+                </nav>
+            </Link>
         </nav>
     )
 }
@@ -136,7 +147,7 @@ const ManagerView = () => {
 
     const currentMainPage = appState.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || appState.pages?.[0] || null;
+    ) || (location.pathname === "/" ? appState.pages?.[0] : null);
 
     return (
         <>

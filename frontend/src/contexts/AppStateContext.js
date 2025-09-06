@@ -32,6 +32,7 @@ export const AppStateProvider = ({ children }) => {
     const [appState, setAppState] = useState({
         is_connected: true,
         theme: process.env['REACT_APP_THEME'] || 'dark',
+        style: process.env['REACT_APP_STYLE'] || 'glass',
         palette: process.env['REACT_APP_COLOR'] || 'blue',
         modules: [],
         pages: []
