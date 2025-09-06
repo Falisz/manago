@@ -86,7 +86,7 @@ const SubNav = ({currentMainPage, location}) => {
     const { user, toggleView } = useAppState();
 
     return (
-        <nav className='app-sub-nav seethrough'>
+        <nav className='app-sub-nav'>
             {currentMainPage &&
             <Link
                 key={`${currentMainPage?.path}`}
@@ -105,12 +105,11 @@ const SubNav = ({currentMainPage, location}) => {
                     {subpage.title}
                 </Link>
             ))}
-            <Link
+            <div
                 key={user?.first_name || 'user'}
                 className='subpage-link user-link'
-                to='#'
             >
-                <span className={'username'} >{user?.first_name || 'User'}</span>
+                <Link className={'username'} to='#'>{user?.first_name || 'User'}</Link>
                 <i className='material-icons'>keyboard_arrow_down</i>
                 <nav className='sub-menu'>
                     <Link
@@ -136,7 +135,7 @@ const SubNav = ({currentMainPage, location}) => {
                         Logout
                     </Link>
                 </nav>
-            </Link>
+            </div>
         </nav>
     )
 }

@@ -1,0 +1,110 @@
+.app-list {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+.app-list-header-row {
+    display: flex;
+    flex-direction: row;
+    padding-right: 20px;
+}
+.app-list-header-cell {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+.app-list-header-cell-label,
+.app-list-header-cell-actions {
+    display: flex;
+    flex-direction: row;
+}
+.app-list-header-cell-label {
+    font-weight: 600;
+    font-family: var(--font-family-condensed), sans-serif;
+}
+.app-list-header-cell-actions .search {
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 10px;
+    outline: none;
+    border: none;
+    background: var(--background-color-2);
+    opacity: 0.75;
+    color: var(--text-color-2);
+    transition: 0.3s ease-in-out;
+    width: 100%;
+}
+.app.glass .app-list-header-cell-actions .search {
+    background: var(--seethrough-background-2);
+}
+.app-list-header-cell-actions .search:hover,
+.app-list-header-cell-actions .search:focus,
+.app-list-header-cell-actions .search.non-empty {
+    opacity: 1;
+}
+.app-list-header-cell-actions .order {
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 10px;
+    outline: none;
+    border: none;
+    background: var(--button-color);
+    opacity: 0.75;
+    color: black;
+    transition: 0.3s ease-in-out;
+    cursor: pointer;
+}
+.app-list-header-cell-actions .order:hover,
+.app-list-header-cell-actions .order.asc,
+.app-list-header-cell-actions .order.desc {
+    opacity: 1;
+}
+.app-list-row,
+.app-list-row-big {
+    display: flex;
+    flex-direction: row;
+    transition: 0.3s ease-in-out;
+    border-radius: var(--def-border-radius);
+}
+
+.app-list-row {
+    align-items: center;
+}
+.app-list-row-big {
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px 0;
+}
+
+.app-list-row-stack {
+    flex-direction: column;
+    padding: 5px 0;
+}
+.app-list-row-stack:not(:last-child) {
+    border-bottom: 1px solid var(--text-color-3);
+}
+.app-list-sub-rows {
+    padding-left: 10px;
+}
+.app-list-row:hover,
+.app-list-row-big:hover{
+    background: var(--background-color-2);
+}
+.app.glass .app-list-row:hover,
+.app.glass .app-list-row-big:hover {
+    background: var(--seethrough-background-2);
+}
+.app-list-row-cell {
+    flex: 1;
+    padding: 10px;
+}
+.app-list-row-big .app-list-row-cell {
+    align-items: center;
+    padding: 0 10px;
+}
+.app-list-row-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}

@@ -4,45 +4,63 @@ import { useModals } from '../../contexts/ModalContext';
 import useTeam from '../../hooks/useTeam';
 import Loader from '../Loader';
 import Button from '../Button';
+import '../../assets/styles/List.css';
 import '../../assets/styles/Teams.css';
 
 // Table header component for Teams
 const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => (
-    <div className='teams-list-header-cell' key={header.key}>
-        <label>{header.title}</label>
-        <input
-            className='search'
-            title={header.title}
-            placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-            name={header.key}
-            value={filters[header.key] || ''}
-            onChange={handleFilter}
-        />
-        <button
-            className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-            name={header.key}
-            onClick={handleSorting}
-        >
-            {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
-        </button>
+    <div className={`app-list-header-cell ${header.key}`} key={header.key}>
+        <div className={'app-list-header-cell-label'}>
+            {header.title}
+        </div>
+        <div className={'app-list-header-cell-actions'}>
+            <input
+                className='search'
+                title={header.title}
+                placeholder={`Filter by the ${header.title.toLowerCase()}...`}
+                name={header.key}
+                value={filters[header.key] || ''}
+                onChange={handleFilter}
+            />
+            <button
+                className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
+                name={header.key}
+                onClick={handleSorting}
+            >
+                {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
+            </button>
+        </div>
     </div>
 );
 
-const TeamItem = ({ team }) => {
+const TeamItem = ({ team, sub = false }) => {
     const { openModal } = useModals();
     team.members_count = team.members ? team.members.length : 0
 
     return (
         <>
-            <div className='team-item'>
-                <div onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}>
+            <div className='app-list-row'>
+                <div
+                    className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
+                    onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}
+                >
+                    {sub && <i className={'material-icons'}>subdirectory_arrow_right</i>}
                     {team.code_name}
                 </div>
-                <div onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}>
+                <div
+                    className={`app-list-row-cell ${ sub ? 'subteam-name' : 'name'} app-clickable`}
+                    onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}
+                >
                     {team.name}
                 </div>
-                <div>{team.members_count}</div>
-                <div>
+                <div
+                    className={'app-list-row-cell members-count'}
+                >
+                    {team.members_count}
+                </div>
+                <div
+                    className={'app-list-row-cell managers'}
+                >
                     {(team.managers || []).length === 0
                         ? null
                         : (team.managers || []).map(manager =>
@@ -52,7 +70,9 @@ const TeamItem = ({ team }) => {
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }
                 </div>
-                <div>
+                <div
+                    className={'app-list-row-cell team-leaders'}
+                >
                     {(team.leaders || []).length === 0
                         ? null
                         : (team.leaders || []).map(leader =>
@@ -64,9 +84,9 @@ const TeamItem = ({ team }) => {
                 </div>
             </div>
             {team.subteams && team.subteams?.length > 0 ? (
-                <div className='subteams'>
+                <div className='app-list-sub-rows'>
                     {team.subteams.map(subteam => (
-                        <TeamItem key={subteam.id} team={subteam} />
+                        <TeamItem key={subteam.id} team={subteam} sub={true} />
                     ))}
                 </div>
                 ) : null}
@@ -197,8 +217,8 @@ const TeamsTable = () => {
     }
 
     return (
-        <div className='teams-list'>
-            <div className='teams-list-header'>
+        <div className='app-list teams-list seethrough app-overflow-hidden'>
+            <div className='app-list-header-row'>
                 {headers.map((header) => (
                     <TeamTableHeader
                         header={header}
@@ -210,11 +230,11 @@ const TeamsTable = () => {
                     />
                 ))}
             </div>
-            <div className='teams-list-content'>
+            <div className='teams-list-content app-overflow-y app-scroll'>
                 {filteredAndSortedTeams?.length === 0 ? (
                     <p>No teams found.</p>
                 ) : (filteredAndSortedTeams?.map(team => (
-                    <div className='teams-list-row' key={team.id}>
+                    <div className='app-list-row-stack' key={team.id}>
                         <TeamItem team={team} />
                     </div>
                 )))}
@@ -228,13 +248,15 @@ const TeamsIndex = () => {
 
     return (
         <>
-            <h1>Teams in Zyrah</h1>
-            <Button
-                className='new-team-button'
-                onClick={() => openModal({ content: 'teamNew' })}
-                label={'Add new Team'}
-                icon={'add'}
-            />
+            <div className='page-header'>
+                <h1 className={'page-title'}> Teams in Zyrah </h1>
+                <Button
+                    className='new-team-button'
+                    onClick={() => openModal({ content: 'teamNew' })}
+                    label={'Add team'}
+                    icon={'add'}
+                />
+            </div>
             <TeamsTable/>
         </>
     );

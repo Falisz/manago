@@ -5,7 +5,7 @@ const Button = ({children, className, onClick, label, icon=null}) => {
 
     return (
         <button
-            className={className}
+            className={'app-button ' + className}
             onClick={onClick}
         >
             {icon && <i className={'material-icons'}>{icon}</i>}

@@ -1,0 +1,194 @@
+/****************/
+/*APP MOBILE NAV*/
+/****************/
+.app-mobile-nav {
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    width: 100dvw;
+    background: var(--color-gradient);
+    position: relative;
+    justify-content: space-between;
+}
+.app.glass .app-mobile-nav {
+    background: var(--seethrough-background);
+    border-radius: 0 0 12px 12px;
+    padding: 5px 0;
+    margin: 0 10px;
+    width: calc(100dvw - 20px);
+}
+
+.app-mobile-nav .app-home-link {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 300;
+    margin: 0 10px 0 20px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-mobile-nav .app-logo-mobile {
+    width: 50px;
+    fill: white;
+    height: auto;
+}
+
+.app-mobile-nav-title {
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 300;
+    margin-right: auto;
+}
+
+.app-mobile-nav-view-button {
+    margin: auto 20px;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.app-mobile-nav-backdrop {
+    display: block;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    cursor: pointer;
+    background: rgba(0, 0, 0, .5);
+    transition: ease-in-out 0.3s;
+    -webkit-tap-highlight-color: transparent;
+}
+.app.glass .app-mobile-nav-backdrop {
+    left: -10px;
+}
+
+.app-mobile-nav-links {
+    display: flex;
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    height: 100dvh;
+    width: 80dvw;
+    flex-direction: column;
+    list-style: none;
+    background: var(--gray-gradient);
+    transition: ease-in-out 0.3s;
+    transform: translateX(100%);
+    overflow: auto;
+    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+    scrollbar-width: thin;
+}
+
+.app.glass .app-mobile-nav-links {
+    top: 10px;
+    right: 10px;
+    padding: 30px;
+    border-radius: var(--def-border-radius);
+    background: var(--seethrough-background-2);
+    backdrop-filter: blur(10px);
+    width: 66dvw;
+    height: calc(100dvh - 80px);
+    transform: translateX(calc(100% + 25px));
+}
+
+.app-mobile-nav-links::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.app-mobile-nav-links::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.app-mobile-nav-links::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    border: none;
+}
+
+.app-mobile-nav-links::-webkit-scrollbar-button {
+    display: none;
+}
+
+.app-mobile-nav-backdrop.expanded {
+    opacity: 1;
+    visibility: visible;
+    transition: ease-in-out 0.3s;
+}
+
+.app-mobile-nav-links.expanded,
+.app.glass .app-mobile-nav-links.expanded {
+    transform: translateX(0);
+}
+
+.app-mobile-nav-link-item {
+    margin: 0 50px;
+    padding: 15px 0;
+    font-size: 20px;
+    font-family: 'roboto condensed', sans-serif;
+    text-transform: uppercase;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.app.glass .app-mobile-nav-link-item {
+    margin: 0 25px;
+}
+
+.app-mobile-nav-link-item:not(:first-child) {
+    border-top: 1px solid var(--gray);
+}
+
+.app-mobile-nav-link-item a {
+    display: flex;
+    align-items: center;
+    color: white;
+    margin: 5px 0;
+    text-decoration: none;
+    transition: 0.3s ease-in-out;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-mobile-nav-link-item .app-nav-page-link-icon {
+    margin-right: 10px;
+}
+
+.app-mobile-nav-link-item a:hover,
+.app-mobile-nav-link-item a.active {
+    color: var(--link-color);
+}
+
+.app-mobile-nav-link-item.nav-collapse-button {
+    margin: 50px 50px auto;
+    align-self: self-start;
+}
+
+.app-mobile-nav-link-item.user-link {
+    margin: auto 50px 50px;
+}
+
+.app-mobile-nav-link-item .submenu {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    visibility: visible;
+    opacity: 1;
+    list-style: none;
+    padding: 0 15px 0;
+    margin: 0;
+}
+
+.app-mobile-nav-link-item .submenu li {
+    margin: 5px 0;
+    font-size: 16px;
+}

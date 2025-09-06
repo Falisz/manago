@@ -47,6 +47,8 @@ code {
     --seethrough-white-2: rgba(255, 255, 255, .5);
     --seethrough-black-3: rgba(0, 0, 0, .25);
     --seethrough-white-3: rgba(255, 255, 255, .75);
+    --font-family: 'Roboto', sans-serif;
+    --font-family-condensed: 'Roboto Condensed', sans-serif;
     /*  DARK APP'S PALETTE */
     --text-color: white;
     --text-color-2: var(--white-darker);
@@ -66,7 +68,7 @@ code {
     --text-color: var(--black);
     --text-color-2: var(--black-brighter);
     --text-color-3: var(--gray-darker);
-    --background-color: var(--gray-lighter);
+    --background-color: var(--gray-light);
     --background-color-2: var(--white-darker);
     --background-color-3: var(--color-gradient);
     --background-gradient: linear-gradient(45deg, var(--gray-lighter), var(--white-darker));
@@ -92,7 +94,7 @@ code {
     --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
 }
 
-.app.raspberry {
+.app.pink {
     --color: #e6007e;
     --color-dark: #a6005c;
     --color-bright: #ea529d;
@@ -133,12 +135,12 @@ code {
     url('../background-light-magenta.jpg') center center no-repeat;
 }
 
-.app.glass.raspberry {
+.app.glass.pink {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
     url('../background-dark-raspberry.png') center center no-repeat;
 }
 
-.app.glass.raspberry.light {
+.app.glass.pink.light {
     background: linear-gradient(45deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .05)),
     url('../background-light-raspberry.png') center center no-repeat;
 }
@@ -191,6 +193,35 @@ code {
     font-weight: bold;
 }
 
+.app.glass .seethrough {
+    background: var(--seethrough-background);
+}
+.app.glass .seethrough-2 {
+    background: var(--seethrough-background-2);
+}
+.app.glass .seethrough-3 {
+    background: var(--seethrough-background-3);
+}
+.app.glass .seethrough,
+.app.glass .seethrough-2,
+.app.glass .seethrough-3 {
+    border-radius: var(--def-border-radius);
+    box-shadow: var(--weak-shade);
+}
+
+.app-clickable {
+    cursor: pointer;
+}
+.app-centered {
+    margin-right: auto;
+    margin-left: auto;
+}
+.app-overflow-hidden {
+    overflow: hidden;
+}
+.app-overflow-x {
+    overflow-x: auto;
+}
 .app-overflow-y {
     overflow-y: auto;
 }
@@ -204,184 +235,102 @@ code {
 }
 
 .app-scroll::-webkit-scrollbar-thumb {
-    background-color: var(--text-color-2);
+    background-color: var(--background-color-2);
     background-clip: content-box;
     border-radius: 10px;
     margin-right: 5px;
     border: 5px solid transparent;
 }
-
+.app.glass .app-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--seethrough-background-2);
+}
 .app-scroll::-webkit-scrollbar-button {
     display: none;
 }
 
-
-/****************/
-/*APP MOBILE NAV*/
-/****************/
-.app-mobile-nav {
-    z-index: 1000;
-    display: none;
-    align-items: center;
-    width: 100%;
-    background: var(--color-gradient);
-    position: relative;
-    justify-content: space-between;
-}
-
-.app-mobile-nav .app-home-link {
+.app-button {
     display: flex;
     align-items: center;
+    gap: 5px;
+    padding: 8px;
+    background: var(--button-color);
     color: white;
-    text-decoration: none;
-    font-family: 'Roboto Condensed', sans-serif;
-    font-size: 30px;
-    font-weight: 300;
-    margin: 0 10px 0 20px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    transition: 0.3s ease-in-out;
+}
+.app-button i {
+    font-size: 15px;
+}
+.app.glass .app-button {
+    padding: 10px;
+    font-size: 1rem;
+    background: var(--seethrough-background);
+    border-radius: var(--def-border-radius);
+    box-shadow: var(--weak-shade);
+    color: var(--text-color);
+    font-weight: 400;
+    font-family: var(--font-family-condensed), sans-serif;
+}
+.app.glass .app-button:hover {
+    background: var(--seethrough-background-2);
 }
 
-.app-mobile-nav .app-logo-mobile {
+/* Custom Toggle Switch */
+.app-switch {
+    position: relative;
+    display: inline-block;
     width: 50px;
-    fill: white;
-    height: auto;
+    height: 24px;
 }
 
-.app-mobile-nav-title {
-    text-transform: uppercase;
-    font-family: 'Roboto Condensed', sans-serif;
-    font-size: 30px;
-    font-weight: 300;
-    margin-right: auto;
+.app-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.app-mobile-nav-view-button {
-    margin: auto 20px;
-    font-size: 30px;
+.app-switch .toggle-slider {
+    position: absolute;
     cursor: pointer;
-}
-
-.app-mobile-nav-backdrop {
-    display: block;
     top: 0;
     left: 0;
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    position: absolute;
-    opacity: 0;
-    visibility: hidden;
-    background: rgba(0, 0, 0, .5);
-    transition: ease-in-out 0.3s;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.app-mobile-nav-links {
-    display: flex;
-    position: absolute;
-    top: 0;
     right: 0;
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    width: 80vw;
-    flex-direction: column;
-    list-style: none;
-    background: var(--gray-gradient);
-    transition: ease-in-out 0.3s;
-    transform: translateX(100%);
-    overflow: auto;
-    scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
-    scrollbar-width: thin;
-}
-
-.app-mobile-nav-links::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-.app-mobile-nav-links::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.app-mobile-nav-links::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 10px;
-    border: none;
-}
-
-.app-mobile-nav-links::-webkit-scrollbar-button {
-    display: none;
-}
-
-.app-mobile-nav-backdrop.expanded {
-    opacity: 1;
-    visibility: visible;
-    transition: ease-in-out 0.3s;
-}
-
-.app-mobile-nav-links.expanded {
-    transform: translateX(0);
-}
-
-.app-mobile-nav-link-item {
-    margin: 0 50px;
-    padding: 15px 0;
-    font-size: 20px;
-    font-family: 'roboto condensed', sans-serif;
-    text-transform: uppercase;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.app-mobile-nav-link-item:not(:first-child) {
-    border-top: 1px solid var(--gray);
-}
-
-.app-mobile-nav-link-item a {
-    display: flex;
-    align-items: center;
-    color: white;
-    margin: 5px 0;
-    text-decoration: none;
+    bottom: 0;
+    background-color: var(--gray-darker);
+    border-radius: 24px;
     transition: 0.3s ease-in-out;
-    -webkit-tap-highlight-color: transparent;
 }
 
-.app-mobile-nav-link-item .app-nav-page-link-icon {
-    margin-right: 10px;
+.app-switch .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s ease-in-out;
 }
 
-.app-mobile-nav-link-item a:hover,
-.app-mobile-nav-link-item a.active {
-    color: var(--link-color);
+.app-switch input:checked + .toggle-slider {
+    background-color: var(--link-color);
 }
 
-.app-mobile-nav-link-item.nav-collapse-button {
-    margin: 50px 50px auto;
-    align-self: self-start;
+.app-switch input:checked + .toggle-slider:before {
+    transform: translateX(26px);
 }
 
-.app-mobile-nav-link-item.user-link {
-    margin: auto 50px 50px;
+.app-switch input:disabled + .toggle-slider {
+    background-color: var(--gray-dark);
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-.app-mobile-nav-link-item .submenu {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    visibility: visible;
-    opacity: 1;
-    list-style: none;
-    padding: 0 15px 0;
-    margin: 0;
-}
-
-.app-mobile-nav-link-item .submenu li {
-    margin: 5px 0;
-    font-size: 16px;
+.app-switch input:disabled + .toggle-slider:before {
+    background-color: var(--gray-light);
 }
 
 main.posts .post-list {

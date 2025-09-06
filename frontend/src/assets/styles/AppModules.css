@@ -1,110 +1,32 @@
-.app.manager .app-content main.modules {
-    align-items: flex-start;
-}
+
 .modules-notice {
     border-radius: 10px;
     transition: 0.3s ease-in-out;
-    padding: 10px;
+    padding: 20px;
     margin: 10px auto;
     cursor: default;
     background-color: var(--background-color-2);
 }
-
 .modules-list {
-    display: flex;
-    margin: 0 auto;
-    flex-direction: column;
-    padding: 10px;
-    width: 80%;
-}
-.modules-list .modules-list-row {
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px;
-    transition: 0.3s ease-in-out;
-    padding: 10px;
-    cursor: default;
-}
-.modules-list .modules-list-row:hover {
-    background-color: var(--background-color-2);
-}
-.modules-list .module-content {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    max-width: 46%;
 }
 .modules-list .module-icon {
-    font-size: 2em;
-    padding: 10px;
+    max-width: fit-content;
+}
+.modules-list .module-icon i {
+    font-size: 2rem;
 }
 .modules-list .module-title {
     font-size: 1.5em;
-    margin-right: auto;
     text-transform: uppercase;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
 }
-.modules-list .module-description {
-    padding: 10px;
-    font-style: italic;
-    color: var(--gray-light);
-    border-radius: 0 0 10px 10px;
-}
-
-/* Custom Toggle Switch */
 .modules-list .module-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
+    max-width: fit-content;
 }
-
-.modules-list .module-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.modules-list .toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--gray-darker);
-    border-radius: 24px;
-    transition: 0.3s ease-in-out;
-}
-
-.modules-list .toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: 0.3s ease-in-out;
-}
-
-.modules-list input:checked + .toggle-slider {
-    background-color: var(--link-color);
-}
-
-.modules-list input:checked + .toggle-slider:before {
-    transform: translateX(26px);
-}
-
-.modules-list input:disabled + .toggle-slider {
-    background-color: var(--gray-dark);
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.modules-list input:disabled + .toggle-slider:before {
-    background-color: var(--gray-light);
+.modules-list .module-description {
+    font-style: italic;
+    color: var(--text-color-3);
+    border-radius: 0 0 10px 10px;
 }

@@ -4,29 +4,34 @@ import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';
 import Loader from '../Loader';
 import Button from '../Button';
+import '../../assets/styles/List.css';
 import '../../assets/styles/Users.css';
 
 // TODO: List selections with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 
 const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
     return (
-        <div className='users-list-header-cell' key={header.key}>
-            <label>{header.title}</label>
-            <input
-                className='search'
-                title={header.title}
-                placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-                name={header.key}
-                value={filters[header.key] || ''}
-                onChange={handleFilter}
-            />
-            <button
-                className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-                name={header.key}
-                onClick={handleSorting}
-            >
-                {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
-            </button>
+        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
+            <div className={'app-list-header-cell-label'}>
+                {header.title}
+            </div>
+            <div className={'app-list-header-cell-actions'}>
+                <input
+                    className='search'
+                    title={header.title}
+                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
+                    name={header.key}
+                    value={filters[header.key] || ''}
+                    onChange={handleFilter}
+                />
+                <button
+                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
+                    name={header.key}
+                    onClick={handleSorting}
+                >
+                    {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
+                </button>
+            </div>
         </div>
     );
 }
@@ -51,7 +56,6 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
         if (managed_users) {
             baseHeaders.push({ title: 'Managed Users', key: 'managed_users' });
         }
-        baseHeaders.push( { title: 'Active', key: 'active' });
         return baseHeaders;
     }, [managers, managed_users]);
 
@@ -152,8 +156,8 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
     }
 
     return (
-        <div className='users-list'>
-            <div className='users-list-header'>
+        <div className='app-list seethrough app-overflow-hidden app-centered users-list'>
+            <div className='app-list-header-row'>
                 {headers.map((header) => (
                     <UserTableHeader
                         header={header}
@@ -165,34 +169,34 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     />
                 ))}
             </div>
-            <div className='users-list-content'>
+            <div className='app-list-content app-overflow-y app-scroll'>
                 { filteredAndSortedUsers?.length === 0 ? (
                     <p>No users found.</p>
                 ) : (filteredAndSortedUsers?.map(user => {
                     const roles = user.roles || [];
-                    const displayedRoles = roles.slice(0, 2);
-                    const moreRolesCount = roles.length - 2;
+                    const displayedRoles = roles.slice(0, 1);
+                    const moreRolesCount = roles.length - 1;
                     const moreRolesText = moreRolesCount > 0 ? `+${moreRolesCount} other roles` : '';
 
                     return (
-                        <div className='users-list-row' key={user.id}>
-                            <div onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}>
+                        <div className='app-list-row' key={user.id}>
+                            <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}>
                                 {user.first_name} {user.last_name}
                             </div>
-                            <div>
+                            <div className={'app-list-row-cell roles'}>
                                 {displayedRoles.map((role) => (
-                                    <span key={role.id} className='role-name'
+                                    <span key={role.id} className='role-name app-clickable'
                                           onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
                             </div>
                             {managers && (
-                                <div>
+                                <div className={'app-list-row-cell managers'}>
                                     {(user.managers || []).length === 0
                                         ? <span>-</span>
                                         : (user.managers || []).map(manager =>
-                                            <span key={manager.id} className='manager-name'
+                                            <span key={manager.id} className='manager-name app-clickable'
                                                 onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
                                             >{manager.first_name} {manager.last_name}</span>
                                         ).reduce((prev, curr) => [prev, ', ', curr])
@@ -200,14 +204,13 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                                 </div>
                             )}
                             {managed_users && (
-                                <div>
+                                <div className={'app-list-row-cell managed-users'}>
                                     {((user.managed_users || user['managed-users']) || []).length === 0
                                         ? <span>-</span>
                                         : ((user.managed_users || user['managed-users']) || []).length
                                     }
                                 </div>
                             )}
-                            <div>{user.active ? 'Active' : 'Not'}</div>
                         </div>
                     );
                 }))}
@@ -234,13 +237,15 @@ export const ManagersIndex = () => {
 
     return (
         <>
-            <h1>Managers of Zyrah</h1>
-            <Button
-                className='new-user-button'
-                onClick={() => openModal({ content: 'userNew' })}
-                label={'Add Manager'}
-                icon={'add'}
-            />
+            <div className='page-header'>
+                <h1 className={'page-title'}> Managers of Zyrah </h1>
+                <Button
+                    className='new-user-button'
+                    onClick={() => openModal({ content: 'userNew' })}
+                    label={'Add manager'}
+                    icon={'add'}
+                />
+            </div>
             <UsersTable
                 users={users}
                 loading={usersLoading}
@@ -268,13 +273,15 @@ export const EmployeesIndex = () => {
 
     return (
         <>
-            <h1>Employees of Zyrah</h1>
-            <Button
-                className='new-user-button'
-                onClick={() => openModal({ content: 'userNew' })}
-                label={'Add Employee'}
-                icon={'add'}
-            />
+            <div className='page-header'>
+                <h1 className={'page-title'}> Employees of Zyrah </h1>
+                <Button
+                    className='new-user-button'
+                    onClick={() => openModal({ content: 'userNew' })}
+                    label={'Add employee'}
+                    icon={'add'}
+                />
+            </div>
             <UsersTable
                 users={users}
                 loading={usersLoading}
@@ -301,13 +308,15 @@ export const UsersIndex = () => {
 
     return (
         <>
-            <h1>Users of Zyrah</h1>
-            <Button
-                className='new-user-button'
-                onClick={() => openModal({ content: 'userNew' })}
-                label={'Add User'}
-                icon={'add'}
-            />
+            <div className='page-header'>
+                <h1 className={'page-title'}> Users of Zyrah </h1>
+                <Button
+                    className='new-user-button'
+                    onClick={() => openModal({content: 'userNew'})}
+                    label={'Add user'}
+                    icon={'add'}
+                />
+            </div>
             <UsersTable
                 users={users}
                 loading={usersLoading}

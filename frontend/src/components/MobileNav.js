@@ -1,6 +1,7 @@
 //FRONTEND/MobileNav.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../assets/styles/MobileNav.css';
 import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
 import useAppState from '../contexts/AppStateContext';
 

@@ -128,18 +128,14 @@
 /*APP SUB-NAV*/
 /*************/
 .app.manager .app-sub-nav {
+    position: relative;
     display: flex;
+    flex-direction: row;
     justify-content: flex-start;
     align-items: center;
     background: var(--color-gradient);
     padding: 0;
     margin: 0;
-}
-.app.manager.glass .app-sub-nav {
-    margin: 10px 10px 10px 0;
-    border-radius: var(--def-border-radius);
-    box-shadow: var(--weak-shade);
-    background: var(--seethrough-background);
 }
 .app.manager .app-sub-nav .subpage-link {
     display: flex;
@@ -160,28 +156,43 @@
 .app.manager .app-sub-nav .user-link {
     margin-left: auto;
 }
-.app.manager.glass .app-sub-nav .subpage-link {
-    margin: 0;
-    color: var(--text-color-2);
-    padding: 10px;
-    border: none;
-}
-.app.manager.glass .app-sub-nav .user-link {
-    margin-left: auto;
+.app.manager .app-sub-nav .user-link .username {
+    color: white;
 }
 .app.manager .subpage-link:not(.user-link).selected,
 .app.manager .subpage-link:not(.user-link):hover {
     border-bottom-color: white;
 }
+.app.manager .subpage-link.selected {
+    cursor: default;
+}
 
-.app.manager.glass .subpage-link:not(.user-link).selected,
-.app.manager.glass .subpage-link:not(.user-link):hover {
+.app.manager.glass .app-sub-nav {
+    align-items: center;
+    padding: 5px;
+    margin: 10px 10px 10px 0;
+    border-radius: var(--def-border-radius);
+    box-shadow: var(--weak-shade);
+    background: var(--seethrough-background);
+}
+.app.manager.glass .app-sub-nav .subpage-link {
+    margin: 0 5px;
+    color: var(--text-color-2);
+    border-radius: 8px;
+    padding: 5px 7px;
+    border: none;
+}
+.app.manager.glass .app-sub-nav .user-link .username {
+    color: var(--text-color-2);
+}
+.app.manager.glass .app-sub-nav .subpage-link:not(.user-link).selected,
+.app.manager.glass .app-sub-nav .subpage-link:not(.user-link):hover {
     color: var(--link-color);
     background: var(--seethrough-background-2);
     box-shadow: var(--weak-shade);
 }
-.app.manager .subpage-link.selected {
-    cursor: default;
+.app.manager.glass .app-sub-nav .user-link {
+    margin-left: auto;
 }
 
 .app.manager .app-sub-nav .sub-menu {
@@ -255,27 +266,23 @@
     align-items: center;
     flex-direction: column;
     margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    padding: 0 10px 10px 0;
+    overflow: hidden;
+}
+.app.manager .app-content main .page-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin-top: 10px;
+}
+.app.manager .app-content main .page-title {
+    font-size: 2rem;
+    margin: 10px;
+    font-weight: 300;
+    font-family: var(--font-family-condensed), sans-serif;
 }
 
-.app.manager .app-content main::-webkit-scrollbar {
-    width: 20px;
-}
-.app.manager .app-content main::-webkit-scrollbar-track {
-    background: transparent;
-}
-.app.manager .app-content main::-webkit-scrollbar-thumb {
-    background-color: var(--gray-light);
-    background-clip: content-box;
-    border-radius: 10px;
-    margin-right: 5px;
-    border: 5px solid transparent;
-}
-.app.manager .app-content main::-webkit-scrollbar-button {
-    display: none;
-}
 /*************/
 /*MOBILE VIEW*/
 /*************/
@@ -287,7 +294,7 @@
         display: flex;
     }
     .app.manager .app-nav,
-    .app.manager .app-subnav {
+    .app.manager .app-sub-nav {
         display: none;
     }
 }

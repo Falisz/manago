@@ -16,7 +16,7 @@
     margin-right: 20px;
 }
 .detail-header .action-button {
-    color: var(--white-darker);
+    color: var(--text-color-3);
     background: none;
     border: none;
     outline: none;
@@ -26,14 +26,13 @@
     border-radius: 12px;
     padding: 10px;
 }
-.detail-header button:hover {
-    background: var(--gray-dark);
+.detail-header .action-button:hover {
 }
 .detail-header .edit-button:hover {
-    background-color: var(--link-color);
+    color: var(--link-color);
 }
 .detail-header .delete-button:hover {
-    background-color: firebrick;
+    color: firebrick;
 }
 
 .detail-section {
@@ -42,9 +41,9 @@
 }
 .detail-subheader {
     font-size: 1.25em;
-    font-weight: 200;
     margin: 15px 0 5px;
     text-transform: uppercase;
+    font-weight: 400;
 }
 .detail-section .detail-subheader {
     margin-left: -5px;
@@ -60,9 +59,9 @@
 }
 .detail-row label {
     margin-left: -5px;
-    margin-bottom: 5px;
     margin-top: 10px;
     font-weight: bold;
+    font-family: var(--font-family-condensed), sans-serif;
 }
 .detail-subheader+.detail-row label {
     margin-top: 0;
@@ -84,9 +83,11 @@
 }
 .detail-row i.true {
     background-color: yellowgreen;
+    color: white;
 }
 .detail-row i.false {
     background-color: coral;
+    color: white;
 }
 .detail-data-placeholder {
     font-style: italic;

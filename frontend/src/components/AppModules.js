@@ -1,4 +1,5 @@
 import React from 'react';
+import '../assets/styles/List.css';
 import '../assets/styles/AppModules.css';
 import useAppState from '../contexts/AppStateContext';
 import { useModals } from '../contexts/ModalContext';
@@ -19,30 +20,43 @@ const AppModules = () => {
 
     return (
         <>
-            <div className={'modules-notice'}>
+            <div className='page-header'>
+                <h1 className={'page-title'}> App Modules </h1>
+            </div>
+            <div className={'modules-notice seethrough'}>
                 Depending on the different needs of your business you are able to enable different modules of this app.
                 <br/><b>These settings should be changed only by a system admin.</b>
             </div>
-            <div className='modules-list'>
+            <div className='app-list seethrough modules-list app-overflow-y app-scroll'>
                 { appState.modules?.length > 0 ? (appState.modules?.map((module) => {
                     const isMain = module.id === 0;
                     return (
-                        <div className='modules-list-row' key={module.id}>
-                            <div className='module-content'>
-                                {module.icon && <span className='module-icon material-symbols-outlined'>{module.icon}</span>}
-                                <div className='module-title'>{module.title}</div>
-                                <label className='module-switch'>
-                                    <input
-                                        type='checkbox'
-                                        checked={module.enabled}
-                                        onChange={() => handleToggleConfirm(module.id, module.enabled)}
-                                        disabled={isMain}
-                                    />
-                                    <span className='toggle-slider'></span>
-                                </label>
+                        <div className='app-list-row-big' key={module.id}>
+                            <div className='app-list-row-content'>
+                                <div className='app-list-row-cell module-icon'>
+                                    {module.icon && <i className='material-symbols-outlined'>{module.icon}</i>}
+                                </div>
+                                <div className='app-list-row-cell module-title'>
+                                    {module.title}
+                                </div>
+                                <div className='app-list-row-cell module-switch'>
+                                    <div className='app-switch'
+                                         onClick={() => handleToggleConfirm(module.id, module.enabled)}
+                                    >
+                                        <input
+                                            type='checkbox'
+                                            checked={module.enabled}
+                                            onChange={() => handleToggleConfirm(module.id, module.enabled)}
+                                            disabled={isMain}
+                                        />
+                                        <span className='toggle-slider'></span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className='module-description'>
-                                {module.description}
+                            <div className='app-list-row-content'>
+                                <div className='app-list-row-cell module-description'>
+                                    {module.description}
+                                </div>
                             </div>
                         </div>
                     ); }
