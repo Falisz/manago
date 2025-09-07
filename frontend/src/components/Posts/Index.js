@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Loader } from '../Loader';
 import { useModals } from '../../contexts/ModalContext';
+import '../../assets/styles/Posts.css';
 
 // TODO: Post Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 const PostIndex = () => {
@@ -35,7 +36,7 @@ const PostIndex = () => {
             {posts.length === 0 || error ? (
                 <p>No posts available.</p>
             ) : (
-                <ul className='post-list'>
+                <ul className='post-list seethrough'>
                     {posts.map(post => (
                         <li key={post.id} className='post-item'>
                             <h2

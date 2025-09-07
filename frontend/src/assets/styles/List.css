@@ -2,6 +2,21 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
+    cursor: default;
+}
+.app-list.app-scroll {
+    overflow-y: scroll;
+    padding-right: 0;
+}
+.app-list.app-scroll::-webkit-scrollbar-track {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.app-list.app-scroll::-webkit-scrollbar {
+    width: 12px;
+}
+.app-list.app-scroll::-webkit-scrollbar-thumb {
+    border-width: 3px;
 }
 .app-list-header-row {
     display: flex;

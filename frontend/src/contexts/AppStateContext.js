@@ -31,8 +31,8 @@ export const AppStateProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [appState, setAppState] = useState({
         is_connected: true,
-        theme: 'dark',
-        style: 'flat',
+        theme: 'light',
+        style: 'glass',
         palette: 'blue',
         modules: [],
         pages: []

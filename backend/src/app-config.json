@@ -1,0 +1,14 @@
+{
+  "config": {
+    "style": "fluent",
+    "theme": "dark",
+    "color": "blue",
+    "background": "cloudy"
+  },
+  "options": {
+    "style": ["fluent", "flat"],
+    "theme": ["dark", "light", "system"],
+    "color": ["mono", "red", "blue", "green", "cyan", "magenta", "yellow", "pink", "lime", "orange"],
+    "background": ["cloudy", "blue-galaxy", "autumnal", "raspberry-peach"]
+  }
+}

@@ -16,6 +16,12 @@
     opacity: 0;
     pointer-events: none;
 }
+.app.glass .app-modal-overlay {
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(1px);
+    transition: 0.3s;
+}
+
 
 /* Modal content */
 .app-modal-content {
@@ -24,7 +30,6 @@
     right: 0;
     background: var(--background-gradient-2);
     padding: 25px;
-    border-radius: 8px;
     width: 50%;
     height: calc(100% - 50px);
     overflow-y: auto;
@@ -38,15 +43,17 @@
     visibility: hidden;
 }
 
-
-.app.glass .app-modal-content.pane {
-    backdrop-filter: blur(10px);
-    background: var(--seethrough-background-2);
-    top: 20px;
-    right: 20px;
-    height: calc(100% - 90px);
+.app-modal-content.dialog {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: fit-content;
 }
-
+.app-modal-content.dialog.hidden {
+    transform: translateX(-50%) translateY(-100%);
+    visibility: hidden;
+}
 
 .app-modal-content.pop-up {
     position: absolute;
@@ -57,17 +64,12 @@
     transform: translate(-50%, -50%) scale(1);
     transition: ease-in-out 0.3s;
 }
-
-.app.glass .app-modal-content.pop-up {
-    backdrop-filter: blur(10px);
-    background: var(--seethrough-background);
-}
-
 .app-modal-content.pop-up.hidden {
     transform: translate(-50%, -50%) scale(0.01);
     transform-origin: center center;
     visibility: hidden;
 }
+
 .app-modal-content.pop-up .action-button {
     display: inline-flex;
     margin: 5px;
@@ -85,6 +87,17 @@
 .app-modal-content>h1 {
     margin: 0 0 10px;
     font-weight: 300;
+}
+
+.app.glass .app-modal-content {
+    backdrop-filter: blur(10px);
+    background: var(--seethrough-background);
+    border-radius: var(--def-border-radius);
+}
+.app.glass .app-modal-content.pane {
+    top: 20px;
+    right: 20px;
+    height: calc(100% - 90px);
 }
 
 /* Close button */
