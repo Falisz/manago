@@ -1,6 +1,6 @@
 // BACKEND/api/app.js
 import express from 'express';
-import { getModules, setModule, getPages, getConfig } from '../controllers/app.js';
+import { getModules, setModule, getPages, getConfig, getConfigOptions, setConfig } from '../controllers/app.js';
 import { hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav } from '../utils/manager-view.js';
 export const router = express.Router();
 
@@ -25,6 +25,20 @@ router.get('/config', async (req, res) => {
         res.json({
             is_connected: true,
             ...await getConfig()
+        });
+    } catch (err) {
+        console.error('Config get API error:', err);
+        res.status(500).json({ message: 'API Error.', connected: false });
+    }
+});
+
+router.get('/config-options', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+        res.json({
+            ...await getConfigOptions()
         });
     } catch (err) {
         console.error('Config get API error:', err);

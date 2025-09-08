@@ -39,7 +39,7 @@ const AppContent = () => {
         return <Loader />;
     }
 
-    console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-state:\n", appState);
+    // console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-state:\n", appState);
 
     if (!user) {
         return (

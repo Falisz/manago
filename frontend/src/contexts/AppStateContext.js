@@ -33,8 +33,9 @@ export const AppStateProvider = ({ children }) => {
     const [appState, setAppState] = useState({
         is_connected: true,
         theme: Cookies.get('theme'),
-        style: 'glass',
-        palette: 'blue',
+        style: Cookies.get('style'),
+        color: Cookies.get('color'),
+        background: Cookies.get('background'),
         modules: [],
         pages: []
     });
@@ -47,7 +48,12 @@ export const AppStateProvider = ({ children }) => {
 
     const getConfig = useCallback(async () => {
         const response = await axios.get('/config', { withCredentials: true });
-        return response.data;
+        const config = response.data;
+        Cookies.set('style', config.style);
+        Cookies.set('theme', config.theme);
+        Cookies.set('color', config.color);
+        Cookies.set('background', config.background);
+        return config;
     }, []);
 
     const getModules = useCallback(async () => {
@@ -115,11 +121,6 @@ export const AppStateProvider = ({ children }) => {
                     ...config
                 };
             });
-            Cookies.set('style', config.style);
-            Cookies.set('theme', config.theme);
-            Cookies.set('color', config.color);
-            Cookies.set('background', config.background);
-            console.log(Cookies);
         } catch (error) {
             console.error('Refreshing app config error', error);
         }
