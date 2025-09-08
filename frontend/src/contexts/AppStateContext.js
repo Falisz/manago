@@ -56,6 +56,11 @@ export const AppStateProvider = ({ children }) => {
         return config;
     }, []);
 
+    const getConfigOptions = useCallback(async () => {
+        const response = await axios.get('/config-options', { withCredentials: true });
+        return response.data;
+    }, []);
+
     const getModules = useCallback(async () => {
         try {
             const response = await axios.get('/modules?psthr=true', { withCredentials: true });
@@ -224,6 +229,7 @@ export const AppStateProvider = ({ children }) => {
             authUser,
             logoutUser,
             appState,
+            getConfigOptions,
             refreshConfig,
             checkConnection,
             refreshModules,

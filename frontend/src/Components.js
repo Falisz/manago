@@ -3,6 +3,7 @@ import UsersIndex, {EmployeesIndex, ManagersIndex} from './components/Users/Inde
 import RolesIndex from './components/Roles/Index';
 import TeamsIndex from './components/Teams/Index';
 import PostsIndex from './components/Posts/Index';
+import AppSettings from './components/AppSettings';
 import AppModules from './components/AppModules';
 
 export const componentMap = {
@@ -12,6 +13,7 @@ export const componentMap = {
     RolesIndex,
     TeamsIndex,
     PostsIndex,
+    AppSettings,
     AppModules,
 };
 

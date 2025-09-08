@@ -123,6 +123,7 @@
       "title": "App Settings",
       "module": 0,
       "icon": "settings",
+      "component": "AppSettings",
       "subpages": [
         {
           "path": "modules",
