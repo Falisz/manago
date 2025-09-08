@@ -9,7 +9,7 @@
     background: var(--background-gradient);
     font-family: 'Roboto Condensed', sans-serif;
 }
-.app.staff.glass .app-nav {
+.app.staff.fluent .app-nav {
     margin: 10px;
     border-radius: var(--def-border-radius);
     box-shadow: var(--weak-shade);
@@ -23,7 +23,7 @@
     margin: 0;
     padding: 10px 30px;
 }
-.app.staff.glass .app-nav .app-home  {
+.app.staff.fluent .app-nav .app-home  {
     background: none;
     padding: 10px;
 }
@@ -32,7 +32,7 @@
     height: 40px;
     fill: white;
 }
-.app.staff.glass .app-nav .app-logo  {
+.app.staff.fluent .app-nav .app-logo  {
     height: 35px;
     fill: var(--text-color-3);
 }
@@ -108,7 +108,7 @@
 .app.staff .app-nav .app-user .sub-menu {
     right: 20px;
 }
-.app.glass .app-nav .sub-menu {
+.app.fluent .app-nav .sub-menu {
     backdrop-filter: blur(10px);
     background: rgba(255,255,255,.75);
 }

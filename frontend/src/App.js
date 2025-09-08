@@ -23,16 +23,23 @@ const AppContent = () => {
 
     useEffect(() => {
         const root = document.getElementById('root');
+        root.classList.remove('blue', 'pink', 'light', 'dark', 'flat', 'fluent', 'glass');        
+        root.classList.forEach(cls => {
+            if (cls.startsWith('bg-')) {
+                root.classList.remove(cls);
+            }
+        });
         if (appState.style) root.classList.add(appState.style);
         if (appState.theme) root.classList.add(appState.theme);
-        if (appState.palette) root.classList.add(appState.palette);
+        if (appState.color) root.classList.add(appState.color);
+        if (appState.background) root.classList.add('bg-' + appState.background);
     }, [appState]);
 
     if (loading) {
         return <Loader />;
     }
 
-    // console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-state:\n", appState);
+    console.log("App re-renders.\nCurrently logged-in user:\n", user, "\nCurrently used app-state:\n", appState);
 
     if (!user) {
         return (

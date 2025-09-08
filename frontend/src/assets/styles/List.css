@@ -49,7 +49,7 @@
     transition: 0.3s ease-in-out;
     width: 100%;
 }
-.app.glass .app-list-header-cell-actions .search {
+.app.fluent .app-list-header-cell-actions .search {
     background: var(--seethrough-background-2);
 }
 .app-list-header-cell-actions .search:hover,
@@ -105,8 +105,8 @@
 .app-list-row-big:hover{
     background: var(--background-color-2);
 }
-.app.glass .app-list-row:hover,
-.app.glass .app-list-row-big:hover {
+.app.fluent .app-list-row:hover,
+.app.fluent .app-list-row-big:hover {
     background: var(--seethrough-background-2);
 }
 .app-list-row-cell {

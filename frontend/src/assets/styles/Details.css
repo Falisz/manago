@@ -26,8 +26,6 @@
     border-radius: 12px;
     padding: 10px;
 }
-.detail-header .action-button:hover {
-}
 .detail-header .edit-button:hover {
     color: var(--link-color);
 }

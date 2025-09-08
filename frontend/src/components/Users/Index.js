@@ -180,13 +180,13 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
 
                     return (
                         <div className='app-list-row' key={user.id}>
-                            <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}>
+                            <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', type: 'dialog', data: { id: user.id } })}>
                                 {user.first_name} {user.last_name}
                             </div>
                             <div className={'app-list-row-cell roles'}>
                                 {displayedRoles.map((role) => (
                                     <span key={role.id} className='role-name app-clickable'
-                                          onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
+                                          onClick={() => openModal({ content: 'roleDetails', type: 'dialog', data: { id: role.id } })}
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}

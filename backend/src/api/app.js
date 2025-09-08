@@ -1,6 +1,6 @@
 // BACKEND/api/app.js
 import express from 'express';
-import { getModules, setModule, getPages } from '../controllers/app.js';
+import { getModules, setModule, getPages, getConfig } from '../controllers/app.js';
 import { hasManagerAccess, hasManagerView, setManagerView, toggleManagerNav } from '../utils/manager-view.js';
 export const router = express.Router();
 
@@ -24,8 +24,7 @@ router.get('/config', async (req, res) => {
     try {
         res.json({
             is_connected: true,
-            app_theme: 'dark',
-            app_palette: 'blue'
+            ...await getConfig()
         });
     } catch (err) {
         console.error('Config get API error:', err);

@@ -3,6 +3,7 @@ import React, { createContext, useContext, useCallback, useState, useEffect, use
 import axios from 'axios';
 import componentMap from "../Components";
 import InWorks from "../components/InWorks";
+import Cookies from 'js-cookie';
 
 const mapPagesToComponents = (pages) => {
     return pages.map(page => {
@@ -31,7 +32,7 @@ export const AppStateProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [appState, setAppState] = useState({
         is_connected: true,
-        theme: 'light',
+        theme: Cookies.get('theme'),
         style: 'glass',
         palette: 'blue',
         modules: [],
@@ -102,18 +103,23 @@ export const AppStateProvider = ({ children }) => {
             setAppState(prev => {
                 if (
                     prev.is_connected === config.is_connected &&
-                    prev.theme === config.app_theme &&
-                    prev.palette === config.app_palette
+                    prev.theme === config.theme &&
+                    prev.color === config.color &&
+                    prev.style === config.style &&
+                    prev.background === config.background
                 ) {
                     return prev;
                 }
                 return {
                     ...prev,
-                    is_connected: config.connected,
-                    theme: config.app_theme || prev.theme,
-                    palette: config.app_palette || prev.palette
+                    ...config
                 };
             });
+            Cookies.set('style', config.style);
+            Cookies.set('theme', config.theme);
+            Cookies.set('color', config.color);
+            Cookies.set('background', config.background);
+            console.log(Cookies);
         } catch (error) {
             console.error('Refreshing app config error', error);
         }

@@ -1,7 +1,7 @@
 {
   "config": {
     "style": "fluent",
-    "theme": "dark",
+    "theme": "light",
     "color": "blue",
     "background": "cloudy"
   },
@@ -9,6 +9,6 @@
     "style": ["fluent", "flat"],
     "theme": ["dark", "light", "system"],
     "color": ["mono", "red", "blue", "green", "cyan", "magenta", "yellow", "pink", "lime", "orange"],
-    "background": ["cloudy", "blue-galaxy", "autumnal", "raspberry-peach"]
+    "background": ["cloudy", "blue-galaxy", "violet-haze", "raspberry-peach"]
   }
 }

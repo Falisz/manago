@@ -1,6 +1,7 @@
 //BACKEND/controllers/api.js
 import AppModule from '../models/app-module.js';
 import PagesData from '../app-pages.json' with { type: 'json' };
+import ConfigData from '../app-config.json' with { type: 'json' };
 
 /**
  * Retrieves all modules sorted by ID in ascending order.
@@ -54,4 +55,19 @@ export async function getPages(view = 0) {
     });
 
     return pages;
+}
+
+export async function getConfig() {
+    let config = JSON.parse(JSON.stringify(ConfigData['config']));
+    return config;
+}
+
+export async function setConfig(newConfig) {
+    // ConfigData['config'] = { ...ConfigData['config'], ...newConfig };
+    console.log(newConfig);
+}
+
+export async function getConfigOptions() {
+    let options = JSON.parse(JSON.stringify(ConfigData['options']));
+    return options;
 }

@@ -22,7 +22,7 @@
     padding: 0;
     border: 0;
 }
-.app.manager.glass .app-nav {
+.app.manager.fluent .app-nav {
     margin: 10px;
     border-radius: var(--def-border-radius);
     box-shadow: var(--weak-shade);
@@ -117,8 +117,8 @@
     align-self: flex-start;
     font-size: 30px;
 }
-.app.manager.glass .app-nav .app-nav-page-link.active,
-.app.manager.glass .app-nav .app-nav-page-link:hover {
+.app.manager.fluent .app-nav .app-nav-page-link.active,
+.app.manager.fluent .app-nav .app-nav-page-link:hover {
     color: var(--link-color);
     background: var(--seethrough-background-2);
     box-shadow: var(--weak-shade);
@@ -167,7 +167,7 @@
     cursor: default;
 }
 
-.app.manager.glass .app-sub-nav {
+.app.manager.fluent .app-sub-nav {
     align-items: center;
     padding: 5px;
     margin: 10px 10px 10px 0;
@@ -175,23 +175,23 @@
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
 }
-.app.manager.glass .app-sub-nav .subpage-link {
+.app.manager.fluent .app-sub-nav .subpage-link {
     margin: 0 5px;
     color: var(--text-color-2);
     border-radius: 8px;
     padding: 5px 7px;
     border: none;
 }
-.app.manager.glass .app-sub-nav .user-link .username {
+.app.manager.fluent .app-sub-nav .user-link .username {
     color: var(--text-color-2);
 }
-.app.manager.glass .app-sub-nav .subpage-link:not(.user-link).selected,
-.app.manager.glass .app-sub-nav .subpage-link:not(.user-link):hover {
+.app.manager.fluent .app-sub-nav .subpage-link:not(.user-link).selected,
+.app.manager.fluent .app-sub-nav .subpage-link:not(.user-link):hover {
     color: var(--link-color);
     background: var(--seethrough-background-2);
     box-shadow: var(--weak-shade);
 }
-.app.manager.glass .app-sub-nav .user-link {
+.app.manager.fluent .app-sub-nav .user-link {
     margin-left: auto;
 }
 
@@ -213,7 +213,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: ease-in-out 0.3s;
 }
-.app.glass .app-sub-nav .sub-menu {
+.app.fluent .app-sub-nav .sub-menu {
     backdrop-filter: blur(10px);
     background: rgba(255,255,255,.75);
 }
@@ -274,7 +274,7 @@
     flex-direction: row;
     align-items: center;
     width: 100%;
-    margin-top: 10px;
+    margin-bottom: 10px;
 }
 .app.manager .app-content main .page-title {
     font-size: 2rem;

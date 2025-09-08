@@ -112,38 +112,28 @@ code {
 }
 .app.light {
     --link-color: var(--color);
-
 }
 
-.app.glass.blue {
+.app.bg-blue-galaxy {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
     url('../background-dark-blue.jpg') center center no-repeat;
 }
 
-.app.glass.blue.light {
+.app.bg-cloudy {
     background: linear-gradient(45deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .05)),
     url('../background-light-blue.jpg') center center no-repeat;
 }
 
-.app.glass.magenta {
+.app.bg-violet-haze {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
     url('../background-dark-magenta.jpg') center center no-repeat;
 }
 
-.app.glass.magenta.light {
-    background: linear-gradient(45deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .05)),
-    url('../background-light-magenta.jpg') center center no-repeat;
-}
-
-.app.glass.pink {
+.app.bg-respberry-peach {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
     url('../background-dark-raspberry.png') center center no-repeat;
 }
 
-.app.glass.pink.light {
-    background: linear-gradient(45deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .05)),
-    url('../background-light-raspberry.png') center center no-repeat;
-}
 
 .app a {
     color: var(--link-color);
@@ -158,7 +148,7 @@ code {
     align-items: center;
 }
 
-.app.glass .app-notice {
+.app.fluent .app-notice {
     color: var(--text-color-3);
     border-radius: var(--def-border-radius);
     box-shadow: var(--weak-shade);
@@ -193,18 +183,18 @@ code {
     font-weight: bold;
 }
 
-.app.glass .seethrough {
+.app.fluent .seethrough {
     background: var(--seethrough-background);
 }
-.app.glass .seethrough-2 {
+.app.fluent .seethrough-2 {
     background: var(--seethrough-background-2);
 }
-.app.glass .seethrough-3 {
+.app.fluent .seethrough-3 {
     background: var(--seethrough-background-3);
 }
-.app.glass .seethrough,
-.app.glass .seethrough-2,
-.app.glass .seethrough-3 {
+.app.fluent .seethrough,
+.app.fluent .seethrough-2,
+.app.fluent .seethrough-3 {
     border-radius: var(--def-border-radius);
     box-shadow: var(--weak-shade);
 }
@@ -241,7 +231,7 @@ code {
     margin-right: 5px;
     border: 5px solid transparent;
 }
-.app.glass .app-scroll::-webkit-scrollbar-thumb {
+.app.fluent .app-scroll::-webkit-scrollbar-thumb {
     background-color: var(--seethrough-background-2);
 }
 .app-scroll::-webkit-scrollbar-button {
@@ -263,7 +253,7 @@ code {
 .app-button i {
     font-size: 15px;
 }
-.app.glass .app-button {
+.app.fluent .app-button {
     padding: 10px;
     font-size: 1rem;
     background: var(--seethrough-background);
@@ -273,7 +263,7 @@ code {
     font-weight: 400;
     font-family: var(--font-family-condensed), sans-serif;
 }
-.app.glass .app-button:hover {
+.app.fluent .app-button:hover {
     background: var(--seethrough-background-2);
 }
 
