@@ -46,6 +46,26 @@ router.get('/config-options', async (req, res) => {
     }
 });
 
+router.put('/config', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        if (!await hasManagerAccess(req.session.user.id)) {
+            return res.status(403).json({ message: 'Access denied. Manager required.' });
+        }
+
+        const newConfig = req.body;
+        await setConfig(newConfig);
+        res.json({ success: true, message: 'Config updated successfully.' });
+    } catch (err) {
+        console.error('Config update API error:', err);
+        res.status(400).json({ message: err.message || 'API Error.' });
+    }
+});
+
+
 // App Modules endpoint
 router.get('/modules', async (req, res) => {
     try {

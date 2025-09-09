@@ -114,26 +114,49 @@ code {
     --link-color: var(--color);
 }
 
+
 .app.bg-blue-galaxy {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-dark-blue.jpg') center center no-repeat;
+    url('../background-blue-galaxy.jpg') center center no-repeat;
 }
 
 .app.bg-cloudy {
     background: linear-gradient(45deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .05)),
-    url('../background-light-blue.jpg') center center no-repeat;
+    url('../background-cloudy.jpg') center center no-repeat;
 }
 
 .app.bg-violet-haze {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-dark-magenta.jpg') center center no-repeat;
+    url('../background-violet-haze.jpg') center center no-repeat;
 }
 
-.app.bg-respberry-peach {
+.app.bg-raspberry-peach {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-dark-raspberry.png') center center no-repeat;
+    url('../background-raspberry-peach.jpg') center center no-repeat;
 }
 
+.app.bg-blur-1 {
+    background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
+    url('../background-blur-1.jpg') center center no-repeat;
+}
+
+.app.bg-blur-2 {
+    background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
+    url('../background-blur-2.jpg') center center no-repeat;
+}
+
+.app.bg-blur-3 {
+    background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
+    url('../background-blur-3.jpg') center center no-repeat;
+}
+
+.app.bg-blur-4 {
+    background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
+    url('../background-blur-4.jpg') center center no-repeat;
+}
+.app.fluent {
+    background-size: cover;
+}
 
 .app a {
     color: var(--link-color);
@@ -214,6 +237,15 @@ code {
 }
 .app-overflow-y {
     overflow-y: auto;
+}
+.app-width-100 {
+    width: 100%;
+}
+.app-width-50 {
+    width: 50%;
+}
+.app-width-33 {
+    width: 33%;
 }
 
 .app-scroll::-webkit-scrollbar {

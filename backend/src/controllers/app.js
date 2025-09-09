@@ -2,6 +2,8 @@
 import AppModule from '../models/app-module.js';
 import PagesData from '../app-pages.json' with { type: 'json' };
 import ConfigData from '../app-config.json' with { type: 'json' };
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Retrieves all modules sorted by ID in ascending order.
@@ -58,16 +60,30 @@ export async function getPages(view = 0) {
 }
 
 export async function getConfig() {
-    let config = JSON.parse(JSON.stringify(ConfigData['config']));
-    return config;
+    return JSON.parse(JSON.stringify(ConfigData['config']));
 }
 
 export async function setConfig(newConfig) {
-    // ConfigData['config'] = { ...ConfigData['config'], ...newConfig };
-    console.log(newConfig);
+    const validKeys = Object.keys(ConfigData['options']);
+    const validatedConfig = {};
+
+    for (const key of validKeys) {
+        if (newConfig.hasOwnProperty(key)) {
+            const value = newConfig[key];
+            if (ConfigData['options'][key].includes(value)) {
+                    validatedConfig[key] = value;
+                } else {
+                    throw new Error(`Invalid value '${value}' for '${key}'. Must be one of: ${ConfigData['options'][key].join(', ')}`);
+                }
+            }
+    }
+
+    ConfigData['config'] = { ...ConfigData['config'], ...validatedConfig };
+
+    const filePath = path.resolve('./src/app-config.json');
+    fs.writeFileSync(filePath, JSON.stringify(ConfigData, null, 2), 'utf8');
 }
 
 export async function getConfigOptions() {
-    let options = JSON.parse(JSON.stringify(ConfigData['options']));
-    return options;
+    return JSON.parse(JSON.stringify(ConfigData['options']));
 }

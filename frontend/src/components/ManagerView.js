@@ -86,8 +86,8 @@ const SubNav = ({currentMainPage, location}) => {
     const { user, toggleView } = useAppState();
 
     return (
-        <nav className='app-sub-nav'>
-            {currentMainPage &&
+        <nav className={`app-sub-nav ${currentMainPage?.subpages?.length > 0 ? '' : 'no-subpages'}`}>
+            {currentMainPage?.subpages?.length > 0 &&
             <Link
                 key={`${currentMainPage?.path}`}
                 className={`subpage-link ${location.pathname === '/' || location.pathname === `/${currentMainPage?.path}` ? 'selected' : ''}`}

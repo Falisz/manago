@@ -108,8 +108,9 @@ export const AppStateProvider = ({ children }) => {
         }
     }, []);
 
-    const refreshConfig = useCallback(async () => {
+    const refreshConfig = useCallback(async (hasRetried = false) => {
         try {
+            setLoading(true);
             const config = await getConfig();
             setAppState(prev => {
                 if (
@@ -127,7 +128,15 @@ export const AppStateProvider = ({ children }) => {
                 };
             });
         } catch (error) {
-            console.error('Refreshing app config error', error);
+            if (!hasRetried) {
+                setTimeout(() => {
+                    refreshConfig(true);
+                }, 5000);
+            } else {
+                console.error('Refreshing app config error', error);
+            }
+        } finally {
+            setLoading(false);
         }
     }, [getConfig]);
 

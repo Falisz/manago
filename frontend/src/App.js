@@ -32,7 +32,7 @@ const AppContent = () => {
         if (appState.style) root.classList.add(appState.style);
         if (appState.theme) root.classList.add(appState.theme);
         if (appState.color) root.classList.add(appState.color);
-        if (appState.background) root.classList.add('bg-' + appState.background);
+        if (appState.style === 'fluent' && appState.background) root.classList.add('bg-' + appState.background);
     }, [appState]);
 
     if (loading) {

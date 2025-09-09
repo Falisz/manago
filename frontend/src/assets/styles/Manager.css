@@ -195,6 +195,15 @@
     margin-left: auto;
 }
 
+
+.app.manager.fluent .app-sub-nav.no-subpages {
+    width: fit-content;
+    align-self: flex-end;
+}
+.app.manager.fluent .app-sub-nav.no-subpages .user-link {
+    margin-left: 15px;
+}
+
 .app.manager .app-sub-nav .sub-menu {
     display: flex;
     flex-direction: column;

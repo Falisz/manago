@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "nodemon src/index.js -e js,mjs,cjs",
     "seed-data": "node src/utils/seed-data.js"
   },
   "keywords": [],
@@ -19,7 +19,6 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
-    "http": "^0.0.1-security",
     "http-proxy": "^1.18.1",
     "lorem-ipsum": "^2.0.8",
     "mssql": "^11.0.1",

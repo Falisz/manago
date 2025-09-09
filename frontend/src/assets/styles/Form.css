@@ -1,0 +1,95 @@
+.app-form {
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    align-items: flex-start;
+}
+.app-form .form-group {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+    width: 100%;
+    transition: 0.3s ease-in-out;
+}
+.app-form .form-group.disabled {
+    opacity: 0.5;
+}
+.app-form .form-group label {
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 500;
+    margin-top: 5px;
+}
+.app-form .form-group>input,
+.app-form .form-group>select {
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 5px;
+    outline: none;
+    border: none;
+    background: var(--background-color-2);
+    color: var(--text-color-3);
+    transition: 0.3s ease-in-out;
+    width: fit-content;
+    min-width: 33%;
+    box-sizing: border-box;
+}
+.app.fluent .app-form .form-group>input,
+.app.fluent .app-form .form-group>select {
+    background: var(--seethrough-background-2);
+    border-radius: var(--def-border-radius);
+}
+
+
+.app-form .background-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: center;
+    gap: 10px;
+}
+.app-form .background-thumbnail {
+    width: 350px;
+    height: auto;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    border-radius: 12px;
+    opacity: 0.6;
+    border: 3px solid transparent;
+    transition: 0.3s ease-in-out;
+    cursor: pointer;
+}
+.app-form .background-gallery .radio-label {
+    margin: 0;
+    position: relative;
+}
+.app-form .background-gallery .radio-label input {
+    position: absolute;
+    opacity: 0;
+}
+.app-form .background-gallery .radio-label input:checked+.background-thumbnail {
+    opacity: 1;
+    border-color: white;
+}
+.app-form .submit-button {
+    border: 0;
+    margin: 10px 0;
+    padding: 10px 15px;
+    background: var(--button-color);
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+.app-form .submit-button:hover {
+    background: var(--highlight-color);
+}
+.app.fluent .app-form .submit-button {
+    border-radius: var(--def-border-radius);
+    background: var(--seethrough-background-2);
+    box-shadow: var(--weak-shade);
+    color: var(--text-color-3);
+}
+.app.fluent .app-form .submit-button:hover {
+    background: var(--seethrough-background-3);
+}
