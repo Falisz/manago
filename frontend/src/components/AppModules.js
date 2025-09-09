@@ -23,11 +23,10 @@ const AppModules = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> App Modules </h1>
             </div>
-            <p className={'modules-notice'}>
-                Depending on the different needs of your business you are able to enable different modules of this app.
-                <br/><b>These settings should be changed only by a system admin.</b>
-            </p>
             <div className='app-list seethrough modules-list app-overflow-y app-scroll'>
+                <p>
+                    Depending on the different needs of your business you are able to enable different modules of this app.
+                </p>
                 { appState.modules?.length > 0 ? (appState.modules?.map((module) => {
                     const isMain = module.id === 0;
                     return (

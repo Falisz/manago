@@ -5,6 +5,7 @@ import '../assets/styles/Form.css';
 import '../assets/styles/AppSettings.css';
 import Loader from "./Loader";
 import AppModules from "./AppModules";
+import Dropdown from "./Dropdown";
 
 const AppSettings = () => {
     const { appState, getConfigOptions, refreshConfig } = useAppState();
@@ -58,50 +59,56 @@ const AppSettings = () => {
                     <h1 className={'page-title'}> App Style</h1>
                 </div>
                 <form
-                    className={'app-form app-settings seethrough app-scroll app-overflow-y'}
+                    className={'app-form seethrough app-scroll app-overflow-y'}
                     onSubmit={handleSubmit}
                 >
                     <div className={'form-group'}>
                         <label
-                            className={'form-group-header'}>
+                            className={'form-label'}
+                        >
                             <i className={'material-symbols-outlined'}>type_specimen</i>
                             Style
                         </label>
-                        <select name="style" value={formConfig.style} onChange={handleChange}>
-                            {configOptions.style.map((opt) => (
-                                <option key={opt} value={opt}>{opt.toUpperCase()}</option>
-                            ))}
-                        </select>
+                        <Dropdown
+                            name="style"
+                            value={formConfig.style}
+                            options={configOptions.style}
+                            onChange={handleChange}
+                        />
                     </div>
                     <div className={'form-group'}>
                         <label
-                            className={'form-group-header'}>
+                            className={'form-label'}
+                        >
                             <i className={'material-symbols-outlined'}>routine</i>
                             Theme
                         </label>
-                        <select name="theme" value={formConfig.theme} onChange={handleChange}>
-                            {configOptions.theme.map((opt) => (
-                                <option key={opt} value={opt}>{opt.toUpperCase()}</option>
-                            ))}
-                        </select>
+                        <Dropdown
+                            name="theme"
+                            value={formConfig.theme}
+                            options={configOptions.theme}
+                            onChange={handleChange}
+                        />
                     </div>
                     <div className={'form-group'}>
                         <label
-                            className={'form-group-header'}>
+                            className={'form-label'}>
                             <i className={'material-symbols-outlined'}>palette</i>
                             Color
                         </label>
-                        <select name="color" value={formConfig.color} onChange={handleChange}>
-                            {configOptions.color.map((opt) => (
-                                <option key={opt} value={opt}>{opt.toUpperCase()}</option>
-                            ))}
-                        </select>
+                        <Dropdown
+                            className={'palette'}
+                            name="color"
+                            value={formConfig.color}
+                            options={configOptions.color}
+                            onChange={handleChange}
+                        />
                     </div>
                     <div
                         className={'form-group ' + (formConfig.style !== 'fluent' ? 'disabled' : '') }
                     >
                         <div
-                            className={'form-group-header'}
+                            className={'form-label'}
                         >
                             <i className={'material-symbols-outlined'}>wallpaper</i>
                             Background

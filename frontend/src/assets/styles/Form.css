@@ -15,14 +15,14 @@
     opacity: 0.5;
     cursor: not-allowed;
 }
-.app-form .form-group label {
+.app-form .form-label {
     text-transform: uppercase;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 500;
     margin-top: 5px;
 }
-.app-form .form-group>input,
-.app-form .form-group>select {
+.app-form .form-input,
+.app-form .form-select {
     border-radius: 5px;
     padding: 10px 15px;
     margin: 5px;
@@ -35,8 +35,8 @@
     min-width: 33%;
     box-sizing: border-box;
 }
-.app.fluent .app-form .form-group>input,
-.app.fluent .app-form .form-group>select {
+.app.fluent .app-form .form-input,
+.app.fluent .app-form .form-select {
     background: var(--seethrough-background-2);
     border-radius: var(--def-border-radius);
 }

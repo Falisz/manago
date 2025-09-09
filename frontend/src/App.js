@@ -23,7 +23,12 @@ const AppContent = () => {
 
     useEffect(() => {
         const root = document.getElementById('root');
-        root.classList.remove('blue', 'pink', 'light', 'dark', 'flat', 'fluent', 'glass');        
+        root.classList.remove(
+            'red', 'green', 'blue',
+            'cyan', 'magenta', 'yellow',
+            'orange', 'lime', 'pink', 'mono',
+            'light', 'dark', 'flat', 'fluent'
+        );
         root.classList.forEach(cls => {
             if (cls.startsWith('bg-')) {
                 root.classList.remove(cls);

@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
-
 body {
     color: white;
     background: black;
@@ -12,24 +11,9 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
-
 body a {
     text-decoration: none;
 }
-
-code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-.app {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
 .app {
     /*  APP'S PALETTE */
     --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
@@ -41,11 +25,11 @@ code {
     --gray-light: #ccc;
     --gray-lighter: #ddd;
     --white-darker: #eee;
-    --seethrough-black: rgba(0, 0, 0, .5);
+    --seethrough-black: rgba(0, 0, 0, .25);
     --seethrough-white: rgba(255, 255, 255, .25);
-    --seethrough-black-2: rgba(0, 0, 0, .75);
+    --seethrough-black-2: rgba(0, 0, 0, .5);
     --seethrough-white-2: rgba(255, 255, 255, .5);
-    --seethrough-black-3: rgba(0, 0, 0, .25);
+    --seethrough-black-3: rgba(0, 0, 0, .75);
     --seethrough-white-3: rgba(255, 255, 255, .75);
     --font-family: 'Roboto', sans-serif;
     --font-family-condensed: 'Roboto Condensed', sans-serif;
@@ -63,7 +47,6 @@ code {
     --weak-shade: 0 0 10px 5px rgba(0, 0, 0, .05);
     --def-border-radius: 12px;
 }
-
 .app.light {
     --text-color: var(--black);
     --text-color-2: var(--black-brighter);
@@ -77,38 +60,79 @@ code {
     --seethrough-background-2: var(--seethrough-white-2);
     --seethrough-background-3: var(--seethrough-white-3);
 }
-
+.app.red {
+    --color: #ba0606;
+    --color-dark: #770000;
+    --color-bright: #ec3c3c;
+    --color-brighter: #f87171;
+}
+.app.green {
+    --color: #12ba06;
+    --color-dark: #107800;
+    --color-bright: #49d834;
+    --color-brighter: #84f772;
+}
 .app.blue {
     --color: #0671ba;
     --color-dark: #004577;
     --color-bright: #3ca8ec;
     --color-brighter: #71c2f8;
-    --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
 }
-/**/
+.app.cyan {
+    --color: #04c7c7;
+    --color-dark: #007878;
+    --color-bright: #3beded;
+    --color-brighter: #72f7f7;
+}
 .app.magenta {
-    --color: #d309b1;
-    --color-dark: #a3079b;
-    --color-bright: #ef32d6;
-    --color-brighter: #f8a3f3;
-    --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
+    --color: #c704c7;
+    --color-dark: #780078;
+    --color-bright: #ed3bed;
+    --color-brighter: #f772f7;
 }
-
+.app.yellow {
+    --color: #c7c704;
+    --color-dark: #787800;
+    --color-bright: #eded3b;
+    --color-brighter: #f7f772;
+}
 .app.pink {
     --color: #e6007e;
     --color-dark: #a6005c;
     --color-bright: #ea529d;
     --color-brighter: #f4a3cc;
-    --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
 }
-
+.app.lime {
+    --color: #7fe600;
+    --color-dark: #5ba600;
+    --color-bright: #a6eb52;
+    --color-brighter: #d0f5a4;
+}
+.app.orange {
+    --color: #e67300;
+    --color-dark: #a65300;
+    --color-bright: #eb9e52;
+    --color-brighter: #f5cca4;
+}
+.app.mono {
+    --color: #7c7c7c;
+    --color-dark: #595959;
+    --color-bright: #c1c1c1;
+    --color-brighter: #d8d8d8;
+}
 .app {
     --button-color: var(--color);
     --link-color: var(--color-bright);
     --link-hover-color: var(--color-brighter);
     --highlight-color: var(--color-bright);
+    --color-gradient: linear-gradient(45deg, var(--color), var(--color-dark));
     color: var(--text-color);
     background: var(--background-color);
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 .app.light {
     --link-color: var(--color);
@@ -338,7 +362,7 @@ code {
 }
 
 .app-switch input:checked + .toggle-slider {
-    background-color: var(--link-color);
+    background: var(--color-gradient);
 }
 
 .app-switch input:checked + .toggle-slider:before {
@@ -346,11 +370,79 @@ code {
 }
 
 .app-switch input:disabled + .toggle-slider {
-    background-color: var(--gray-dark);
+    background: var(--gray-dark);
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 .app-switch input:disabled + .toggle-slider:before {
-    background-color: var(--gray-light);
+    background: var(--gray-light);
+}
+
+.app-dropdown {
+    position: relative;
+    font-size: 1rem;
+    user-select: none;
+    max-width: 50%;
+}
+
+.app-dropdown .dropdown-selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--background-color-2);
+    cursor: pointer;
+    transition: .3s ease-in-out;
+}
+.app.fluent .app-dropdown .dropdown-selected {
+    background-color: var(--seethrough-background-2);
+}
+.app-dropdown .dropdown-selected:focus {
+    outline: none;
+}
+.app.fluent .app-dropdown .dropdown-selected:hover,
+.app.fluent .app-dropdown .dropdown-selected:focus {
+    background-color: var(--seethrough-background-3);
+}
+
+.dropdown-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 5px 0;
+    padding: 0;
+    list-style: none;
+    background-color: var(--background-color-2);
+    border-radius: 12px;
+    box-shadow: var(--weak-shade);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: .3s ease-in-out;
+}
+.app.fluent .dropdown-options {
+    background: var(--seethrough-background-3);
+    backdrop-filter: blur(10px);
+}
+.dropdown-options.hidden {
+    opacity: 0;
+    visibility: hidden;
+    margin-top: -15px;
+}
+
+.dropdown-option {
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.dropdown-option:hover,
+.dropdown-option:focus {
+    background-color: var(--highlight-color);
+    color: white;
+    outline: none;
 }

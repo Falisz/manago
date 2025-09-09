@@ -46,6 +46,11 @@
     position: relative;
     height: 150px;
 }
+.app.manager .app-nav .app-home-link:focus-visible  {
+    background: var(--seethrough-background);
+    outline: none;
+    border: none;
+}
 .app.manager .app-nav .app-logo,
 .app.manager .app-nav .app-logo-small {
     top: 50%;
@@ -91,6 +96,11 @@
     text-transform: uppercase;
     transition: ease-in-out 0.3s;
 }
+.app.manager .app-nav .app-nav-page-link:focus-visible  {
+    background: var(--seethrough-background);
+    outline: none;
+    border: none;
+}
 .app.manager .app-nav .app-nav-page-link-icon {
     margin-right: 5px;
     font-size: 25px;
@@ -132,7 +142,7 @@
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
-    align-items: center;
+    align-items: stretch;
     background: var(--color-gradient);
     padding: 0;
     margin: 0;
@@ -212,7 +222,7 @@
     visibility: hidden;
     opacity: 0;
     z-index: 2000;
-    top: 30px;
+    top: calc(100% - 10px);
     right: 0;
     background: linear-gradient(45deg, var(--gray-light), white);
     border: none;
