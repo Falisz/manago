@@ -1,6 +1,6 @@
 import React from 'react';
 import '../assets/styles/List.css';
-import '../assets/styles/AppModules.css';
+import '../assets/styles/AppSettings.css';
 import useAppState from '../contexts/AppStateContext';
 import { useModals } from '../contexts/ModalContext';
 
@@ -23,10 +23,10 @@ const AppModules = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> App Modules </h1>
             </div>
-            <div className={'modules-notice seethrough'}>
+            <p className={'modules-notice'}>
                 Depending on the different needs of your business you are able to enable different modules of this app.
                 <br/><b>These settings should be changed only by a system admin.</b>
-            </div>
+            </p>
             <div className='app-list seethrough modules-list app-overflow-y app-scroll'>
                 { appState.modules?.length > 0 ? (appState.modules?.map((module) => {
                     const isMain = module.id === 0;

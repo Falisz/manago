@@ -13,6 +13,7 @@
 }
 .app-form .form-group.disabled {
     opacity: 0.5;
+    cursor: not-allowed;
 }
 .app-form .form-group label {
     text-transform: uppercase;
@@ -40,37 +41,6 @@
     border-radius: var(--def-border-radius);
 }
 
-
-.app-form .background-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-    gap: 10px;
-}
-.app-form .background-thumbnail {
-    width: 350px;
-    height: auto;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 12px;
-    opacity: 0.6;
-    border: 3px solid transparent;
-    transition: 0.3s ease-in-out;
-    cursor: pointer;
-}
-.app-form .background-gallery .radio-label {
-    margin: 0;
-    position: relative;
-}
-.app-form .background-gallery .radio-label input {
-    position: absolute;
-    opacity: 0;
-}
-.app-form .background-gallery .radio-label input:checked+.background-thumbnail {
-    opacity: 1;
-    border-color: white;
-}
 .app-form .submit-button {
     border: 0;
     margin: 10px 0;
