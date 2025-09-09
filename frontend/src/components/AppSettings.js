@@ -74,6 +74,7 @@ const AppSettings = () => {
                             value={formConfig.style}
                             options={configOptions.style}
                             onChange={handleChange}
+                            upperCaseNames={true}
                         />
                     </div>
                     <div className={'form-group'}>
@@ -88,6 +89,7 @@ const AppSettings = () => {
                             value={formConfig.theme}
                             options={configOptions.theme}
                             onChange={handleChange}
+                            upperCaseNames={true}
                         />
                     </div>
                     <div className={'form-group'}>
@@ -102,6 +104,7 @@ const AppSettings = () => {
                             value={formConfig.color}
                             options={configOptions.color}
                             onChange={handleChange}
+                            upperCaseNames={true}
                         />
                     </div>
                     <div

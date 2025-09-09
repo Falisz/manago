@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const Dropdown = ({ className='', placeholder=null, name, value, options, onChange, noneAllowed=false }) => {
+const Dropdown = ({ className='', placeholder=null, name, value, options, onChange, noneAllowed=false, upperCaseNames=false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -38,9 +38,9 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
         const isOptionObject = options.length > 0 && typeof options[0] === 'object';
         if (isOptionObject) {
             const selectedOption = options.find(option => option.id === value);
-            return selectedOption ? selectedOption.name : 'Select an option';
+            return selectedOption ? (upperCaseNames ? selectedOption.name.toUpperCase() : selectedOption.name)  : 'Select an option';
         }
-        return value.toUpperCase();
+        return (upperCaseNames ? value.toUpperCase() : value);
     };
 
     console.log(options);
@@ -88,7 +88,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
                             onKeyDown={(e) => handleKeyDown(e, id)}
                             tabIndex={0}
                         >
-                            {displayText}
+                            {upperCaseNames ? displayText.toUpperCase() : displayText}
                         </li>
                     );
                 })}
