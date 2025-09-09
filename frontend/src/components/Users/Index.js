@@ -7,8 +7,6 @@ import Button from '../Button';
 import '../../assets/styles/List.css';
 import '../../assets/styles/Users.css';
 
-// TODO: List selections with actions like delete, assign Role, assign Manager, assign Reporting User etc.
-
 const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
     return (
         <div className={`app-list-header-cell ${header.key}`} key={header.key}>

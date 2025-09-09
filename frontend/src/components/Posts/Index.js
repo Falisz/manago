@@ -5,7 +5,6 @@ import { Loader } from '../Loader';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Posts.css';
 
-// TODO: Post Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 const PostIndex = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);

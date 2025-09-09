@@ -21,9 +21,6 @@ const FORM_CLEAN_STATE = {
         manager_view_access: false,
 };
 
-// TODO: Rewrite the roles assignment logic and interface.
-//  Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.
-
 const UserEdit = ({ userId }) => {
     const { user, loading, error, warning, success, setLoading, fetchUser, saveUser } = useUser();
     const { users: managers, fetchUsers: fetchManagers } = useUser();
