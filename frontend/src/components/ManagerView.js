@@ -1,6 +1,6 @@
 //FRONTEND/ManagerView.js
 import '../assets/styles/Manager.css';
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
 import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
