@@ -23,9 +23,6 @@ const mapPagesToComponents = (pages) => {
 const AppStateContext = createContext();
 
 export const AppStateProvider = ({ children }) => {
-    // TODO: Initialization of the app with system_default theme and cookies for previously saved settings -
-    //  before they're reloaded from the server.
-
     // App's states
     const isCheckingUserRef = useRef(false);
     const [loading, setLoading] = useState(true);
@@ -42,7 +39,7 @@ export const AppStateProvider = ({ children }) => {
 
     // API Get calls.
     const getUser = useCallback(async () => {
-        const response = await axios.get('/access', { withCredentials: true });
+        const response = await axios.get('/auth', { withCredentials: true });
         return response.data.user;
     }, []);
 

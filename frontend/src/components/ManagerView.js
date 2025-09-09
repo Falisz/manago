@@ -15,19 +15,6 @@ const MainNav = () => {
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
-    useEffect(() => {
-        const fetchNavCollapsed = async () => {
-            try {
-                const res = await axios.get('/access', { withCredentials: true });
-                setNavCollapsed(res.data.user.manager_nav_collapsed || false);
-            } catch (error) {
-                console.error('Error fetching nav_collapsed:', error);
-                setNavCollapsed(false);
-            }
-        };
-        fetchNavCollapsed().then();
-    }, []);
-
     const toggleNavCollapse = async () => {
         const toggledValue = !navCollapsed;
         setNavCollapsed(toggledValue);
