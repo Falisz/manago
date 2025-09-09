@@ -1,12 +1,50 @@
 // BACKEND/api/auth.js
 import express from 'express';
-import { authUser, refreshUser, checkUserAccess, checkManagerAccess } from '../utils/auth.js';
-import { setManagerView } from '../utils/manager-view.js';
+import { authUser, refreshUser } from '../utils/auth.js';
 import { securityLog } from '../utils/security-logs.js';
 export const router = express.Router();
 
+// User authorisation endpoint
+router.get('/auth', async (req, res) => {
+    try {
+        if (!req.session) {
+            return res.json({
+                message: 'User authorisation failed, no session found.'
+            });
+        }
+
+        if (!req.session.user) {
+            return res.json({
+                message: 'User authorisation failed, no session user found.'
+            });
+        }
+
+        req.session.user = await refreshUser(req.session.user);
+
+        const user = req.session.user;
+
+        if (!user || user.removed) {
+            return res.json({
+                message: 'User authorisation failed, no user found.'
+            });
+        }
+
+        return res.json({
+            message: 'User authorisation successful!',
+            user,
+        });
+
+    } catch(err) {
+        console.error('Access checkup error:', err);
+        return res.status(500).json({
+            message: 'User authorisation error!',
+            user: null,
+        });
+    }
+});
+
 // Login endpoint
-router.post('/login', async (req, res) => {
+router.post('/auth', async (req, res) => {
     try {
         const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
         const host = req.headers.host || 'Unknown Host';
@@ -21,13 +59,15 @@ router.post('/login', async (req, res) => {
             return res.status(userAuth.status).json({message: userAuth.message});
         }
 
-        req.session.user = userAuth.user;
+        const user = userAuth.user;
 
-        await securityLog(userAuth.user?.id, ip + ' ' + host,'Login','Success.')
+        req.session.user = user;
+
+        await securityLog(userAuth.user?.id, ip + ' ' + host,'Login','Success.');
 
         return res.json({
-            message: 'Login successful!',
-            user: userAuth,
+            message: 'User authorisation successful!',
+            user
         });
 
     } catch (err) {
@@ -60,66 +100,6 @@ router.get('/logout', async (req, res) => {
         console.error('Logout error:', err);
 
         res.status(500).json({ message: 'Internal error.' });
-    }
-});
-
-// Access Check-up endpoint
-router.get('/access', async (req, res) => {
-    try {
-        if (!req.session) {
-            return res.json({
-                access: false,
-                manager_access: false,
-                message: 'No session found.'
-            });
-        }
-
-        req.session.user = await refreshUser(req.session.user);
-
-        const user = req.session.user;
-
-        if (!user) {
-            return res.json({
-                access: false,
-                manager_access: false,
-                message: 'No user found.'
-            });
-        }
-
-        const userAccess = await checkUserAccess(user);
-
-        if (!userAccess) {
-            return res.json({
-                access: false,
-                manager_access: false,
-                message: 'User not active.',
-                user: user,
-            });
-        }
-
-        const managerAccess = await checkManagerAccess(user);
-
-        if (!managerAccess && user.manager_view) {
-            await setManagerView(user.id, false);
-            req.session.user.manager_view = false;
-            user.manager_view = false;
-        }
-
-        return res.json({
-            access: true,
-            manager_access: managerAccess,
-            message: 'Access checkup successful!',
-            user: user,
-        });
-
-    } catch(err) {
-        console.error('Access checkup error:', err);
-        return res.status(500).json({
-            access: false,
-            manager_access: false,
-            message: 'Access checkup error!',
-            user: null,
-        });
     }
 });
 

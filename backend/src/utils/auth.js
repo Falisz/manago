@@ -12,6 +12,22 @@ import User, {UserDetails, UserConfigs} from '../models/user.js';
  * @property {function} toJSON - Sequelize toJSON method
  */
 
+export async function cleanUserData(userData) {
+    const result = {
+        ...userData.toJSON(),
+        ...userData.UserDetails?.toJSON(),
+        ...userData.UserConfigs?.toJSON(),
+    }
+
+    delete result.user;
+    delete result.password;
+    delete result.removed;
+    delete result.UserDetails;
+    delete result.UserConfigs;
+
+    return result;
+}
+
 /**
  * Authenticates a user by login (ID, email, or login) and password.
  * @param {string|number} login - User ID, email, or login name
@@ -31,29 +47,22 @@ export async function authUser(login, password) {
     });
 
     if (!userData) {
-        return { valid: false, status: 401, message: 'Invalid credentials!' };
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, userData.password);
-
-    if (!isPasswordValid) {
-        return { valid: false, status: 401, user: {id: userData.id}, message: 'Invalid credentials, wrong password!' };
+        return { valid: false, status: 401, message: 'Invalid credentials, user not found!' };
     }
 
     if (!userData.active || userData.removed) {
         return { valid: false, status: 403, user: {id: userData.id}, message: 'User inactive.' };
     }
 
-    const user = {
-        ...userData.toJSON(),
-        ...userData.UserDetails.toJSON(),
-        ...userData.UserConfigs.toJSON(),
-    }
-    delete user.password;
-    delete user.UserDetails;
-    delete user.UserConfigs;
+    const isPasswordValid = await bcrypt.compare(password, userData.password);
 
-    return { valid: true, user: user };
+    if (!isPasswordValid) {
+        return { valid: false, status: 401, user: {id: userData.id}, message: 'Invalid credentials!' };
+    }
+
+    const user = cleanUserData(userData);
+
+    return { valid: true, user };
 }
 
 /**
@@ -75,16 +84,7 @@ export async function refreshUser(user) {
 
     if (!refreshedUser) return null;
 
-    const result = {
-        ...refreshedUser.toJSON(),
-        ...refreshedUser.UserDetails.toJSON(),
-        ...refreshedUser.UserConfigs.toJSON(),
-    }
-    delete result.password;
-    delete result.UserDetails;
-    delete result.UserConfigs;
-
-    return result;
+    return cleanUserData(refreshedUser);
 }
 
 /**
