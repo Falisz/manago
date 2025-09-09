@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const Dropdown = ({ className='', name, value, options, onChange }) => {
+const Dropdown = ({ className='', placeholder=null, name, value, options, onChange, noneAllowed=false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -33,6 +33,18 @@ const Dropdown = ({ className='', name, value, options, onChange }) => {
         }
     };
 
+    const getDisplayText = () => {
+        if (!value) return placeholder || 'Select an option';
+        const isOptionObject = options.length > 0 && typeof options[0] === 'object';
+        if (isOptionObject) {
+            const selectedOption = options.find(option => option.id === value);
+            return selectedOption ? selectedOption.name : 'Select an option';
+        }
+        return value.toUpperCase();
+    };
+
+    console.log(options);
+
     return (
         <div className={"app-dropdown " + className} ref={dropdownRef}>
             <div
@@ -46,23 +58,40 @@ const Dropdown = ({ className='', name, value, options, onChange }) => {
                     }
                 }}
             >
-                <span>{value ? value.toUpperCase() : 'Select an option'}</span>
+                <span>{getDisplayText()}</span>
                 <i className="material-symbols-outlined">
                     {isOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
                 </i>
             </div>
             <ul className={`dropdown-options app-scroll ${isOpen ? '' : 'hidden'}`}>
-                {options.map((option) => (
+                {noneAllowed &&
                     <li
-                        key={option}
-                        className={`dropdown-option opt-${option.toLowerCase()}`}
-                        onClick={() => handleOptionClick(option, isOpen)}
-                        onKeyDown={(e) => handleKeyDown(e, option)}
+                        key={0}
+                        className={`dropdown-option opt-none`}
+                        onClick={() => handleOptionClick(0, isOpen)}
+                        onKeyDown={(e) => handleKeyDown(e, 0)}
                         tabIndex={0}
                     >
-                        {option.toUpperCase()}
+                        None
                     </li>
-                ))}
+                }
+                {options.map((option) => {
+                    const isString = typeof option === 'string';
+                    const id = isString ? option.toLowerCase() : option.id;
+                    const displayText = isString ? option : option.name;
+
+                    return (
+                        <li
+                            key={id}
+                            className={`dropdown-option opt-${id}`}
+                            onClick={() => handleOptionClick(id, isOpen)}
+                            onKeyDown={(e) => handleKeyDown(e, id)}
+                            tabIndex={0}
+                        >
+                            {displayText}
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );

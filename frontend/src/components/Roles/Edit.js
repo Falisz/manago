@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import {useModals} from '../../contexts/ModalContext';
 import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
-import '../../assets/styles/Users.css';
+import '../../assets/styles/Form.css';
 
 const FORM_CLEAN_STATE = {
         name: '',
@@ -68,10 +68,11 @@ const RoleEdit = ({ roleId }) => {
             <h1>{roleId ? 'Edit Role' : 'Add New Role'}</h1>
             {error && <div className='error-message'>{error}</div>}
             {success && <div className='success-message'>{success}</div>}
-            <form onSubmit={handleSubmit} className='role-form'>
+            <form onSubmit={handleSubmit} className='app-form'>
                 <div className='form-group'>
-                    <label>Name</label>
+                    <label className={'form-label'}>Name</label>
                     <input
+                        className={'form-input'}
                         type='text'
                         name='name'
                         value={formData.name}
@@ -81,8 +82,9 @@ const RoleEdit = ({ roleId }) => {
                     />
                 </div>
                 <div className='form-group'>
-                    <label>Description</label>
+                    <label className={'form-label'}>Description</label>
                     <textarea
+                        className={'form-textarea'}
                         name='description'
                         value={formData.description}
                         onChange={handleChange}
@@ -90,7 +92,7 @@ const RoleEdit = ({ roleId }) => {
                     />
                 </div>
                 <div className='form-actions'>
-                    <button type='submit' className='save-button'>
+                    <button type='submit' className='action-button submit-button'>
                         {roleId ? (
                             <>
                                 <i className='material-symbols-outlined'>save</i> Save Changes
@@ -101,7 +103,7 @@ const RoleEdit = ({ roleId }) => {
                             </>
                         )}
                     </button>
-                    <button type='button' className='cancel-button' onClick={() => closeTopModal()}>
+                    <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
                         Cancel
                     </button>
                 </div>

@@ -1,10 +1,12 @@
 // FRONTEND/components/Users/Edit.js
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';
 import useRole from "../../hooks/useRole";
 import Loader from '../Loader';
+import '../../assets/styles/Form.css';
 import '../../assets/styles/Users.css';
+import Dropdown from "../Dropdown";
 
 const FORM_CLEAN_STATE = {
         login: '',
@@ -59,6 +61,12 @@ const UserEdit = ({ userId }) => {
         });
     }, [user]);
 
+    useEffect(() => {
+        if (formData.primary_manager_id && formData.primary_manager_id === formData.secondary_manager_id) {
+            setFormData(prev => ({ ...prev, secondary_manager_id: '' }));
+        }
+    }, [formData.primary_manager_id, formData.secondary_manager_id]);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         if (name === 'roleIds') {
@@ -96,10 +104,20 @@ const UserEdit = ({ userId }) => {
         setFormData(FORM_CLEAN_STATE);
     };
 
-    const availableManagers = managers?.filter(manager => parseInt(manager.id) !== parseInt(userId)) || [];
-    const availableSecondaryManagers = availableManagers.filter(
-        manager => manager.id !== parseInt(formData.primary_manager_id)
-    );
+    const availableManagers = useMemo(() => {
+        return managers?.filter(
+            manager => parseInt(manager.id) !== parseInt(userId)
+        ).map(manager => ({
+            id: manager.id,
+            name: `${manager.first_name} ${manager.last_name}`
+        })) || [];
+    }, [managers, userId]);
+
+    const availableSecondaryManagers = useMemo(() => {
+        return availableManagers.filter(
+            manager => manager.id !== formData.primary_manager_id
+        );
+    }, [availableManagers, formData.primary_manager_id]);
 
     if (loading) return <Loader />;
 
@@ -110,10 +128,16 @@ const UserEdit = ({ userId }) => {
             <h1>{userId ? 'Edit Employee' : 'Add New Employee'}</h1>
             {warning && <div className='warning-message'>{warning}</div>}
             {success && <div className='success-message'>{success}</div>}
-            <form onSubmit={handleSubmit} className='user-form'>
+            <form
+                className={'app-form user-edit-form'}
+                onSubmit={handleSubmit}
+            >
                 <div className='form-group'>
-                    <label>Login</label>
+                    <label className={'form-label'}>
+                        Login
+                    </label>
                     <input
+                        className={'form-input'}
                         type='text'
                         name='login'
                         value={formData.login}
@@ -122,8 +146,11 @@ const UserEdit = ({ userId }) => {
                     />
                 </div>
                 <div className='form-group'>
-                    <label>Email address</label>
+                    <label className={'form-label'}>
+                        Email address
+                    </label>
                     <input
+                        className={'form-input'}
                         type='email'
                         name='email'
                         value={formData.email}
@@ -133,8 +160,11 @@ const UserEdit = ({ userId }) => {
                     />
                 </div>
                 <div className='form-group'>
-                    <label>First Name</label>
+                    <label className={'form-label'}>
+                        First Name
+                    </label>
                     <input
+                        className={'form-input'}
                         type='text'
                         name='first_name'
                         value={formData.first_name}
@@ -144,8 +174,11 @@ const UserEdit = ({ userId }) => {
                     />
                 </div>
                 <div className='form-group'>
-                    <label>Last Name</label>
+                    <label className={'form-label'}>
+                        Last Name
+                    </label>
                     <input
+                        className={'form-input'}
                         type='text'
                         name='last_name'
                         value={formData.last_name}
@@ -177,7 +210,9 @@ const UserEdit = ({ userId }) => {
                     </label>
                 </div>
                 <div className='form-group'>
-                    <label>Roles</label>
+                    <label className={'form-label'}>
+                        Roles
+                    </label>
                     <div className='roles-checklist'>
                         {roles?.length === 0 ? (
                             <p>No roles available.</p>
@@ -198,48 +233,40 @@ const UserEdit = ({ userId }) => {
                     </div>
                 </div>
                 <div className='form-group'>
-                    <label>Primary Manager</label>
-                    <select
-                        name='primary_manager_id'
+                    <label className={'form-label'}>
+                        Primary Manager
+                    </label>
+                    <Dropdown
+                        name="primary_manager_id"
                         value={formData.primary_manager_id}
+                        options={availableManagers}
                         onChange={handleChange}
-                        className='manager-select'
-                    >
-                        <option value='' hidden>Select a manager</option>
-                        <option value='0'>None</option>
-                        {availableManagers.map(manager => (
-                            <option key={manager.id} value={parseInt(manager.id)}>
-                                {manager.first_name} {manager.last_name}
-                            </option>
-                        ))}
-                    </select>
+                        placeholder={'Select a primary manager'}
+                        noneAllowed={true}
+                    />
                 </div>
                 <div className='form-group'>
-                    <label>Secondary Manager</label>
-                    <select
-                        name='secondary_manager_id'
+                    <label className={'form-label'}>
+                        Secondary Manager
+                    </label>
+                    <Dropdown
+                        name="secondary_manager_id"
                         value={formData.secondary_manager_id}
+                        options={availableSecondaryManagers}
                         onChange={handleChange}
-                        className='manager-select'
-                    >
-                        <option value='' hidden>Select a manager</option>
-                        <option value='0'>None</option>
-                        {availableSecondaryManagers.map(manager => (
-                            <option key={manager.id} value={parseInt(manager.id)}>
-                                {manager.first_name} {manager.last_name}
-                            </option>
-                        ))}
-                    </select>
+                        placeholder={'Select a secondary manager'}
+                        noneAllowed={true}
+                    />
                 </div>
                 <div className='form-actions'>
-                    <button type='submit' className='save-button'>
+                    <button type='submit' className='action-button submit-button'>
                         {userId ? (
                             <><i className={'material-symbols-outlined'}>save</i>Save changes</>
                         ) : (
                             <><i className={'material-symbols-outlined'}>add</i>Add a new employee</>
                         )}
                     </button>
-                    <button type='button' className='cancel-button' onClick={() => closeTopModal()}>
+                    <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
                         Cancel
                     </button>
                 </div>

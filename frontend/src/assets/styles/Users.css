@@ -7,68 +7,12 @@
     max-width: 100px;
 }
 
-.user-form {
+.user-edit-form .roles-checklist {
     display: flex;
-    flex-direction: column;
-    padding: 0 20px;
-    align-items: flex-start;
+    flex-wrap: wrap;
 }
-.user-form .form-group {
-    display: flex;
-    flex-direction: column;
-    margin: 10px 0;
-    width: 100%;
-}
-.user-form .form-group label {
-    text-transform: uppercase;
-    font-family: 'Roboto Condensed', sans-serif;
-    font-weight: 300;
-    margin-bottom: 5px;
-}
-.user-form .form-group>input,
-.user-form .form-group>select {
-    border-radius: 5px;
-    padding: 10px 15px;
-    margin-left: 10px;
-    outline: none;
-    border: none;
-    background: var(--gray-dark);
-    color: white;
-    transition: 0.3s ease-in-out;
-    width: 100%;
-    box-sizing: border-box;
-}
-.user-form .roles-checklist {
-    display: flex;
-    flex-direction: column;
-}
-.user-form .roles-checklist .role-checkbox {
-    display: flex;
+
+.user-edit-form .roles-checklist .role-checkbox {
+    margin-right: 10px;
     padding: 5px;
-    font-size: 1.25em;
-}
-.user-form .form-actions {
-    display: flex;
-    flex-direction: row;
-}
-.user-detail button,
-.user-form button {
-    display: inline-flex;
-    align-items: center;
-    margin: 10px 5px;
-    padding: 8px 10px;
-    background: var(--button-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.user-detail button i,
-.user-form button i {
-    margin-right: 5px;
-    font-size: 20px;
-}
-.user-detail .delete-button,
-.user-form .delete-button {
-    background: #ff4d4f;
 }

@@ -134,7 +134,7 @@ const AppSettings = () => {
                         </div>
                     </div>
                     <button
-                        className='submit-button'
+                        className='action-button submit-button'
                         type='submit'
                     >
                         Save Changes

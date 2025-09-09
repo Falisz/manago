@@ -22,7 +22,7 @@
     margin-top: 5px;
 }
 .app-form .form-input,
-.app-form .form-select {
+.app-form .form-textarea {
     border-radius: 5px;
     padding: 10px 15px;
     margin: 5px;
@@ -36,12 +36,26 @@
     box-sizing: border-box;
 }
 .app.fluent .app-form .form-input,
-.app.fluent .app-form .form-select {
+.app.fluent .app-form .form-textarea {
     background: var(--seethrough-background-2);
     border-radius: var(--def-border-radius);
 }
+.app-form .form-textarea {
+    height: 5rem;
+}
 
-.app-form .submit-button {
+.app-form .form-label+.app-dropdown {
+    margin-top: 5px;
+}
+
+.app-form .form-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.app-form .action-button {
+    display: inline-flex;
+    align-items: center;
     border: 0;
     margin: 10px 0;
     padding: 10px 15px;
@@ -50,16 +64,30 @@
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s ease-in-out;
+    font-weight: bold;
 }
-.app-form .submit-button:hover {
+.app-form .action-button i {
+    margin-right: 5px;
+    font-size: 1rem;
+}
+.app-form .action-button:hover {
     background: var(--highlight-color);
 }
-.app.fluent .app-form .submit-button {
+.app-form .action-button+.action-button {
+    margin-left: 10px;
+}
+.app-form .discard-button {
+    background: #ff4d4f;
+}
+.app.fluent .app-form .action-button {
     border-radius: var(--def-border-radius);
     background: var(--seethrough-background-2);
     box-shadow: var(--weak-shade);
     color: var(--text-color-3);
 }
-.app.fluent .app-form .submit-button:hover {
+.app.fluent .app-form .action-button:hover {
     background: var(--seethrough-background-3);
+}
+.app.fluent .app-form .discard-button {
+    color: #d10002;
 }

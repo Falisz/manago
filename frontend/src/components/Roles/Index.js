@@ -14,6 +14,14 @@ const RolesList = () => {
     const { openModal, refreshTriggers } = useModals();
     const { roles, rolesLoading, fetchRoles } = useRole();
 
+    const openRoleDetails = (id) => {
+        openModal({
+            content: 'roleDetails',
+            type: 'dialog',
+            data: { id }
+        });
+    };
+
     useEffect(() => {
         if (!roles) fetchRoles().then();
     }, [fetchRoles, roles]);
@@ -33,7 +41,7 @@ const RolesList = () => {
                     <div
                         className='app-list-row-big app-clickable'
                         key={role.id}
-                        onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
+                        onClick={() => openRoleDetails(role.id)}
                     >
                         <div className='app-list-row-content'>
                             <div className='app-list-row-cell role-title'>{role.name}</div>

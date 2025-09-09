@@ -35,21 +35,30 @@ const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
 
 const TeamItem = ({ team, sub = false }) => {
     const { openModal } = useModals();
-    team.members_count = team.members ? team.members.length : 0
+
+    team.members_count = team.members ? team.members.length : 0;
+
+    const openTeamDetails = (id) => {
+        openModal({
+            content: 'teamDetails',
+            type: 'dialog',
+            data: { id }
+        });
+    };
 
     return (
         <>
             <div className='app-list-row'>
                 <div
                     className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
-                    onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}
+                    onClick={() => openTeamDetails(team.id)}
                 >
                     {sub && <i className={'material-icons'}>subdirectory_arrow_right</i>}
                     {team.code_name}
                 </div>
                 <div
                     className={`app-list-row-cell ${ sub ? 'subteam-name' : 'name'} app-clickable`}
-                    onClick={() => openModal({ content: 'teamDetails', data: { id: team.id } })}
+                    onClick={() => openTeamDetails(team.id)}
                 >
                     {team.name}
                 </div>
@@ -64,8 +73,8 @@ const TeamItem = ({ team, sub = false }) => {
                     {(team.managers || []).length === 0
                         ? null
                         : (team.managers || []).map(manager =>
-                            <span key={manager.id} className='manager-name'
-                                onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
+                            <span key={manager.id} className='manager-name app-clickable'
+                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', data: { id: manager.id } })}
                             >{manager.first_name} {manager.last_name}</span>
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }
@@ -76,8 +85,8 @@ const TeamItem = ({ team, sub = false }) => {
                     {(team.leaders || []).length === 0
                         ? null
                         : (team.leaders || []).map(leader =>
-                            <span key={leader.id} className='teamleader-name'
-                                onClick={() => openModal({ content: 'userDetails', data: { id: leader.id } })}
+                            <span key={leader.id} className='teamleader-name app-clickable'
+                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', data: { id: leader.id } })}
                             >{leader.first_name} {leader.last_name}</span>
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }
