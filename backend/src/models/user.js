@@ -64,9 +64,9 @@ export const UserConfigs = sequelize.define('UserConfigs', {
         references: { model: 'users', key: 'id' }
     },
     theme_mode: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(50),
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 'dark'
     },
     manager_view_access: {
         type: DataTypes.BOOLEAN,

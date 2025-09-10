@@ -241,7 +241,7 @@ router.put('/user-theme/:userId', async (req, res) => {
            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
        }
 
-       if (!req.body || typeof req.body.theme_mode !== 'number') {
+       if (!req.body || typeof req.body.theme_mode !== 'string') {
            return res.status(401).json({ message: 'Invalid or missing theme_mode value.' });
        }
 
@@ -256,7 +256,7 @@ router.put('/user-theme/:userId', async (req, res) => {
 
        req.session.user.theme_mode = theme_mode;
 
-       res.json({ success: true, theme_mode: theme_mode});
+       res.json({ success: true, theme_mode});
 
    } catch (err) {
        console.error('Error while toggling User theme:', err);
