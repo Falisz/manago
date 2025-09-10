@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import '../assets/styles/MobileNav.css';
 import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
 import useAppState from '../contexts/AppStateContext';
+import Icon from "./Icon";
 
 const MobileNav = ({ logoText, currentView, currentPath }) => {
     const [mobileNavExpanded, setMobileNavExpanded] = useState(false);
@@ -15,17 +16,20 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                 <SiteLogoMobile className={'app-logo-mobile'} />
             </Link>
             <div className={'app-mobile-nav-title'}>{logoText}</div>
-            <span className={'app-mobile-nav-view-button material-icons'} onClick={() => setMobileNavExpanded(true)}>
-                menu
-            </span>
+            <Icon
+                className={'app-mobile-nav-view-button'}
+                onClick={() => setMobileNavExpanded(true)}
+                i={'menu'}
+            />
             <div className={`app-mobile-nav-backdrop ${mobileNavExpanded ? 'expanded' : ''}`}
                  inert={mobileNavExpanded ? null : true}
                  onClick={() => setMobileNavExpanded(false)}></div>
             <ul className={`app-mobile-nav-links ${mobileNavExpanded ? 'expanded' : ''}`} inert={mobileNavExpanded ? null : true}>
                 <li className={'app-mobile-nav-link-item nav-collapse-button'} onClick={() => setMobileNavExpanded(false)}>
-                    <span className={'material-symbols-outlined'}>
-                        left_panel_open
-                    </span>
+                    <Icon
+                        i={'left_panel_open'}
+                        s={true}
+                    />
                 </li>
                 {appState.pages && appState.pages
                     .map((page) => (
@@ -42,7 +46,7 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                                 }`}
                                 onClick={() => setMobileNavExpanded(false)}
                             >
-                                {page.icon && <span className='app-nav-page-link-icon material-icons'>{page.icon}</span>}
+                                {page.icon && <Icon className='app-nav-page-link-icon' i={page.icon} />}
                                 <span className='app-nav-page-link-label'>{page.title}</span>
                             </Link>
                             {page.subpages?.length >= 1 && (
@@ -70,7 +74,7 @@ const MobileNav = ({ logoText, currentView, currentPath }) => {
                     ))}
                 <li className={'app-mobile-nav-link-item user-link'}>
                     <Link className='app-nav-page-link' to='#'>
-                        <span className='app-nav-page-link-icon material-icons'>account_circle</span>
+                        <Icon className='app-nav-page-link-icon' icon={'account_circle'} />
                         <span className='app-nav-page-link-label'>{user?.first_name || 'User'}</span>
                     </Link>
                     <ul className='submenu'>

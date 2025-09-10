@@ -7,6 +7,7 @@ import Loader from '../Loader';
 import '../../assets/styles/Form.css';
 import '../../assets/styles/Users.css';
 import Dropdown from "../Dropdown";
+import Icon from "../Icon";
 
 const FORM_CLEAN_STATE = {
         login: '',
@@ -257,11 +258,8 @@ const UserEdit = ({ userId }) => {
                 </div>
                 <div className='form-actions'>
                     <button type='submit' className='action-button submit-button'>
-                        {userId ? (
-                            <><i className={'material-symbols-outlined'}>save</i>Save changes</>
-                        ) : (
-                            <><i className={'material-symbols-outlined'}>add</i>Add a new employee</>
-                        )}
+                        <Icon i={'save'} s={true}/>
+                        {userId ? 'Save changes' : 'Create user'}
                     </button>
                     <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
                         Cancel

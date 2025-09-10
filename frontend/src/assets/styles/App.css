@@ -14,6 +14,10 @@ body {
 body a {
     text-decoration: none;
 }
+.material-icons,
+.material-symbols-rounded {
+    cursor: default;
+}
 .app {
     /*  APP'S PALETTE */
     --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));

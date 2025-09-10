@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 import useAppState from '../contexts/AppStateContext';
+import Icon from "./Icon";
 
 const Login = () => {
     const { authUser } = useAppState();
@@ -24,7 +25,7 @@ const Login = () => {
     return (
         <div className='app-login'>
             <AppLogo className='app-logo' />
-            <form className='login-form' onSubmit={handleSubmit}>
+            <form className='login-form see' onSubmit={handleSubmit}>
                 <div className='input-field'>
                     <input
                         type='text'
@@ -34,7 +35,7 @@ const Login = () => {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                     />
-                    <span className='input-icon material-icons'>person</span>
+                    <Icon className='input-icon' i={'person'} />
                 </div>
                 <div className='input-field'>
                     <input
@@ -45,7 +46,7 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <span className='input-icon material-icons'>lock</span>
+                    <Icon className='input-icon' i={'lock'} />
                 </div>
                 <button type='submit'>Log in</button>
                 { error && <p className='error'>{error}</p> }

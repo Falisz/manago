@@ -4,6 +4,7 @@ import Loader from '../Loader';
 import useUser from '../../hooks/useUser';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
+import Icon from "../Icon";
 
 const UserDetails = ({ userId }) => {
     const { user, loading, fetchUser, deleteUser } = useUser();
@@ -56,14 +57,14 @@ const UserDetails = ({ userId }) => {
                     onClick={() => {openModal({content: 'userEdit', data: { id: user.id}})}}
                     title={'Edit User details'}
                 >
-                    <i className='material-icons'>edit</i>
+                    <Icon i={'edit'} />
                 </button>
                 <button
                     className={'action-button delete-button'}
                     onClick={handleDelete}
                     title={'Delete the User'}
                 >
-                    <i className='material-icons'>delete</i>
+                    <Icon i={'delete'} />
                 </button>
             </div>
             <div className='detail-section'>
@@ -101,17 +102,17 @@ const UserDetails = ({ userId }) => {
                 <div className={'detail-subheader'}>Status</div>
                 {user.active ?
                     <div className={'detail-row linear'}>
-                        <i className='material-symbols-outlined true'>check</i> Employee's account is active
+                        <Icon className={'true'} i={'check'}/> Employee's account is active
                     </div> : 
                     <div className={'detail-row linear'}>
-                        <i className='material-symbols-outlined false'>close</i> Employee's account is not active
+                        <Icon className={'false'} i={'close'}/> Employee's account is not active
                     </div> }
                 {user.manager_view_access ?
                     <div className={'detail-row linear'}>
-                        <i className='material-symbols-outlined true'>check</i> Employee has access to Manager View
+                        <Icon className={'true'} i={'check'}/> Employee has access to Manager View
                     </div> : 
                     <div className={'detail-row linear'}>
-                        <i className='material-symbols-outlined false'>close</i> Employee does not have access to Manager View
+                        <Icon className={'false'} i={'close'}/> Employee does not have access to Manager View
                     </div> }
             </div>
             <div className='detail-section'>

@@ -4,6 +4,7 @@ import Loader from '../Loader';
 import useTeam from '../../hooks/useTeam';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
+import Icon from "../Icon";
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam } = useTeam();
@@ -68,7 +69,7 @@ const TeamDetails = ({ teamId }) => {
                     onClick={() => {openModal({content: 'teamEdit', data: { id: team.id}})}}
                     title={'Edit Team details'}
                 >
-                    <i className='material-icons'>edit</i>
+                    <Icon i={'edit'} />
                 </button>
                 <button
                     className={'action-button delete-button'}
@@ -78,7 +79,7 @@ const TeamDetails = ({ teamId }) => {
                     )}
                     title={'Delete the Team'}
                 >
-                    <i className='material-icons'>delete</i>
+                    <Icon i={'delete'} />
                 </button>
             </div>
             <div className='detail-section'>

@@ -4,6 +4,7 @@ import Loader from '../Loader';
 import useRole from '../../hooks/useRole';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
+import Icon from "../Icon";
 
 const RoleDetails = ({ roleId }) => {
     const { role, loading, fetchRole, deleteRole } = useRole();
@@ -59,7 +60,7 @@ const RoleDetails = ({ roleId }) => {
                             onClick={() => openModal({ content: 'roleEdit', data: { id: role.id } })}
                             title={'Edit Role'}
                         >
-                            <i className='material-icons'>edit</i>
+                            <Icon i={'edit'} />
                         </button>
                         <button
                             className='action-button delete-button'
@@ -67,7 +68,7 @@ const RoleDetails = ({ roleId }) => {
                             onClick={() => handleDelete(role.users?.length)}
                             title={'Delete Role'}
                         >
-                            <i className='material-icons'>delete</i>
+                            <Icon i={'delete'} />
                         </button>
                     </>
                 ) : null}
@@ -81,7 +82,7 @@ const RoleDetails = ({ roleId }) => {
                     <div className='detail-row' title={'Role type'}>
                         <label>Role type</label>
                         <div className='detail-row linear'>
-                            <i className='material-symbols-outlined true'>check</i> This is system default role. You cannot edit nor delete it.
+                            <Icon className={'true'} i={'check'}/> This is system default role. You cannot edit nor delete it.
                         </div>
                     </div>
                 ) : null}

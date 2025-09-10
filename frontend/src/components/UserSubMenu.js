@@ -37,7 +37,7 @@ const UserSubMenu = () => {
                     to='#'
                     onClick={() => toggleView(!user.manager_view_enabled)}
                 >
-                    Manager View
+                    {user.manager_view_enabled ? 'Staff View' : 'Manager View'}
                     <Icon i={'view_compact_alt'} />
                 </Link>
             }

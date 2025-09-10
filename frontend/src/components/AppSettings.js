@@ -6,6 +6,7 @@ import '../assets/styles/AppSettings.css';
 import Loader from "./Loader";
 import AppModules from "./AppModules";
 import Dropdown from "./Dropdown";
+import Icon from "./Icon";
 
 const AppSettings = () => {
     const { appState, getConfigOptions, refreshConfig } = useAppState();
@@ -66,7 +67,7 @@ const AppSettings = () => {
                         <label
                             className={'form-label'}
                         >
-                            <i className={'material-symbols-outlined'}>type_specimen</i>
+                            <Icon i={'type_specimen'} s={true}/>
                             Style
                         </label>
                         <Dropdown
@@ -81,7 +82,7 @@ const AppSettings = () => {
                         <label
                             className={'form-label'}
                         >
-                            <i className={'material-symbols-outlined'}>routine</i>
+                            <Icon i={'routine'} s={true}/>
                             Theme
                         </label>
                         <Dropdown
@@ -94,8 +95,9 @@ const AppSettings = () => {
                     </div>
                     <div className={'form-group'}>
                         <label
-                            className={'form-label'}>
-                            <i className={'material-symbols-outlined'}>palette</i>
+                            className={'form-label'}
+                        >
+                            <Icon i={'palette'} s={true}/>
                             Color
                         </label>
                         <Dropdown
@@ -113,7 +115,7 @@ const AppSettings = () => {
                         <div
                             className={'form-label'}
                         >
-                            <i className={'material-symbols-outlined'}>wallpaper</i>
+                            <Icon i={'wallpaper'} s={true}/>
                             Background
                         </div>
                         <div className='background-gallery'>

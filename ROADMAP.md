@@ -6,9 +6,13 @@ Following roadmap and tasks to-do as of 2025-09-10:
   - [x] Theme/Mode switching per user.
   - [X] Make sub-menu styling a app-wide element (No separation for view styles).
   - [X] Make user sub-menu a separate reusable component.
-  - [ ] Make an Icon shorthand component and replace previous material-icons elements with this new component.
+  - [X] Make an Icon shorthand component and replace previous material-icons elements with this new component.
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
+- [ ] Fluent UI Style
+  - [ ] Connectivity Pop-up
+  - [ ] Login Form
+  - [ ] Confirm prompt dialog
 - [ ] User management
   - [ ] User Edit form: Rewrite the roles assignment logic and interface. (Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.)
   - [ ] Selection feature in the user lists with actions like delete, assign Role, assign Manager, assign Reporting User etc.

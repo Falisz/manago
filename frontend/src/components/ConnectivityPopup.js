@@ -3,6 +3,7 @@ import React from 'react';
 import useAppState from '../contexts/AppStateContext';
 import '../assets/styles/Connectivity.css';
 import Button from './Button';
+import Icon from "./Icon";
 
 const ConnectivityPopup = () => {
     const { appState } = useAppState();
@@ -11,7 +12,10 @@ const ConnectivityPopup = () => {
 
     return (
         <div className='connectivity-popup'>
-            <span className='material-icons connectivity-icon'>cloud_off</span>
+            <Icon
+                className={'connectivity-icon'}
+                icon={'cloud_off'}
+            />
             <div className='connectivity-message'>
                 <h1>Connection Lost</h1>
                 <p>No connection to the server. Please check your network.</p>

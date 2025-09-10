@@ -6,6 +6,7 @@ import Loader from '../Loader';
 import Button from '../Button';
 import '../../assets/styles/List.css';
 import '../../assets/styles/Teams.css';
+import Icon from "../Icon";
 
 // Table header component for Teams
 const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => (
@@ -53,7 +54,7 @@ const TeamItem = ({ team, sub = false }) => {
                     className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
                     onClick={() => openTeamDetails(team.id)}
                 >
-                    {sub && <i className={'material-icons'}>subdirectory_arrow_right</i>}
+                    {sub && <Icon i={'subdirectory_arrow_right'} />}
                     {team.code_name}
                 </div>
                 <div

@@ -4,6 +4,7 @@ import {useModals} from '../../contexts/ModalContext';
 import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
 import '../../assets/styles/Form.css';
+import Icon from "../Icon";
 
 const FORM_CLEAN_STATE = {
         name: '',
@@ -93,15 +94,8 @@ const RoleEdit = ({ roleId }) => {
                 </div>
                 <div className='form-actions'>
                     <button type='submit' className='action-button submit-button'>
-                        {roleId ? (
-                            <>
-                                <i className='material-symbols-outlined'>save</i> Save Changes
-                            </>
-                        ) : (
-                            <>
-                                <i className='material-symbols-outlined'>add</i> Create Role
-                            </>
-                        )}
+                        <Icon i={'save'} s={true}/>
+                        {roleId ? 'Save changes' : 'Create role'}
                     </button>
                     <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
                         Cancel

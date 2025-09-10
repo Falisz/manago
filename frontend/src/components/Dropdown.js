@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Icon from "./Icon";
 
 const Dropdown = ({ className='', placeholder=null, name, value, options, onChange, noneAllowed=false, upperCaseNames=false }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -59,9 +60,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
                 }}
             >
                 <span>{getDisplayText()}</span>
-                <i className="material-symbols-outlined">
-                    {isOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
-                </i>
+                <Icon s={true} i={isOpen ? 'arrow_drop_up' : 'arrow_drop_down'}/>
             </div>
             <ul className={`dropdown-options app-scroll ${isOpen ? '' : 'hidden'}`}>
                 {noneAllowed &&

@@ -6,6 +6,7 @@ import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
 import useAppState from '../contexts/AppStateContext';
 import UserSubMenu from "./UserSubMenu";
+import Icon from "./Icon";
 
 const StaffView = () => {
     const { user, appState } = useAppState();
@@ -37,7 +38,7 @@ const StaffView = () => {
                                             : ''
                                 }`}
                             >
-                                {page.icon && <i className='page-icon material-icons'>{page.icon}</i>}
+                                {page.icon && <Icon className={'page-icon'} i={page.icon} />}
                                 <span className='page-title'>{page.title}</span>
                             </Link>
                                 {page.subpages?.length >= 1 && (
@@ -67,7 +68,7 @@ const StaffView = () => {
                     <span className='username'>
                         {user?.first_name || 'User'}
                     </span>
-                    <i className='material-icons'>keyboard_arrow_down</i>
+                    <Icon i={'keyboard_arrow_down'} />
                     <UserSubMenu />
                 </div>
             </nav>

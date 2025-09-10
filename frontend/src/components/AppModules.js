@@ -3,6 +3,7 @@ import '../assets/styles/List.css';
 import '../assets/styles/AppSettings.css';
 import useAppState from '../contexts/AppStateContext';
 import { useModals } from '../contexts/ModalContext';
+import Icon from "./Icon";
 
 const AppModules = () => {
     const { appState, toggleModule } = useAppState();
@@ -33,7 +34,7 @@ const AppModules = () => {
                         <div className='app-list-row-big' key={module.id}>
                             <div className='app-list-row-content'>
                                 <div className='app-list-row-cell module-icon'>
-                                    {module.icon && <i className='material-symbols-outlined'>{module.icon}</i>}
+                                    {module.icon && <Icon i={module.icon} s={true} />}
                                 </div>
                                 <div className='app-list-row-cell module-title'>
                                     {module.title}

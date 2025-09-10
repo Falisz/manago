@@ -51,7 +51,7 @@ const MainNav = () => {
                                     : ''
                         }`}
                     >
-                        {page.icon && <span className='app-nav-page-link-icon material-icons'>{page.icon}</span>}
+                        {page.icon && <Icon className='app-nav-page-link-icon' i={page.icon} />}
                         <span className='app-nav-page-link-label'>
                         {   (page.title.toLowerCase() === 'employees' && appState.modules?.some(m => m.title === 'Teams' && m.enabled))
                             ? 'Employees & Teams'
@@ -59,12 +59,12 @@ const MainNav = () => {
                         </span>
                     </Link>
                 ))}
-            <span
-                className='nav-collapse-button material-symbols-outlined'
+            <Icon
+                className='nav-collapse-button'
                 onClick={toggleNavCollapse}
-            >
-                        {navCollapsed ? 'left_panel_open' : 'left_panel_close'}
-                    </span>
+                i={navCollapsed ? 'left_panel_open' : 'left_panel_close'}
+                s={true}
+            />
         </nav>
     )
 }
