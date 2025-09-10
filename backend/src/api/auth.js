@@ -51,6 +51,10 @@ router.post('/auth', async (req, res) => {
 
         const {username, password} = req.body;
 
+        if (!username || !password) {
+            return res.status(400).json({message: 'Both credentials are required!'});
+        }
+
         const userAuth = await authUser(username, password);
 
         if (!userAuth.valid) {
