@@ -14,7 +14,8 @@ const ConnectivityPopup = () => {
         <div className='connectivity-popup'>
             <Icon
                 className={'connectivity-icon'}
-                icon={'cloud_off'}
+                i={'cloud_off'}
+                s={true}
             />
             <div className='connectivity-message'>
                 <h1>Connection Lost</h1>
