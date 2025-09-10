@@ -1,7 +1,7 @@
 // BACKEND/api/auth.js
 import express from 'express';
-import { authUser, refreshUser } from '../utils/auth.js';
 import { securityLog } from '../utils/security-logs.js';
+import { authUser, getUser} from "../controllers/users.js";
 export const router = express.Router();
 
 // User authorisation endpoint
@@ -19,7 +19,7 @@ router.get('/auth', async (req, res) => {
             });
         }
 
-        req.session.user = await refreshUser(req.session.user);
+        req.session.user = await getUser(req.session.user.id);
 
         const user = req.session.user;
 

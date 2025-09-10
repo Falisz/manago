@@ -6,36 +6,70 @@ import Role from '../models/role.js';
 import { getUserRoles } from './roles.js';
 
 /**
- * @typedef {Object} Manager
- * @property {number} id - The ID of the manager
- * @property {string} first_name - The first name of the manager
- * @property {string} last_name - The last name of the manager
- * @property {Object} UserDetails - UserDetails field of the manager user
+ * @typedef {Object} UserData
+ * @property {number} id - User ID
+ * @property {Object} UserDetails - Sequelize UserDetails association
+ * @property {Object} UserConfigs - Sequelize UserConfigs association
+ * @property {function} toJSON - Sequelize toJSON method
  */
-
 /**
  * @typedef {Object} UserManager
- * @property {number} id - The ID of the manager
- * @property {string} first_name - The first name of the manager
- * @property {string} last_name - The last name of the manager
  * @property {boolean} primary - Indicates if the manager is the primary manager
- * @property {Manager} Manager - Managers field of the manager user
+ * @property {UserData} Manager - Sequelize User association
+ * @property {UserData} User - Sequelize User association
  */
+
+
+/**
+ * Authenticates a user by login (ID, email, or login) and password.
+ * @param {string|number} login - User ID, email, or login name
+ * @param {string} password - User password
+ * @returns {Promise<{ valid: boolean, status?: number, message?: string, user?: Object }>}
+ */
+export async function authUser(login, password) {
+    const isInteger = Number.isInteger(Number(login));
+    const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
+
+    let user = await User.findOne({
+        where: isInteger ? { id: login } : (isEmailFormat ? { email: login } : { login: login })
+    });
+
+    if (!user) {
+        return { valid: false, status: 401, message: 'Invalid credentials, user not found!' };
+    }
+
+    if (!user.active || user.removed) {
+        return { valid: false, status: 403, user: {id: user.id}, message: 'User inactive.' };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+        return { valid: false, status: 401, user: {id: user.id}, message: 'Invalid credentials!' };
+    }
+
+    user = await getUser(user.id);
+
+    return { valid: true, user };
+}
 
 /**
  * Retrieves one user by their ID.
  * @param {number} id - User ID to fetch a specific user
+ * @param {boolean} managers - Should managers be added to the output user
+ * @param {boolean} roles - Should roles be added to the output user
  * @returns {Promise<Object|null>} Single user or null
  */
-export async function getUser(id) {
+export async function getUser(id, managers=true, roles=true) {
+    if (!id) return null;
+
     let user = await User.findOne({
         attributes: { exclude: ['password', 'removed'] },
         where: { id, removed: false },
         include: [
             { model: UserDetails,  as: 'UserDetails' },
             { model: UserConfigs,  as: 'UserConfigs' }
-        ],
-        order: [['id', 'ASC']]
+        ]
     });
 
     if (!user)
@@ -43,14 +77,19 @@ export async function getUser(id) {
 
     user = {
         ...user.toJSON(),
-        ...user.UserDetails.toJSON(),
-        ...user.UserConfigs.toJSON(),
-        managers: await getUserManagers(user.id),
-        roles: await getUserRoles(user.id)
-    };
+        ...user.UserDetails?.toJSON(),
+        ...user.UserConfigs?.toJSON(),
+    }
 
+    delete user.user;
     delete user.UserDetails;
     delete user.UserConfigs;
+
+    if (managers)
+        user = {...user, managers: await getUserManagers(id)}
+
+    if (roles)
+        user = {...user, roles: await getUserRoles(id)}
 
     return user;
 }
@@ -243,11 +282,11 @@ export async function removeUser(userId) {
 
 /**
  * Retrieves all users with the 'Employee', 'Team Leader', or 'Specialist' role.
- * @returns {Promise<Manager[]>} Array of employees
+ * @returns {Promise<UserData[]>} Array of employees
  */
 export async function getEmployees() {
     /**
-     * @type {Manager[]}
+     * @type {UserData[]}
      */
     let employees = await User.findAll({
         include: [
@@ -290,11 +329,11 @@ export async function getEmployees() {
 
 /**
  * Retrieves all users with the 'Manager' role.
- * @returns {Promise<Manager[]>} Array of managers
+ * @returns {Promise<UserData[]>} Array of managers
  */
 export async function getManagers() {
     /**
-     * @type {Manager[]}
+     * @type {UserData[]}
      */
     let managers = await User.findAll({
         include: [
@@ -467,4 +506,48 @@ export async function getManagedUsers(managerId) {
     }));
 
     return users;
+}
+
+export async function hasManagerAccess(userId) {
+    const userConfig = await UserConfigs.findOne({ where: { user: userId } });
+
+    return userConfig && userConfig.manager_view_access;
+}
+
+export async function hasManagerView(userId) {
+    const userConfig = await UserConfigs.findOne({ where: { user: userId } });
+
+    return userConfig && userConfig.manager_view_enabled;
+}
+
+export async function setManagerView(userId, value) {
+    const [updated] = await UserConfigs.update(
+        { manager_view_enabled: value },
+        { where: { user: userId } }
+    );
+
+    return updated === 1;
+}
+
+export async function toggleManagerNav(userId, value) {
+    const [updated] = await UserConfigs.update(
+        { manager_nav_collapsed: value },
+        { where: { user: userId } }
+    );
+
+    return updated === 1;
+}
+
+/**
+ * Sets theme of the user.
+ * @param {number} user - User ID
+ * @param {number} theme_mode - Theme mode - 0 for Dark, 1 for Light
+ * @returns {Promise<boolean>}
+ */
+export async function setUserTheme(user, theme_mode) {
+    if (!user) return null;
+
+    const [updated] = await UserConfigs.update({ theme_mode }, { where: { user } });
+
+    return updated === 1;
 }
