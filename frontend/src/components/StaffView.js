@@ -5,16 +5,15 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
 import useAppState from '../contexts/AppStateContext';
+import UserSubMenu from "./UserSubMenu";
 
 const StaffView = () => {
-    const { user, appState, toggleView, toggleTheme } = useAppState();
+    const { user, appState } = useAppState();
     const location = useLocation();
 
     const currentMainPage = appState.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
     ) || appState.pages?.[0] || null;
-
-    const new_theme_mode = user?.theme_mode === 'dark' ? 'light' : 'dark';
 
     return (
         <>
@@ -42,7 +41,7 @@ const StaffView = () => {
                                 <span className='page-title'>{page.title}</span>
                             </Link>
                                 {page.subpages?.length >= 1 && (
-                                    <nav className='sub-menu'>
+                                    <nav className='app-sub-menu'>
                                         {page.subpages
                                             .filter((subpage) => subpage.path !== '')
                                             .map((subpage) => (
@@ -69,46 +68,7 @@ const StaffView = () => {
                         {user?.first_name || 'User'}
                     </span>
                     <i className='material-icons'>keyboard_arrow_down</i>
-                    <nav className='sub-menu'>
-                        <Link
-                            key='settings'
-                            className='sub-menu-link'
-                            to='#'
-                        >
-                            Settings
-                            <i className={'material-icons'}>settings</i>
-                        </Link>
-                        <Link
-                            key='toggle-theme'
-                            className='sub-menu-link'
-                            to='#'
-                            onClick={() => {
-                                toggleTheme(user?.id, new_theme_mode);
-                            }}
-                        >
-                            Switch theme
-                            <i className={'material-icons'}>{new_theme_mode}_mode</i>
-                        </Link>
-                        { user.manager_view_access &&
-                            <Link
-                                key='toggle-view'
-                                className='sub-menu-link'
-                                to='#'
-                                onClick={() => toggleView(true)}
-                            >
-                                Manager View
-                                <i className={'material-icons'}>view_compact_alt</i>
-                            </Link>
-                        }
-                        <Link
-                            key='logout'
-                            className='sub-menu-link logout'
-                            to='/logout'
-                        >
-                            Logout
-                            <i className={'material-icons'}>logout</i>
-                        </Link>
-                    </nav>
+                    <UserSubMenu />
                 </div>
             </nav>
             <MobileNav

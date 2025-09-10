@@ -7,6 +7,8 @@ import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from 'axios';
 import MobileNav from './MobileNav';
 import useAppState from '../contexts/AppStateContext';
+import UserSubMenu from "./UserSubMenu";
+import Icon from "./Icon";
 
 const MainNav = () => {
     const { user, appState } = useAppState();
@@ -68,9 +70,7 @@ const MainNav = () => {
 }
 
 const SubNav = ({currentMainPage, location}) => {
-    const { user, toggleView, toggleTheme } = useAppState();
-
-    const new_theme_mode = user?.theme_mode === 'dark' ? 'light' : 'dark';
+    const { user } = useAppState();
 
     return (
         <nav className={`app-sub-nav ${currentMainPage?.subpages?.length > 0 ? '' : 'no-subpages'}`}>
@@ -97,45 +97,8 @@ const SubNav = ({currentMainPage, location}) => {
                 className='subpage-link user-link'
             >
                 <Link className={'username'} to='#'>{user?.first_name || 'User'}</Link>
-                <i className='material-icons'>keyboard_arrow_down</i>
-                <nav className='sub-menu'>
-                    <Link
-                        key='settings'
-                        className='sub-menu-link'
-                        to='#'
-                    >
-                        Settings
-                        <i className={'material-icons'}>settings</i>
-                    </Link>
-                    <Link
-                        key='toggle-theme'
-                        className='sub-menu-link'
-                        to='#'
-                        onClick={() => {
-                            toggleTheme(user?.id, new_theme_mode);
-                        }}
-                    >
-                        Switch theme
-                        <i className={'material-icons'}>{new_theme_mode}_mode</i>
-                    </Link>
-                    <Link
-                        key='toggle-view'
-                        className='sub-menu-link'
-                        to='#'
-                        onClick={() => toggleView(false)}
-                    >
-                        Staff View
-                        <i className={'material-icons'}>view_compact_alt</i>
-                    </Link>
-                    <Link
-                        key='logout'
-                        className='sub-menu-link logout'
-                        to='/logout'
-                    >
-                        Logout
-                        <i className={'material-icons'}>logout</i>
-                    </Link>
-                </nav>
+                <Icon i={'keyboard_arrow_down'} />
+                <UserSubMenu />
             </div>
         </nav>
     )

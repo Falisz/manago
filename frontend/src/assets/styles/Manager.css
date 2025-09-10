@@ -205,7 +205,6 @@
     margin-left: auto;
 }
 
-
 .app.manager.fluent .app-sub-nav.no-subpages {
     width: fit-content;
     align-self: flex-end;
@@ -219,60 +218,14 @@
     margin-top: 10px;
 }
 
-.app.manager .app-sub-nav .sub-menu {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    position: absolute;
-    visibility: hidden;
-    opacity: 0;
-    z-index: 2000;
-    top: calc(100% - 10px);
-    right: 0;
-    background: linear-gradient(45deg, var(--gray-light), white);
-    border: none;
-    margin: 0;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: ease-in-out 0.3s;
-}
-.app.fluent .app-sub-nav .sub-menu {
-    backdrop-filter: blur(10px);
-    background: rgba(255,255,255,.75);
-}
-.app.manager .app-sub-nav .subpage-link:hover .sub-menu,
-.app.manager .app-sub-nav .sub-menu:hover {
+.app.manager .app-sub-nav .subpage-link:hover .app-sub-menu,
+.app.manager .app-sub-nav .app-sub-menu:hover {
     opacity: 1;
     visibility: visible;
     margin-top: 10px;
 }
-.app.manager .app-sub-nav .sub-menu-link {
-    display: flex;
+.app.manager .app-sub-nav .app-sub-menu .sub-menu-link {
     justify-content: flex-end;
-    align-items: center;
-    white-space: nowrap;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    text-align: right;
-    background: none;
-    border: none;
-    font-size: 16px;
-    text-transform: uppercase;
-    font-weight: 500;
-    color: #333;
-    text-decoration: none;
-    cursor: pointer;
-}
-.app.manager .app-sub-nav .sub-menu-link:hover {
-    color: var(--button-color);
-}
-.app.manager .app-sub-nav .sub-menu-link:not(:last-child) {
-    margin-bottom: 15px;
-}
-.app.manager .app-sub-nav .sub-menu-link i {
-    margin-left: 10px;
 }
 
 /*************/

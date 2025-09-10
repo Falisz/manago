@@ -4,8 +4,9 @@ Following roadmap and tasks to-do as of 2025-09-10:
   - [X] Global app theme settings. Global color, theme and styling support. 
   - [X] Unify the edit form styling.
   - [x] Theme/Mode switching per user.
-  - [ ] Make sub-menu styling a app-wide element (No separation for view styles)
-  - [ ] Make user sub-menu a separate reusable component
+  - [X] Make sub-menu styling a app-wide element (No separation for view styles).
+  - [X] Make user sub-menu a separate reusable component.
+  - [ ] Make an Icon shorthand component and replace previous material-icons elements with this new component.
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] User management
