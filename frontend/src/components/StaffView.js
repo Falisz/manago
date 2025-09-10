@@ -7,12 +7,14 @@ import MobileNav from './MobileNav';
 import useAppState from '../contexts/AppStateContext';
 
 const StaffView = () => {
-    const { user, appState, toggleView } = useAppState();
+    const { user, appState, toggleView, toggleTheme } = useAppState();
     const location = useLocation();
 
     const currentMainPage = appState.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
     ) || appState.pages?.[0] || null;
+
+    const new_theme_mode = user?.theme_mode === 'dark' ? 'light' : 'dark';
 
     return (
         <>
@@ -74,6 +76,18 @@ const StaffView = () => {
                             to='#'
                         >
                             Settings
+                            <i className={'material-icons'}>settings</i>
+                        </Link>
+                        <Link
+                            key='toggle-theme'
+                            className='sub-menu-link'
+                            to='#'
+                            onClick={() => {
+                                toggleTheme(user?.id, new_theme_mode);
+                            }}
+                        >
+                            Switch theme
+                            <i className={'material-icons'}>{new_theme_mode}_mode</i>
                         </Link>
                         { user.manager_view_access &&
                             <Link
@@ -83,6 +97,7 @@ const StaffView = () => {
                                 onClick={() => toggleView(true)}
                             >
                                 Manager View
+                                <i className={'material-icons'}>view_compact_alt</i>
                             </Link>
                         }
                         <Link
@@ -91,6 +106,7 @@ const StaffView = () => {
                             to='/logout'
                         >
                             Logout
+                            <i className={'material-icons'}>logout</i>
                         </Link>
                     </nav>
                 </div>

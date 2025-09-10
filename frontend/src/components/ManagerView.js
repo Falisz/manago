@@ -68,7 +68,9 @@ const MainNav = () => {
 }
 
 const SubNav = ({currentMainPage, location}) => {
-    const { user, toggleView } = useAppState();
+    const { user, toggleView, toggleTheme } = useAppState();
+
+    const new_theme_mode = user?.theme_mode === 'dark' ? 'light' : 'dark';
 
     return (
         <nav className={`app-sub-nav ${currentMainPage?.subpages?.length > 0 ? '' : 'no-subpages'}`}>
@@ -103,6 +105,18 @@ const SubNav = ({currentMainPage, location}) => {
                         to='#'
                     >
                         Settings
+                        <i className={'material-icons'}>settings</i>
+                    </Link>
+                    <Link
+                        key='toggle-theme'
+                        className='sub-menu-link'
+                        to='#'
+                        onClick={() => {
+                            toggleTheme(user?.id, new_theme_mode);
+                        }}
+                    >
+                        Switch theme
+                        <i className={'material-icons'}>{new_theme_mode}_mode</i>
                     </Link>
                     <Link
                         key='toggle-view'
@@ -111,6 +125,7 @@ const SubNav = ({currentMainPage, location}) => {
                         onClick={() => toggleView(false)}
                     >
                         Staff View
+                        <i className={'material-icons'}>view_compact_alt</i>
                     </Link>
                     <Link
                         key='logout'
@@ -118,6 +133,7 @@ const SubNav = ({currentMainPage, location}) => {
                         to='/logout'
                     >
                         Logout
+                        <i className={'material-icons'}>logout</i>
                     </Link>
                 </nav>
             </div>

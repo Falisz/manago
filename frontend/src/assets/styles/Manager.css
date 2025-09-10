@@ -248,7 +248,9 @@
     margin-top: 10px;
 }
 .app.manager .app-sub-nav .sub-menu-link {
-    display: block;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
     white-space: nowrap;
     margin: 0;
     padding: 0;
@@ -268,6 +270,9 @@
 }
 .app.manager .app-sub-nav .sub-menu-link:not(:last-child) {
     margin-bottom: 15px;
+}
+.app.manager .app-sub-nav .sub-menu-link i {
+    margin-left: 10px;
 }
 
 /*************/

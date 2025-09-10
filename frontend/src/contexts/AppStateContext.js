@@ -204,6 +204,20 @@ export const AppStateProvider = ({ children }) => {
         }
     }, [refreshPages]);
 
+    const toggleTheme = useCallback(async(userId, theme_mode) => {
+        if (!userId) return null;
+        try {
+            const result = await axios.put(
+                `/user-theme/${userId}`,
+                { theme_mode },
+                { withCredentials: true }
+            );
+            setUser(prev => prev ? { ...prev, theme_mode: result.data?.theme_mode } : null);
+        } catch (err) {
+            console.error('Theme switching error: ', err);
+        }
+    }, []);
+
     useEffect(() => {
         checkConnection().then();
         const interval = setInterval(checkConnection, 60000);
@@ -241,7 +255,8 @@ export const AppStateProvider = ({ children }) => {
             refreshModules,
             toggleModule,
             refreshPages,
-            toggleView
+            toggleView,
+            toggleTheme
         }}>
             {children}
         </AppStateContext.Provider>
