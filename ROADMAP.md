@@ -7,6 +7,8 @@ Following roadmap and tasks to-do as of 2025-09-10:
   - [X] Make sub-menu styling a app-wide element (No separation for view styles).
   - [X] Make user sub-menu a separate reusable component.
   - [X] Make an Icon shorthand component and replace previous material-icons elements with this new component.
+  - [ ] User/Role closing edit form modal after saving changes fix-up.
+  - [ ] Pages loading after successful log-on fix-up.
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] Fluent UI Style
