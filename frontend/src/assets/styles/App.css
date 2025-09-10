@@ -43,6 +43,7 @@ body a {
     --text-color-3: var(--gray-lighter);
     --background-color: var(--black);
     --background-color-2: var(--black-brighter);
+    --background-color-3: var(--gray-darker);
     --background-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
     --background-gradient-2: linear-gradient(45deg, var(--black), var(--gray-darker));
     --seethrough-background: var(--seethrough-black);
@@ -56,8 +57,8 @@ body a {
     --text-color-2: var(--black-brighter);
     --text-color-3: var(--gray-darker);
     --background-color: var(--gray-light);
-    --background-color-2: var(--white-darker);
-    --background-color-3: var(--color-gradient);
+    --background-color-2: var(--gray-lighter);
+    --background-color-3: var(--white-darker);
     --background-gradient: linear-gradient(45deg, var(--gray-lighter), var(--white-darker));
     --background-gradient-2: linear-gradient(45deg, var(--gray-light), var(--gray-lighter));
     --seethrough-background: var(--seethrough-white);

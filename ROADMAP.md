@@ -10,8 +10,8 @@ Following roadmap and tasks to-do as of 2025-09-10:
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] Fluent UI Style
-  - [ ] Connectivity Pop-up
-  - [ ] Login Form
+  - [X] Connectivity Pop-up
+  - [X] Login Form
   - [ ] Confirm prompt dialog
 - [ ] User management
   - [ ] User Edit form: Rewrite the roles assignment logic and interface. (Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.)

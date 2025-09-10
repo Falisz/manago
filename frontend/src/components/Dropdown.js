@@ -44,8 +44,6 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
         return (upperCaseNames ? value.toUpperCase() : value);
     };
 
-    console.log(options);
-
     return (
         <div className={"app-dropdown " + className} ref={dropdownRef}>
             <div

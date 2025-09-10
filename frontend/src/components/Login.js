@@ -24,33 +24,35 @@ const Login = () => {
 
     return (
         <div className='app-login'>
-            <AppLogo className='app-logo' />
-            <form className='login-form see' onSubmit={handleSubmit}>
-                <div className='input-field'>
-                    <input
-                        type='text'
-                        autoComplete='username'
-                        placeholder='Login'
-                        name='login'
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <Icon className='input-icon' i={'person'} />
-                </div>
-                <div className='input-field'>
-                    <input
-                        type='password'
-                        autoComplete='current-password'
-                        placeholder='Password'
-                        name='password'
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <Icon className='input-icon' i={'lock'} />
-                </div>
-                <button type='submit'>Log in</button>
-                { error && <p className='error'>{error}</p> }
-            </form>
+            <div className='login-wrapper'>
+                <AppLogo className='app-logo' />
+                <form className='login-form see' onSubmit={handleSubmit}>
+                    <div className='input-field'>
+                        <input
+                            type='text'
+                            autoComplete='username'
+                            placeholder='Login'
+                            name='login'
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <Icon className='input-icon' i={'person'} />
+                    </div>
+                    <div className='input-field'>
+                        <input
+                            type='password'
+                            autoComplete='current-password'
+                            placeholder='Password'
+                            name='password'
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <Icon className='input-icon' i={'lock'} />
+                    </div>
+                    <button type='submit'>Log in</button>
+                    { error && <p className='error'>{error}</p> }
+                </form>
+            </div>
         </div>
     );
 };

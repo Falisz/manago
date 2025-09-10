@@ -2,17 +2,40 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    background: url('../office_background.jpg') no-repeat;
+    background-size: cover;
+}
+.app-login .login-wrapper {
+    display: flex;
+    height: calc(100% - 40px);
+    flex-direction: column;
+    align-items: center;
+    background: var(--background-color);
+    padding: 20px 60px;
+    box-shadow: var(--weak-shade);
+}
+.app.fluent .app-login {
+    justify-content: center;
     align-items: center;
 }
+.app.fluent .app-login .login-wrapper {
+    margin: -50px 20px 50px;
+    border-radius: var(--def-border-radius);
+    background: var(--seethrough-background);
+    backdrop-filter: blur(10px);
+    height: fit-content;
+}
+
 .app-login .app-logo {
-    margin: 150px auto 30px;
+    margin: 20px auto;
     width: 100px;
     height: auto;
     color: white;
     fill: white;
     opacity: 1;
     transition: ease-in-out 0.3s;
-    background: white;
+    background: var(--background-color-3);
     padding: 20px;
     border-radius: 100px;
 }
@@ -44,27 +67,31 @@
 }
 .app-login .login-form .input-field input,
 .app-login .login-form .input-field input:-webkit-autofill {
-    background: transparent !important;
-    color: white !important;
-    appearance: unset !important;
-    border-radius: 10px 10px 0 0;
+    background: var(--background-color-3);
+    color: var(--text-color);
+    appearance: unset;
+    border-radius: 10px;
     border: none;
-    border-bottom: 4px solid var(--color-dark);
     margin: 0;
-    padding: 10px 40px;
+    padding: 10px 10px 10px 40px;
     flex: 1;
     font-size: 18px;
     font-family: 'Roboto Condensed', sans-serif;
     text-transform: uppercase;
+    opacity: 0.8;
     transition: ease-in-out 0.3s;
 }
 .app-login .login-form .input-field input:hover,
 .app-login .login-form .input-field input:focus {
-    border-bottom: 4px solid var(--color);
+    opacity: 1;
 }
 .app-login .login-form .input-field input:hover~.input-icon,
 .app-login .login-form .input-field input:focus~.input-icon {
     color: var(--color);
+}
+.app.fluent .app-login .login-form .input-field input,
+.app.fluent .app-login .login-form .input-field input:-webkit-autofill {
+    background: var(--seethrough-background-3);
 }
 .app-login .login-form button {
     background: var(--color-gradient);
@@ -79,6 +106,14 @@
     font-family: 'Roboto Condensed', sans-serif;
     text-transform: uppercase;
     cursor: pointer;
+    transition: ease-in-out 0.3s;
+}
+.app.fluent .app-login .login-form button {
+    background: var(--seethrough-background-2);
+    color: var(--color);
+}
+.app.fluent .app-login .login-form button:hover {
+    background: var(--seethrough-background-3);
 }
 .app-login .login-form .error {
     color: orange;
@@ -86,6 +121,11 @@
     border: 2px solid orange;
     padding: 10px;
     align-self: center;
+}
+.app.fluent .app-login .login-form .error {
+    background: var(--color);
+    border: none;
+    color: white;
 }
 
 
