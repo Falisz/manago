@@ -136,34 +136,50 @@ export async function getUsers() {
  * @returns {Promise<{success: boolean, message: string, user?: Object}>}
  */
 export async function createUser(data) {
-    if (!data.email || !data.password || !data.first_name || !data.last_name) {
-        return {success: false, message: 'Mandatory data not provided.'};
+    const transaction = await sequelize.transaction();
+    try {
+        if (!data.email || !data.first_name || !data.last_name) {
+            return {success: false, message: 'Mandatory data not provided.'};
+        }
+
+        if (await User.findOne({where: {email: data.email}})) {
+            return {success: false, message: 'Email must be unique.'};
+        }
+
+        if (data.login !== null && data.login !== undefined && await User.findOne({where: {login: data.login}})) {
+            return {success: false, message: 'Login must be unique.'};
+        }
+
+        const hashedPassword = await bcrypt.hash(data.password || '1234', 10);
+
+        const user = await User.create({
+            login: data.login || null,
+            email: data.email,
+            password: hashedPassword,
+            active: true,
+            removed: false,
+        }, { transaction });
+
+        await UserDetails.create({
+            user: user.id,
+            first_name: data.first_name,
+            last_name: data.last_name,
+        }, { transaction });
+
+        await UserConfigs.create({
+            user: user.id,
+            manager_view_access: data.manager_view_access || false,
+            manager_view_enabled: false,
+            manager_nav_collapsed: false
+        }, { transaction });
+
+        await transaction.commit();
+        return {success: true, message: 'User created successfully.', user: user};
+    } catch (err) {
+        await transaction.rollback();
+        return { success: false, message: `Error creating user: ${err.message}` }
     }
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    const user = await User.create({
-        login: data.login || null,
-        email: data.email,
-        password: hashedPassword,
-        active: true,
-        removed: false,
-    });
-
-    await UserDetails.create({
-        user: user.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-    });
-
-    await UserConfigs.create({
-        user: user.id,
-        manager_view_access: data.manager_view_access || false,
-        manager_view_enabled: false,
-        manager_nav_collapsed: false
-    });
-
-    return {success: true, message: 'User created successfully.', user: user};
 }
 
 /**
