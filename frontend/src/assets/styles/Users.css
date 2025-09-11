@@ -7,18 +7,11 @@
     max-width: 100px;
 }
 
-.user-edit-form .user-roles,
-.user-edit-form .user-managers {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.user-edit-form .role-dropdown-item,
-.user-edit-form .manager-dropdown-item {
-    flex: 0 49%;
+.user-edit-form .dropdown-item {
+    flex: 0;
     display: flex;
     align-items: center;
+    width: max(170px, 50%);
 }
 .user-edit-form .add-button {
     width: fit-content;

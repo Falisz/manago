@@ -168,60 +168,64 @@ const UserEdit = ({ userId }) => {
                 className={'app-form user-edit-form'}
                 onSubmit={handleSubmit}
             >
-                <div className='form-group'>
-                    <label className={'form-label'}>
-                        Login
-                    </label>
-                    <input
-                        className={'form-input'}
-                        type='text'
-                        name='login'
-                        value={formData.login}
-                        onChange={handleChange}
-                        placeholder='Enter login (optional)'
-                    />
+                <div className={'form-section'}>
+                    <div className='form-group'>
+                        <label className={'form-label'}>
+                            First Name
+                        </label>
+                        <input
+                            className={'form-input'}
+                            type='text'
+                            name='first_name'
+                            value={formData.first_name}
+                            onChange={handleChange}
+                            placeholder='Enter first name'
+                            required
+                        />
+                    </div>
+                    <div className='form-group'>
+                        <label className={'form-label'}>
+                            Last Name
+                        </label>
+                        <input
+                            className={'form-input'}
+                            type='text'
+                            name='last_name'
+                            value={formData.last_name}
+                            onChange={handleChange}
+                            placeholder='Enter last name'
+                            required
+                        />
+                    </div>
                 </div>
-                <div className='form-group'>
-                    <label className={'form-label'}>
-                        Email address
-                    </label>
-                    <input
-                        className={'form-input'}
-                        type='email'
-                        name='email'
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder='Enter email'
-                        required
-                    />
-                </div>
-                <div className='form-group'>
-                    <label className={'form-label'}>
-                        First Name
-                    </label>
-                    <input
-                        className={'form-input'}
-                        type='text'
-                        name='first_name'
-                        value={formData.first_name}
-                        onChange={handleChange}
-                        placeholder='Enter first name'
-                        required
-                    />
-                </div>
-                <div className='form-group'>
-                    <label className={'form-label'}>
-                        Last Name
-                    </label>
-                    <input
-                        className={'form-input'}
-                        type='text'
-                        name='last_name'
-                        value={formData.last_name}
-                        onChange={handleChange}
-                        placeholder='Enter last name'
-                        required
-                    />
+                <div className={'form-section'}>
+                    <div className='form-group'>
+                        <label className={'form-label'}>
+                            Email address
+                        </label>
+                        <input
+                            className={'form-input'}
+                            type='email'
+                            name='email'
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder='Enter email'
+                            required
+                        />
+                    </div>
+                    <div className='form-group'>
+                        <label className={'form-label'}>
+                            Login
+                        </label>
+                        <input
+                            className={'form-input'}
+                            type='text'
+                            name='login'
+                            value={formData.login}
+                            onChange={handleChange}
+                            placeholder='Enter login (optional)'
+                        />
+                    </div>
                 </div>
                 <div className='form-group'>
                     <label>
@@ -251,9 +255,9 @@ const UserEdit = ({ userId }) => {
                     </div>
                     {roles?.length === 0 ? (<p>No roles available.</p>) : (
                         <>
-                            <div className={'user-roles'}>
+                            <div className={'form-section'}>
                                 {roleSelections.map((selectedId, index) => (
-                                    <div key={index} className='role-dropdown-item'>
+                                    <div key={index} className='dropdown-item'>
                                         <Dropdown
                                             name={`role_${index}`}
                                             value={selectedId}

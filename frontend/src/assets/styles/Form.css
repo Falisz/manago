@@ -1,15 +1,27 @@
 .app-form {
     display: flex;
     flex-direction: column;
+    gap: 10px;
     padding: 0 20px;
     align-items: flex-start;
+}
+.app-form .form-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    transition: 0.3s ease-in-out;
 }
 .app-form .form-group {
     display: flex;
     flex-direction: column;
-    margin: 10px 0;
-    width: 100%;
+    gap: 5px;
     transition: 0.3s ease-in-out;
+}
+.app-form .form-section .form-group {
+    flex: 0;
+    width: max(170px, 50%);
 }
 .app-form .form-group.disabled {
     opacity: 0.5;
@@ -26,7 +38,7 @@
     border-radius: var(--def-border-radius);
     padding: 10px 15px;
     box-sizing: border-box;
-    margin: 5px;
+    margin: 0 5px;
     outline: none;
     border: none;
     background: var(--text-color-3);
@@ -36,7 +48,7 @@
     min-width: max(170px, 33%);
 }
 .app-form .app-dropdown {
-    margin: 5px;
+    margin: 0 0 0 5px;
     min-width: max(200px, 33%);
 }
 .app-form .app-dropdown .dropdown-selected {
