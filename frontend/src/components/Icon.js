@@ -5,7 +5,7 @@ const Icon = ({i='check_circle', className=null, onClick=null, s=false, clickabl
     return (
         <i
             className={'material-' + (s ? 'symbols-rounded' : 'icons')
-                + (clickable ? (' ' + 'app-clickable') : '')
+                + (clickable ? (' app-clickable') : '')
                 + (className ? (' ' + className) : '')}
             onClick={onClick}
         >
