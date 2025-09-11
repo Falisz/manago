@@ -113,7 +113,7 @@
 
 .app.fluent .app-modal-content {
     backdrop-filter: blur(10px);
-    background: var(--seethrough-background);
+    background: var(--seethrough-background-3);
     border-radius: var(--big-border-radius);
 }
 .app.fluent .app-modal-content.pane {

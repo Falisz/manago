@@ -210,7 +210,7 @@ button .material-symbols-rounded {
     background: var(--seethrough-background);
 }
 
-.app-modal-content .app-notice {
+.app.fluent .app-modal-content .app-notice {
     background: none;
     box-shadow: none;
     border: none;
