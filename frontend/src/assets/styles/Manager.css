@@ -12,7 +12,7 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    background: var(--background-gradient-2);
+    background: var(--background-gradient);
     color: var(--text-color-2);
     width: 250px;
     box-shadow: 0 0 10px 5px rgba(0, 0, 0, .15);
@@ -24,7 +24,7 @@
 }
 .app.manager.fluent .app-nav {
     margin: 10px;
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
 }
@@ -181,7 +181,7 @@
     align-items: center;
     padding: 5px;
     margin: 10px 10px 10px 0;
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
 }

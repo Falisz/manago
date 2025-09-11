@@ -18,17 +18,21 @@ body a {
 .material-symbols-rounded {
     cursor: default;
 }
+button .material-icons,
+button .material-symbols-rounded {
+    cursor: pointer;
+}
 .app {
     /*  APP'S PALETTE */
-    --gray-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
-    --black: #111;
+    --black: #0c0e12;
     --black-brighter: #181c24;
     --gray-darker: #1f2129;
     --gray-dark: #282c34;
-    --gray: #4e5563;
-    --gray-light: #ccc;
-    --gray-lighter: #ddd;
-    --white-darker: #eee;
+    --gray: #515866;
+    --gray-light: #c2c5cc;
+    --gray-lighter: #d5d7de;
+    --white-darker: #e4e4ed;
+    --white: #f5f5fc;
     --seethrough-black: rgba(0, 0, 0, .25);
     --seethrough-white: rgba(255, 255, 255, .25);
     --seethrough-black-2: rgba(0, 0, 0, .5);
@@ -38,29 +42,28 @@ body a {
     --font-family: 'Roboto', sans-serif;
     --font-family-condensed: 'Roboto Condensed', sans-serif;
     /*  DARK APP'S PALETTE */
-    --text-color: white;
+    --text-color: var(--white);
     --text-color-2: var(--white-darker);
     --text-color-3: var(--gray-lighter);
     --background-color: var(--black);
     --background-color-2: var(--black-brighter);
     --background-color-3: var(--gray-darker);
-    --background-gradient: linear-gradient(45deg, var(--black-brighter), var(--gray-dark));
-    --background-gradient-2: linear-gradient(45deg, var(--black), var(--gray-darker));
+    --background-gradient: linear-gradient(45deg, var(--black), var(--gray-darker));
     --seethrough-background: var(--seethrough-black);
     --seethrough-background-2: var(--seethrough-black-2);
     --seethrough-background-3: var(--seethrough-black-3);
     --weak-shade: 0 0 10px 5px rgba(0, 0, 0, .05);
-    --def-border-radius: 12px;
+    --def-border-radius: 6px;
+    --big-border-radius: 12px;
 }
 .app.light {
     --text-color: var(--black);
     --text-color-2: var(--black-brighter);
     --text-color-3: var(--gray-darker);
-    --background-color: var(--gray-light);
-    --background-color-2: var(--gray-lighter);
-    --background-color-3: var(--white-darker);
-    --background-gradient: linear-gradient(45deg, var(--gray-lighter), var(--white-darker));
-    --background-gradient-2: linear-gradient(45deg, var(--gray-light), var(--gray-lighter));
+    --background-color: var(--gray-lighter);
+    --background-color-2: var(--white-darker);
+    --background-color-3: var(--white);
+    --background-gradient: linear-gradient(45deg, var(--gray-lighter), var(--white));
     --seethrough-background: var(--seethrough-white);
     --seethrough-background-2: var(--seethrough-white-2);
     --seethrough-background-3: var(--seethrough-white-3);
@@ -202,7 +205,7 @@ body a {
 
 .app.fluent .app-notice {
     color: var(--text-color-3);
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
 }
@@ -247,7 +250,7 @@ body a {
 .app.fluent .seethrough,
 .app.fluent .seethrough-2,
 .app.fluent .seethrough-3 {
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
 }
 
@@ -286,7 +289,7 @@ body a {
 }
 
 .app-scroll::-webkit-scrollbar-thumb {
-    background-color: var(--background-color-2);
+    background-color: var(--background-color-3);
     background-clip: content-box;
     border-radius: 10px;
     margin-right: 5px;
@@ -318,7 +321,7 @@ body a {
     padding: 10px;
     font-size: 1rem;
     background: var(--seethrough-background);
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     color: var(--text-color);
     font-weight: 400;
@@ -423,17 +426,18 @@ body a {
     z-index: 2000;
     top: calc(100% - 10px);
     right: 0;
-    background: linear-gradient(45deg, var(--gray-light), white);
+    background: var(--background-gradient);
     border: none;
     margin: 0;
     padding: 15px;
-    border-radius: 12px;
+    border-radius: var(--def-border-radius);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: ease-in-out 0.3s;
 }
 .app.fluent .app-sub-menu {
+    background: var(--seethrough-background-2);
+    border-radius: var(--big-border-radius);
     backdrop-filter: blur(10px);
-    background: rgba(255,255,255,.75);
 }
 .app-sub-menu .sub-menu-link {
     display: flex;
@@ -448,11 +452,13 @@ body a {
     font-size: 16px;
     text-transform: uppercase;
     font-weight: 500;
-    color: #333;
+    color: var(--text-color-3);
     text-decoration: none;
     cursor: pointer;
 }
+.app-sub-menu .sub-menu-link:focus,
 .app-sub-menu .sub-menu-link:hover {
+    outline: none;
     color: var(--button-color);
 }
 .app-sub-menu .sub-menu-link:not(:last-child) {

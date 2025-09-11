@@ -82,7 +82,7 @@
     width: 80dvw;
     flex-direction: column;
     list-style: none;
-    background: var(--gray-gradient);
+    background: var(--background-gradient);
     transition: ease-in-out 0.3s;
     transform: translateX(100%);
     overflow: auto;
@@ -94,7 +94,7 @@
     top: 10px;
     right: 10px;
     padding: 30px;
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     background: var(--seethrough-background-2);
     backdrop-filter: blur(10px);
     width: 66dvw;
@@ -152,7 +152,7 @@
 .app-mobile-nav-link-item a {
     display: flex;
     align-items: center;
-    color: white;
+    color: var(--text-color);
     margin: 5px 0;
     text-decoration: none;
     transition: 0.3s ease-in-out;

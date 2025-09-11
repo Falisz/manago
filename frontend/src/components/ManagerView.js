@@ -51,7 +51,7 @@ const MainNav = () => {
                                     : ''
                         }`}
                     >
-                        {page.icon && <Icon className='app-nav-page-link-icon' i={page.icon} />}
+                        {page.icon && <Icon className='app-nav-page-link-icon' i={page.icon} clickable={true}/>}
                         <span className='app-nav-page-link-label'>
                         {   (page.title.toLowerCase() === 'employees' && appState.modules?.some(m => m.title === 'Teams' && m.enabled))
                             ? 'Employees & Teams'

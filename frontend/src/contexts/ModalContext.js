@@ -150,6 +150,7 @@ export const ModalProvider = ({ children }) => {
                     onConfirm2={modal.onConfirm2}
                     confirmLabel={modal.confirmLabel}
                     confirmLabel2={modal.confirmLabel2}
+                    cancelLabel={modal.cancelLabel}
                 />;
             default:
                 return <InWorks title={'Unknown modal.'} modal={true} />;

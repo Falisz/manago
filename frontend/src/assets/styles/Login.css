@@ -21,7 +21,7 @@
 }
 .app.fluent .app-login .login-wrapper {
     margin: -50px 20px 50px;
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     background: var(--seethrough-background);
     backdrop-filter: blur(10px);
     height: fit-content;

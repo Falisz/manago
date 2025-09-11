@@ -23,22 +23,31 @@
 }
 .app-form .form-input,
 .app-form .form-textarea {
-    border-radius: 5px;
+    border-radius: var(--def-border-radius);
     padding: 10px 15px;
     margin: 5px;
     outline: none;
     border: none;
-    background: var(--background-color-2);
-    color: var(--text-color-3);
+    background: var(--text-color-3);
+    color: var(--background-color-3);
     transition: 0.3s ease-in-out;
     width: fit-content;
     min-width: 33%;
     box-sizing: border-box;
 }
+.app-form .app-dropdown .dropdown-selected {
+    background: var(--text-color-3);
+    color: var(--background-color-3);
+}
 .app.fluent .app-form .form-input,
 .app.fluent .app-form .form-textarea {
+    color: var(--text-color);
     background: var(--seethrough-background-2);
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
+}
+.app.fluent .app-form .app-dropdown .dropdown-selected {
+    color: var(--text-color);
+    background: var(--seethrough-background-2);
 }
 .app-form .form-textarea {
     height: 5rem;
@@ -61,7 +70,7 @@
     padding: 10px 15px;
     background: var(--button-color);
     color: white;
-    border-radius: 5px;
+    border-radius: var(--def-border-radius);
     cursor: pointer;
     transition: 0.3s ease-in-out;
     font-weight: bold;
@@ -80,7 +89,7 @@
     background: #ff4d4f;
 }
 .app.fluent .app-form .action-button {
-    border-radius: var(--def-border-radius);
+    border-radius: var(--big-border-radius);
     background: var(--seethrough-background-2);
     box-shadow: var(--weak-shade);
     color: var(--text-color-3);

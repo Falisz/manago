@@ -23,7 +23,7 @@ const UserDetails = ({ userId }) => {
     }, [userId, fetchUser, refreshTriggers]);
 
     const handleDelete = async (users = 0) => {
-        let message = 'Are you sure you want to delete this role? This action cannot be undone.'
+        let message = 'Are you sure you want to delete this user? This action cannot be undone.'
         if (users > 0) {
             message += ` This role is currently assigned to ${users} user${users > 1 ? 's' : ''}.`
         }
