@@ -28,7 +28,7 @@
     position: absolute;
     top: 0;
     right: 0;
-    background: var(--background-gradient-2);
+    background: var(--background-gradient);
     padding: 25px;
     width: 50%;
     height: calc(100% - 50px);
@@ -60,9 +60,10 @@
     position: absolute;
     top: 50%;
     left: 50%;
+    transform: translate(-50%, -50%) scale(1);
     width: fit-content;
     height: fit-content;
-    transform: translate(-50%, -50%) scale(1);
+    padding-top: 40px;
     transition: ease-in-out 0.3s;
 }
 .app-modal-content.pop-up.hidden {
@@ -75,14 +76,32 @@
     display: inline-flex;
     margin: 5px;
     padding: 8px;
-    background: var(--link-color);
+    background: var(--button-color);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: 0.3s ease-in-out;
 }
 .app-modal-content.pop-up .action-button.discard {
     background: orangered;
+}
+.app.fluent .app-modal-content.pop-up .action-button {
+    background: var(--seethrough-background);
+    box-shadow: var(--weak-shade);
+    border-radius: var(--def-border-radius);
+    padding: 10px 15px;
+    margin: 0;
+    font-weight: bold;
+}
+.app.fluent .app-modal-content.pop-up .action-button:hover {
+    background: var(--seethrough-background-2);
+}
+.app.fluent .app-modal-content.pop-up .action-button+.action-button {
+    margin-left: 10px;
+}
+.app.fluent .app-modal-content.pop-up .action-button.discard {
+    color: orangered;
 }
 
 .app-modal-content>h1 {

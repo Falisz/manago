@@ -23,14 +23,25 @@
     margin: 0;
     padding: 10px 30px;
 }
+.app.staff .app-nav .app-home:focus,
+.app.staff .app-nav .app-home:focus-within {
+    outline: none;
+}
 .app.staff.fluent .app-nav .app-home  {
     background: none;
-    padding: 10px;
+    padding: 5px 10px;
 }
 .app.staff .app-nav .app-logo {
     width: auto;
     height: 40px;
     fill: white;
+    transition: .3s ease-in-out;
+}
+.app.staff.fluent .app-nav .app-home .app-logo #AppLogoSymbol {
+    transition: .3s ease-in-out;
+}
+.app.staff.fluent .app-nav .app-home:focus .app-logo #AppLogoSymbol  {
+    fill: var(--color);
 }
 .app.staff.fluent .app-nav .app-logo  {
     height: 35px;
@@ -47,7 +58,7 @@
 .app.staff .app-nav .app-pages .page-link-item {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     position: relative;
     margin: 0 10px;
 }
@@ -68,7 +79,13 @@
     -webkit-tap-highlight-color: transparent;
 }
 .app.staff .app-nav .app-user {
-    padding: 10px 30px;
+    padding: 0 30px;
+    align-items: stretch;
+}
+.app.staff .app-nav .app-user .user-link {
+    display: flex;
+    align-items: center;
+    color: var(--text-color-3);
 }
 .app.staff .app-nav .app-pages i {
     font-size: 24px;
@@ -78,11 +95,19 @@
     border: none;
     border-bottom: 4px solid transparent;
 }
+.app.staff .app-nav .page-link:focus,
+.app.staff .app-nav .user-link:focus {
+    outline: none;
+    color: var(--color);
+}
 .app.staff .app-nav .app-pages .page-link.active,
 .app.staff .app-nav .app-pages .page-link:hover {
     border-bottom-color: var(--color);
 }
 
+.app.staff .app-nav .app-sub-menu {
+    top: calc(100% - 20px);
+}
 .app.staff .app-nav .page-link-item .app-sub-menu {
     right: 50%;
     transform: translateX(50%);
@@ -91,7 +116,10 @@
     right: 20px;
 }
 .app.staff .app-nav .page-link-item:hover .app-sub-menu,
+.app.staff .app-nav .page-link-item:focus .app-sub-menu,
+.app.staff .app-nav .page-link-item:focus-within .app-sub-menu,
 .app.staff .app-nav .app-user:hover .app-sub-menu,
+.app.staff .app-nav .app-user:focus-within .app-sub-menu,
 .app.staff .app-nav .app-sub-menu:hover {
     opacity: 1;
     visibility: visible;

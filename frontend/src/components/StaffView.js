@@ -38,7 +38,7 @@ const StaffView = () => {
                                             : ''
                                 }`}
                             >
-                                {page.icon && <Icon className={'page-icon'} i={page.icon} />}
+                                {page.icon && <Icon className={'page-icon'} i={page.icon} clickable={true}/>}
                                 <span className='page-title'>{page.title}</span>
                             </Link>
                                 {page.subpages?.length >= 1 && (
@@ -65,10 +65,10 @@ const StaffView = () => {
                     ))}
                 </ul>
                 <div className='app-user'>
-                    <span className='username'>
+                    <Link className={'user-link'} to='#'>
                         {user?.first_name || 'User'}
-                    </span>
-                    <Icon i={'keyboard_arrow_down'} />
+                        <Icon i={'keyboard_arrow_down'} />
+                    </Link>
                     <UserSubMenu />
                 </div>
             </nav>
