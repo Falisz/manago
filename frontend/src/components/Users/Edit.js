@@ -1,5 +1,5 @@
 // FRONTEND/components/Users/Edit.js
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';
 import useRole from "../../hooks/useRole";
@@ -13,12 +13,10 @@ import Button from "../Button";
 const FORM_CLEAN_STATE = {
         login: '',
         email: '',
-        password: '',
         first_name: '',
         last_name: '',
         role_ids: [],
-        primary_manager_id: '',
-        secondary_manager_id: '',
+        manager_ids: [],
         active: true,
         manager_view_access: false,
 };
@@ -29,7 +27,8 @@ const UserEdit = ({ userId }) => {
     const { roles, fetchRoles } = useRole();
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     const [ formData, setFormData ] = useState(FORM_CLEAN_STATE);
-    const [roleSelections, setRoleSelections] = useState([]);
+    const [ roleSelections, setRoleSelections ] = useState([]);
+    const [ mgrSelections, setMgrSelections ] = useState([]);
 
     useEffect(() => {
         fetchRoles().then();
@@ -50,16 +49,15 @@ const UserEdit = ({ userId }) => {
         setFormData({
             login: user?.login || '',
             email: user?.email || '',
-            password: user?.password || '',
             first_name: user?.first_name || '',
             last_name: user?.last_name || '',
             role_ids: user?.roles?.map((role) => role.id) || [],
-            primary_manager_id: user?.managers?.[0]?.id || '',
-            secondary_manager_id: user?.managers?.[1]?.id || '',
+            manager_ids: user?.managers?.map((mgr) => mgr.id) || [],
             active: user?.active || true,
             manager_view_access: user?.manager_view_access || false,
         });
         setRoleSelections(user?.roles?.map((role) => role.id.toString()) || []);
+        setMgrSelections(user?.managers?.map((mgr) => mgr.id.toString()) || []);
     }, [user]);
 
     useEffect(() => {
@@ -69,15 +67,20 @@ const UserEdit = ({ userId }) => {
     }, [roleSelections, roles]);
 
     useEffect(() => {
-        if (formData.primary_manager_id && formData.primary_manager_id === formData.secondary_manager_id) {
-            setFormData(prev => ({ ...prev, secondary_manager_id: '' }));
+        if (mgrSelections.length === 0 && managers?.length > 0) {
+            setMgrSelections(['']);
         }
-    }, [formData.primary_manager_id, formData.secondary_manager_id]);
+    }, [mgrSelections, managers]);
 
     useEffect(() => {
         const selectedIds = roleSelections.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
         setFormData(prev => ({ ...prev, role_ids: selectedIds }));
     }, [roleSelections]);
+
+    useEffect(() => {
+        const selectedIds = mgrSelections.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
+        setFormData(prev => ({ ...prev, manager_ids: selectedIds }));
+    }, [mgrSelections]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -107,6 +110,25 @@ const UserEdit = ({ userId }) => {
         setDiscardWarning(true);
     };
 
+    const handleManagerChange = (index, value) => {
+        setMgrSelections(prev => {
+            const newSel = [...prev];
+            newSel[index] = value;
+            return newSel;
+        });
+        setDiscardWarning(true);
+    };
+
+    const handleAddMgr = () => {
+        setMgrSelections(prev => [...prev, '']);
+        setDiscardWarning(true);
+    };
+
+    const handleRemoveMgr = (index) => {
+        setMgrSelections(prev => prev.filter((_, i) => i !== index));
+        setDiscardWarning(true);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const savedUser = await saveUser(formData, userId);
@@ -127,21 +149,6 @@ const UserEdit = ({ userId }) => {
         }
     };
 
-    const availableManagers = useMemo(() => {
-        return managers?.filter(
-            manager => parseInt(manager.id) !== parseInt(userId)
-        ).map(manager => ({
-            id: manager.id,
-            name: `${manager.first_name} ${manager.last_name}`
-        })) || [];
-    }, [managers, userId]);
-
-    const availableSecondaryManagers = useMemo(() => {
-        return availableManagers.filter(
-            manager => manager.id !== formData.primary_manager_id
-        );
-    }, [availableManagers, formData.primary_manager_id]);
-
     const getAvailableRoles = (index) => {
         const currentSelected = roleSelections[index];
         return roles.filter(role => {
@@ -150,10 +157,18 @@ const UserEdit = ({ userId }) => {
         });
     };
 
-    const selectedCount = roleSelections.filter(id => id !== '').length;
-    const showAddButton = selectedCount < roles?.length;
+    const getAvailableManagers = (index) => {
+        const currentSelected = mgrSelections[index];
+        return managers.filter(mgr => {
+            const idStr = mgr.id.toString();
+            return (idStr === currentSelected || !mgrSelections.includes(idStr)) && idStr !== userId?.toString();
+        });
+    };
 
-    console.log(formData.role_ids);
+    const showRoleAddButton = roleSelections.filter(id => id !== '').length < roles?.length;
+    const showMgrAddButton = mgrSelections.filter(id => id !== '').length < managers?.length;
+
+    console.log(formData);
 
     if (loading) return <Loader />;
 
@@ -277,7 +292,7 @@ const UserEdit = ({ userId }) => {
                                     </div>
                                 ))}
                             </div>
-                            {showAddButton && (
+                            {showRoleAddButton && (
                                 <Button
                                     className={'add-button'}
                                     onClick={handleAddRole}
@@ -290,30 +305,44 @@ const UserEdit = ({ userId }) => {
                     )}
                 </div>
                 <div className='form-group'>
-                    <label className={'form-label'}>
-                        Primary Manager
-                    </label>
-                    <Dropdown
-                        name="primary_manager_id"
-                        value={formData.primary_manager_id}
-                        options={availableManagers}
-                        onChange={handleChange}
-                        placeholder={'Select a primary manager'}
-                        noneAllowed={true}
-                    />
-                </div>
-                <div className='form-group'>
-                    <label className={'form-label'}>
-                        Secondary Manager
-                    </label>
-                    <Dropdown
-                        name="secondary_manager_id"
-                        value={formData.secondary_manager_id}
-                        options={availableSecondaryManagers}
-                        onChange={handleChange}
-                        placeholder={'Select a secondary manager'}
-                        noneAllowed={true}
-                    />
+                    <div className={'form-label'}>
+                        Managers
+                    </div>
+                    {managers?.length === 0 ? (<p>No managers available.</p>) : (
+                        <>
+                            <div className={'form-section'}>
+                                {mgrSelections.map((selectedId, index) => (
+                                    <div key={index} className='dropdown-item'>
+                                        <Dropdown
+                                            name={`role_${index}`}
+                                            value={selectedId}
+                                            options={getAvailableManagers(index).map(mgr => ({ id: mgr.id.toString(), name: mgr.first_name + ' ' + mgr.last_name }))}
+                                            onChange={(e) => handleManagerChange(index, e.target.value)}
+                                            placeholder={`Select a manager`}
+                                            noneAllowed={true}
+                                        />
+                                        {index > 0 && (
+                                            <Button
+                                                className={'remove-button'}
+                                                onClick={() => handleRemoveMgr(index)}
+                                                icon={'remove_circle_outline'}
+                                                transparent={true}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {showMgrAddButton && (
+                                <Button
+                                    className={'add-button'}
+                                    onClick={handleAddMgr}
+                                    icon={'add_circle_outline'}
+                                    label={'Add Manager'}
+                                    transparent={true}
+                                />
+                            )}
+                        </>
+                    )}
                 </div>
                 <div className='form-actions'>
                     <button type='submit' className='action-button submit-button'>
