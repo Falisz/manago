@@ -77,20 +77,6 @@ export const AppStateProvider = ({ children }) => {
     }, []);
 
     // App's Callbacks
-    const authUser = useCallback(async (withLoader = false) => {
-        if (isCheckingUserRef.current) return;
-        isCheckingUserRef.current = true;
-        try {
-            if (withLoader) setLoading(true);
-            setUser(await getUser());
-            setLoading(false);
-        } catch (err) {
-            if (withLoader) setLoading(false);
-            throw new Error(`Authentication failed: ${err.message}`);
-        } finally {
-            isCheckingUserRef.current = false;
-        }
-    }, [getUser]);
 
     const logoutUser = useCallback(async () => {
         setLoading(true);
@@ -217,6 +203,22 @@ export const AppStateProvider = ({ children }) => {
             console.error('Theme switching error: ', err);
         }
     }, []);
+
+    const authUser = useCallback(async (withLoader = false) => {
+        if (isCheckingUserRef.current) return;
+        isCheckingUserRef.current = true;
+        try {
+            if (withLoader) setLoading(true);
+            setUser(await getUser());
+            setLoading(false);
+        } catch (err) {
+            if (withLoader) setLoading(false);
+            throw new Error(`Authentication failed: ${err.message}`);
+        } finally {
+            isCheckingUserRef.current = false;
+            await refreshPages();
+        }
+    }, [getUser, refreshPages]);
 
     useEffect(() => {
         checkConnection().then();
