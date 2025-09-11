@@ -1,27 +1,14 @@
 Following roadmap and tasks to-do as of 2025-09-10:
 ### Frontend
 - [ ] General app behaviour
-  - [X] Global app theme settings. Global color, theme and styling support. 
-  - [X] Unify the edit form styling.
-  - [x] Theme/Mode switching per user.
-  - [X] Make sub-menu styling a app-wide element (No separation for view styles).
-  - [X] Make user sub-menu a separate reusable component.
-  - [X] Make an Icon shorthand component and replace previous material-icons elements with this new component.
-  - [X] User/Role closing edit form modal after saving changes fix-up.
-  - [X] Pages loading after successful log-on fix-up.
-  - [ ] Use of Button component app wide.
+  - [ ] Unifying and use of Button component app wide.
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
-- [X] Fluent UI Style
-  - [X] Connectivity Pop-up
-  - [X] Login Form
-  - [X] Confirm prompt dialog
 - [ ] User management
-  - [X] User Edit form: Rewrite the roles assignment logic and interface. (Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.)
-  - [ ] User Edit form: Rewrite managers assignment logic likewise. 
   - [ ] Selection feature in the user lists with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 - [ ] Teams
-  - [ ] Team edit form.
+  - [ ] Team edit form (to include: team's code-name, display name, managers and team-leaders selectors.
+  - [ ] Create save and delete methods in the useTeam hook.
   - [ ] Team assignment form.
 - [ ] Branches
   - [ ] Different logo per branch (?) e.g. if User is from Branch One they have diff logo than the user from Branch Two.
