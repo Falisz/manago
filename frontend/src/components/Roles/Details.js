@@ -57,7 +57,7 @@ const RoleDetails = ({ roleId }) => {
                         <button
                             className={'action-button edit-button'}
                             type='button'
-                            onClick={() => openModal({ content: 'roleEdit', data: { id: role.id } })}
+                            onClick={() => openModal({ content: 'roleEdit', contentId: role.id })}
                             title={'Edit Role'}
                         >
                             <Icon i={'edit'} />
@@ -97,7 +97,7 @@ const RoleDetails = ({ roleId }) => {
                     >
                         <span
                             className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}
+                            onClick={() => openModal({ content: 'userDetails', contentId: user.id , type: 'dialog' })}
                         >
                             {user.first_name} {user.last_name}
                         </span>

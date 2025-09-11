@@ -51,7 +51,7 @@ const RoleEdit = ({ roleId }) => {
                 closeTopModal();
                 if (!roleId) {
                 setTimeout(() => {
-                        openModal({ content: 'roleDetails', data: { id: savedRole.id } });
+                        openModal({ content: 'roleDetails', contentId: savedRole.id, type: 'dialog'});
                     }, 350);
                 } else {
                     refreshData('role', roleId);

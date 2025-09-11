@@ -210,6 +210,12 @@ button .material-symbols-rounded {
     background: var(--seethrough-background);
 }
 
+.app-modal-content .app-notice {
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+
 .app-notice .main-icon {
     font-size: 100px;
     margin-bottom: 20px;

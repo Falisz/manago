@@ -30,7 +30,7 @@ export const ModalProvider = ({ children }) => {
             const isDuplicate = prev.some(
                 (existing) =>
                     existing.content === modal.content &&
-                    existing.data?.id === modal.data?.id
+                    existing.contentId === modal.contentId
             );
             if (isDuplicate) {
                 return prev;
@@ -117,19 +117,23 @@ export const ModalProvider = ({ children }) => {
     const renderModalContent = (modal) => {
         switch (modal.content) {
             case 'userDetails':
-                return <UserDetails userId={modal.data.id} />;
+                return <UserDetails userId={modal.contentId} />;
             case 'userEdit':
-                return <UserEdit userId={modal.data.id} />;
+                return <UserEdit userId={modal.contentId} />;
             case 'userNew':
                 return <UserEdit />;
+            case 'employeeNew':
+                return <UserEdit preset={'employee'} />;
+            case 'managerNew':
+                return <UserEdit preset={'manager'} />;
             case 'roleDetails':
-                return <RoleDetails roleId={modal.data.id} />;
+                return <RoleDetails roleId={modal.contentId} />;
             case 'roleEdit':
-                return <RoleEdit roleId={modal.data.id} />;
+                return <RoleEdit roleId={modal.contentId} />;
             case 'roleNew':
                 return <RoleEdit/>;
             case 'teamDetails':
-                return <TeamDetails teamId={modal.data.id} />;
+                return <TeamDetails teamId={modal.contentId} />;
             case 'teamEdit':
                 return <InWorks
                     title={'Teams'} icon={'info'} modal={true}
@@ -142,7 +146,7 @@ export const ModalProvider = ({ children }) => {
                         'Depending on enabled modules it may have project and/or branch fields.'}
                 />;
             case 'postDetails':
-                return <PostDetails postId={modal.data.id} />;
+                return <PostDetails postId={modal.contentId} />;
             case 'confirm':
                 return <ConfirmPrompt
                     message={modal.message}
@@ -158,49 +162,63 @@ export const ModalProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        const newResource = searchParams.get('new');
+        if (newResource === 'manager')
+            openModal({ content: 'managerNew' });
+        else if (newResource === 'employee')
+            openModal({ content: 'employeeNew' });
+        else if (newResource === 'user')
+            openModal({ content: 'userNew' });
+        else if (newResource === 'role')
+            openModal({ content: 'roleNew' });
+        else if (newResource === 'team')
+            openModal({ content: 'teamNew' });
+        else if (newResource === 'branch')
+            openModal({ content: 'branchNew' });
+        else if (newResource === 'project')
+            openModal({ content: 'projectNew' });
+        else if (newResource === 'post')
+            openModal({ content: 'postNew' });
+        else if (newResource === 'test')
+            openModal({ content: 'test' });
+
         const userDetails = searchParams.get('user');
-        if (userDetails) openModal({ content: 'userDetails', data: { id: userDetails } });
+        if (userDetails) openModal({ content: 'userDetails', contentId: userDetails });
         const editUser = searchParams.get('editUser');
-        if (editUser) openModal({ content: 'userEdit', data: { id: editUser } });
-        const newUser = searchParams.get('newUser');
-        if (newUser) openModal({ content: 'userNew' });
+        if (editUser) openModal({ content: 'userEdit', contentId: editUser });
 
         const roleDetails = searchParams.get('role');
-        if (roleDetails) openModal({ content: 'roleDetails', data: { id: roleDetails } });
+        if (roleDetails) openModal({ content: 'roleDetails', contentId: roleDetails });
         const editRole = searchParams.get('editRole');
-        if (editRole) openModal({ content: 'roleEdit', data: { id: editRole } });
-        const newRole = searchParams.get('newRole');
-        if (newRole) openModal({ content: 'roleNew' });
+        if (editRole) openModal({ content: 'roleEdit', contentId: editRole });
 
         const teamDetails = searchParams.get('team');
-        if (teamDetails) openModal({ content: 'teamDetails', data: { id: teamDetails } });
+        if (teamDetails) openModal({ content: 'teamDetails', contentId: teamDetails });
         const editTeam = searchParams.get('editTeam');
-        if (editTeam) openModal({ content: 'teamEdit', data: { id: editTeam } });
-        const newTeam = searchParams.get('newTeam');
-        if (newTeam) openModal({ content: 'teamNew' });
+        if (editTeam) openModal({ content: 'teamEdit', contentId: editTeam });
 
         const postDetails = searchParams.get('post');
-        if (postDetails) openModal({ content: 'postDetails', data: { id: postDetails } });
+        if (postDetails) openModal({ content: 'postDetails', contentId: postDetails });
 
-        const test = searchParams.get('test');
-        if (test) openModal({ content: 'test' });
         // eslint-disable-next-line
     }, []);
 
     useEffect(() => {
         const newParams = new URLSearchParams();
         modalStack.forEach((modal) => {
-            if (modal.content === 'userDetails') newParams.set('user', modal.data.id);
-            if (modal.content === 'userEdit') newParams.set('editUser', modal.data.id);
-            if (modal.content === 'userNew') newParams.set('newUser', '');
-            if (modal.content === 'roleDetails') newParams.set('role', modal.data.id);
-            if (modal.content === 'roleEdit') newParams.set('editRole', modal.data.id);
-            if (modal.content === 'roleNew') newParams.set('newRole', '');
-            if (modal.content === 'teamDetails') newParams.set('team', modal.data.id);
-            if (modal.content === 'teamEdit') newParams.set('editTeam', modal.data.id);
-            if (modal.content === 'teamNew') newParams.set('newTeam', '');
-            if (modal.content === 'postDetails') newParams.set('post', modal.data.id);
-            if (modal.content === 'test') newParams.set('test', '');
+            if (modal.content === 'userNew') newParams.set('new', 'user');
+            if (modal.content === 'managerNew') newParams.set('new', 'manager');
+            if (modal.content === 'employeeNew') newParams.set('new', 'employee');
+            if (modal.content === 'roleNew') newParams.set('new', 'role');
+            if (modal.content === 'teamNew') newParams.set('new', 'team');
+            if (modal.content === 'test') newParams.set('new', 'test');
+            if (modal.content === 'userDetails') newParams.set('user', modal.contentId);
+            if (modal.content === 'userEdit') newParams.set('editUser', modal.contentId);
+            if (modal.content === 'roleDetails') newParams.set('role', modal.contentId);
+            if (modal.content === 'roleEdit') newParams.set('editRole', modal.contentId);
+            if (modal.content === 'teamDetails') newParams.set('team', modal.contentId);
+            if (modal.content === 'teamEdit') newParams.set('editTeam', modal.contentId);
+            if (modal.content === 'postDetails') newParams.set('post', modal.contentId);
         });
         setSearchParams(newParams, { replace: true });
     }, [modalStack, setSearchParams]);

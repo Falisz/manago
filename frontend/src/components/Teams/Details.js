@@ -66,7 +66,7 @@ const TeamDetails = ({ teamId }) => {
                 <div className={'detail-title team-name'} title={'Team Name'}>{team.name}</div>
                 <button
                     className={'action-button edit-button'}
-                    onClick={() => {openModal({content: 'teamEdit', data: { id: team.id}})}}
+                    onClick={() => {openModal({content: 'teamEdit', contentId: team.id })}}
                     title={'Edit Team details'}
                 >
                     <Icon i={'edit'} />
@@ -89,7 +89,7 @@ const TeamDetails = ({ teamId }) => {
                     <div className={'detail-row team-parent'} title={'Team codename'}><label>Parent Team</label>
                         <span
                             className={'detail-link'}
-                            onClick={() => openModal({ content: 'teamDetails', data: { id: team.parent.id } })}
+                            onClick={() => openModal({ content: 'teamDetails', contentId: team.parent.id, type: 'dialog' })}
                         >
                             {team.parent.name}
                         </span>
@@ -105,7 +105,7 @@ const TeamDetails = ({ teamId }) => {
                                 <span
                                     key={subteam.id}
                                     className={'detail-link'}
-                                    onClick={() => openModal({ content: 'teamDetails', data: { id: subteam.id } })}
+                                    onClick={() => openModal({ content: 'teamDetails', contentId: subteam.id, type: 'dialog' })}
                                 >
                                     {subteam.name}
                                 </span>
@@ -131,7 +131,7 @@ const TeamDetails = ({ teamId }) => {
                             <span
                                 key={manager.id}
                                 className={'detail-link'}
-                                onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
+                                onClick={() => openModal({ content: 'userDetails', contentId: manager.id, type: 'dialog' })}
                             >
                                 {manager.first_name} {manager.last_name}
                             </span>
@@ -139,7 +139,7 @@ const TeamDetails = ({ teamId }) => {
                                 (manager of whole {<span
                                     key={manager.id}
                                     className={'detail-link'}
-                                    onClick={() => openModal({ content: 'teamDetails', data: { id: manager.team.id } })}
+                                    onClick={() => openModal({ content: 'teamDetails', contentId: manager.team.id, type: 'dialog' })}
                                 >
                                     {manager.team.name}
                                 </span>})
@@ -164,7 +164,7 @@ const TeamDetails = ({ teamId }) => {
                             <span
                                 key={leader.id}
                                 className={'detail-link'}
-                                onClick={() => openModal({ content: 'userDetails', data: { id: leader.id } })}
+                                onClick={() => openModal({ content: 'userDetails', contentId: leader.id, type: 'dialog' })}
                             >
                                 {leader.first_name} {leader.last_name}
                             </span>
@@ -172,7 +172,7 @@ const TeamDetails = ({ teamId }) => {
                                 ({<span
                                     key={leader.id}
                                     className={'detail-link'}
-                                    onClick={() => openModal({ content: 'teamDetails', data: { id: leader.team.id } })}
+                                    onClick={() => openModal({ content: 'teamDetails', contentId: leader.team.id, type: 'dialog' })}
                                 >
                                     {leader.team.name}
                                 </span>} sub-team)
@@ -196,7 +196,7 @@ const TeamDetails = ({ teamId }) => {
                         <span
                             key={member.id}
                             className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', data: { id: member.id } })}
+                            onClick={() => openModal({ content: 'userDetails', contentId: member.id, type: 'dialog' })}
                         >
                             {member.first_name} {member.last_name}
                         </span>
@@ -204,7 +204,7 @@ const TeamDetails = ({ teamId }) => {
                             ({<span
                                 key={member.id}
                                 className={'detail-link'}
-                                onClick={() => openModal({ content: 'teamDetails', data: { id: member.team.id } })}
+                                onClick={() => openModal({ content: 'teamDetails', contentId: member.team.id, type: 'dialog' })}
                             >
                                     {member.team.name}
                             </span>} sub-team)

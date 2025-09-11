@@ -11,11 +11,11 @@ const RolesList = () => {
     const { openModal, refreshTriggers } = useModals();
     const { roles, rolesLoading, fetchRoles } = useRole();
 
-    const openRoleDetails = (id) => {
+    const openRoleDetails = (contentId) => {
         openModal({
             content: 'roleDetails',
             type: 'dialog',
-            data: { id }
+            contentId
         });
     };
 

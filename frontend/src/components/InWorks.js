@@ -12,7 +12,7 @@ export const InWorks = ({ title, icon, description = null, modal = false }) => {
             <h3>{title}</h3>
             <p> This page is under construction. It will be available soon. </p>
             { description && <p style={{ width: '66%' }}>{description}</p> }
-            { modal ? <span onClick={() => closeTopModal()}>Go back.</span> : (location.pathname !== '/' && <Link to='/'>Return to Dashboard.</Link>)}
+            { modal ? <Link to={'#'} onClick={() => closeTopModal()}>Go back.</Link> : (location.pathname !== '/' && <Link to='/'>Return to Dashboard.</Link>)}
         </div>
     )};
 

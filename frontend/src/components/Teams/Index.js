@@ -39,11 +39,11 @@ const TeamItem = ({ team, sub = false }) => {
 
     team.members_count = team.members ? team.members.length : 0;
 
-    const openTeamDetails = (id) => {
+    const openTeamDetails = (contentId) => {
         openModal({
             content: 'teamDetails',
             type: 'dialog',
-            data: { id }
+            contentId
         });
     };
 
@@ -75,7 +75,7 @@ const TeamItem = ({ team, sub = false }) => {
                         ? null
                         : (team.managers || []).map(manager =>
                             <span key={manager.id} className='manager-name app-clickable'
-                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', data: { id: manager.id } })}
+                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: manager.id })}
                             >{manager.first_name} {manager.last_name}</span>
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }
@@ -87,7 +87,7 @@ const TeamItem = ({ team, sub = false }) => {
                         ? null
                         : (team.leaders || []).map(leader =>
                             <span key={leader.id} className='teamleader-name app-clickable'
-                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', data: { id: leader.id } })}
+                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: leader.id })}
                             >{leader.first_name} {leader.last_name}</span>
                         ).reduce((prev, curr) => [prev, ', ', curr])
                     }

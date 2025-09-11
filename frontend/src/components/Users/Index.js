@@ -178,13 +178,13 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
 
                     return (
                         <div className='app-list-row' key={user.id}>
-                            <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', type: 'dialog', data: { id: user.id } })}>
+                            <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: user.id })}>
                                 {user.first_name} {user.last_name}
                             </div>
                             <div className={'app-list-row-cell roles'}>
                                 {displayedRoles.map((role) => (
                                     <span key={role.id} className='role-name app-clickable'
-                                          onClick={() => openModal({ content: 'roleDetails', type: 'dialog', data: { id: role.id } })}
+                                          onClick={() => openModal({ content: 'roleDetails', type: 'dialog', contentId: role.id })}
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
@@ -195,7 +195,7 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                                         ? <span>-</span>
                                         : (user.managers || []).map(manager =>
                                             <span key={manager.id} className='manager-name app-clickable'
-                                                onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
+                                                onClick={() => openModal({ content: 'userDetails', contentId: manager.id })}
                                             >{manager.first_name} {manager.last_name}</span>
                                         ).reduce((prev, curr) => [prev, ', ', curr])
                                     }
@@ -239,7 +239,7 @@ export const ManagersIndex = () => {
                 <h1 className={'page-title'}> Managers of Zyrah </h1>
                 <Button
                     className='new-user-button'
-                    onClick={() => openModal({ content: 'userNew' })}
+                    onClick={() => openModal({ content: 'managerNew' })}
                     label={'Add manager'}
                     icon={'add'}
                 />
@@ -275,7 +275,7 @@ export const EmployeesIndex = () => {
                 <h1 className={'page-title'}> Employees of Zyrah </h1>
                 <Button
                     className='new-user-button'
-                    onClick={() => openModal({ content: 'userNew' })}
+                    onClick={() => openModal({ content: 'employeeNew' })}
                     label={'Add employee'}
                     icon={'add'}
                 />

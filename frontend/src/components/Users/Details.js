@@ -54,7 +54,7 @@ const UserDetails = ({ userId }) => {
                 <div className={'detail-title user-name'} title={'Full Name'}>{user.first_name} {user.last_name}</div>
                 <button
                     className={'action-button edit-button'}
-                    onClick={() => {openModal({content: 'userEdit', data: { id: user.id}})}}
+                    onClick={() => {openModal({content: 'userEdit', contentId: user.id })}}
                     title={'Edit User details'}
                 >
                     <Icon i={'edit'} />
@@ -89,7 +89,7 @@ const UserDetails = ({ userId }) => {
                         >
                             <span
                                 className={'detail-link'}
-                                onClick={() => openModal({ content: 'roleDetails', data: { id: role.id } })}
+                                onClick={() => openModal({ content: 'roleDetails', contentId: role.id, type: 'dialog' })}
                             >
                                 {role.name}
                             </span>
@@ -124,7 +124,7 @@ const UserDetails = ({ userId }) => {
                     >
                         <span
                             className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', data: { id: manager.id } })}
+                            onClick={() => openModal({ content: 'userDetails', contentId: manager.id, type: 'dialog' })}
                         >
                             {manager.first_name} {manager.last_name}
                         </span>
@@ -140,7 +140,7 @@ const UserDetails = ({ userId }) => {
                     >
                         <span
                             className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', data: { id: user.id } })}
+                            onClick={() => openModal({ content: 'userDetails', contentId: user.id, type: 'dialog' } )}
                         >
                             {user.first_name} {user.last_name}
                         </span>

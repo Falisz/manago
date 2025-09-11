@@ -21,7 +21,7 @@ const FORM_CLEAN_STATE = {
         manager_view_access: false,
 };
 
-const UserEdit = ({ userId }) => {
+const UserEdit = ({ userId, preset }) => {
     const { user, loading, error, warning, success, setLoading, fetchUser, saveUser } = useUser();
     const { users: managers, fetchUsers: fetchManagers } = useUser();
     const { roles, fetchRoles } = useRole();
@@ -33,38 +33,47 @@ const UserEdit = ({ userId }) => {
     useEffect(() => {
         fetchRoles().then();
         fetchManagers('managers').then();
-    }, [fetchRoles, fetchManagers]);
 
-    useEffect(() => {
         if (!userId) {
-            setFormData(FORM_CLEAN_STATE);
+            if (preset === 'manager')
+                setFormData({ ...FORM_CLEAN_STATE, manager_view_access: true });
+            else
+                setFormData(FORM_CLEAN_STATE);
             setLoading(false);
             return;
         }
 
         fetchUser(userId).then();
-    }, [userId, setLoading, fetchUser]);
+        setLoading(false);
+    }, [userId, preset, setLoading, fetchUser, fetchRoles, fetchManagers]);
 
     useEffect(() => {
-        setFormData({
-            login: user?.login || '',
-            email: user?.email || '',
-            first_name: user?.first_name || '',
-            last_name: user?.last_name || '',
-            role_ids: user?.roles?.map((role) => role.id) || [],
-            manager_ids: user?.managers?.map((mgr) => mgr.id) || [],
-            active: user?.active || true,
-            manager_view_access: user?.manager_view_access || false,
-        });
-        setRoleSelections(user?.roles?.map((role) => role.id.toString()) || []);
-        setMgrSelections(user?.managers?.map((mgr) => mgr.id.toString()) || []);
+        if (user) {
+            setFormData({
+                login: user?.login || '',
+                email: user?.email || '',
+                first_name: user?.first_name || '',
+                last_name: user?.last_name || '',
+                role_ids: user?.roles?.map((role) => role.id) || [],
+                manager_ids: user?.managers?.map((mgr) => mgr.id) || [],
+                active: user?.active || true,
+                manager_view_access: user?.manager_view_access || false,
+            });
+            setRoleSelections(user?.roles?.map((role) => role.id.toString()) || []);
+            setMgrSelections(user?.managers?.map((mgr) => mgr.id.toString()) || []);
+        }
     }, [user]);
 
     useEffect(() => {
         if (roleSelections.length === 0 && roles?.length > 0) {
-            setRoleSelections(['']);
+            if (preset === 'manager')
+                setRoleSelections(['11']);
+            else if (preset === 'employee')
+                setRoleSelections(['1']);
+            else
+                setRoleSelections(['']);
         }
-    }, [roleSelections, roles]);
+    }, [preset, roleSelections, roles]);
 
     useEffect(() => {
         if (mgrSelections.length === 0 && managers?.length > 0) {
@@ -78,7 +87,7 @@ const UserEdit = ({ userId }) => {
     }, [roleSelections]);
 
     useEffect(() => {
-        const selectedIds = mgrSelections.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
+        const selectedIds = mgrSelections?.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
         setFormData(prev => ({ ...prev, manager_ids: selectedIds }));
     }, [mgrSelections]);
 
@@ -138,7 +147,7 @@ const UserEdit = ({ userId }) => {
                 closeTopModal();
                 if (!userId) {
                     setTimeout(() => {
-                        openModal({ content: 'userDetails', data: { id: savedUser.id } });
+                        openModal({ content: 'userDetails', contentId: savedUser.id });
                     }, 350);
                 } else {
                     refreshData('user', userId);
@@ -151,18 +160,18 @@ const UserEdit = ({ userId }) => {
 
     const getAvailableRoles = (index) => {
         const currentSelected = roleSelections[index];
-        return roles.filter(role => {
+        return roles?.filter(role => {
             const idStr = role.id.toString();
             return idStr === currentSelected || !roleSelections.includes(idStr);
-        });
+        }) || [];
     };
 
     const getAvailableManagers = (index) => {
         const currentSelected = mgrSelections[index];
-        return managers.filter(mgr => {
+        return managers?.filter(mgr => {
             const idStr = mgr.id.toString();
             return (idStr === currentSelected || !mgrSelections.includes(idStr)) && idStr !== userId?.toString();
-        });
+        }) || [];
     };
 
     const showRoleAddButton = roleSelections.filter(id => id !== '').length < roles?.length;
@@ -176,7 +185,9 @@ const UserEdit = ({ userId }) => {
 
     return (
         <>
-            <h1>{userId ? 'Edit Employee' : 'Add New Employee'}</h1>
+            <h1>{userId ? 'Edit Employee' : `Add New ${
+                preset === 'manager' ? 'Manager' : 
+                    preset === 'employee' ? 'Employee' : 'User' }`}</h1>
             {warning && <div className='warning-message'>{warning}</div>}
             {success && <div className='success-message'>{success}</div>}
             <form
