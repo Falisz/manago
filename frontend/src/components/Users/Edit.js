@@ -8,6 +8,7 @@ import '../../assets/styles/Form.css';
 import '../../assets/styles/Users.css';
 import Dropdown from "../Dropdown";
 import Icon from "../Icon";
+import Button from "../Button";
 
 const FORM_CLEAN_STATE = {
         login: '',
@@ -27,7 +28,8 @@ const UserEdit = ({ userId }) => {
     const { users: managers, fetchUsers: fetchManagers } = useUser();
     const { roles, fetchRoles } = useRole();
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
-    const [formData, setFormData] = useState(FORM_CLEAN_STATE);
+    const [ formData, setFormData ] = useState(FORM_CLEAN_STATE);
+    const [roleSelections, setRoleSelections] = useState([]);
 
     useEffect(() => {
         fetchRoles().then();
@@ -57,7 +59,14 @@ const UserEdit = ({ userId }) => {
             active: user?.active || true,
             manager_view_access: user?.manager_view_access || false,
         });
+        setRoleSelections(user?.roles?.map((role) => role.id.toString()) || []);
     }, [user]);
+
+    useEffect(() => {
+        if (roleSelections.length === 0 && roles?.length > 0) {
+            setRoleSelections(['']);
+        }
+    }, [roleSelections, roles]);
 
     useEffect(() => {
         if (formData.primary_manager_id && formData.primary_manager_id === formData.secondary_manager_id) {
@@ -65,20 +74,36 @@ const UserEdit = ({ userId }) => {
         }
     }, [formData.primary_manager_id, formData.secondary_manager_id]);
 
+    useEffect(() => {
+        const selectedIds = roleSelections.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
+        setFormData(prev => ({ ...prev, role_ids: selectedIds }));
+    }, [roleSelections]);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        if (name === 'roleIds') {
-            const roleId = parseInt(value);
-            setFormData(prev => {
-                const newRoleIds = checked ? [...prev.role_ids, roleId] : prev.role_ids.filter(id => id !== roleId);
-                return { ...prev, role_ids: newRoleIds };
-            });
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: type === 'checkbox' ? checked : value
-            }));
-        }
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+        setDiscardWarning(true);
+    };
+
+    const handleRoleChange = (index, value) => {
+        setRoleSelections(prev => {
+            const newSel = [...prev];
+            newSel[index] = value;
+            return newSel;
+        });
+        setDiscardWarning(true);
+    };
+
+    const handleAddRole = () => {
+        setRoleSelections(prev => [...prev, '']);
+        setDiscardWarning(true);
+    };
+
+    const handleRemoveRole = (index) => {
+        setRoleSelections(prev => prev.filter((_, i) => i !== index));
         setDiscardWarning(true);
     };
 
@@ -116,6 +141,19 @@ const UserEdit = ({ userId }) => {
             manager => manager.id !== formData.primary_manager_id
         );
     }, [availableManagers, formData.primary_manager_id]);
+
+    const getAvailableRoles = (index) => {
+        const currentSelected = roleSelections[index];
+        return roles.filter(role => {
+            const idStr = role.id.toString();
+            return idStr === currentSelected || !roleSelections.includes(idStr);
+        });
+    };
+
+    const selectedCount = roleSelections.filter(id => id !== '').length;
+    const showAddButton = selectedCount < roles?.length;
+
+    console.log(formData.role_ids);
 
     if (loading) return <Loader />;
 
@@ -208,27 +246,44 @@ const UserEdit = ({ userId }) => {
                     </label>
                 </div>
                 <div className='form-group'>
-                    <label className={'form-label'}>
+                    <div className={'form-label'}>
                         Roles
-                    </label>
-                    <div className='roles-checklist'>
-                        {roles?.length === 0 ? (
-                            <p>No roles available.</p>
-                        ) : (
-                            roles?.map(role => (
-                                <label key={role.id} className='role-checkbox'>
-                                    <input
-                                        type='checkbox'
-                                        name='roleIds'
-                                        value={role.id}
-                                        checked={formData.role_ids.includes(role.id)}
-                                        onChange={handleChange}
-                                    />
-                                    {role.name}
-                                </label>
-                            ))
-                        )}
                     </div>
+                    {roles?.length === 0 ? (<p>No roles available.</p>) : (
+                        <>
+                            <div className={'user-roles'}>
+                                {roleSelections.map((selectedId, index) => (
+                                    <div key={index} className='role-dropdown-item'>
+                                        <Dropdown
+                                            name={`role_${index}`}
+                                            value={selectedId}
+                                            options={getAvailableRoles(index).map(role => ({ id: role.id.toString(), name: role.name }))}
+                                            onChange={(e) => handleRoleChange(index, e.target.value)}
+                                            placeholder={'Select a role'}
+                                            noneAllowed={true}
+                                        />
+                                        {index > 0 && (
+                                            <Button
+                                                className={'remove-button'}
+                                                onClick={() => handleRemoveRole(index)}
+                                                icon={'remove_circle_outline'}
+                                                transparent={true}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {showAddButton && (
+                                <Button
+                                    className={'add-button'}
+                                    onClick={handleAddRole}
+                                    icon={'add_circle_outline'}
+                                    label={'Add Role'}
+                                    transparent={true}
+                                />
+                            )}
+                        </>
+                    )}
                 </div>
                 <div className='form-group'>
                     <label className={'form-label'}>

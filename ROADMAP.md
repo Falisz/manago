@@ -8,7 +8,8 @@ Following roadmap and tasks to-do as of 2025-09-10:
   - [X] Make user sub-menu a separate reusable component.
   - [X] Make an Icon shorthand component and replace previous material-icons elements with this new component.
   - [X] User/Role closing edit form modal after saving changes fix-up.
-  - [ ] Pages loading after successful log-on fix-up.
+  - [X] Pages loading after successful log-on fix-up.
+  - [ ] Use of Button component app wide.
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
 - [X] Fluent UI Style
@@ -16,7 +17,8 @@ Following roadmap and tasks to-do as of 2025-09-10:
   - [X] Login Form
   - [X] Confirm prompt dialog
 - [ ] User management
-  - [ ] User Edit form: Rewrite the roles assignment logic and interface. (Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.)
+  - [X] User Edit form: Rewrite the roles assignment logic and interface. (Instead of checkboxes - one dropdown menu, with a button to add next ones with other roles to assign.)
+  - [ ] User Edit form: Rewrite managers assignment logic likewise. 
   - [ ] Selection feature in the user lists with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 - [ ] Teams
   - [ ] Team edit form.

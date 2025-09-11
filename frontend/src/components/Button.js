@@ -2,11 +2,20 @@
 import React from 'react';
 import Icon from "./Icon";
 
-const Button = ({children, className, onClick, label, icon=null}) => {
+const Button = ({
+                    children,
+                    className=null,
+                    type='button',
+                    onClick,
+                    label,
+                    icon=null,
+                    transparent=false
+}) => {
 
     return (
         <button
-            className={'app-button ' + className}
+            className={'app-button' + ( transparent ? (' no-bg') : '') + ( className ? (' ' + className) : '')}
+            type={type}
             onClick={onClick}
         >
             {icon && <Icon i={icon}/>}

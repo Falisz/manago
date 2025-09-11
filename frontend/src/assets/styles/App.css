@@ -330,6 +330,10 @@ button .material-symbols-rounded {
 .app.fluent .app-button:hover {
     background: var(--seethrough-background-2);
 }
+.app-button.no-bg {
+    background: none;
+    color: var(--text-color);
+}
 
 /* Custom Toggle Switch */
 .app-switch {
