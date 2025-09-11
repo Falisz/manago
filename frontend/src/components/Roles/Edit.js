@@ -57,7 +57,7 @@ const RoleEdit = ({ roleId }) => {
                     refreshData('role', roleId);
                 }
                 refreshData('roles', true);
-            }, 0);
+            }, 10);
             setFormData(FORM_CLEAN_STATE);
         }
     };

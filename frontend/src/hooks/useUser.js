@@ -115,7 +115,7 @@ const useUser = () => {
 
         } catch(err) {
             console.error('Error saving new user data:', err);
-            setError('Error occurred while saving new user data.');
+            setWarning('Error occurred while saving new user data. ' + err.response?.data?.message);
             return null;
         }
     }, [fetchUser]);

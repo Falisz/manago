@@ -97,9 +97,9 @@ const UserEdit = ({ userId }) => {
                     refreshData('user', userId);
                 }
                 refreshData('users', true);
-            }, 0);
+            }, 10);
+            setFormData(FORM_CLEAN_STATE);
         }
-        setFormData(FORM_CLEAN_STATE);
     };
 
     const availableManagers = useMemo(() => {
