@@ -22,7 +22,7 @@ const FORM_CLEAN_STATE = {
 };
 
 const UserEdit = ({ userId, preset }) => {
-    const { user, loading, error, warning, success, setLoading, fetchUser, saveUser } = useUser();
+    const { loading, error, warning, success, setLoading, fetchUser, saveUser } = useUser();
     const { users: managers, fetchUsers: fetchManagers } = useUser();
     const { roles, fetchRoles } = useRole();
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
@@ -35,20 +35,19 @@ const UserEdit = ({ userId, preset }) => {
         fetchManagers('managers').then();
 
         if (!userId) {
-            if (preset === 'manager')
+            if (preset === 'manager') {
                 setFormData({ ...FORM_CLEAN_STATE, manager_view_access: true });
-            else
+                setRoleSelections(['11']);
+            } else if (preset === 'employee') {
+                setFormData(FORM_CLEAN_STATE);
+                setRoleSelections(['1']);
+            } else
                 setFormData(FORM_CLEAN_STATE);
             setLoading(false);
             return;
         }
 
-        fetchUser(userId).then();
-        setLoading(false);
-    }, [userId, preset, setLoading, fetchUser, fetchRoles, fetchManagers]);
-
-    useEffect(() => {
-        if (user) {
+        fetchUser(userId).then(user => {
             setFormData({
                 login: user?.login || '',
                 email: user?.email || '',
@@ -61,25 +60,9 @@ const UserEdit = ({ userId, preset }) => {
             });
             setRoleSelections(user?.roles?.map((role) => role.id.toString()) || []);
             setMgrSelections(user?.managers?.map((mgr) => mgr.id.toString()) || []);
-        }
-    }, [user]);
-
-    useEffect(() => {
-        if (roleSelections.length === 0 && roles?.length > 0) {
-            if (preset === 'manager')
-                setRoleSelections(['11']);
-            else if (preset === 'employee')
-                setRoleSelections(['1']);
-            else
-                setRoleSelections(['']);
-        }
-    }, [preset, roleSelections, roles]);
-
-    useEffect(() => {
-        if (mgrSelections.length === 0 && managers?.length > 0) {
-            setMgrSelections(['']);
-        }
-    }, [mgrSelections, managers]);
+        });
+        
+    }, [userId, preset, setLoading, fetchUser, fetchRoles, fetchManagers]);
 
     useEffect(() => {
         const selectedIds = roleSelections.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
@@ -176,8 +159,6 @@ const UserEdit = ({ userId, preset }) => {
 
     const showRoleAddButton = roleSelections.filter(id => id !== '').length < roles?.length;
     const showMgrAddButton = mgrSelections.filter(id => id !== '').length < managers?.length;
-
-    console.log(formData);
 
     if (loading) return <Loader />;
 
