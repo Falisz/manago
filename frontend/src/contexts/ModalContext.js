@@ -6,8 +6,9 @@ import UserDetails from '../components/Users/Details';
 import UserEdit from '../components/Users/Edit';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
-import PostDetails from '../components/Posts/Details';
 import TeamDetails from '../components/Teams/Details';
+import TeamEdit from '../components/Teams/Edit';
+import PostDetails from '../components/Posts/Details';
 import InWorks from '../components/InWorks';
 import ConfirmPrompt from "../components/ConfirmPrompt";
 
@@ -135,16 +136,9 @@ export const ModalProvider = ({ children }) => {
             case 'teamDetails':
                 return <TeamDetails teamId={modal.contentId} />;
             case 'teamEdit':
-                return <InWorks
-                    title={'Teams'} icon={'info'} modal={true}
-                    description={'There will be a new team edit window here.'}
-                />;
+                return <TeamEdit teamId={modal.contentId} />;
             case 'teamNew':
-                return <InWorks
-                    title={'Teams'} icon={'add'} modal={true}
-                    description={'There will be a new team edit form here.' +
-                        'Depending on enabled modules it may have project and/or branch fields.'}
-                />;
+                return <TeamEdit />;
             case 'postDetails':
                 return <PostDetails postId={modal.contentId} />;
             case 'confirm':
@@ -183,22 +177,22 @@ export const ModalProvider = ({ children }) => {
             openModal({ content: 'test' });
 
         const userDetails = searchParams.get('user');
-        if (userDetails) openModal({ content: 'userDetails', contentId: userDetails });
+        if (userDetails) openModal({ content: 'userDetails', contentId: userDetails, type: 'dialog' });
         const editUser = searchParams.get('editUser');
         if (editUser) openModal({ content: 'userEdit', contentId: editUser });
 
         const roleDetails = searchParams.get('role');
-        if (roleDetails) openModal({ content: 'roleDetails', contentId: roleDetails });
+        if (roleDetails) openModal({ content: 'roleDetails', contentId: roleDetails, type: 'dialog' });
         const editRole = searchParams.get('editRole');
         if (editRole) openModal({ content: 'roleEdit', contentId: editRole });
 
         const teamDetails = searchParams.get('team');
-        if (teamDetails) openModal({ content: 'teamDetails', contentId: teamDetails });
+        if (teamDetails) openModal({ content: 'teamDetails', contentId: teamDetails, type: 'dialog' });
         const editTeam = searchParams.get('editTeam');
         if (editTeam) openModal({ content: 'teamEdit', contentId: editTeam });
 
         const postDetails = searchParams.get('post');
-        if (postDetails) openModal({ content: 'postDetails', contentId: postDetails });
+        if (postDetails) openModal({ content: 'postDetails', contentId: postDetails, type: 'dialog' });
 
         // eslint-disable-next-line
     }, []);
