@@ -1,8 +1,8 @@
 {
   "config": {
     "style": "flat",
-    "theme": "dark",
-    "color": "pink",
+    "theme": "light",
+    "color": "blue",
     "background": "cloudy"
   },
   "options": {
