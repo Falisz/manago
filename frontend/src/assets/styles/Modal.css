@@ -85,6 +85,9 @@
     cursor: pointer;
     transition: 0.3s ease-in-out;
 }
+.app.fluent .app-modal-content.pop-up .action-button {
+    color: var(--text-color);
+}
 .app-modal-content.pop-up .action-button.discard {
     background: orangered;
 }

@@ -336,8 +336,10 @@ button .material-symbols-rounded {
 .app.fluent .app-button:hover {
     background: var(--seethrough-background-2);
 }
-.app-button.no-bg {
+.app-button.no-bg,
+.app.fluent .app-button.no-bg {
     background: none;
+    box-shadow: none;
     color: var(--text-color);
 }
 
