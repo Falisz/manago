@@ -286,7 +286,7 @@ const UserEdit = ({ userId, preset }) => {
                             </div>
                             {showRoleAddButton && (
                                 <Button
-                                    className={'add-button'}
+                                    className={'new-dropdown-button'}
                                     onClick={handleAddRole}
                                     icon={'add_circle_outline'}
                                     label={'Add Role'}
@@ -326,7 +326,7 @@ const UserEdit = ({ userId, preset }) => {
                             </div>
                             {showMgrAddButton && (
                                 <Button
-                                    className={'add-button'}
+                                    className={'new-dropdown-button'}
                                     onClick={handleAddMgr}
                                     icon={'add_circle_outline'}
                                     label={'Add Manager'}

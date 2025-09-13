@@ -6,6 +6,7 @@ const Button = ({
                     children,
                     className=null,
                     type='button',
+                    disabled = false,
                     onClick,
                     label,
                     icon=null,
@@ -17,6 +18,7 @@ const Button = ({
             className={'app-button' + ( transparent ? (' no-bg') : '') + ( className ? (' ' + className) : '')}
             type={type}
             onClick={onClick}
+            disabled={disabled}
         >
             {icon && <Icon i={icon}/>}
             {children || label}
