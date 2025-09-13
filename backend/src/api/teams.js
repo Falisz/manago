@@ -1,6 +1,6 @@
 // BACKEND/api/teams.js
 import express from 'express';
-import { getTeams, getTeam } from '../controllers/teams.js';
+import {getTeams, getTeam, getAllTeams} from '../controllers/teams.js';
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const teams = await getTeams();
+        const teams = req.query.all === 'true' ? await getAllTeams() : await getTeams();
 
         res.json(teams);
 

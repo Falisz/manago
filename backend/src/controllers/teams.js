@@ -44,12 +44,18 @@ export async function getTeam(id, getMembers=true) {
 
 /**
  * Retrieves all teams and its subteams recursively.
- * @param {number || null} parentId - Optional - ID of the parent team.
- * @param {bool} getMembers - Optional - Should be members fetched with the Teams?
+ * @param {number || null} parent_team - Optional - ID of the parent team.
+ * If left empty, only get a whole Team tree excluding subteams from the root teams.
+ * If 0 used - it gets all Teams including subteams.
+ * @param {boolean} getMembers - Optional - Should be members fetched with the Teams?
  * @returns {Promise<Object[]|null>} Array of teams or null
  */
-export async function getTeams(parentId = null, getMembers=true) {
-    let teams = await Team.findAll({ where: { parent_team: parentId }});
+export async function getTeams(parent_team = null, getMembers=true) {
+    let teams;
+    if (parent_team === 0)
+        teams = await Team.findAll();
+    else
+        teams = await Team.findAll({ where: { parent_team }});
 
     if (!teams)
         return null;
@@ -57,7 +63,7 @@ export async function getTeams(parentId = null, getMembers=true) {
     teams = await Promise.all(teams.map(async team => {
         let teamData = {
             ...team.toJSON(),
-            subteams: await getTeams(team.id, true)
+            subteams: await getTeams(team.id)
         };
         if (getMembers)
             teamData = {
@@ -70,6 +76,14 @@ export async function getTeams(parentId = null, getMembers=true) {
     }));
 
     return teams || null;
+}
+/**
+ * Alias for getAllTeams(0) function that gets all Teams including the subteams.
+ * @param {boolean} getMembers - Optional - Should be members fetched with the Teams?
+ * @returns {Promise<Object[]|null>} Array of teams or null
+ */
+export async function getAllTeams(getMembers=true) {
+    return getTeams(0, getMembers);
 }
 
 /**
