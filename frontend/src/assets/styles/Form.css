@@ -13,6 +13,20 @@
     width: 100%;
     transition: 0.3s ease-in-out;
 }
+
+.app-form .form-section+.form-section {
+    margin-top: 15px;
+}
+.app-form .form-section.vertical {
+    flex-direction: column;
+}
+.app-form .form-header {
+    width: 100%;
+    margin: 0;
+    font-size: 1.25em;
+    text-transform: uppercase;
+    font-weight: 400;
+}
 .app-form .form-group {
     display: flex;
     flex-direction: column;
@@ -35,6 +49,7 @@
 }
 .app-form .form-input,
 .app-form .form-textarea {
+    font-size: 0.9rem;
     border-radius: var(--def-border-radius);
     padding: 10px 15px;
     box-sizing: border-box;
@@ -73,6 +88,93 @@
     margin-top: 5px;
 }
 
+.app-form .app-dropdown {
+    position: relative;
+    white-space: nowrap;
+    user-select: none;
+    max-width: 50%;
+}
+
+.app-form .app-dropdown .dropdown-selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--background-color-2);
+    cursor: pointer;
+    transition: .3s ease-in-out;
+}
+.app-form .app-dropdown .dropdown-search-input {
+    color: var(--text-color);
+    padding: 10px 0;
+    font-size: 0.9rem;
+    width: calc(100% + 24px);
+    border: none;
+    outline: none;
+    background: none;
+}
+.app-form .app-dropdown .dropdown-search-input::placeholder {
+    color: var(--text-color);
+    opacity: 1;
+}
+.app-form .app-dropdown i.app-clickable {
+    position: absolute;
+    right: 5px;
+}
+.app-form .app.fluent .app-dropdown .dropdown-selected {
+    background-color: var(--seethrough-background-2);
+}
+.app-form .app-dropdown .dropdown-selected:focus {
+    outline: none;
+}
+.app-form .app.fluent .app-dropdown .dropdown-selected:hover,
+.app-form .app.fluent .app-dropdown .dropdown-selected:focus {
+    background-color: var(--seethrough-background-3);
+}
+.dropdown-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 5px 0;
+    padding: 0;
+    list-style: none;
+    background-color: var(--background-color-2);
+    border-radius: 12px;
+    box-shadow: var(--weak-shade);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: .3s ease-in-out;
+}
+.app.fluent .dropdown-options {
+    background: var(--seethrough-background-3);
+    backdrop-filter: blur(10px);
+}
+.dropdown-options.hidden {
+    opacity: 0;
+    visibility: hidden;
+    margin-top: -15px;
+}
+
+.dropdown-option {
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+.dropdown-option.opt-none {
+    font-style: italic;
+}
+
+.dropdown-option:hover,
+.dropdown-option:focus {
+    background-color: var(--highlight-color);
+    color: white;
+    outline: none;
+}
+
 .app-form .dropdown-item {
     flex: 0;
     display: flex;
@@ -87,11 +189,6 @@
     cursor: default;
 }
 
-.app-form .form-actions {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-}
 .app-form .action-button {
     display: inline-flex;
     align-items: center;

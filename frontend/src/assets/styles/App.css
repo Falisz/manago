@@ -399,35 +399,6 @@ button .material-symbols-rounded {
     background: var(--gray-light);
 }
 
-.app-dropdown {
-    position: relative;
-    font-size: 1rem;
-    user-select: none;
-    max-width: 50%;
-}
-
-.app-dropdown .dropdown-selected {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 8px;
-    background-color: var(--background-color-2);
-    cursor: pointer;
-    transition: .3s ease-in-out;
-}
-.app.fluent .app-dropdown .dropdown-selected {
-    background-color: var(--seethrough-background-2);
-}
-.app-dropdown .dropdown-selected:focus {
-    outline: none;
-}
-.app.fluent .app-dropdown .dropdown-selected:hover,
-.app.fluent .app-dropdown .dropdown-selected:focus {
-    background-color: var(--seethrough-background-3);
-}
-
 .app-sub-menu {
     display: flex;
     flex-direction: column;
@@ -478,44 +449,4 @@ button .material-symbols-rounded {
 }
 .app-sub-menu .sub-menu-link i {
     margin-left: 10px;
-}
-
-
-.dropdown-options {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin: 5px 0;
-    padding: 0;
-    list-style: none;
-    background-color: var(--background-color-2);
-    border-radius: 12px;
-    box-shadow: var(--weak-shade);
-    z-index: 1000;
-    max-height: 200px;
-    overflow-y: auto;
-    transition: .3s ease-in-out;
-}
-.app.fluent .dropdown-options {
-    background: var(--seethrough-background-3);
-    backdrop-filter: blur(10px);
-}
-.dropdown-options.hidden {
-    opacity: 0;
-    visibility: hidden;
-    margin-top: -15px;
-}
-
-.dropdown-option {
-    padding: 10px;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-}
-
-.dropdown-option:hover,
-.dropdown-option:focus {
-    background-color: var(--highlight-color);
-    color: white;
-    outline: none;
 }

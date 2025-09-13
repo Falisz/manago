@@ -3,7 +3,9 @@ import Icon from "./Icon";
 
 const Dropdown = ({ className='', placeholder=null, name, value, options, onChange, noneAllowed=false, upperCaseNames=false }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const dropdownRef = useRef(null);
+    const inputRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -15,6 +17,12 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isOpen]);
+
     const handleOptionClick = (option, isOpen) => {
         if (isOpen) {
             const syntheticEvent = {
@@ -24,6 +32,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
             };
             onChange(syntheticEvent);
             setIsOpen(false);
+            setTimeout(setSearchTerm(''), 400);
         }
     };
 
@@ -34,15 +43,26 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
         }
     };
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
     const getDisplayText = () => {
         if (!value) return placeholder || 'Select an option';
         const isOptionObject = options.length > 0 && typeof options[0] === 'object';
         if (isOptionObject) {
             const selectedOption = options.find(option => option.id === value);
-            return selectedOption ? (upperCaseNames ? selectedOption.name.toUpperCase() : selectedOption.name)  : 'Select an option';
+            return selectedOption ?
+                (upperCaseNames ? selectedOption.name.toUpperCase() : selectedOption.name)  :
+                'Select an option';
         }
         return (upperCaseNames ? value.toUpperCase() : value);
     };
+
+    const filteredOptions = options.filter((option) => {
+        const displayText = typeof option === 'string' ? option : option.name;
+        return displayText.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     return (
         <div className={"app-dropdown " + className} ref={dropdownRef}>
@@ -51,14 +71,27 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
                 onClick={() => setIsOpen(!isOpen)}
                 tabIndex={0}
                 onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
+                    if (e.key === 'Enter' ) {
                         setIsOpen(!isOpen);
                     }
                 }}
             >
-                <span>{getDisplayText()}</span>
-                <Icon s={true} i={isOpen ? 'arrow_drop_up' : 'arrow_drop_down'}/>
+                <input
+                    className="dropdown-search-input"
+                    ref={inputRef}
+                    type="text"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    placeholder={getDisplayText()}
+                    onClick={(e) => {setIsOpen(!isOpen); e.stopPropagation()}}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape')
+                            setIsOpen(false)
+                        else
+                            setIsOpen(true)
+                    }}
+                />
+                <Icon s={true} i={isOpen ? 'arrow_drop_up' : 'arrow_drop_down'} clickable={true}/>
             </div>
             <ul className={`dropdown-options app-scroll ${isOpen ? '' : 'hidden'}`}>
                 {noneAllowed &&
@@ -72,7 +105,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
                         None
                     </li>
                 }
-                {options.map((option) => {
+                {filteredOptions.map((option) => {
                     const isString = typeof option === 'string';
                     const id = isString ? option.toLowerCase() : option.id;
                     const displayText = isString ? option : option.name;
