@@ -13,7 +13,3 @@
 .teams-list .app-list-row-cell.members-count {
     max-width: 100px;
 }
-
-.team-edit-form .form-group .app-dropdown {
-    margin-top: 0;
-}

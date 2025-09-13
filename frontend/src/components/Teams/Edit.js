@@ -4,10 +4,9 @@ import { useModals } from '../../contexts/ModalContext';
 import useTeam from '../../hooks/useTeam';
 import useUser from '../../hooks/useUser';
 import Loader from '../Loader';
+import Dropdown from '../Dropdown';
+import Button from '../Button';
 import '../../assets/styles/Form.css';
-import '../../assets/styles/Teams.css';
-import Dropdown from "../Dropdown";
-import Button from "../Button";
 
 const FORM_CLEAN_STATE = {
     code_name: '',
@@ -86,11 +85,19 @@ const TeamEdit = ({ teamId }) => {
 
     const handleRemoveItem = (field, index) => {
         if (!['manager_ids', 'leader_ids', 'member_ids'].includes(field)) return;
-
-        setFormData(prev => ({
-            ...prev,
-            [field]: prev[field].filter((_, i) => i !== index),
-        }));
+        if (index !== 0)
+            setFormData(prev => ({
+                ...prev,
+                [field]: prev[field].filter((_, i) => i !== index),
+            }));
+        else
+            setFormData(prev => ({
+                ...prev,
+                [field]: [
+                    null,
+                    ...prev[field].slice(1)
+                ]
+            }));
         setDiscardWarning(true);
     };
 
@@ -168,19 +175,12 @@ const TeamEdit = ({ teamId }) => {
         return !formData[dropdownName].includes(null) && formData[dropdownName].length < source.length;
     };
 
-    const MultiDropdownGroup = ({
-                                    dropdownName,
-                                    item='Team Member',
-                                    itemPlural='Team Members',
-                                    membersSource,
-                                }) => {
-
-        return (
+    const MultiDropdownGroup = ({ dropdownName, item, itemPlural, membersSource }) =>
             <div className='form-group'>
                 <div className={'form-label'}>
                     {itemPlural}
                 </div>
-                {membersSource?.length === 0 ? (<p>No {itemPlural.toLowerCase()} available.</p>) : (
+                {membersSource?.length === 0 ? <p>No {itemPlural.toLowerCase()} available.</p> : (
                     <>
                         <div className={'form-section'}>
                             {formData[dropdownName].map((userId, index) => (
@@ -196,11 +196,11 @@ const TeamEdit = ({ teamId }) => {
                                         placeholder={`Select ${item}`}
                                         noneAllowed={true}
                                     />
-                                    {index > 0 && (
+                                    {(index > 0 || formData[dropdownName][0] !== null) && (
                                         <Button
                                             className={'remove-button'}
                                             onClick={() => handleRemoveItem(dropdownName, index)}
-                                            icon={'remove_circle_outline'}
+                                            icon={'cancel'}
                                             transparent={true}
                                         />
                                     )}
@@ -210,16 +210,14 @@ const TeamEdit = ({ teamId }) => {
                         <Button
                             className={'new-dropdown-button'}
                             onClick={() => handleAddItem(dropdownName)}
-                            icon={'add_circle_outline'}
+                            icon={'add_circle'}
                             label={`Add ${item}`}
                             disabled={!(addNewItem(dropdownName))}
                             transparent={true}
                         />
                     </>
                 )}
-            </div>
-        );
-    }
+            </div>;
 
     if (loading) return <Loader />;
 

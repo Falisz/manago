@@ -2,23 +2,21 @@
 import React, {useEffect, useState} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';
-import useRole from "../../hooks/useRole";
+import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
+import Dropdown from '../Dropdown';
+import Button from '../Button';
 import '../../assets/styles/Form.css';
-import '../../assets/styles/Users.css';
-import Dropdown from "../Dropdown";
-import Icon from "../Icon";
-import Button from "../Button";
 
 const FORM_CLEAN_STATE = {
-        login: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-        role_ids: [],
-        manager_ids: [],
-        active: true,
-        manager_view_access: false,
+    login: '',
+    email: '',
+    first_name: '',
+    last_name: '',
+    role_ids: [null],
+    manager_ids: [null],
+    active: true,
+    manager_view_access: false
 };
 
 const UserEdit = ({ userId, preset }) => {
@@ -27,8 +25,6 @@ const UserEdit = ({ userId, preset }) => {
     const { roles, fetchRoles } = useRole();
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     const [ formData, setFormData ] = useState(FORM_CLEAN_STATE);
-    const [ roleSelections, setRoleSelections ] = useState([]);
-    const [ mgrSelections, setMgrSelections ] = useState([]);
 
     useEffect(() => {
         fetchRoles().then();
@@ -36,11 +32,16 @@ const UserEdit = ({ userId, preset }) => {
 
         if (!userId) {
             if (preset === 'manager') {
-                setFormData({ ...FORM_CLEAN_STATE, manager_view_access: true });
-                setRoleSelections(['11']);
+                setFormData({
+                    ...FORM_CLEAN_STATE,
+                    role_ids: [11],
+                    manager_view_access: true
+                });
             } else if (preset === 'employee') {
-                setFormData(FORM_CLEAN_STATE);
-                setRoleSelections(['1']);
+                setFormData({
+                    ...FORM_CLEAN_STATE,
+                    role_ids: [1]
+                });
             } else
                 setFormData(FORM_CLEAN_STATE);
             setLoading(false);
@@ -58,66 +59,56 @@ const UserEdit = ({ userId, preset }) => {
                 active: user?.active || true,
                 manager_view_access: user?.manager_view_access || false,
             });
-            setRoleSelections(user?.roles?.map((role) => role.id.toString()) || []);
-            setMgrSelections(user?.managers?.map((mgr) => mgr.id.toString()) || []);
         });
         
     }, [userId, preset, setLoading, fetchUser, fetchRoles, fetchManagers]);
 
-    useEffect(() => {
-        const selectedIds = roleSelections.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
-        setFormData(prev => ({ ...prev, role_ids: selectedIds }));
-    }, [roleSelections]);
-
-    useEffect(() => {
-        const selectedIds = mgrSelections?.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
-        setFormData(prev => ({ ...prev, manager_ids: selectedIds }));
-    }, [mgrSelections]);
-
-    const handleChange = (e) => {
+    const handleChange = (e, index) => {
         const { name, value, type, checked } = e.target;
+
+        if (['role_ids', 'manager_ids'].includes(name)) {
+            setFormData(prev => ({
+                ...prev,
+                [name]: [
+                    ...prev[name].slice(0, index),
+                    parseInt(value) || null,
+                    ...prev[name].slice(index + 1),
+                ],
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
+        setDiscardWarning(true);
+    };
+
+    const handleAddItem = (field) => {
+        if (!['role_ids', 'manager_ids'].includes(field)) return;
+
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-        setDiscardWarning(true);
-    };
+            [field]: [...prev[field], null],
+        }))
+    }
 
-    const handleRoleChange = (index, value) => {
-        setRoleSelections(prev => {
-            const newSel = [...prev];
-            newSel[index] = value;
-            return newSel;
-        });
-        setDiscardWarning(true);
-    };
+    const handleRemoveItem = (field, index) => {
+        if (!['role_ids', 'manager_ids'].includes(field)) return;
 
-    const handleAddRole = () => {
-        setRoleSelections(prev => [...prev, '']);
-        setDiscardWarning(true);
-    };
-
-    const handleRemoveRole = (index) => {
-        setRoleSelections(prev => prev.filter((_, i) => i !== index));
-        setDiscardWarning(true);
-    };
-
-    const handleManagerChange = (index, value) => {
-        setMgrSelections(prev => {
-            const newSel = [...prev];
-            newSel[index] = value;
-            return newSel;
-        });
-        setDiscardWarning(true);
-    };
-
-    const handleAddMgr = () => {
-        setMgrSelections(prev => [...prev, '']);
-        setDiscardWarning(true);
-    };
-
-    const handleRemoveMgr = (index) => {
-        setMgrSelections(prev => prev.filter((_, i) => i !== index));
+        if (index !== 0)
+            setFormData(prev => ({
+                ...prev,
+                [field]: prev[field].filter((_, i) => i !== index),
+            }));
+        else
+            setFormData(prev => ({
+                ...prev,
+                [field]: [
+                    null,
+                    ...prev[field].slice(1)
+                ]
+            }));
         setDiscardWarning(true);
     };
 
@@ -141,24 +132,86 @@ const UserEdit = ({ userId, preset }) => {
         }
     };
 
-    const getAvailableRoles = (index) => {
-        const currentSelected = roleSelections[index];
-        return roles?.filter(role => {
-            const idStr = role.id.toString();
-            return idStr === currentSelected || !roleSelections.includes(idStr);
-        }) || [];
+    const getSelectableItems = (index, dropdownName) => {
+        if (!['role_ids', 'manager_ids'].includes(dropdownName)) {
+            console.warn(`Invalid dropdownName: ${dropdownName}`);
+            return [];
+        }
+        const currentSelected = formData[dropdownName] && formData[dropdownName][index];
+
+        if (dropdownName === 'manager_ids') {
+            return managers?.filter(
+                manager => (
+                    (manager.id === currentSelected || !formData.manager_ids.includes(manager.id)) &&
+                    manager.id !== userId
+                )
+            ) || [];
+        } else if (dropdownName === 'role_ids') {
+            return roles?.filter(
+                role => (role.id === currentSelected || !formData.role_ids.includes(role.id))
+            ) || [];
+        }
+
+        return [];
+    }
+
+    const addNewItem = (dropdownName) => {
+        if (!['role_ids', 'manager_ids'].includes(dropdownName)) {
+            console.warn(`Invalid dropdownName: ${dropdownName}`);
+            return false;
+        }
+        const source = dropdownName === 'manager_ids' ? managers : roles;
+
+        if (!source) return false;
+
+        return !formData[dropdownName].includes(null) && formData[dropdownName].length < source.length;
     };
 
-    const getAvailableManagers = (index) => {
-        const currentSelected = mgrSelections[index];
-        return managers?.filter(mgr => {
-            const idStr = mgr.id.toString();
-            return (idStr === currentSelected || !mgrSelections.includes(idStr)) && idStr !== userId?.toString();
-        }) || [];
-    };
-
-    const showRoleAddButton = roleSelections.filter(id => id !== '').length < roles?.length;
-    const showMgrAddButton = mgrSelections.filter(id => id !== '').length < managers?.length;
+    const MultiDropdownGroup = ({ dropdownName, item, itemPlural, dataSource }) =>
+            <div className='form-group'>
+                <div className={'form-label'}>
+                    {itemPlural}
+                </div>
+                {dataSource?.length === 0 ? (<p>No {itemPlural.toLowerCase()} available.</p>) : (
+                    <>
+                        <div className={'form-section'}>
+                            {formData[dropdownName].map((userId, index) => (
+                                <div key={index} className='dropdown-item'>
+                                    <Dropdown
+                                        name={dropdownName}
+                                        value={userId}
+                                        options={getSelectableItems(index, dropdownName).map(el => ({
+                                            id: el.id,
+                                            name: dropdownName === 'manager_ids' ?
+                                                el.first_name + ' ' + el.last_name :
+                                                el.name
+                                        }))}
+                                        onChange={(e) => handleChange(e, index)}
+                                        placeholder={`Select ${item}`}
+                                        noneAllowed={true}
+                                    />
+                                    {(index > 0 || formData[dropdownName][0] !== null ) && (
+                                        <Button
+                                            className={'remove-button'}
+                                            onClick={() => handleRemoveItem(dropdownName, index)}
+                                            icon={'cancel'}
+                                            transparent={true}
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <Button
+                            className={'new-dropdown-button'}
+                            onClick={() => handleAddItem(dropdownName)}
+                            icon={'add_circle'}
+                            label={`Add ${item}`}
+                            disabled={!(addNewItem(dropdownName))}
+                            transparent={true}
+                        />
+                    </>
+                )}
+            </div>;
 
     if (loading) return <Loader />;
 
@@ -256,94 +309,32 @@ const UserEdit = ({ userId, preset }) => {
                         Manager View Access
                     </label>
                 </div>
-                <div className='form-group'>
-                    <div className={'form-label'}>
-                        Roles
-                    </div>
-                    {roles?.length === 0 ? (<p>No roles available.</p>) : (
-                        <>
-                            <div className={'form-section'}>
-                                {roleSelections.map((selectedId, index) => (
-                                    <div key={index} className='dropdown-item'>
-                                        <Dropdown
-                                            name={`role_${index}`}
-                                            value={selectedId}
-                                            options={getAvailableRoles(index).map(role => ({ id: role.id.toString(), name: role.name }))}
-                                            onChange={(e) => handleRoleChange(index, e.target.value)}
-                                            placeholder={'Select a role'}
-                                            noneAllowed={true}
-                                        />
-                                        {index > 0 && (
-                                            <Button
-                                                className={'remove-button'}
-                                                onClick={() => handleRemoveRole(index)}
-                                                icon={'remove_circle_outline'}
-                                                transparent={true}
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                            {showRoleAddButton && (
-                                <Button
-                                    className={'new-dropdown-button'}
-                                    onClick={handleAddRole}
-                                    icon={'add_circle_outline'}
-                                    label={'Add Role'}
-                                    transparent={true}
-                                />
-                            )}
-                        </>
-                    )}
-                </div>
-                <div className='form-group'>
-                    <div className={'form-label'}>
-                        Managers
-                    </div>
-                    {managers?.length === 0 ? (<p>No managers available.</p>) : (
-                        <>
-                            <div className={'form-section'}>
-                                {mgrSelections.map((selectedId, index) => (
-                                    <div key={index} className='dropdown-item'>
-                                        <Dropdown
-                                            name={`role_${index}`}
-                                            value={selectedId}
-                                            options={getAvailableManagers(index).map(mgr => ({ id: mgr.id.toString(), name: mgr.first_name + ' ' + mgr.last_name }))}
-                                            onChange={(e) => handleManagerChange(index, e.target.value)}
-                                            placeholder={`Select a manager`}
-                                            noneAllowed={true}
-                                        />
-                                        {index > 0 && (
-                                            <Button
-                                                className={'remove-button'}
-                                                onClick={() => handleRemoveMgr(index)}
-                                                icon={'remove_circle_outline'}
-                                                transparent={true}
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                            {showMgrAddButton && (
-                                <Button
-                                    className={'new-dropdown-button'}
-                                    onClick={handleAddMgr}
-                                    icon={'add_circle_outline'}
-                                    label={'Add Manager'}
-                                    transparent={true}
-                                />
-                            )}
-                        </>
-                    )}
-                </div>
-                <div className='form-actions'>
-                    <button type='submit' className='action-button submit-button'>
-                        <Icon i={'save'} s={true}/>
-                        {userId ? 'Save changes' : 'Create user'}
-                    </button>
-                    <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
-                        Cancel
-                    </button>
+                <MultiDropdownGroup
+                    dropdownName={'role_ids'}
+                    item={'Role'}
+                    itemPlural={'Roles'}
+                    dataSource={roles}
+                />
+                <MultiDropdownGroup
+                    dropdownName={'manager_ids'}
+                    item={'Manager'}
+                    itemPlural={'Managers'}
+                    dataSource={managers}
+                />
+                <div className='form-section align-center'>
+                    <Button
+                        className={'save-button'}
+                        type={'submit'}
+                        label={userId ? 'Save changes' : 'Create team'}
+                        icon={'save'}
+                    />
+                    <Button
+                        className={'discard-button'}
+                        type={'button'}
+                        label={'Discard'}
+                        icon={'close'}
+                        onClick={closeTopModal}
+                    />
                 </div>
             </form>
         </>

@@ -65,14 +65,7 @@
     width: fit-content;
     min-width: max(170px, 33%);
 }
-.app-form .app-dropdown {
-    margin: 0 0 0 5px;
-    min-width: max(200px, 33%);
-}
-.app-form .app-dropdown .dropdown-selected {
-    background: var(--text-color-3);
-    color: var(--background-color-3);
-}
+
 .app.fluent .app-form .form-input,
 .app.fluent .app-form .form-textarea {
     color: var(--text-color);
@@ -87,15 +80,13 @@
     height: 5rem;
 }
 
-.app-form .form-label+.app-dropdown {
-    margin-top: 5px;
-}
-
 .app-form .app-dropdown {
     position: relative;
     white-space: nowrap;
     user-select: none;
     max-width: 50%;
+    margin: 0 0 0 5px;
+    min-width: max(200px, 33%);
 }
 
 .app-form .app-dropdown .dropdown-selected {
@@ -105,12 +96,13 @@
     padding: 0 15px;
     border: none;
     border-radius: 8px;
-    background-color: var(--background-color-2);
+    background: var(--text-color-3);
+    color: var(--background-color-3);
     cursor: pointer;
     transition: .3s ease-in-out;
 }
 .app-form .app-dropdown .dropdown-search-input {
-    color: var(--text-color);
+    color: inherit;
     padding: 10px 0;
     font-size: 0.9rem;
     width: calc(100% + 24px);
@@ -119,7 +111,7 @@
     background: none;
 }
 .app-form .app-dropdown .dropdown-search-input::placeholder {
-    color: var(--text-color);
+    color: inherit;
     opacity: 1;
 }
 .app-form .app-dropdown i.app-clickable {
