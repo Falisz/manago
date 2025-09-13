@@ -20,6 +20,9 @@
 .app-form .form-section.vertical {
     flex-direction: column;
 }
+.app-form .form-section.align-center {
+    align-items: center;
+}
 .app-form .form-header {
     width: 100%;
     margin: 0;
