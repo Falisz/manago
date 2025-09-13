@@ -8,10 +8,10 @@ const useTeam = () => {
     const [teamsLoading, setTeamsLoading] = useState(true);
 
     // All teams related callbacks
-    const fetchTeams = useCallback(async (loading=true) => {
+    const fetchTeams = useCallback(async (loading=true, all=false) => {
         try {
             setTeamsLoading(loading);
-            const res = await axios.get('/teams', { withCredentials: true });
+            const res = await axios.get(`/teams${all ? '?all=true' : ''}`, { withCredentials: true });
             setTeams(res.data);
             return res.data;
         } catch (err) {

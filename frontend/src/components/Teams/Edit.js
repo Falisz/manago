@@ -19,7 +19,7 @@ const FORM_CLEAN_STATE = {
 };
 
 const TeamEdit = ({ teamId }) => {
-    const { loading, error, warning, success, setLoading, fetchTeam } = useTeam();
+    const { team, loading, error, warning, success, setLoading, fetchTeam } = useTeam();
     const { teams, fetchTeams } = useTeam();
     const { users, fetchUsers } = useUser();
     const { users: managers, fetchUsers: fetchManagers } = useUser();
@@ -31,7 +31,7 @@ const TeamEdit = ({ teamId }) => {
     useEffect(() => {
         fetchUsers().then();
         fetchManagers().then();
-        fetchTeams().then();
+        fetchTeams(true, true).then();
 
         if (!teamId) {
             setFormData(FORM_CLEAN_STATE);
@@ -134,7 +134,28 @@ const TeamEdit = ({ teamId }) => {
     };
 
     const getAvailableParentTeams = () => {
-        return teams?.filter(t => t.id !== teamId) || [];
+        const getAllSubTeams = (currentTeam) => {
+            if (!currentTeam) return [];
+            const result = [currentTeam];
+            if (currentTeam.sub_teams && Array.isArray(currentTeam.sub_teams)) {
+                currentTeam.sub_teams.forEach(subteam => {
+                    result.push(...getAllSubTeams(subteam));
+                });
+            }
+            return result;
+        };
+        const nonAvailableParentTeams = new Set();
+        if (teamId !== undefined && teamId !== null) {
+            const parsedTeamId = parseInt(teamId, 10);
+            if (!isNaN(parsedTeamId)) {
+                nonAvailableParentTeams.add(parsedTeamId);
+            }
+        }
+        getAllSubTeams(team)
+            .forEach(t => nonAvailableParentTeams.add(t.id));
+
+        if (!Array.isArray(teams)) return [];
+        return teams.filter(t => t && typeof t.id === 'number' && !nonAvailableParentTeams.has(t.id));
     }
 
     const getAvailableTeamLeaders = (index) => {
