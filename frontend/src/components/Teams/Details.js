@@ -7,8 +7,8 @@ import '../../assets/styles/Details.css';
 import Icon from "../Icon";
 
 const TeamDetails = ({ teamId }) => {
-    const { team, loading, fetchTeam } = useTeam();
-    const { openModal, refreshTriggers, closeTopModal } = useModals();
+    const { team, loading, fetchTeam, deleteTeam } = useTeam();
+    const { openModal, refreshTriggers, closeTopModal, refreshData } = useModals();
 
     useEffect(() => {
         if (teamId) {
@@ -24,29 +24,29 @@ const TeamDetails = ({ teamId }) => {
 
     const handleDelete = async (users = 0, subteams = 0) => {
         let message = `Are you sure you want to delete this role? This action cannot be undone.`
-        if (subteams > 0) {
-            message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}.`
-        }
+
         if (users > 0) {
             message += ` There are currently ${users === 1 ? 'a' : users} user${users > 1 ? 's' : ''} assigned to this team.`
+        }
+        if (subteams > 0) {
+            message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}.
+            Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`
         }
         openModal({
             content: 'confirm',
             type: 'pop-up',
             message: message,
             onConfirm: () => {
-                console.log('Deleting team not implemented yet.');
-                // deleteTeam(teamId).then();
-                // refreshData('teams', true);
+                deleteTeam(teamId).then();
+                refreshData('teams', true);
                 closeTopModal();
             },
             onConfirm2: subteams > 0 ? () => {
-                console.log('Deleting team and subteams not implemented yet.');
-                // deleteTeam(teamId, true).then();
-                // refreshData('teams', true);
+                deleteTeam(teamId, true).then();
+                refreshData('teams', true);
                 closeTopModal();
             } : null,
-            confirmLabel: 'Delete the team',
+            confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
             confirmLabel2: 'Delete team and subteams',
         });
     };

@@ -27,6 +27,7 @@ const useTeam = () => {
     const teamCacheRef = useRef({});
     const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(null);
+    const [warning, setWarning] = useState(null);
     const [error, setError] = useState(null);
 
     // Single team related callbacks
@@ -79,17 +80,21 @@ const useTeam = () => {
             return fetchTeam(teamId, true);
         } catch (err) {
             console.error('Error saving the team:', err);
-            setError(err.response?.data?.message || 'Failed to save the team. Please try again.');
+            setWarning('Failed to save the team. '
+                + (err.response?.data?.message || 'Please Try again later.'));
             return null;
         }
     }, [fetchTeam]);
 
-    const deleteTeam = useCallback( async (roleId) => {
+    const deleteTeam = useCallback( async (roleId, cascade = false) => {
         try {
             setLoading(true);
             setError(null);
             setSuccess(null);
-            const res = await axios.delete(`/teams/${roleId}`, { withCredentials: true });
+            const res = await axios.delete(
+                `/teams/${roleId}${cascade ? '?cascade=true' : ''}`,
+                { withCredentials: true }
+            );
             setSuccess(res.data.message);
             setTeam(null);
             delete teamCacheRef.current[roleId];
@@ -111,6 +116,7 @@ const useTeam = () => {
         loading,
         setLoading,
         error,
+        warning,
         success,
         fetchTeam,
         saveTeam,

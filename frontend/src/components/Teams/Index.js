@@ -105,6 +105,7 @@ const TeamItem = ({ team, sub = false }) => {
 }
 
 const TeamsTable = () => {
+    const { refreshTriggers } = useModals();
     const { teams, teamsLoading, fetchTeams } = useTeam();
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
@@ -117,6 +118,12 @@ const TeamsTable = () => {
             fetchTeams().then();
         }
     }, [fetchTeams, teams]);
+
+    useEffect(() => {
+        if (refreshTriggers?.teams) {
+            fetchTeams().then();
+        }
+    }, [refreshTriggers, fetchTeams]);
 
     const headers = useMemo(() => [
         { title: 'Codename', key: 'codename' },

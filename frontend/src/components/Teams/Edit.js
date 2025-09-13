@@ -61,6 +61,11 @@ const TeamEdit = ({ teamId }) => {
                     ...prev[name].slice(index + 1),
                 ],
             }));
+        } else if (name === 'parent_team_id') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value === 0 ? null : value
+            }));
         } else
             setFormData(prev => ({
                 ...prev,
@@ -97,7 +102,7 @@ const TeamEdit = ({ teamId }) => {
                 closeTopModal();
                 if (!teamId) {
                     setTimeout(() => {
-                        openModal({ content: 'userDetails', contentId: savedTeam.id });
+                        openModal({ content: 'teamDetails', contentId: savedTeam.id, type: 'dialog' });
                     }, 350);
                 } else {
                     refreshData('team', teamId);
