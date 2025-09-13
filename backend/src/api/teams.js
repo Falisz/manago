@@ -58,9 +58,9 @@ router.post('/', async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const {code_name, name, parent_team_id, leader_ids, manager_ids} = req.body;
+        const {code_name, name, parent_team, leader_ids, manager_ids} = req.body;
 
-        const result = await createTeam({code_name, name, parent_team_id});
+        const result = await createTeam({code_name, name, parent_team});
 
         if (!result.success) {
             return res.status(400).json({ message: result.message });
@@ -102,12 +102,12 @@ router.put('/:teamId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid team ID.' });
         }
 
-        const {code_name, name, parent_team_id, leader_ids, manager_ids} = req.body;
+        const {code_name, name, parent_team, leader_ids, manager_ids} = req.body;
 
         const result = await updateTeam(parseInt(teamId), {
             code_name,
             name,
-            parent_team_id
+            parent_team
         });
 
         if (!result.success) {

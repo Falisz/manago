@@ -117,7 +117,7 @@ export async function getAllTeams(getMembers=true) {
  * @param {Object} data - Team data
  * @param {string} data.code_name - Team code name
  * @param {string|null} data.name - optional - Team name
- * @param {string|null} data.parent_team_id - optional - Parent Team's ID
+ * @param {string|null} data.parent_team - optional - Parent Team's ID
  * @returns {Promise<{success: boolean, message: string, team?: Team}>}
  */
 export async function createTeam(data) {
@@ -137,7 +137,7 @@ export async function createTeam(data) {
     const team = await Team.create({
         code_name: data.code_name,
         name: data.name || null,
-        parent_team: data.parent_team_id || null,
+        parent_team: data.parent_team || null,
     });
 
     return {success: true, message: 'Team created successfully.', team: team.toJSON()};
@@ -173,7 +173,7 @@ export async function updateTeam(id, data) {
 
     if (data.name) teamUpdate.name = data.name;
 
-    if (data.parent_team_id !== undefined) teamUpdate.parent_team = data.parent_team_id;
+    if (data.parent_team !== undefined) teamUpdate.parent_team = data.parent_team;
 
     const updatedTeam = await team.update(teamUpdate);
 
