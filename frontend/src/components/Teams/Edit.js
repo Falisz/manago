@@ -14,19 +14,17 @@ const FORM_CLEAN_STATE = {
     code_name: '',
     name: '',
     parent_team_id: null,
-    leader_ids: [],
-    manager_ids: [],
+    leader_ids: [null],
+    manager_ids: [null],
 };
 
 const TeamEdit = ({ teamId }) => {
-    const { team, loading, error, warning, success, setLoading, fetchTeam } = useTeam();
+    const { team, loading, error, warning, success, setLoading, fetchTeam, saveTeam } = useTeam();
     const { teams, fetchTeams } = useTeam();
     const { users, fetchUsers } = useUser();
     const { users: managers, fetchUsers: fetchManagers } = useUser();
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     const [ formData, setFormData ] = useState(FORM_CLEAN_STATE);
-    const [ mgrSelections, setMgrSelections ] = useState([]);
-    const [ leadSelections, setLeadSelections ] = useState([]);
 
     useEffect(() => {
         fetchUsers().then();
@@ -35,8 +33,6 @@ const TeamEdit = ({ teamId }) => {
 
         if (!teamId) {
             setFormData(FORM_CLEAN_STATE);
-            setMgrSelections(['']);
-            setLeadSelections(['']);
             setLoading(false);
             return;
         }
@@ -46,76 +42,55 @@ const TeamEdit = ({ teamId }) => {
                 code_name: team?.code_name || '',
                 name: team?.name || '',
                 parent_team_id: team?.parent?.id || null,
-                leader_ids: team?.leaders?.map((lead) => lead.id) || [],
-                manager_ids: team?.managers?.map((mgr) => mgr.id) || [],
+                leader_ids: team?.leaders?.map((lead) => lead.id) || [null],
+                manager_ids: team?.managers?.map((mgr) => mgr.id) || [null],
             });
-            setMgrSelections(team?.managers?.map((mgr) => mgr.id.toString()) || []);
-            setLeadSelections(team?.leaders?.map((lead) => lead.id.toString()) || []);
         });
 
     }, [teamId, setLoading, fetchTeam, fetchUsers, fetchManagers, fetchTeams]);
 
-    useEffect(() => {
-        const selectedIds = mgrSelections?.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
-        setFormData(prev => ({ ...prev, manager_ids: selectedIds }));
-    }, [mgrSelections]);
-
-    useEffect(() => {
-        const selectedIds = leadSelections?.filter(id => id !== '' && id !== 0).map(id => parseInt(id));
-        setFormData(prev => ({ ...prev, leader_ids: selectedIds }));
-    }, [leadSelections]);
-
-    const handleChange = (e) => {
+    const handleChange = (e, index) => {
         const { name, value, type, checked } = e.target;
+
+        if (name === 'manager_ids' || name === 'leader_ids') {
+            setFormData(prev => ({
+                ...prev,
+                [name]: [
+                    ...prev[name].slice(0, index),
+                    parseInt(value) || null,
+                    ...prev[name].slice(index + 1),
+                ],
+            }));
+        } else
+            setFormData(prev => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        setDiscardWarning(true);
+    };
+
+    const handleAddItem = (field) => {
+        if (!['manager_ids', 'leader_ids'].includes(field)) return;
+
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [field]: [...prev[field], null],
+        }))
+    }
+
+    const handleRemoveItem = (field, index) => {
+        if (!['manager_ids', 'leader_ids'].includes(field)) return;
+
+        setFormData(prev => ({
+            ...prev,
+            [field]: prev[field].filter((_, i) => i !== index),
         }));
-        setDiscardWarning(true);
-    };
-
-    const handleLeadChange = (index, value) => {
-        setLeadSelections(prev => {
-            const newSel = [...prev];
-            newSel[index] = value;
-            return newSel;
-        });
-        setDiscardWarning(true);
-    };
-
-    const handleAddLead = () => {
-        setLeadSelections(prev => [...prev, '']);
-        setDiscardWarning(true);
-    };
-
-    const handleRemoveLead = (index) => {
-        setLeadSelections(prev => prev.filter((_, i) => i !== index));
-        setDiscardWarning(true);
-    };
-
-    const handleMgrChange = (index, value) => {
-        setMgrSelections(prev => {
-            const newSel = [...prev];
-            newSel[index] = value;
-            return newSel;
-        });
-        setDiscardWarning(true);
-    };
-
-    const handleAddMgr = () => {
-        setMgrSelections(prev => [...prev, '']);
-        setDiscardWarning(true);
-    };
-
-    const handleRemoveMgr = (index) => {
-        setMgrSelections(prev => prev.filter((_, i) => i !== index));
         setDiscardWarning(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // const savedTeam = await saveTeam(formData, teamId);
-        const savedTeam = console.log(formData); // Placeholder until saveTeam is implemented
+        const savedTeam = await saveTeam(formData, teamId);
         if (savedTeam) {
             setDiscardWarning(false);
             setTimeout(() => {
@@ -158,28 +133,33 @@ const TeamEdit = ({ teamId }) => {
         return teams.filter(t => t && typeof t.id === 'number' && !nonAvailableParentTeams.has(t.id));
     }
 
-    const getAvailableTeamLeaders = (index) => {
-        const currentSelected = leadSelections[index];
-        return users?.filter(user => {
-            const idStr = user.id.toString();
-            return idStr === currentSelected || !leadSelections.includes(idStr);
-        }) || [];
-    };
-
     const getAvailableManagers = (index) => {
-        const currentSelected = mgrSelections[index];
+        const currentSelected = formData.manager_ids[index];
         return managers?.filter(mgr => {
-            const idStr = mgr.id.toString();
-            return idStr === currentSelected || !mgrSelections.includes(idStr);
+            return mgr.id === currentSelected || !formData.manager_ids.includes(mgr.id);
         }) || [];
     };
 
-    const showLeadAddButton = leadSelections.filter(id => id !== '').length < (users?.length || 0);
-    const showMgrAddButton = mgrSelections.filter(id => id !== '').length < (users?.length || 0);
+    const getAvailableTeamLeaders = (index) => {
+        const currentSelected = formData.leader_ids[index];
+        return users?.filter(user => {
+            return user.id === currentSelected ||
+                (!formData.leader_ids.includes(user.id) && !formData.manager_ids.includes(user.id));
+        }) || [];
+    };
+
+    const addNewManager = !formData.manager_ids.includes(null) &&
+        formData.manager_ids.length < (managers?.length || 0);
+
+    const addNewLeader = !formData.leader_ids.includes(null) &&
+        formData.leader_ids.length < (users?.length || 0);
+
 
     if (loading) return <Loader />;
 
     if (error) return <div className='error-message'>{error}</div>;
+
+    console.log(formData);
 
     return (
         <>
@@ -226,7 +206,10 @@ const TeamEdit = ({ teamId }) => {
                         <Dropdown
                             name={`parent_team_id`}
                             value={formData?.parent_team_id}
-                            options={getAvailableParentTeams()?.map(team => ({ id: team.id, name: team.name }))||[]}
+                            options={getAvailableParentTeams()?.map(team => ({
+                                id: team.id,
+                                name: team.name
+                            })) || [] }
                             onChange={(e) => handleChange(e)}
                             placeholder={'Select a parent team'}
                             noneAllowed={true}
@@ -240,20 +223,23 @@ const TeamEdit = ({ teamId }) => {
                     {managers?.length === 0 ? (<p>No team managers available.</p>) : (
                         <>
                             <div className={'form-section'}>
-                                {mgrSelections.map((selectedId, index) => (
+                                {formData.manager_ids.map((managerId, index) => (
                                     <div key={index} className='dropdown-item'>
                                         <Dropdown
-                                            name={`role_${index}`}
-                                            value={selectedId}
-                                            options={getAvailableManagers(index).map(manager => ({ id: manager.id.toString(), name: manager.first_name + ' ' + manager.last_name }))}
-                                            onChange={(e) => handleMgrChange(index, e.target.value)}
-                                            placeholder={'Select a role'}
+                                            name={`manager_ids`}
+                                            value={managerId}
+                                            options={getAvailableManagers(index).map(manager => ({
+                                                id: manager.id,
+                                                name: manager.first_name + ' ' + manager.last_name
+                                            }))}
+                                            onChange={(e) => handleChange(e, index)}
+                                            placeholder={'Select a team manager'}
                                             noneAllowed={true}
                                         />
                                         {index > 0 && (
                                             <Button
                                                 className={'remove-button'}
-                                                onClick={() => handleRemoveMgr(index)}
+                                                onClick={() => handleRemoveItem('manager_ids', index)}
                                                 icon={'remove_circle_outline'}
                                                 transparent={true}
                                             />
@@ -261,15 +247,14 @@ const TeamEdit = ({ teamId }) => {
                                     </div>
                                 ))}
                             </div>
-                            {showMgrAddButton && (
-                                <Button
-                                    className={'add-button'}
-                                    onClick={handleAddMgr}
-                                    icon={'add_circle_outline'}
-                                    label={'Add Team Manager'}
-                                    transparent={true}
-                                />
-                            )}
+                            <Button
+                                className={'new-dropdown-button'}
+                                onClick={() => handleAddItem('manager_ids')}
+                                icon={'add_circle_outline'}
+                                label={'Add Team Manager'}
+                                disabled={!addNewManager}
+                                transparent={true}
+                            />
                         </>
                     )}
                 </div>
@@ -280,20 +265,23 @@ const TeamEdit = ({ teamId }) => {
                     {users?.length === 0 ? (<p>No team leaders available.</p>) : (
                         <>
                             <div className={'form-section'}>
-                                {leadSelections.map((selectedId, index) => (
+                                {formData.leader_ids.map((leaderId, index) => (
                                     <div key={index} className='dropdown-item'>
                                         <Dropdown
-                                            name={`role_${index}`}
-                                            value={selectedId}
-                                            options={getAvailableTeamLeaders(index).map(lead => ({ id: lead.id.toString(), name: lead.first_name + ' ' + lead.last_name }))}
-                                            onChange={(e) => handleLeadChange(index, e.target.value)}
-                                            placeholder={'Select a role'}
+                                            name={`leader_ids`}
+                                            value={leaderId}
+                                            options={getAvailableTeamLeaders(index).map(lead => ({
+                                                id: lead.id,
+                                                name: lead.first_name + ' ' + lead.last_name
+                                            }))}
+                                            onChange={(e) => handleChange(e, index)}
+                                            placeholder={'Select a team leader'}
                                             noneAllowed={true}
                                         />
                                         {index > 0 && (
                                             <Button
                                                 className={'remove-button'}
-                                                onClick={() => handleRemoveLead(index)}
+                                                onClick={() => handleRemoveItem('leader_ids', index)}
                                                 icon={'remove_circle_outline'}
                                                 transparent={true}
                                             />
@@ -301,15 +289,14 @@ const TeamEdit = ({ teamId }) => {
                                     </div>
                                 ))}
                             </div>
-                            {showLeadAddButton && (
-                                <Button
-                                    className={'add-button'}
-                                    onClick={handleAddLead}
-                                    icon={'add_circle_outline'}
-                                    label={'Add Team Leader'}
-                                    transparent={true}
-                                />
-                            )}
+                            <Button
+                                className={'new-dropdown-button'}
+                                onClick={() => handleAddItem('leader_ids')}
+                                icon={'add_circle_outline'}
+                                label={'Add Team Leader'}
+                                disabled={!addNewLeader}
+                                transparent={true}
+                            />
                         </>
                         )}
                 </div>
@@ -318,7 +305,11 @@ const TeamEdit = ({ teamId }) => {
                         <Icon i={'save'} s={true}/>
                         {teamId ? 'Save changes' : 'Create team'}
                     </button>
-                    <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
+                    <button
+                        type='button'
+                        className='action-button discard-button'
+                        onClick={() => closeTopModal()}
+                    >
                         Cancel
                     </button>
                 </div>
