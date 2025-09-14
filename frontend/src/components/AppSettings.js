@@ -7,6 +7,7 @@ import Loader from "./Loader";
 import AppModules from "./AppModules";
 import Dropdown from "./Dropdown";
 import Icon from "./Icon";
+import Button from "./Button";
 
 const AppSettings = () => {
     const { appState, getConfigOptions, refreshConfig } = useAppState();
@@ -138,12 +139,12 @@ const AppSettings = () => {
                             ))}
                         </div>
                     </div>
-                    <button
-                        className='action-button submit-button'
-                        type='submit'
-                    >
-                        Save Changes
-                    </button>
+                    <Button
+                        className={'submit'}
+                        type={'submit'}
+                        label={'Save Changes'}
+                        icon={'save'}
+                    />
                 </form>
             </div>
             <div className={'page-section'}>

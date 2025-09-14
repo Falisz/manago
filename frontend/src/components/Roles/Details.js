@@ -5,6 +5,7 @@ import useRole from '../../hooks/useRole';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
 import Icon from "../Icon";
+import Button from "../Button";
 
 const RoleDetails = ({ roleId }) => {
     const { role, loading, fetchRole, deleteRole } = useRole();
@@ -54,22 +55,20 @@ const RoleDetails = ({ roleId }) => {
                 <div className={'detail-title role-name'} title={'Role Name'}>{role.name}</div>
                 {!role.system_default? (
                     <>
-                        <button
-                            className={'action-button edit-button'}
-                            type='button'
+                        <Button
+                            className='edit'
                             onClick={() => openModal({ content: 'roleEdit', contentId: role.id })}
-                            title={'Edit Role'}
-                        >
-                            <Icon i={'edit'} />
-                        </button>
-                        <button
-                            className='action-button delete-button'
-                            type='button'
+                            icon={'edit'}
+                            title={'Edit the Role'}
+                            transparent={true}
+                        />
+                        <Button
+                            className='delete'
                             onClick={() => handleDelete(role.users?.length)}
-                            title={'Delete Role'}
-                        >
-                            <Icon i={'delete'} />
-                        </button>
+                            icon={'delete'}
+                            title={'Delete the Role'}
+                            transparent={true}
+                        />
                     </>
                 ) : null}
             </div>

@@ -304,13 +304,13 @@ const TeamEdit = ({ teamId }) => {
                 </div>
                 <div className='form-section align-center'>
                     <Button
-                        className={'save-button'}
+                        className={'save'}
                         type={'submit'}
                         label={teamId ? 'Save changes' : 'Create team'}
                         icon={'save'}
                     />
                     <Button
-                        className={'discard-button'}
+                        className={'discard'}
                         type={'button'}
                         label={'Discard'}
                         icon={'close'}

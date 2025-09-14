@@ -5,6 +5,7 @@ import useUser from '../../hooks/useUser';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
 import Icon from "../Icon";
+import Button from "../Button";
 
 const UserDetails = ({ userId }) => {
     const { user, loading, fetchUser, deleteUser } = useUser();
@@ -52,20 +53,20 @@ const UserDetails = ({ userId }) => {
             <div className='detail-header'>
                 <div className={'detail-title-prefix user-id'} title={'Employee ID'}>#{user.id}</div>
                 <div className={'detail-title user-name'} title={'Full Name'}>{user.first_name} {user.last_name}</div>
-                <button
-                    className={'action-button edit-button'}
+                <Button
+                    className={'edit'}
                     onClick={() => {openModal({content: 'userEdit', contentId: user.id })}}
                     title={'Edit User details'}
-                >
-                    <Icon i={'edit'} />
-                </button>
-                <button
-                    className={'action-button delete-button'}
+                    icon={'edit'}
+                    transparent={true}
+                />
+                <Button
+                    className={'delete'}
                     onClick={handleDelete}
                     title={'Delete the User'}
-                >
-                    <Icon i={'delete'} />
-                </button>
+                    icon={'delete'}
+                    transparent={true}
+                />
             </div>
             <div className='detail-section'>
                 <div className={'detail-subheader'}>Login details</div>

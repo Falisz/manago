@@ -1,15 +1,13 @@
 Following roadmap and tasks to-do as of 2025-09-10:
 ### Frontend
 - [ ] General app behaviour
-  - [ ] Unifying and use of Button component app wide.
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] User management
   - [ ] Selection feature in the user lists with actions like delete, assign Role, assign Manager, assign Reporting User etc.
 - [ ] Teams
-  - [ ] Team edit form (to include: team's code-name, display name, managers and team-leaders selectors.
-  - [ ] Create save and delete methods in the useTeam hook.
-  - [ ] Team assignment form.
+   - [ ] Team assignment form - for bulk team users assignments.
+   - [ ] Add a subteam option in the Team details to create a new team with preset parent_team.
 - [ ] Branches
   - [ ] Different logo per branch (?) e.g. if User is from Branch One they have diff logo than the user from Branch Two.
   - [ ] Teams nor Users cannot be assigned to Teams across different branches. Same with Manager reporting system.

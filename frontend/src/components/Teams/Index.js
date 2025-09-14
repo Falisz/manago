@@ -23,13 +23,13 @@ const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
                 value={filters[header.key] || ''}
                 onChange={handleFilter}
             />
-            <button
+            <Button
                 className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
                 name={header.key}
                 onClick={handleSorting}
-            >
-                {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
-            </button>
+                icon={sortConfig.key === header.key &&
+                sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+            />
         </div>
     </div>
 );
@@ -268,7 +268,7 @@ const TeamsIndex = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> Teams in Zyrah </h1>
                 <Button
-                    className='new-team-button'
+                    className='new-team'
                     onClick={() => openModal({ content: 'teamNew' })}
                     label={'Add team'}
                     icon={'add'}

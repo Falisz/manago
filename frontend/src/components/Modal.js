@@ -1,7 +1,7 @@
 // FRONTEND/components/Modal.js
 import React, {useEffect, useRef} from 'react';
 import '../assets/styles/Modal.css';
-import Icon from "./Icon";
+import Button from "./Button";
 
 const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton = true, zIndex = 1000 }) => {
     const modalRef = useRef(null);
@@ -54,15 +54,12 @@ const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton 
                 ref={modalRef}
             >
                 {children}
-                {closeButton && (
-                    <button
-                        onClick={() => onClose()}
-                        className='app-modal-close-button'
-                        aria-label='Close modal'
-                    >
-                        <Icon i={'close'} s={true} />
-                    </button>
-                )}
+                {closeButton && <Button
+                    className={'app-modal-close-button'}
+                    icon={'close'}
+                    onClick={onClose}
+                    transparent={true}
+                />}
             </div>
         </>
     );

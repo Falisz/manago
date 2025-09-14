@@ -4,7 +4,7 @@ import {useModals} from '../../contexts/ModalContext';
 import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
 import '../../assets/styles/Form.css';
-import Icon from "../Icon";
+import Button from "../Button";
 
 const FORM_CLEAN_STATE = {
         name: '',
@@ -92,14 +92,18 @@ const RoleEdit = ({ roleId }) => {
                         placeholder='Enter role description (optional)'
                     />
                 </div>
-                <div className='form-actions'>
-                    <button type='submit' className='action-button submit-button'>
-                        <Icon i={'save'} s={true}/>
-                        {roleId ? 'Save changes' : 'Create role'}
-                    </button>
-                    <button type='button' className='action-button discard-button' onClick={() => closeTopModal()}>
-                        Cancel
-                    </button>
+                <div className='form-section'>
+                    <Button
+                        className={'submit'}
+                        type={'submit'}
+                        icon={'save'}
+                        label={roleId ? 'Save changes' : 'Create role'}
+                    />
+                    <Button
+                        className={'discard'}
+                        onClick={closeTopModal}
+                        label={'Cancel'}
+                    />
                 </div>
             </form>
         </>

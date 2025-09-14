@@ -15,7 +15,7 @@
 .detail-header .detail-title {
     margin-right: 20px;
 }
-.detail-header .action-button {
+.detail-header .app-button {
     color: var(--text-color-3);
     background: none;
     border: none;
@@ -26,10 +26,13 @@
     border-radius: 12px;
     padding: 10px;
 }
-.detail-header .edit-button:hover {
+.detail-header .app-button i {
+    font-size: 1.5rem;
+}
+.detail-header .app-button.edit:hover {
     color: var(--link-color);
 }
-.detail-header .delete-button:hover {
+.detail-header .app-button.delete:hover {
     color: firebrick;
 }
 

@@ -311,7 +311,10 @@ button .material-symbols-rounded {
 .app-button {
     display: flex;
     align-items: center;
+    justify-content: space-evenly;
     gap: 5px;
+    font-size: 0.9rem;
+    font-weight: 400;
     padding: 8px;
     background: var(--button-color);
     color: white;
@@ -320,21 +323,40 @@ button .material-symbols-rounded {
     cursor: pointer;
     transition: 0.3s ease-in-out;
 }
+.app-button:hover {
+    background: var(--highlight-color);
+}
+.app-button.discard,
+.app-button.cancel {
+    background: orangered;
+}
+.app-button.discard:hover,
+.app-button.cancel:hover {
+    background: #ff7040;
+}
 .app-button i {
-    font-size: 15px;
+    font-size: 1rem;
 }
 .app.fluent .app-button {
     padding: 10px;
-    font-size: 1rem;
+    font-weight: bold;
     background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     color: var(--text-color);
-    font-weight: 400;
-    font-family: var(--font-family-condensed), sans-serif;
 }
 .app.fluent .app-button:hover {
     background: var(--seethrough-background-2);
+    color: var(--button-color);
+}
+.app.fluent .app-button.discard,
+.app.fluent .app-button.cancel {
+    background: var(--seethrough-background);
+    color: orangered;
+}
+.app.fluent .app-button.discard:hover,
+.app.fluent .app-button.cancel:hover {
+    color: #ff7040;
 }
 .app-button.no-bg,
 .app.fluent .app-button.no-bg {
@@ -449,4 +471,15 @@ button .material-symbols-rounded {
 }
 .app-sub-menu .sub-menu-link i {
     margin-left: 10px;
+}
+
+
+.confirm-prompt {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.confirm-prompt p {
+    width: 100%;
+    flex: 1 100%;
 }

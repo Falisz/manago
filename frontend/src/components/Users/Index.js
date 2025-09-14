@@ -22,13 +22,13 @@ const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
                     value={filters[header.key] || ''}
                     onChange={handleFilter}
                 />
-                <button
+                <Button
                     className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
                     name={header.key}
                     onClick={handleSorting}
-                >
-                    {sortConfig.key === header.key && sortConfig.direction === 'asc' ? '↑' : '↓'}
-                </button>
+                    icon={sortConfig.key === header.key &&
+                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                />
             </div>
         </div>
     );
@@ -238,7 +238,7 @@ export const ManagersIndex = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> Managers of Zyrah </h1>
                 <Button
-                    className='new-user-button'
+                    className='new-user'
                     onClick={() => openModal({ content: 'managerNew' })}
                     label={'Add manager'}
                     icon={'add'}
@@ -274,7 +274,7 @@ export const EmployeesIndex = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> Employees of Zyrah </h1>
                 <Button
-                    className='new-user-button'
+                    className='new-user'
                     onClick={() => openModal({ content: 'employeeNew' })}
                     label={'Add employee'}
                     icon={'add'}
@@ -309,7 +309,7 @@ export const UsersIndex = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> Users of Zyrah </h1>
                 <Button
-                    className='new-user-button'
+                    className='new-user'
                     onClick={() => openModal({content: 'userNew'})}
                     label={'Add user'}
                     icon={'add'}

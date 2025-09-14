@@ -74,41 +74,6 @@
     visibility: hidden;
 }
 
-.app-modal-content.pop-up .action-button {
-    display: inline-flex;
-    margin: 5px;
-    padding: 8px;
-    background: var(--button-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-}
-.app.fluent .app-modal-content.pop-up .action-button {
-    color: var(--text-color);
-}
-.app-modal-content.pop-up .action-button.discard {
-    background: orangered;
-}
-.app.fluent .app-modal-content.pop-up .action-button {
-    background: var(--seethrough-background);
-    box-shadow: var(--weak-shade);
-    border-radius: var(--big-border-radius);
-    padding: 10px 15px;
-    margin: 0;
-    font-weight: bold;
-}
-.app.fluent .app-modal-content.pop-up .action-button:hover {
-    background: var(--seethrough-background-2);
-}
-.app.fluent .app-modal-content.pop-up .action-button+.action-button {
-    margin-left: 10px;
-}
-.app.fluent .app-modal-content.pop-up .action-button.discard {
-    color: orangered;
-}
-
 .app-modal-content>h1 {
     margin: 0 0 10px;
     font-weight: 300;
@@ -138,6 +103,9 @@
     cursor: pointer;
     opacity: 0.7;
     transition: opacity 0.3s;
+}
+.app-modal-close-button i {
+    font-size: 2rem;
 }
 .app-modal-close-button:hover {
     opacity: 1;

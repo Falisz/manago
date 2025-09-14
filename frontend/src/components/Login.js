@@ -5,6 +5,7 @@ import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 import useAppState from '../contexts/AppStateContext';
 import Icon from "./Icon";
+import Button from "./Button";
 
 const Login = () => {
     const { authUser } = useAppState();
@@ -49,7 +50,7 @@ const Login = () => {
                         />
                         <Icon className='input-icon' i={'lock'} />
                     </div>
-                    <button type='submit'>Log in</button>
+                    <Button type='submit'>Log in</Button>
                     { error && <p className='error'>{error}</p> }
                 </form>
             </div>

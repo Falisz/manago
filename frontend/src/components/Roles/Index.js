@@ -5,7 +5,7 @@ import '../../assets/styles/Roles.css';
 import '../../assets/styles/List.css';
 import Button from '../Button';
 import Loader from '../Loader';
-import useRole from "../../hooks/useRole";
+import useRole from '../../hooks/useRole';
 
 const RolesList = () => {
     const { openModal, refreshTriggers } = useModals();
@@ -64,7 +64,7 @@ const RolesIndex = () => {
             <div className='page-header'>
                 <h1 className={'page-title'}> Security Roles </h1>
                 <Button
-                    className='new-role-button'
+                    className='new-role'
                     onClick={() => openModal({ content: 'roleNew' })}
                     label={'Add role'}
                     icon={'add'}

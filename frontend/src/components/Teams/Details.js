@@ -4,7 +4,7 @@ import Loader from '../Loader';
 import useTeam from '../../hooks/useTeam';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
-import Icon from "../Icon";
+import Button from "../Button";
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam, deleteTeam } = useTeam();
@@ -64,23 +64,23 @@ const TeamDetails = ({ teamId }) => {
             <div className='detail-header'>
                 <div className={'detail-title-prefix team-id'} title={'Team ID'}>#{team.id}</div>
                 <div className={'detail-title team-name'} title={'Team Name'}>{team.name}</div>
-                <button
-                    className={'action-button edit-button'}
+                <Button
+                    className={'edit'}
                     onClick={() => {openModal({content: 'teamEdit', contentId: team.id })}}
                     title={'Edit Team details'}
-                >
-                    <Icon i={'edit'} />
-                </button>
-                <button
-                    className={'action-button delete-button'}
+                    icon={'edit'}
+                    transparent={true}
+                />
+                <Button
+                    className={'delete'}
                     onClick={() => handleDelete(
                         (team.members.length+team.managers.length+team.leaders.length),
                         (team.sub_teams.length)
                     )}
                     title={'Delete the Team'}
-                >
-                    <Icon i={'delete'} />
-                </button>
+                    icon={'delete'}
+                    transparent={true}
+                />
             </div>
             <div className='detail-section'>
                 <div className={'detail-subheader'}>Team details</div>

@@ -1,6 +1,7 @@
 // FRONTEND/components/ConfirmPrompt.js
 import React from 'react';
 import { useModals } from '../contexts/ModalContext';
+import Button from "./Button";
 
 const ConfirmPrompt = ({
                     message='',
@@ -25,9 +26,19 @@ const ConfirmPrompt = ({
     return (
         <div className="confirm-prompt">
             <p>{message}</p>
-            <button className={'action-button'} onClick={confirmAction}>{confirmLabel}</button>
-            {onConfirm2 && <button className={'action-button'} onClick={confirm2Action}>{confirmLabel2}</button>}
-            <button className={'action-button discard'} onClick={closeTopModal}>{cancelLabel}</button>
+            <Button
+                onClick={confirmAction}
+                label={confirmLabel}
+            />
+            {onConfirm2 && <Button
+                onClick={confirm2Action}
+                label={confirmLabel2}
+            />}
+            <Button
+                className={'discard'}
+                onClick={closeTopModal}
+                label={cancelLabel}
+            />
         </div>
     );
 }
