@@ -7,8 +7,8 @@ import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
 import axios from 'axios';
 import MobileNav from './MobileNav';
 import useAppState from '../contexts/AppStateContext';
-import UserSubMenu from "./UserSubMenu";
-import Icon from "./Icon";
+import UserSubMenu from './UserSubMenu';
+import Icon from './Icon';
 
 const MainNav = () => {
     const { user, appState } = useAppState();
