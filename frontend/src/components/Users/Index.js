@@ -1,11 +1,15 @@
 // FRONTEND/components/Users/Index.js
 import React, { useEffect, useState, useMemo } from 'react';
+import { useContextMenu, Menu, Item, Separator } from 'react-contexify';
+import "react-contexify/dist/ReactContexify.css";
 import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';
 import Loader from '../Loader';
 import Button from '../Button';
 import '../../assets/styles/List.css';
 import '../../assets/styles/Users.css';
+
+const MENU_ID = '2137';
 
 const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
     return (
@@ -35,7 +39,41 @@ const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
 }
 
 const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
-    const { openModal } = useModals();
+    const { openModal, refreshData, closeTopModal } = useModals();
+    const { deleteUser } = useUser();
+
+    const { show } = useContextMenu({
+        id: MENU_ID,
+    });
+
+    function displayMenu(e, id) {
+        show({event: e, props: { id }});
+    }
+
+    function handleItemClick({ id, props }){
+        switch (id) {
+            case "delete":
+                openModal({
+                    content: 'confirm',
+                    type: 'pop-up',
+                    message: 'Are you sure you want to delete this user? This action cannot be undone.',
+                    onConfirm: () => {
+                        deleteUser(props.id).then();
+                        refreshData('users', true);
+                        closeTopModal();
+                    },
+                });
+                break;
+            case "edit":
+                openModal({content: 'userEdit', contentId: props.id});
+                break;
+            default:
+                console.log(`${id} option to be implemented.`);
+                break;
+        }
+
+
+    }
 
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
@@ -71,7 +109,7 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
     };
 
     const handleSorting = (e) => {
-        const field = e.target.name;
+        const field = e.currentTarget.name;
         e.target.classList.add('active');
         setSortConfig(prev => ({
             key: field,
@@ -177,7 +215,7 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     const moreRolesText = moreRolesCount > 0 ? `+${moreRolesCount} other roles` : '';
 
                     return (
-                        <div className='app-list-row' key={user.id}>
+                        <div className='app-list-row' key={user.id} onContextMenu={(e) => displayMenu(e, user.id)}>
                             <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: user.id })}>
                                 {user.first_name} {user.last_name}
                             </div>
@@ -213,6 +251,21 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     );
                 }))}
             </div>
+            <Menu id={MENU_ID}>
+                <Item id="select" onClick={handleItemClick}>
+                    Select user
+                </Item>
+                <Item id="edit" onClick={handleItemClick}>
+                    Edit user
+                </Item>
+                <Item id="delete" onClick={handleItemClick}>
+                    Delete user
+                </Item>
+                <Separator />
+                <Item id="assign-manager" onClick={handleItemClick}>
+                    Assign new manager
+                </Item>
+            </Menu>
         </div>
     );
 }
