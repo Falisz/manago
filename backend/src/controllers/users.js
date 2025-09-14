@@ -269,8 +269,6 @@ export async function removeUser(userId) {
     }
 
     await user.update({
-        login: null,
-        email: null,
         active: false,
         removed: true
     }, {transaction});
