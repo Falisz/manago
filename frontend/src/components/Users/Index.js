@@ -41,10 +41,13 @@ const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
 const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=true, managed_users=false }) => {
     const { openModal, refreshData, closeTopModal } = useModals();
     const { deleteUser } = useUser();
-
-    const { show } = useContextMenu({
-        id: MENU_ID,
+    const [headerCollapsed, setHeaderCollapsed] = useState(true);
+    const [filters, setFilters] = useState({});
+    const [sortConfig, setSortConfig] = useState({
+        key: null,
+        direction: 'asc'
     });
+    const { show } = useContextMenu({ id: MENU_ID, });
 
     function displayMenu(e, id) {
         show({event: e, props: { id }});
@@ -77,12 +80,6 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
 
 
     }
-
-    const [filters, setFilters] = useState({});
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'asc'
-    });
 
     const headers = useMemo(() => {
         let baseHeaders = [
@@ -208,7 +205,7 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
 
     return (
         <div className='app-list seethrough app-overflow-hidden app-centered users-list'>
-            <div className='app-list-header-row'>
+            <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
                 {headers.map((header) => (
                     <UserTableHeader
                         header={header}
@@ -219,6 +216,12 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                         key={header.key}
                     />
                 ))}
+                <Button
+                    className={'collapse_header'}
+                    transparent={true}
+                    icon={headerCollapsed ? 'add_circle' : 'remove_circle'}
+                    onClick={() => setHeaderCollapsed(prev => !prev)}
+                />
             </div>
             <div className='app-list-content app-overflow-y app-scroll'>
                 { filteredAndSortedUsers?.length === 0 ? (
@@ -289,7 +292,7 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                         Assign to Team
                     </Item>
                 </Menu> :
-                <Menu className={'app-context-menu'} id={MENU_ID}>
+                <Menu className={'app-context-menu'} id={MENU_ID} >
                     <Item id="select" onClick={handleItemClick}>
                         Select user
                     </Item>

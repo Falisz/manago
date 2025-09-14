@@ -7,6 +7,7 @@ import Button from '../Button';
 import '../../assets/styles/List.css';
 import '../../assets/styles/Teams.css';
 import Icon from "../Icon";
+import {Item, Menu, useContextMenu} from "react-contexify";
 
 // Table header component for Teams
 const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => (
@@ -34,7 +35,7 @@ const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
     </div>
 );
 
-const TeamItem = ({ team, sub = false }) => {
+const TeamItem = ({ team, sub = false, displayMenu }) => {
     const { openModal } = useModals();
 
     team.members_count = team.members ? team.members.length : 0;
@@ -49,7 +50,8 @@ const TeamItem = ({ team, sub = false }) => {
 
     return (
         <>
-            <div className='app-list-row'>
+            <div className='app-list-row'
+                 onContextMenu={(e) => displayMenu(e, team.id)}>
                 <div
                     className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
                     onClick={() => openTeamDetails(team.id)}
@@ -96,7 +98,7 @@ const TeamItem = ({ team, sub = false }) => {
             {team.subteams && team.subteams?.length > 0 ? (
                 <div className='app-list-sub-rows'>
                     {team.subteams.map(subteam => (
-                        <TeamItem key={subteam.id} team={subteam} sub={true} />
+                        <TeamItem key={subteam.id} team={subteam} sub={true} displayMenu={displayMenu}/>
                     ))}
                 </div>
                 ) : null}
@@ -104,14 +106,30 @@ const TeamItem = ({ team, sub = false }) => {
     );
 }
 
+const MENU_ID = '2137';
+
 const TeamsTable = () => {
     const { refreshTriggers } = useModals();
     const { teams, teamsLoading, fetchTeams } = useTeam();
+    const [headerCollapsed, setHeaderCollapsed] = useState(true);
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
         key: null,
         direction: 'asc'
     });
+    const { show } = useContextMenu({ id: MENU_ID, });
+
+    function displayMenu(e, id) {
+        show({event: e, props: { id }});
+    }
+
+    function handleItemClick({ id, props }) {
+        switch (id) {
+            default:
+                console.warn(`${id} option to be implemented.`);
+                break;
+        }
+    }
 
     useEffect(() => {
         if (!teams) {
@@ -235,7 +253,7 @@ const TeamsTable = () => {
 
     return (
         <div className='app-list teams-list seethrough app-overflow-hidden'>
-            <div className='app-list-header-row'>
+            <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
                 {headers.map((header) => (
                     <TeamTableHeader
                         header={header}
@@ -246,16 +264,33 @@ const TeamsTable = () => {
                         key={header.key}
                     />
                 ))}
+                <Button
+                    className={'collapse_header'}
+                    transparent={true}
+                    icon={headerCollapsed ? 'add_circle' : 'remove_circle'}
+                    onClick={() => setHeaderCollapsed(prev => !prev)}
+                />
             </div>
             <div className='teams-list-content app-overflow-y app-scroll'>
                 {filteredAndSortedTeams?.length === 0 ? (
                     <p>No teams found.</p>
                 ) : (filteredAndSortedTeams?.map(team => (
                     <div className='app-list-row-stack' key={team.id}>
-                        <TeamItem team={team} />
+                        <TeamItem team={team}  displayMenu={displayMenu} />
                     </div>
                 )))}
             </div>
+            <Menu className={'app-context-menu'} id={MENU_ID}>
+                <Item id="select" onClick={handleItemClick}>
+                    Select Team
+                </Item>
+                <Item id="edit" onClick={handleItemClick}>
+                    Edit Team
+                </Item>
+                <Item id="delete" onClick={handleItemClick}>
+                    Delete Team
+                </Item>
+            </Menu>
         </div>
     );
 };

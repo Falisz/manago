@@ -474,17 +474,25 @@ button .material-symbols-rounded {
 }
 
 .app-context-menu.contexify {
+    /* https://fkhadra.github.io/react-contexify/how-to-style */
+    --contexify-menu-padding: 10px;
     --contexify-separator-margin: 5px;
-    --contexify-itemContent-padding: 6px;
-    --contexify-activeItem-radius: 4px;
+    --contexify-separator-color: rgba(255,255,255,.25);
     --contexify-item-color: var(--text-color);
-    --contexify-activeItem-color: #fff;
+    --contexify-activeItem-color: var(--white);
     --contexify-activeItem-bgColor: var(--button-color);
-    --contexify-rightSlot-color: #6f6e77;
-    --contexify-activeRightSlot-color: #fff;
-    --contexify-arrow-color: #6f6e77;
-    --contexify-activeArrow-color: #fff;
     background: var(--background-gradient);
+}
+.app.fluent .app-context-menu.contexify {
+    background: var(--seethrough-background);
+    backdrop-filter: blur(10px);
+    --contexify-menu-radius: var(--big-border-radius);
+    --contexify-menu-padding: 10px;
+    --contexify-item-color: var(--text-color);
+    --contexify-activeItem-color: var(--button-color);
+    --contexify-activeItem-bgColor: var(--seethrough-background-2);
+    --contexify-activeItem-radius: var(--def-border-radius);
+    --contexify-menu-shadow: var(--weak-shade);
 }
 
 .confirm-prompt {

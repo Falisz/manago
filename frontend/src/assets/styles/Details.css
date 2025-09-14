@@ -41,7 +41,7 @@
 .detail-section {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px;
 }
 .detail-section-header {
     font-size: 1.25em;
@@ -60,7 +60,6 @@
 }
 .detail-group label {
     margin-left: -5px;
-    margin-top: 10px;
     font-weight: bold;
     font-family: var(--font-family-condensed), sans-serif;
 }

@@ -87,7 +87,7 @@ const TeamDetails = ({ teamId }) => {
                     Details
                 </div>
                 <div className={'detail-group team-codename'} title={'Team codename'}>
-                    <label>Code name</label>
+                    <label>Codename</label>
                     {team.code_name}
                 </div>
                 {team.parent &&
@@ -115,7 +115,7 @@ const TeamDetails = ({ teamId }) => {
                                 </span>
                             </div>
                         )
-                    ) : (<i>No subteams.</i>)}
+                    ) : (<span className={'detail-placeholder'}>This Team has no Subteams.</span>)}
                     <Button
                         onClick={() => openModal({ content: 'subteamNew', parentId: team.id })}
                         label={'Add Subteam'}

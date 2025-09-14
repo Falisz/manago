@@ -1,9 +1,9 @@
 {
   "config": {
-    "style": "flat",
+    "style": "fluent",
     "theme": "light",
-    "color": "pink",
-    "background": "cloudy"
+    "color": "cyan",
+    "background": "blue-galaxy"
   },
   "options": {
     "style": [

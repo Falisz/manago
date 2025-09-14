@@ -69,25 +69,22 @@ const UserDetails = ({ userId }) => {
                 />
             </div>
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Login details</div>
-                <div className={'detail-row user-id'} title={'Login ID'}>
+                <div className={'detail-section-header'}>Login details</div>
+                <div className={'detail-group user-id'} title={'Login ID'}>
                     <label>Login ID</label> {user.id}
                 </div>
-                <div className={'detail-row user-login'} title={'Login alias'}>
+                <div className={'detail-group user-login'} title={'Login alias'}>
                     <label>Login alias</label> {user.login}
                 </div>
-                <div className={'detail-row user-email'} title={'Login e-mail'}>
+                <div className={'detail-group user-email'} title={'Login e-mail'}>
                     <label>Login e-mail</label> {user.email}
                 </div>
             </div>
 
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Roles</div>
+                <div className={'detail-section-header'}>Roles</div>
                 {user.roles.length > 0 ? user.roles.map((role) => (
-                        <div
-                            key={role.id}
-                            className={'detail-row'}
-                        >
+                        <div key={role.id} className={'detail-group'}>
                             <span
                                 className={'detail-link'}
                                 onClick={() => openModal({ content: 'roleDetails', contentId: role.id, type: 'dialog' })}
@@ -100,28 +97,28 @@ const UserDetails = ({ userId }) => {
                     <div className={'detail-data-placeholder'}>Na roles assigned.</div>}
             </div>
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Status</div>
+                <div className={'detail-section-header'}>Status</div>
                 {user.active ?
-                    <div className={'detail-row linear'}>
+                    <div className={'detail-group linear'}>
                         <Icon className={'true'} i={'check'}/> Employee's account is active
                     </div> : 
-                    <div className={'detail-row linear'}>
+                    <div className={'detail-group linear'}>
                         <Icon className={'false'} i={'close'}/> Employee's account is not active
                     </div> }
                 {user.manager_view_access ?
-                    <div className={'detail-row linear'}>
+                    <div className={'detail-group linear'}>
                         <Icon className={'true'} i={'check'}/> Employee has access to Manager View
                     </div> : 
-                    <div className={'detail-row linear'}>
+                    <div className={'detail-group linear'}>
                         <Icon className={'false'} i={'close'}/> Employee does not have access to Manager View
                     </div> }
             </div>
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Reports to</div>
+                <div className={'detail-section-header'}>Reports to</div>
                 {user.managers.length > 0 ? user.managers.map((manager) => (
                     <div
                         key={manager.id}
-                        className={'detail-row'}
+                        className={'detail-group'}
                     >
                         <span
                             className={'detail-link'}
@@ -134,10 +131,10 @@ const UserDetails = ({ userId }) => {
                 <div className={'detail-data-placeholder'}>No manager assigned.</div>}
             </div>
             {user.managed_users.length > 0 ? (<div className='detail-section'>
-                <div className={'detail-subheader'}>Reportees</div> {user.managed_users.map((user) => (
+                <div className={'detail-section-header'}>Reportees</div> {user.managed_users.map((user) => (
                     <div
                         key={user.id}
-                        className={'detail-row'}
+                        className={'detail-group'}
                     >
                         <span
                             className={'detail-link'}

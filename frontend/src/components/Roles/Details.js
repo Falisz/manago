@@ -73,14 +73,14 @@ const RoleDetails = ({ roleId }) => {
                 ) : null}
             </div>
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Role details</div>
-                <div className={'detail-row role-description'} title={'Role description'}>
-                    <label>Description</label> {role.description ?? <div className={'detail-data-placeholder'}>This role has no description.</div>}
+                <div className={'detail-section-header'}>Role details</div>
+                <div className={'detail-group role-description'} title={'Role description'}>
+                    <label>Description</label> {role.description ?? <div className={'detail-placeholder'}>This role has no description.</div>}
                 </div>
                 {role.system_default ? (
-                    <div className='detail-row' title={'Role type'}>
+                    <div className='detail-group' title={'Role type'}>
                         <label>Role type</label>
-                        <div className='detail-row linear'>
+                        <div className='detail-group linear'>
                             <Icon className={'true'} i={'check'}/> This is system default role. You cannot edit nor delete it.
                         </div>
                     </div>
@@ -88,11 +88,11 @@ const RoleDetails = ({ roleId }) => {
                 </div>
             
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Users with this role</div>
+                <div className={'detail-section-header'}>Users with this role</div>
                 {role.users?.length > 0 ? role.users.map((user) => (
                     <div
                         key={user.id}
-                        className={'detail-row linear'}
+                        className={'detail-group linear'}
                     >
                         <span
                             className={'detail-link'}
@@ -102,7 +102,7 @@ const RoleDetails = ({ roleId }) => {
                         </span>
                     </div>
                 )) :
-                <div className={'detail-data-placeholder'}>No users with this role.</div>}
+                <div className={'detail-placeholder'}>No users with this role.</div>}
             </div>
 
         </div>
