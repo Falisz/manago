@@ -38,7 +38,7 @@ const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSort
     );
 }
 
-const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
+const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=true, managed_users=false }) => {
     const { openModal, refreshData, closeTopModal } = useModals();
     const { deleteUser } = useUser();
 
@@ -47,11 +47,14 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
     });
 
     function displayMenu(e, id) {
-        show({event: e, props: { id }});
+        show({event: e, props: { id, element: e.currentTarget }});
     }
 
     function handleItemClick({ id, props }){
         switch (id) {
+            case 'select':
+                handleUserSelect(props.id);
+                break;
             case "delete":
                 openModal({
                     content: 'confirm',
@@ -115,6 +118,18 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
             key: field,
             direction: prev.key === field && prev.direction === 'asc' ? 'desc' : 'asc'
         }));
+    };
+
+    const handleUserSelect = (id) => {
+        setSelectedUsers(prev => {
+            const newSelected = new Set(prev);
+            if (newSelected?.has(id)) {
+                newSelected.delete(id);
+            } else {
+                newSelected.add(id);
+            }
+            return newSelected;
+        });
     };
 
     const filteredAndSortedUsers = useMemo(() => {
@@ -215,7 +230,15 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                     const moreRolesText = moreRolesCount > 0 ? `+${moreRolesCount} other roles` : '';
 
                     return (
-                        <div className='app-list-row' key={user.id} onContextMenu={(e) => displayMenu(e, user.id)}>
+                        <div
+                            className={`app-list-row${selectedUsers?.has(user.id) ? ' selected' : ''}`}
+                            key={user.id}
+                            onClick={(e) => { if(e.shiftKey || selectedUsers?.size > 0) {
+                                e.preventDefault();
+                                handleUserSelect(user.id);
+                            }}}
+                            onContextMenu={(e) => displayMenu(e, user.id)}
+                        >
                             <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: user.id })}>
                                 {user.first_name} {user.last_name}
                             </div>
@@ -252,128 +275,119 @@ const UsersTable = ({ users, loading, managers=true, managed_users=false }) => {
                 }))}
             </div>
             <Menu id={MENU_ID}>
-                <Item id="select" onClick={handleItemClick}>
-                    Select user
-                </Item>
-                <Item id="edit" onClick={handleItemClick}>
-                    Edit user
-                </Item>
-                <Item id="delete" onClick={handleItemClick}>
-                    Delete user
-                </Item>
-                <Separator />
-                <Item id="assign-manager" onClick={handleItemClick}>
-                    Assign new manager
-                </Item>
+                { selectedUsers?.size > 0 ? <>
+                    <Item id="bulk-delete" onClick={handleItemClick}>
+                        Delete Users
+                    </Item>
+                    <Item id="bulk-assign-role" onClick={handleItemClick}>
+                        Assign Role
+                    </Item>
+                    <Item id="bulk-assign-manager" onClick={handleItemClick}>
+                        Assign Manager
+                    </Item>
+                    <Item id="bulk-assign-team" onClick={handleItemClick}>
+                        Assign to Team
+                    </Item>
+                </> : <>
+                    <Item id="select" onClick={handleItemClick}>
+                        Select user
+                    </Item>
+                    <Item id="edit" onClick={handleItemClick}>
+                        Edit user
+                    </Item>
+                    <Item id="delete" onClick={handleItemClick}>
+                        Delete user
+                    </Item>
+                    <Separator />
+                    <Item id="assign-manager" onClick={handleItemClick}>
+                        Assign new manager
+                    </Item>
+                </>  }
             </Menu>
         </div>
     );
 }
 
-export const ManagersIndex = () => {
+const UsersIndexPage = ({content='users'}) => {
     const { openModal, refreshTriggers } = useModals();
     const { users, usersLoading, fetchUsers } = useUser();
+    const [ selectedUsers, setSelectedUsers ] = useState(new Set());
+
+    const itemName = {
+        singular: content.slice(0,-1),
+        plural: content,
+        singular_capitalised: content.charAt(0).toUpperCase() + content.slice(1,-1),
+        plural_capitalised: content.charAt(0).toUpperCase() + content.slice(1),
+    };
+    console.log(itemName);
+    const pageTitle = itemName.plural_capitalised + ' of Zyrah';
+
+    const newItemModalContent = content === 'employees' ? 'employeeNew' :
+        content === 'managers' ? 'managerNew' : 'userNew';
 
     useEffect(() => {
         if (!users) {
-            fetchUsers('managers').then();
+            fetchUsers(content).then();
         }
-    }, [fetchUsers, users]);
+    }, [content, users, fetchUsers]);
 
     useEffect(() => {
         if (refreshTriggers?.users) {
-            fetchUsers('managers').then();
+            fetchUsers(content).then();
         }
-    }, [refreshTriggers, fetchUsers]);
+    }, [content, refreshTriggers, fetchUsers]);
+
+    function selectAll() {
+        setSelectedUsers(new Set(users.map(user => user.id)));
+    }
+
+    function clearSelection() {
+        setSelectedUsers(new Set());
+    }
 
     return (
         <>
             <div className='page-header'>
-                <h1 className={'page-title'}> Managers of Zyrah </h1>
+                <h1 className={'page-title'}>{pageTitle}</h1>
+                {
+                    selectedUsers?.size > 0 &&
+                    <div className="selected-items">
+                        <p>
+                            {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected.
+                        </p>
+                        <Button
+                            onClick={clearSelection}
+                            label={'Clear selection'}
+                        />
+                        <Button
+                            onClick={selectAll}
+                            label={'Select all'}
+                        />
+                    </div>
+                }
                 <Button
                     className='new-user'
-                    onClick={() => openModal({ content: 'managerNew' })}
-                    label={'Add manager'}
+                    onClick={() => openModal({content: newItemModalContent})}
+                    label={`Add ${itemName.singular_capitalised}`}
                     icon={'add'}
                 />
             </div>
             <UsersTable
                 users={users}
                 loading={usersLoading}
-                managed_users={true}
+                managed_users={content === 'managers'}
+                selectedUsers={selectedUsers}
+                setSelectedUsers={setSelectedUsers}
             />
         </>
     );
+
 }
 
-export const EmployeesIndex = () => {
-    const { openModal, refreshTriggers } = useModals();
-    const { users, usersLoading, fetchUsers } = useUser();
+export const ManagersIndex = () => <UsersIndexPage content={'managers'} />
 
-    useEffect(() => {
-        if (!users) {
-            fetchUsers('employees').then();
-        }
-    }, [fetchUsers, users]);
+export const EmployeesIndex = () => <UsersIndexPage content={'employees'} />
 
-    useEffect(() => {
-        if (refreshTriggers?.users) {
-            fetchUsers('employees').then();
-        }
-    }, [refreshTriggers, fetchUsers]);
-
-    return (
-        <>
-            <div className='page-header'>
-                <h1 className={'page-title'}> Employees of Zyrah </h1>
-                <Button
-                    className='new-user'
-                    onClick={() => openModal({ content: 'employeeNew' })}
-                    label={'Add employee'}
-                    icon={'add'}
-                />
-            </div>
-            <UsersTable
-                users={users}
-                loading={usersLoading}
-            />
-        </>
-    );
-};
-
-export const UsersIndex = () => {
-    const { openModal, refreshTriggers } = useModals();
-    const { users, usersLoading, fetchUsers } = useUser();
-
-    useEffect(() => {
-        if (!users) {
-            fetchUsers().then();
-        }
-    }, [fetchUsers, users]);
-
-    useEffect(() => {
-        if (refreshTriggers?.users) {
-            fetchUsers().then();
-        }
-    }, [fetchUsers, refreshTriggers]);
-
-    return (
-        <>
-            <div className='page-header'>
-                <h1 className={'page-title'}> Users of Zyrah </h1>
-                <Button
-                    className='new-user'
-                    onClick={() => openModal({content: 'userNew'})}
-                    label={'Add user'}
-                    icon={'add'}
-                />
-            </div>
-            <UsersTable
-                users={users}
-                loading={usersLoading}
-            />
-        </>
-    );
-};
+export const UsersIndex = () => <UsersIndexPage />;
 
 export default UsersIndex;

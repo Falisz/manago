@@ -13,6 +13,11 @@
     flex-direction: row;
     padding-right: 20px;
 }
+.app-list-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
 .app-list-header-cell {
     display: flex;
     flex-direction: column;
@@ -92,10 +97,14 @@
     padding-left: 10px;
 }
 .app-list-row:hover,
-.app-list-row-big:hover{
+.app-list-row-big:hover {
     background: var(--background-color-2);
 }
+.app-list-row.selected {
+    background: var(--background-color-3);
+}
 .app.fluent .app-list-row:hover,
+.app.fluent .app-list-row.selected,
 .app.fluent .app-list-row-big:hover {
     background: var(--seethrough-background-2);
 }

@@ -254,9 +254,16 @@
 .app.manager .app-content main .page-header {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     width: 100%;
     margin-bottom: 10px;
+}
+.page-header .selected-items {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
 }
 .app.manager .app-content main .page-title {
     font-size: 2rem;
