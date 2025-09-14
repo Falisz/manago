@@ -334,7 +334,7 @@ button .material-symbols-rounded {
 .app-button.cancel:hover {
     background: #ff7040;
 }
-.app-button i {
+.app-button icon {
     font-size: 1rem;
 }
 .app.fluent .app-button {
@@ -469,10 +469,23 @@ button .material-symbols-rounded {
 .app-sub-menu .sub-menu-link:not(:last-child) {
     margin-bottom: 15px;
 }
-.app-sub-menu .sub-menu-link i {
+.app-sub-menu .sub-menu-link icon {
     margin-left: 10px;
 }
 
+.app-context-menu.contexify {
+    --contexify-separator-margin: 5px;
+    --contexify-itemContent-padding: 6px;
+    --contexify-activeItem-radius: 4px;
+    --contexify-item-color: var(--text-color);
+    --contexify-activeItem-color: #fff;
+    --contexify-activeItem-bgColor: var(--button-color);
+    --contexify-rightSlot-color: #6f6e77;
+    --contexify-activeRightSlot-color: #fff;
+    --contexify-arrow-color: #6f6e77;
+    --contexify-activeArrow-color: #fff;
+    background: var(--background-gradient);
+}
 
 .confirm-prompt {
     display: flex;

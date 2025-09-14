@@ -2,13 +2,13 @@
 import React from 'react';
 
 const Icon = ({i='check_circle', className=null, onClick=null, s=false, clickable=false}) =>
-    <i
+    <icon
         className={'material-' + (s ? 'symbols-rounded' : 'icons')
             + (clickable ? (' app-clickable') : '')
             + (className ? (' ' + className) : '')}
         onClick={onClick}
     >
         {i}
-    </i>;
+    </icon>;
 
 export default Icon;

@@ -126,7 +126,7 @@ const TeamsTable = () => {
     }, [refreshTriggers, fetchTeams]);
 
     const headers = useMemo(() => [
-        { title: 'Codename', key: 'codename' },
+        { title: 'Codename', key: 'code_name' },
         { title: 'Name', key: 'name' },
         { title: 'Members', key: 'members_count' },
         { title: 'Managers', key: 'managers' },
@@ -147,7 +147,7 @@ const TeamsTable = () => {
     };
 
     const handleSorting = (e) => {
-        const field = e.target.name;
+        const field = e.currentTarget.name;
         e.target.classList.add('active');
         setSortConfig(prev => ({
             key: field,

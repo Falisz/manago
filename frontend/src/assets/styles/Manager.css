@@ -166,6 +166,10 @@
 .app.manager .app-sub-nav .user-link {
     margin-left: auto;
 }
+.app.manager .app-sub-nav .user-link icon {
+    font-size: 1.25rem;
+    cursor: pointer;
+}
 .app.manager .app-sub-nav .user-link .username {
     color: white;
 }

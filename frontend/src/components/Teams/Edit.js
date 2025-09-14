@@ -17,7 +17,7 @@ const FORM_CLEAN_STATE = {
     member_ids: [null],
 };
 
-const TeamEdit = ({ teamId }) => {
+const TeamEdit = ({ teamId, parentId }) => {
     const { team, loading, error, warning, success, setLoading, fetchTeam, saveTeam } = useTeam();
     const { teams, fetchTeams } = useTeam();
     const { users, fetchUsers } = useUser();
@@ -31,7 +31,10 @@ const TeamEdit = ({ teamId }) => {
         fetchTeams(true, true).then();
 
         if (!teamId) {
-            setFormData(FORM_CLEAN_STATE);
+            setFormData({
+                ...FORM_CLEAN_STATE,
+                parent_team: parentId || null,
+            });
             setLoading(false);
             return;
         }
@@ -223,11 +226,9 @@ const TeamEdit = ({ teamId }) => {
 
     if (error) return <div className='error-message'>{error}</div>;
 
-    console.log(formData);
-
     return (
         <>
-        <h1>{teamId ? 'Edit Team' : `Add New Team`}</h1>
+        <h1>{teamId ? 'Edit Team' : parentId ? `Add New Subteam` : `Add New Team`}</h1>
             {warning && <div className='warning-message'>{warning}</div>}
             {success && <div className='success-message'>{success}</div>}
             <form

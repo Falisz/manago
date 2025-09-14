@@ -83,10 +83,15 @@ const TeamDetails = ({ teamId }) => {
                 />
             </div>
             <div className='detail-section'>
-                <div className={'detail-subheader'}>Team details</div>
-                <div className={'detail-row team-codename'} title={'Team codename'}><label>Code name</label> {team.code_name}</div>
+                <div className={'detail-section-header'}>
+                    Details
+                </div>
+                <div className={'detail-group team-codename'} title={'Team codename'}>
+                    <label>Code name</label>
+                    {team.code_name}
+                </div>
                 {team.parent &&
-                    <div className={'detail-row team-parent'} title={'Team codename'}><label>Parent Team</label>
+                    <div className={'detail-group team-parent'} title={'Team codename'}><label>Parent Team</label>
                         <span
                             className={'detail-link'}
                             onClick={() => openModal({ content: 'teamDetails', contentId: team.parent.id, type: 'dialog' })}
@@ -95,12 +100,11 @@ const TeamDetails = ({ teamId }) => {
                         </span>
                     </div>
                 }
-                {team.sub_teams && team.sub_teams.length > 0 &&
-                    <div className={'detail-row team-parent'} title={'Team\'s subteams'}><label>Subteams</label>
-                        {team.sub_teams.map((subteam) => (
+                <div className={'detail-group team-parent'} title={'Team\'s subteams'}><label>Subteams</label>
+                    {team.sub_teams && team.sub_teams.length > 0 ? team.sub_teams.map((subteam) => (
                             <div
                                 key={subteam.id}
-                                className={'detail-row'}
+                                className={'detail-group'}
                             >
                                 <span
                                     key={subteam.id}
@@ -110,108 +114,108 @@ const TeamDetails = ({ teamId }) => {
                                     {subteam.name}
                                 </span>
                             </div>
-                            )
-                        )}
-                    </div>
-                }
+                        )
+                    ) : (<i>No subteams.</i>)}
+                    <Button
+                        onClick={() => openModal({ content: 'subteamNew', parentId: team.id })}
+                        label={'Add Subteam'}
+                        transparent={true}
+                        icon={'add_circle'}
+                    />
+                </div>
+
             </div>
-            {team.managers && team.managers?.length > 0 &&
-                <div className='detail-section'>
-                    <div
-                        className={'detail-subheader'}
-                        title={'Team managers'}
-                    >
-                        Team Manager{ team.managers?.length > 1 && "s" }
-                    </div>
-                    {team.managers.map((manager) => (
-                        <div
-                            key={manager.id}
-                            className={'detail-row linear'}
-                        >
-                            <span
+            <div className='detail-section'>
+                <div className={'detail-section-header'}>Members</div>
+                {team.managers && team.managers?.length > 0 &&
+                    <div className='detail-group'>
+                        <label title={'Team managers'}>
+                            Team Manager{ team.managers?.length > 1 && "s" }
+                        </label>
+                        {team.managers.map((manager) => (
+                            <div
                                 key={manager.id}
-                                className={'detail-link'}
-                                onClick={() => openModal({ content: 'userDetails', contentId: manager.id, type: 'dialog' })}
+                                className={'detail-group linear'}
                             >
-                                {manager.first_name} {manager.last_name}
-                            </span>
-                            {manager.team.id !== teamId && <small>&nbsp;&nbsp;
-                                (manager of whole {<span
+                                <span
                                     key={manager.id}
                                     className={'detail-link'}
-                                    onClick={() => openModal({ content: 'teamDetails', contentId: manager.team.id, type: 'dialog' })}
+                                    onClick={() => openModal({ content: 'userDetails', contentId: manager.id, type: 'dialog' })}
                                 >
-                                    {manager.team.name}
-                                </span>})
-                            </small>}
-                        </div>
-                    ))}
-                </div>
-            }
-            {team.leaders && team.leaders?.length > 0 &&
-                <div className='detail-section'>
-                    <div
-                        className={'detail-subheader'}
-                        title={'Team leaders'}
-                    >
-                        Team Leader{ team.leaders?.length > 1 && "s" }
+                                    {manager.first_name} {manager.last_name}
+                                </span>
+                                {manager.team.id !== teamId && <small>&nbsp;&nbsp;
+                                    (manager of whole {<span
+                                        key={manager.id}
+                                        className={'detail-link'}
+                                        onClick={() => openModal({ content: 'teamDetails', contentId: manager.team.id, type: 'dialog' })}
+                                    >
+                                        {manager.team.name}
+                                    </span>})
+                                </small>}
+                            </div>
+                        ))}
                     </div>
-                    {team.leaders.map((leader) => (
-                        <div
-                            key={leader.id}
-                            className={'detail-row linear'}
-                        >
-                            <span
+                }
+                {team.leaders && team.leaders?.length > 0 &&
+                    <div className='detail-group'>
+                        <label title={'Team leaders'}>
+                            Team Leader{ team.leaders?.length > 1 && "s" }
+                        </label>
+                        {team.leaders.map((leader) => (
+                            <div
                                 key={leader.id}
-                                className={'detail-link'}
-                                onClick={() => openModal({ content: 'userDetails', contentId: leader.id, type: 'dialog' })}
+                                className={'detail-group linear'}
                             >
-                                {leader.first_name} {leader.last_name}
-                            </span>
-                            {leader.team.id !== teamId && <small>&nbsp;&nbsp;
-                                ({<span
+                                <span
                                     key={leader.id}
                                     className={'detail-link'}
-                                    onClick={() => openModal({ content: 'teamDetails', contentId: leader.team.id, type: 'dialog' })}
+                                    onClick={() => openModal({ content: 'userDetails', contentId: leader.id, type: 'dialog' })}
                                 >
-                                    {leader.team.name}
+                                    {leader.first_name} {leader.last_name}
+                                </span>
+                                {leader.team.id !== teamId && <small>&nbsp;&nbsp;
+                                    ({<span
+                                        key={leader.id}
+                                        className={'detail-link'}
+                                        onClick={() => openModal({ content: 'teamDetails', contentId: leader.team.id, type: 'dialog' })}
+                                    >
+                                        {leader.team.name}
+                                    </span>} sub-team)
+                                </small>}
+                            </div>
+                        ))}
+                    </div>
+                }
+                <div className='detail-group'>
+                    <label title={'Team Members'}>
+                        Team Member{ team.members?.length > 1 && "s" }
+                    </label>
+                    {team.members.map((member) => (
+                        <div
+                            key={member.id}
+                            className={'detail-group linear'}
+                        >
+                            <span
+                                key={member.id}
+                                className={'detail-link'}
+                                onClick={() => openModal({ content: 'userDetails', contentId: member.id, type: 'dialog' })}
+                            >
+                                {member.first_name} {member.last_name}
+                            </span>
+                            {member.team.id !== teamId && <small>&nbsp;&nbsp;
+                                ({<span
+                                    key={member.id}
+                                    className={'detail-link'}
+                                    onClick={() => openModal({ content: 'teamDetails', contentId: member.team.id, type: 'dialog' })}
+                                >
+                                        {member.team.name}
                                 </span>} sub-team)
-                            </small>}
+                            </small>
+                            }
                         </div>
                     ))}
                 </div>
-            }
-            <div className='detail-section'>
-                <div
-                    className={'detail-subheader'}
-                    title={'Team Members'}
-                >
-                    Team Member{ team.members?.length > 1 && "s" }
-                </div>
-                {team.members.map((member) => (
-                    <div
-                        key={member.id}
-                        className={'detail-row linear'}
-                    >
-                        <span
-                            key={member.id}
-                            className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', contentId: member.id, type: 'dialog' })}
-                        >
-                            {member.first_name} {member.last_name}
-                        </span>
-                        {member.team.id !== teamId && <small>&nbsp;&nbsp;
-                            ({<span
-                                key={member.id}
-                                className={'detail-link'}
-                                onClick={() => openModal({ content: 'teamDetails', contentId: member.team.id, type: 'dialog' })}
-                            >
-                                    {member.team.name}
-                            </span>} sub-team)
-                        </small>
-                        }
-                    </div>
-                ))}
             </div>
         </div>
     );

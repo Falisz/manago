@@ -47,7 +47,7 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
     });
 
     function displayMenu(e, id) {
-        show({event: e, props: { id, element: e.currentTarget }});
+        show({event: e, props: { id }});
     }
 
     function handleItemClick({ id, props }){
@@ -71,7 +71,7 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                 openModal({content: 'userEdit', contentId: props.id});
                 break;
             default:
-                console.log(`${id} option to be implemented.`);
+                console.warn(`${id} option to be implemented.`);
                 break;
         }
 
@@ -274,8 +274,8 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                     );
                 }))}
             </div>
-            <Menu id={MENU_ID}>
-                { selectedUsers?.size > 0 ? <>
+                { selectedUsers?.size > 0 ?
+                <Menu className={'app-context-menu'} id={MENU_ID}>
                     <Item id="bulk-delete" onClick={handleItemClick}>
                         Delete Users
                     </Item>
@@ -288,7 +288,8 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                     <Item id="bulk-assign-team" onClick={handleItemClick}>
                         Assign to Team
                     </Item>
-                </> : <>
+                </Menu> :
+                <Menu className={'app-context-menu'} id={MENU_ID}>
                     <Item id="select" onClick={handleItemClick}>
                         Select user
                     </Item>
@@ -302,8 +303,8 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                     <Item id="assign-manager" onClick={handleItemClick}>
                         Assign new manager
                     </Item>
-                </>  }
-            </Menu>
+                </Menu>
+                }
         </div>
     );
 }
@@ -319,7 +320,6 @@ const UsersIndexPage = ({content='users'}) => {
         singular_capitalised: content.charAt(0).toUpperCase() + content.slice(1,-1),
         plural_capitalised: content.charAt(0).toUpperCase() + content.slice(1),
     };
-    console.log(itemName);
     const pageTitle = itemName.plural_capitalised + ' of Zyrah';
 
     const newItemModalContent = content === 'employees' ? 'employeeNew' :

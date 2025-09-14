@@ -114,7 +114,7 @@
     color: inherit;
     opacity: 1;
 }
-.app-form .app-dropdown i.app-clickable {
+.app-form .app-dropdown icon.app-clickable {
     position: absolute;
     right: 5px;
 }
@@ -197,7 +197,7 @@
     transition: 0.3s ease-in-out;
     font-weight: bold;
 }
-.app-form .action-button i {
+.app-form .action-button icon {
     margin-right: 5px;
     font-size: 1rem;
 }

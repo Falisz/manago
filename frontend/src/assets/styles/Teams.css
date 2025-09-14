@@ -1,8 +1,4 @@
-.employees .new-team {
-    margin-left: auto;
-}
-
-.teams-list .subteam-code-name i {
+.teams-list .subteam-code-name icon {
     font-size: 1rem;
 }
 .teams-list .subteam-name {

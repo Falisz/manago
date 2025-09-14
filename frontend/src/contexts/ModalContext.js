@@ -139,6 +139,8 @@ export const ModalProvider = ({ children }) => {
                 return <TeamEdit teamId={modal.contentId} />;
             case 'teamNew':
                 return <TeamEdit />;
+            case 'subteamNew':
+                return <TeamEdit parentId={modal.parentId} />;
             case 'postDetails':
                 return <PostDetails postId={modal.contentId} />;
             case 'confirm':

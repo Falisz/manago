@@ -1,4 +1,7 @@
 .detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     padding: 10px;
 }
 .detail-header {
@@ -26,7 +29,7 @@
     border-radius: 12px;
     padding: 10px;
 }
-.detail-header .app-button i {
+.detail-header .app-button icon {
     font-size: 1.5rem;
 }
 .detail-header .app-button.edit:hover {
@@ -35,38 +38,33 @@
 .detail-header .app-button.delete:hover {
     color: firebrick;
 }
-
 .detail-section {
-    margin: 10px 0 5px;
-    padding-left: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
-.detail-subheader {
+.detail-section-header {
     font-size: 1.25em;
-    margin: 15px 0 5px;
     text-transform: uppercase;
     font-weight: 400;
 }
-.detail-section .detail-subheader {
-    margin-left: -5px;
-}
-.detail-row {
+.detail-group {
     display: flex;
     flex-direction: column;
-    padding-bottom: 5px;
+    align-items: flex-start;
+    padding-left: 5px;
 }
-.detail-row.linear {
+.detail-group.linear {
     flex-direction: row;
     align-items: center;
 }
-.detail-row label {
+.detail-group label {
     margin-left: -5px;
     margin-top: 10px;
     font-weight: bold;
     font-family: var(--font-family-condensed), sans-serif;
 }
-.detail-subheader+.detail-row label {
-    margin-top: 0;
-}
+
 .detail-link {
     color: var(--link-color);
     cursor: pointer;
@@ -76,21 +74,21 @@
 .detail-link:hover {
     color: var(--link-hover-color);
 }
-.detail-row i {
+.detail-group icon {
     font-size: 1.1em;
     padding: 3px;
     margin-right: 5px;
     border-radius: 10px;
 }
-.detail-row i.true {
+.detail-group icon.true {
     background-color: yellowgreen;
     color: white;
 }
-.detail-row i.false {
+.detail-group icon.false {
     background-color: coral;
     color: white;
 }
-.detail-data-placeholder {
+.detail-placeholder {
     font-style: italic;
     opacity: 0.6;
 }
