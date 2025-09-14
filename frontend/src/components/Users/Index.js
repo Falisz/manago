@@ -11,43 +11,15 @@ import '../../assets/styles/Users.css';
 
 const MENU_ID = '2137';
 
-const UserTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => {
-    return (
-        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
-            <div className={'app-list-header-cell-label'}>
-                {header.title}
-            </div>
-            <div className={'app-list-header-cell-actions'}>
-                <input
-                    className='search'
-                    title={header.title}
-                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-                    name={header.key}
-                    value={filters[header.key] || ''}
-                    onChange={handleFilter}
-                />
-                <Button
-                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-                    name={header.key}
-                    onClick={handleSorting}
-                    icon={sortConfig.key === header.key &&
-                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-                />
-            </div>
-        </div>
-    );
-}
+
 
 const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=true, managed_users=false }) => {
     const { openModal, refreshData, closeTopModal } = useModals();
     const { deleteUser } = useUser();
+    const { show } = useContextMenu({ id: MENU_ID, });
     const [headerCollapsed, setHeaderCollapsed] = useState(true);
     const [filters, setFilters] = useState({});
-    const [sortConfig, setSortConfig] = useState({
-        key: null,
-        direction: 'asc'
-    });
-    const { show } = useContextMenu({ id: MENU_ID, });
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     function displayMenu(e, id) {
         show({event: e, props: { id }});
@@ -77,8 +49,6 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                 console.warn(`${id} option to be implemented.`);
                 break;
         }
-
-
     }
 
     const headers = useMemo(() => {
@@ -130,8 +100,7 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
     };
 
     const filteredAndSortedUsers = useMemo(() => {
-        if (!users)
-            return null;
+        if (!users) return null;
 
         let result = [...users];
 
@@ -199,15 +168,37 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
         return result;
     }, [users, filters, sortConfig]);
 
-    if (loading) {
-        return <Loader />;
-    }
+    if (loading) return <Loader />;
+
+    const HeaderCell = ({ header, filters, handleFilter, sortConfig, handleSorting }) =>
+        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
+            <div className={'app-list-header-cell-label'}>
+                {header.title}
+            </div>
+            <div className={'app-list-header-cell-actions'}>
+                <input
+                    className='search'
+                    title={header.title}
+                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
+                    name={header.key}
+                    value={filters[header.key] || ''}
+                    onChange={handleFilter}
+                />
+                <Button
+                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
+                    name={header.key}
+                    onClick={handleSorting}
+                    icon={sortConfig.key === header.key &&
+                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                />
+            </div>
+        </div>;
 
     return (
         <div className='app-list seethrough app-overflow-hidden app-centered users-list'>
             <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
                 {headers.map((header) => (
-                    <UserTableHeader
+                    <HeaderCell
                         header={header}
                         filters={filters}
                         handleFilter={handleFilter}
