@@ -9,108 +9,12 @@ import '../../assets/styles/Teams.css';
 import Icon from "../Icon";
 import {Item, Menu, useContextMenu} from "react-contexify";
 
-// Table header component for Teams
-const TeamTableHeader = ({ header, filters, handleFilter, sortConfig, handleSorting }) => (
-    <div className={`app-list-header-cell ${header.key}`} key={header.key}>
-        <div className={'app-list-header-cell-label'}>
-            {header.title}
-        </div>
-        <div className={'app-list-header-cell-actions'}>
-            <input
-                className='search'
-                title={header.title}
-                placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-                name={header.key}
-                value={filters[header.key] || ''}
-                onChange={handleFilter}
-            />
-            <Button
-                className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-                name={header.key}
-                onClick={handleSorting}
-                icon={sortConfig.key === header.key &&
-                sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-            />
-        </div>
-    </div>
-);
-
-const TeamItem = ({ team, sub = false, displayMenu }) => {
-    const { openModal } = useModals();
-
-    team.members_count = team.members ? team.members.length : 0;
-
-    const openTeamDetails = (contentId) => {
-        openModal({
-            content: 'teamDetails',
-            type: 'dialog',
-            contentId
-        });
-    };
-
-    return (
-        <>
-            <div className='app-list-row'
-                 onContextMenu={(e) => displayMenu(e, team.id)}>
-                <div
-                    className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
-                    onClick={() => openTeamDetails(team.id)}
-                >
-                    {sub && <Icon i={'subdirectory_arrow_right'} />}
-                    {team.code_name}
-                </div>
-                <div
-                    className={`app-list-row-cell ${ sub ? 'subteam-name' : 'name'} app-clickable`}
-                    onClick={() => openTeamDetails(team.id)}
-                >
-                    {team.name}
-                </div>
-                <div
-                    className={'app-list-row-cell members-count'}
-                >
-                    {team.members_count}
-                </div>
-                <div
-                    className={'app-list-row-cell managers'}
-                >
-                    {(team.managers || []).length === 0
-                        ? null
-                        : (team.managers || []).map(manager =>
-                            <span key={manager.id} className='manager-name app-clickable'
-                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: manager.id })}
-                            >{manager.first_name} {manager.last_name}</span>
-                        ).reduce((prev, curr) => [prev, ', ', curr])
-                    }
-                </div>
-                <div
-                    className={'app-list-row-cell team-leaders'}
-                >
-                    {(team.leaders || []).length === 0
-                        ? null
-                        : (team.leaders || []).map(leader =>
-                            <span key={leader.id} className='teamleader-name app-clickable'
-                                onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: leader.id })}
-                            >{leader.first_name} {leader.last_name}</span>
-                        ).reduce((prev, curr) => [prev, ', ', curr])
-                    }
-                </div>
-            </div>
-            {team.subteams && team.subteams?.length > 0 ? (
-                <div className='app-list-sub-rows'>
-                    {team.subteams.map(subteam => (
-                        <TeamItem key={subteam.id} team={subteam} sub={true} displayMenu={displayMenu}/>
-                    ))}
-                </div>
-                ) : null}
-        </>
-    );
-}
-
 const MENU_ID = '2137';
 
-const TeamsTable = () => {
-    const { refreshTriggers } = useModals();
-    const { teams, teamsLoading, fetchTeams } = useTeam();
+const TeamsIndex = () => {
+    const { openModal, refreshData, refreshTriggers, closeTopModal } = useModals();
+    const { teams, teamsLoading: loading, fetchTeams, deleteTeam } = useTeam();
+    const [ selectedTeams, setSelectedTeams ] = useState(new Set());
     const [headerCollapsed, setHeaderCollapsed] = useState(true);
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({
@@ -119,14 +23,58 @@ const TeamsTable = () => {
     });
     const { show } = useContextMenu({ id: MENU_ID, });
 
-    function displayMenu(e, id) {
-        show({event: e, props: { id }});
+    function displayMenu(e, team) {
+        show({event: e, props: { team }});
     }
 
     function handleItemClick({ id, props }) {
         switch (id) {
+            case 'select':
+                handleTeamSelect(props.team.id);
+                break;
+            case 'edit':
+                openModal({content: 'teamEdit', contentId: props.team.id});
+                break;
+            case "delete": {
+                    let message = `Are you sure you want to delete this role? This action cannot be undone.`
+                    const teamId = props.team.id;
+                    const users = props.team.members ? props.team.members.length : 0;
+                    const subteams = props.team.subteams ? props.team.subteams.length : 0;
+
+                    if (users > 0) {
+                        message += ` There are currently ${users === 1 ? 'a' : users} user${users > 1 ? 's' : ''} assigned to this team.`
+                    }
+                    if (subteams > 0) {
+                        message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}.
+                        Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`
+                    }
+                    openModal({
+                        content: 'confirm',
+                        type: 'pop-up',
+                        message: message,
+                        onConfirm: () => {
+                            deleteTeam(teamId).then();
+                            refreshData('teams', true);
+                            closeTopModal();
+                        },
+                        onConfirm2: subteams > 0 ? () => {
+                            deleteTeam(teamId, true).then();
+                            refreshData('teams', true);
+                            closeTopModal();
+                        } : null,
+                        confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
+                        confirmLabel2: 'Delete team and subteams',
+                    });
+                };
+                break;
+            case 'select-all':
+                setSelectedTeams(new Set(teams.map(team => team.id)));
+                break;
+            case 'clear-selection':
+                setSelectedTeams(new Set());
+                break;
             default:
-                console.warn(`${id} option to be implemented.`);
+                console.info(`${id} option to be implemented.`);
                 break;
         }
     }
@@ -146,9 +94,9 @@ const TeamsTable = () => {
     const headers = useMemo(() => [
         { title: 'Codename', key: 'code_name' },
         { title: 'Name', key: 'name' },
-        { title: 'Members', key: 'members_count' },
         { title: 'Managers', key: 'managers' },
-        { title: 'Team Leaders', key: 'leaders' }
+        { title: 'Leaders', key: 'leaders' },
+        { title: 'Members', key: 'members_count' }
     ], []);
 
     const handleFilter = (e) => {
@@ -189,6 +137,18 @@ const TeamsTable = () => {
         return members;
     }, []);
 
+    const handleTeamSelect = (id) => {
+        setSelectedTeams(prev => {
+            const newSelected = new Set(prev);
+            if (newSelected?.has(id)) {
+                newSelected.delete(id);
+            } else {
+                newSelected.add(id);
+            }
+            return newSelected;
+        });
+    };
+
     const filteredAndSortedTeams = useMemo(() => {
         if (!teams) return null;
         let result = [...teams];
@@ -204,7 +164,7 @@ const TeamsTable = () => {
                     return team.name?.toLowerCase().includes(value.toLowerCase());
                 }
                 if (key === 'members_count') {
-                    return String(team.members_count).includes(value);
+                    return team.members ? team.members.length === value : false;
                 }
                 if (key === 'managers') {
                     const allManagers = collectTeamMembers(team, 'managers');
@@ -247,61 +207,133 @@ const TeamsTable = () => {
         return result;
     }, [teams, filters, sortConfig, collectTeamMembers]);
 
-    if (teamsLoading) {
-        return <Loader />;
-    }
+    const openTeamDetails = (contentId) => {
+        openModal({
+            content: 'teamDetails',
+            type: 'dialog',
+            contentId
+        });
+    };
 
-    return (
-        <div className='app-list teams-list seethrough app-overflow-hidden'>
-            <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
-                {headers.map((header) => (
-                    <TeamTableHeader
-                        header={header}
-                        filters={filters}
-                        handleFilter={handleFilter}
-                        sortConfig={sortConfig}
-                        handleSorting={handleSorting}
-                        key={header.key}
-                    />
-                ))}
+    if (loading) return <Loader />;
+
+    const selectionMode = selectedTeams?.size > 0;
+
+    const HeaderCell = ({ header }) =>
+        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
+            <div className={'app-list-header-cell-label'}>
+                {header.title}
+            </div>
+            <div className={'app-list-header-cell-actions'}>
+                <input
+                    className='search'
+                    title={header.title}
+                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
+                    name={header.key}
+                    value={filters[header.key] || ''}
+                    onChange={handleFilter}
+                />
                 <Button
-                    className={'collapse_header'}
-                    transparent={true}
-                    icon={headerCollapsed ? 'add_circle' : 'remove_circle'}
-                    onClick={() => setHeaderCollapsed(prev => !prev)}
+                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
+                    name={header.key}
+                    onClick={handleSorting}
+                    icon={sortConfig.key === header.key &&
+                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
                 />
             </div>
-            <div className='teams-list-content app-overflow-y app-scroll'>
-                {filteredAndSortedTeams?.length === 0 ? (
-                    <p>No teams found.</p>
-                ) : (filteredAndSortedTeams?.map(team => (
-                    <div className='app-list-row-stack' key={team.id}>
-                        <TeamItem team={team}  displayMenu={displayMenu} />
-                    </div>
-                )))}
-            </div>
-            <Menu className={'app-context-menu'} id={MENU_ID}>
-                <Item id="select" onClick={handleItemClick}>
-                    Select Team
-                </Item>
-                <Item id="edit" onClick={handleItemClick}>
-                    Edit Team
-                </Item>
-                <Item id="delete" onClick={handleItemClick}>
-                    Delete Team
-                </Item>
-            </Menu>
-        </div>
-    );
-};
+        </div>;
 
-const TeamsIndex = () => {
-    const { openModal } = useModals();
+    const TeamRow = ({ team, sub = false }) => 
+            <>
+                <div 
+                    key={team.id}   
+                    className={`app-list-row${selectedTeams?.has(team.id) ? ' selected' : ''}`}
+                    onClick={(e) => { if(e.shiftKey || selectedTeams?.size > 0) {
+                        e.preventDefault();
+                        handleTeamSelect(team.id);
+                    }}}
+                    onContextMenu={(e) => displayMenu(e, team)}
+                >
+                    <div
+                        className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
+                        onClick={() => {if (!selectionMode) openTeamDetails(team.id)}}
+                    >
+                        {sub && <Icon i={'subdirectory_arrow_right'} />}
+                        {team.code_name}
+                    </div>
+                    <div
+                        className={`app-list-row-cell ${ sub ? 'subteam-name' : 'name'} app-clickable`}
+                        onClick={() => {if (!selectionMode) openTeamDetails(team.id)}}
+                    >
+                        {team.name}
+                    </div>
+                    <div
+                        className={'app-list-row-cell managers'}
+                    >
+                        {(team.managers || []).length === 0
+                            ? null
+                            : (team.managers || []).map(manager =>
+                                <span
+                                    key={manager.id}
+                                    className='manager-name app-clickable'
+                                    onClick={() => { if (!selectionMode)
+                                        openModal({ content: 'userDetails', type: 'dialog', contentId: manager.id })
+                                    }}
+                                >{manager.first_name} {manager.last_name}</span>
+                            ).reduce((prev, curr) => [prev, ', ', curr])
+                        }
+                    </div>
+                    <div
+                        className={'app-list-row-cell team-leaders'}
+                    >
+                        {(team.leaders || []).length === 0
+                            ? null
+                            : (team.leaders || []).map(leader =>
+                                <span 
+                                    key={leader.id}
+                                    className='teamleader-name app-clickable'
+                                    onClick={() => { if (!selectionMode)
+                                        openModal({ content: 'userDetails', type: 'dialog', contentId: leader.id })
+                                    }}
+                                >{leader.first_name} {leader.last_name}</span>
+                            ).reduce((prev, curr) => [prev, ', ', curr])
+                        }
+                    </div>
+                    <div
+                        className={'app-list-row-cell members-count'}
+                    >
+                        {team.members ? team.members.length : 0}
+                    </div>
+                </div>
+                {team.subteams && team.subteams?.length > 0 ? (
+                    <div className='app-list-sub-rows'>
+                        {team.subteams.map(subteam => (
+                            <TeamRow key={subteam.id} team={subteam} sub={true}/>
+                        ))}
+                    </div>
+                    ) : null}
+            </>;
 
     return (
         <>
             <div className='page-header'>
                 <h1 className={'page-title'}> Teams in Zyrah </h1>
+                {
+                    selectionMode &&
+                    <div className="selected-items">
+                        <p className="seethrough">
+                            {selectedTeams.size} team{selectedTeams.size !== 1 ? 's' : ''} selected.
+                        </p>
+                        <Button
+                            onClick={() => setSelectedTeams(new Set())}
+                            label={'Clear selection'}
+                        />
+                        <Button
+                            onClick={() => setSelectedTeams(new Set(teams.map(team => team.id)))}
+                            label={'Select all'}
+                        />
+                    </div>
+                }
                 <Button
                     className='new-team'
                     onClick={() => openModal({ content: 'teamNew' })}
@@ -309,7 +341,52 @@ const TeamsIndex = () => {
                     icon={'add'}
                 />
             </div>
-            <TeamsTable/>
+            <div className={`app-list teams-list seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`}>
+                <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
+                    {headers.map((header) => (
+                        <HeaderCell
+                            key={header.key}
+                            header={header}
+                        />
+                    ))}
+                    <Button
+                        className={'collapse_header'}
+                        transparent={true}
+                        icon={headerCollapsed ? 'add_circle' : 'remove_circle'}
+                        onClick={() => setHeaderCollapsed(prev => !prev)}
+                    />
+                </div>
+                <div className='app-list-content app-overflow-y app-scroll'>
+                    {filteredAndSortedTeams?.length === 0 ? (
+                        <p>No teams found.</p>
+                    ) : (filteredAndSortedTeams?.map(team => (
+                        <div className='app-list-row-stack' key={team.id}>
+                            <TeamRow team={team} />
+                        </div>
+                    )))}
+                </div>
+                {   selectionMode ?
+                        <Menu className={'app-context-menu'} id={MENU_ID}>
+                            <Item id="select-all" onClick={handleItemClick}>
+                                Select All
+                            </Item>
+                            <Item id="clear-selection" onClick={handleItemClick}>
+                                Clear Selection
+                            </Item>
+                        </Menu> : 
+                        <Menu className={'app-context-menu'} id={MENU_ID}>
+                            <Item id="select" onClick={handleItemClick}>
+                                Select Team
+                            </Item>
+                            <Item id="edit" onClick={handleItemClick}>
+                                Edit Team
+                            </Item>
+                            <Item id="delete" onClick={handleItemClick}>
+                                Delete Team
+                            </Item>
+                        </Menu>
+                }
+            </div>
         </>
     );
 };

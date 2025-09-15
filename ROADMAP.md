@@ -3,6 +3,7 @@ Following roadmap and tasks to-do as of 2025-09-14:
 - [ ] General app behaviour
   - [ ] Right-Click custom menu.
   - [ ] Implement role and permission based restrictions over the UI.
+  - [ ] Separate reusable component for app-list/table.
 - [ ] User management
   - [ ] Selection feature in the user lists with actions like delete, assign Role, assign Manager, assign Reporting User, etc.
 - [ ] Teams

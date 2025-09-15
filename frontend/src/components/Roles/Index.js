@@ -7,9 +7,9 @@ import Button from '../Button';
 import Loader from '../Loader';
 import useRole from '../../hooks/useRole';
 
-const RolesList = () => {
+const RolesIndex = () => {
     const { openModal, refreshTriggers } = useModals();
-    const { roles, rolesLoading, fetchRoles } = useRole();
+    const { roles, rolesLoading: loading, fetchRoles } = useRole();
 
     const openRoleDetails = (contentId) => {
         openModal({
@@ -27,37 +27,7 @@ const RolesList = () => {
         if (refreshTriggers?.roles) fetchRoles(false).then();
     }, [fetchRoles, refreshTriggers]);
 
-    if (rolesLoading) return <Loader />;
-    
-    return (
-        <div className='app-list roles-list seethrough app-scroll app-overflow-y'>
-            {roles === null || roles?.length === 0 ? (
-                <p>No roles found.</p>
-            ) : (
-                roles?.map((role) => (
-                    <div
-                        className='app-list-row-big app-clickable'
-                        key={role.id}
-                        onClick={() => openRoleDetails(role.id)}
-                    >
-                        <div className='app-list-row-content'>
-                            <div className='app-list-row-cell role-title'>{role.name}</div>
-                            <div className='app-list-row-cell role-users'>{role.users?.length > 0 ? role.users.length + ' users with this role.' : <i>No users with this role.</i>}</div>
-                        </div>
-                        {role.description && <div className='app-list-row-content'>
-                            <div className={'app-list-row-cell role-description'}>
-                                {role.description}
-                            </div>
-                        </div>}
-                    </div>
-                ))
-            )}
-        </div>
-    );
-};
-
-const RolesIndex = () => {
-    const { openModal } = useModals();
+    if (loading) return <Loader />;
 
     return (
         <>
@@ -70,7 +40,29 @@ const RolesIndex = () => {
                     icon={'add'}
                 />
             </div>
-            <RolesList/>
+            <div className='app-list roles-list seethrough app-scroll app-overflow-y'>
+                {roles === null || roles?.length === 0 ? (
+                    <p>No roles found.</p>
+                ) : (
+                    roles?.map((role) => (
+                        <div
+                            className='app-list-row-big app-clickable'
+                            key={role.id}
+                            onClick={() => openRoleDetails(role.id)}
+                        >
+                            <div className='app-list-row-content'>
+                                <div className='app-list-row-cell role-title'>{role.name}</div>
+                                <div className='app-list-row-cell role-users'>{role.users?.length > 0 ? role.users.length + ' users with this role.' : <i>No users with this role.</i>}</div>
+                            </div>
+                            {role.description && <div className='app-list-row-content'>
+                                <div className={'app-list-row-cell role-description'}>
+                                    {role.description}
+                                </div>
+                            </div>}
+                        </div>
+                    ))
+                )}
+            </div>
         </>
     );
 };

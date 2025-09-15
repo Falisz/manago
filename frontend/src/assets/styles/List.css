@@ -3,6 +3,7 @@
     flex-direction: column;
     padding: 10px;
     cursor: default;
+    position: relative;
 }
 .app-list.app-scroll {
     padding-right: 0;
@@ -31,7 +32,6 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
-    gap: 5px;
 }
 .app-list-header-cell-label,
 .app-list-header-cell-actions {
@@ -40,7 +40,7 @@
     align-items: center;
 }
 .app-list-header-cell-label {
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     white-space: nowrap;
     font-weight: 600;
     font-family: var(--font-family-condensed), sans-serif;
@@ -52,7 +52,6 @@
 .app-list-header-row.collapsed .app-list-header-cell-actions {
     opacity: 0;
     height: 0;
-    user-focus: none;
     visibility: hidden;
 }
 .app-list-header-cell-actions .search {
@@ -101,6 +100,9 @@
     transition: 0.3s ease-in-out;
     border-radius: var(--big-border-radius);
 }
+.app-list.selection-mode .app-list-row {
+    cursor: pointer;
+}
 
 .app-list-row {
     align-items: center;
@@ -112,13 +114,18 @@
 }
 
 .app-list-row-stack {
+    display: flex;
     flex-direction: column;
+    gap: 5px;
     padding: 5px 0;
 }
 .app-list-row-stack:not(:last-child) {
     border-bottom: 1px solid var(--text-color-3);
 }
 .app-list-sub-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
     padding-left: 10px;
 }
 .app-list-row:hover,
@@ -129,9 +136,12 @@
     background: var(--background-color-3);
 }
 .app.fluent .app-list-row:hover,
-.app.fluent .app-list-row.selected,
 .app.fluent .app-list-row-big:hover {
     background: var(--seethrough-background-2);
+}
+.app.fluent .app-list-row.selected {
+    background: var(--seethrough-background-3);
+    transition: .3s ease-in-out;
 }
 .app-list-row-cell {
     flex: 1;

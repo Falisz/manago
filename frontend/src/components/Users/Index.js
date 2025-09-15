@@ -11,8 +11,6 @@ import '../../assets/styles/Users.css';
 
 const MENU_ID = '2137';
 
-
-
 const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=true, managed_users=false }) => {
     const { openModal, refreshData, closeTopModal } = useModals();
     const { deleteUser } = useUser();
@@ -45,6 +43,12 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
             case "edit":
                 openModal({content: 'userEdit', contentId: props.id});
                 break;
+            case 'select-all':
+                setSelectedUsers(new Set(users.map(user => user.id)));
+                break;
+            case 'clear-selection':
+                setSelectedUsers(new Set());
+                break;
             default:
                 console.warn(`${id} option to be implemented.`);
                 break;
@@ -60,7 +64,7 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
             baseHeaders.push({ title: 'Managers', key: 'managers' });
         }
         if (managed_users) {
-            baseHeaders.push({ title: 'Managed Users', key: 'managed_users' });
+            baseHeaders.push({ title: 'Users Count', key: 'managed_users' });
         }
         return baseHeaders;
     }, [managers, managed_users]);
@@ -170,7 +174,9 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
 
     if (loading) return <Loader />;
 
-    const HeaderCell = ({ header, filters, handleFilter, sortConfig, handleSorting }) =>
+    const selectionMode = selectedUsers?.size > 0;
+
+    const HeaderCell = ({ header }) =>
         <div className={`app-list-header-cell ${header.key}`} key={header.key}>
             <div className={'app-list-header-cell-label'}>
                 {header.title}
@@ -195,16 +201,12 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
         </div>;
 
     return (
-        <div className='app-list seethrough app-overflow-hidden app-centered users-list'>
+        <div className={`app-list users-list seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`}>
             <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
                 {headers.map((header) => (
                     <HeaderCell
-                        header={header}
-                        filters={filters}
-                        handleFilter={handleFilter}
-                        sortConfig={sortConfig}
-                        handleSorting={handleSorting}
                         key={header.key}
+                        header={header}
                     />
                 ))}
                 <Button
@@ -233,13 +235,22 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                             }}}
                             onContextMenu={(e) => displayMenu(e, user.id)}
                         >
-                            <div className={'app-list-row-cell name app-clickable'} onClick={() => openModal({ content: 'userDetails', type: 'dialog', contentId: user.id })}>
+                            <div 
+                                className={'app-list-row-cell name app-clickable'} 
+                                onClick={() => {if (!selectionMode)
+                                     openModal({ content: 'userDetails', type: 'dialog', contentId: user.id });
+                                    }}
+                            >
                                 {user.first_name} {user.last_name}
                             </div>
                             <div className={'app-list-row-cell roles'}>
                                 {displayedRoles.map((role) => (
-                                    <span key={role.id} className='role-name app-clickable'
-                                          onClick={() => openModal({ content: 'roleDetails', type: 'dialog', contentId: role.id })}
+                                    <span 
+                                        key={role.id}
+                                        className='role-name app-clickable'
+                                        onClick={() => {if (!selectionMode)
+                                            openModal({ content: 'roleDetails', type: 'dialog', contentId: role.id });
+                                        }}
                                     > {role.name} </span>
                                 ))}
                                 {moreRolesText}
@@ -249,8 +260,12 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                                     {(user.managers || []).length === 0
                                         ? <span>-</span>
                                         : (user.managers || []).map(manager =>
-                                            <span key={manager.id} className='manager-name app-clickable'
-                                                onClick={() => openModal({ content: 'userDetails', contentId: manager.id })}
+                                            <span 
+                                                key={manager.id}
+                                                className='manager-name app-clickable'
+                                                onClick={() => {if (!selectionMode) 
+                                                    openModal({ content: 'userDetails', contentId: manager.id });
+                                            }}
                                             >{manager.first_name} {manager.last_name}</span>
                                         ).reduce((prev, curr) => [prev, ', ', curr])
                                     }
@@ -268,11 +283,19 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                     );
                 }))}
             </div>
-                { selectedUsers?.size > 0 ?
+                { selectionMode ?
                 <Menu className={'app-context-menu'} id={MENU_ID}>
+                    <Item id="select-all" onClick={handleItemClick}>
+                        Select All
+                    </Item>
+                    <Item id="clear-selection" onClick={handleItemClick}>
+                        Clear Selection
+                    </Item>
+                    <Separator />
                     <Item id="bulk-delete" onClick={handleItemClick}>
                         Delete Users
                     </Item>
+                    <Separator />
                     <Item id="bulk-assign-role" onClick={handleItemClick}>
                         Assign Role
                     </Item>
@@ -331,14 +354,6 @@ const UsersIndexPage = ({content='users'}) => {
         }
     }, [content, refreshTriggers, fetchUsers]);
 
-    function selectAll() {
-        setSelectedUsers(new Set(users.map(user => user.id)));
-    }
-
-    function clearSelection() {
-        setSelectedUsers(new Set());
-    }
-
     return (
         <>
             <div className='page-header'>
@@ -346,15 +361,15 @@ const UsersIndexPage = ({content='users'}) => {
                 {
                     selectedUsers?.size > 0 &&
                     <div className="selected-items">
-                        <p>
+                        <p className="seethrough">
                             {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected.
                         </p>
                         <Button
-                            onClick={clearSelection}
+                            onClick={() => setSelectedUsers(new Set())}
                             label={'Clear selection'}
                         />
                         <Button
-                            onClick={selectAll}
+                            onClick={() => setSelectedUsers(new Set(users.map(user => user.id)))}
                             label={'Select all'}
                         />
                     </div>

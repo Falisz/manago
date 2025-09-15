@@ -269,6 +269,10 @@
     align-items: center;
     gap: 5px;
 }
+.page-header .selected-items p {
+    padding: 8px 10px;
+    margin: 0;
+}
 .app.manager .app-content main .page-title {
     font-size: 2rem;
     margin: 10px;
