@@ -20,10 +20,10 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: 0;
+    right: 2px;
     padding: 0;
 }
-.app-table-content {
+.app-table-body {
     display: flex;
     flex-direction: column;
     gap: 5px;

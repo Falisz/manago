@@ -171,6 +171,7 @@ const TableRow = ({
                             fields={fields}
                             subRowField={subRowField}
                             descriptionField={descriptionField}
+                            hasContextMenu={hasContextMenu}
                             displayContextMenu={displayContextMenu}
                             isSubRow={true}
                             hasSelectableRows={hasSelectableRows}
@@ -373,7 +374,7 @@ const Table = ({
                     handleSorting={handleSorting}
                 />
             )}
-            <div className={'app-table-content app-overflow-y app-scroll'}>
+            <div className={'app-table-body app-overflow-y app-scroll'}>
                 {filteredAndSortedData?.length === 0 ? (
                     <p>{dataPlaceholder || 'No matching items found.'}</p>
                 ) : (
@@ -386,6 +387,7 @@ const Table = ({
                                     fields={fields}
                                     subRowField={subRowField}
                                     descriptionField={descriptionField}
+                                    hasContextMenu={hasContextMenu}
                                     displayContextMenu={displayContextMenu}
                                     hasSelectableRows={hasSelectableRows}
                                     selectedItems={selectedItems}
@@ -398,6 +400,7 @@ const Table = ({
                                 key={data.id || index}
                                 data={data}
                                 fields={fields}
+                                hasContextMenu={hasContextMenu}
                                 displayContextMenu={displayContextMenu}
                                 hasSelectableRows={hasSelectableRows}
                                 selectedItems={selectedItems}
@@ -410,27 +413,11 @@ const Table = ({
             </div>
             {hasContextMenu && (
                 <Menu className={'app-context-menu'} id={MENU_ID}>
-                    {selectionMode ? (
-                        <>
-                            <Item id="select-all" onClick={({ props }) => handleContextMenuClick({ id: 'select-all', props })}>
-                                Select All
-                            </Item>
-                            <Item id="clear-selection" onClick={({ props }) => handleContextMenuClick({ id: 'clear-selection', props })}>
-                                Clear Selection
-                            </Item>
-                            {contextMenuItems.filter(item => item.selectionMode).map(item => (
-                                <Item key={item.id} id={item.id} onClick={({ props }) => handleContextMenuClick({ id: item.id, props })}>
-                                    {item.label}
-                                </Item>
-                            ))}
-                        </>
-                    ) : (
-                        contextMenuItems.filter(item => !item.selectionMode).map(item => (
-                            <Item key={item.id} id={item.id} onClick={({ props }) => handleContextMenuClick({ id: item.id, props })}>
-                                {item.label}
-                            </Item>
-                        ))
-                    )}
+                    {contextMenuItems.filter(item => item.selectionMode === selectionMode).map(item => (
+                        <Item key={item.id} id={item.id} onClick={({ props }) => handleContextMenuClick({ id: item.id, props })}>
+                            {item.label}
+                        </Item>
+                    ))}
                 </Menu>
             )}
         </div>
