@@ -1,23 +1,14 @@
 // FRONTEND/components/Roles/Index.js
 import React, { useEffect } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import '../../assets/styles/Roles.css';
-import '../../assets/styles/List.css';
+import useRole from '../../hooks/useRole';
 import Button from '../Button';
 import Loader from '../Loader';
-import useRole from '../../hooks/useRole';
+import Table from '../Table';
 
 const RolesIndex = () => {
     const { openModal, refreshTriggers } = useModals();
     const { roles, rolesLoading: loading, fetchRoles } = useRole();
-
-    const openRoleDetails = (contentId) => {
-        openModal({
-            content: 'roleDetails',
-            type: 'dialog',
-            contentId
-        });
-    };
 
     useEffect(() => {
         if (!roles) fetchRoles().then();
@@ -26,6 +17,22 @@ const RolesIndex = () => {
     useEffect(() => {
         if (refreshTriggers?.roles) fetchRoles(false).then();
     }, [fetchRoles, refreshTriggers]);
+
+    const fields = {
+        name: {
+            display: true,
+            type: 'string',
+            openModal: 'roleDetails',
+            style: {fontSize: 1.25+'rem'}
+        },
+        users_count: {
+            display: true,
+            type: 'number',
+            formats: {0: 'No users with this role', 1: 'One user with this role', default: '%n users has this role'},
+            style: {textAlign: 'right', maxWidth: '200px'},
+            computeValue: (data) => data.users?.length || 0
+        }
+    }
 
     if (loading) return <Loader />;
 
@@ -40,29 +47,15 @@ const RolesIndex = () => {
                     icon={'add'}
                 />
             </div>
-            <div className='app-list roles-list seethrough app-scroll app-overflow-y'>
-                {roles === null || roles?.length === 0 ? (
-                    <p>No roles found.</p>
-                ) : (
-                    roles?.map((role) => (
-                        <div
-                            className='app-list-row-big app-clickable'
-                            key={role.id}
-                            onClick={() => openRoleDetails(role.id)}
-                        >
-                            <div className='app-list-row-content'>
-                                <div className='app-list-row-cell role-title'>{role.name}</div>
-                                <div className='app-list-row-cell role-users'>{role.users?.length > 0 ? role.users.length + ' users with this role.' : <i>No users with this role.</i>}</div>
-                            </div>
-                            {role.description && <div className='app-list-row-content'>
-                                <div className={'app-list-row-cell role-description'}>
-                                    {role.description}
-                                </div>
-                            </div>}
-                        </div>
-                    ))
-                )}
-            </div>
+            <Table
+                dataSource={roles}
+                fields={fields}
+                hasHeader={false}
+                hasContextMenu={false}
+                hasSelectableRows={false}
+                descriptions={true}
+                descriptionField={'description'}
+            />
         </>
     );
 };

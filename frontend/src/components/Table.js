@@ -1,17 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import {Item, Menu, useContextMenu} from "react-contexify";
-import Button from './Button';
+import {Item, Menu, useContextMenu} from 'react-contexify';
 import '../assets/styles/Table.css';
-import {useModals} from "../contexts/ModalContext";
-import Icon from "./Icon";
-
-// Columns definition example
-// let fields = {
-//     name: { title: 'Name', display: true, sortable: true, filterable: true, type: 'string', openModal: 'userDetails' },
-//     roles: { title: 'Roles', display: true, sortable: true, filterable: true, type: 'list', openModal: 'roleDetails' },
-//     active: { title: 'Active', display: true, sortable: true, filterable: true, type: 'boolean' },
-//     description: { title: '', display: true, sortable: true, filterable: true, type: 'description' },
-// };
+import 'react-contexify/dist/ReactContexify.css';
+import {useModals} from '../contexts/ModalContext';
+import Button from './Button';
+import Icon from './Icon';
 
 const TableHeader = ({
                          fields,
@@ -241,7 +234,7 @@ const Table = ({
                    contextMenuItems = [],
                    handleContextMenuClick,
                }) => {
-    const MENU_ID = "table_context_menu";
+    const MENU_ID = 'table_context_menu';
 
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
