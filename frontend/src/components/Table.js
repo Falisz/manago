@@ -25,7 +25,12 @@ const TableHeader = ({
 
     return <div className={`app-table-header ${headerCollapsed ? 'collapsed' : ''}`}>
                 {Object.entries(fields).map(([key, field]) => (
-                    <div className={`app-table-header-cell ${key}`} key={key}>
+                    field.display &&
+                    <div
+                        className={`app-table-header-cell ${key}`}
+                        key={key}
+                        style={field.style || null}
+                    >
                         <div className={'app-table-header-cell-label'}>
                             {field.title}
                         </div>
@@ -64,6 +69,7 @@ const TableRow = ({
                       data,
                       fields,
                       subRowField,
+                      descriptions,
                       descriptionField,
                       displayContextMenu,
                       isSubRow = false,
@@ -95,7 +101,10 @@ const TableRow = ({
     return (
         <>
             <div
-                className={`app-table-row${selectedItems?.has(data.id) ? ' selected' : ''}${isSubRow ? ' sub-row' : ''}`}
+                className={`app-table-row${selectedItems?.has(data.id) ? 
+                    ' selected' : ''}${isSubRow ? 
+                    ' sub-row' : ''}${descriptions ? 
+                    ' with-desc' : ''}`}
                 onClick={(e) => handleSelect(e, data.id)}
                 onContextMenu={(e) => hasContextMenu && displayContextMenu(e, data)}
             >
@@ -147,21 +156,32 @@ const TableRow = ({
                                 content = field.computeValue(data);
                             else
                                 content = value ?? 0;
+                            if (field.formats) {
+                                if (field.formats[content] !== undefined) {
+                                    content = field.formats[content];
+                                } else if (field.formats.default) {
+                                    content = field.formats.default.toString().replace('%n', content);
+                                }
+                            }
                             break;
                         default:
                             content = value?.toString() || '';
                     }
 
                     return (
-                        <div key={key} className={`app-table-row-cell ${key}`}>
+                        <div
+                            key={key}
+                            className={`app-table-row-cell ${key}`}
+                            style={field.style || null}
+                        >
                             {content}
                         </div>
                     );
                 })}
+                {data[descriptionField] && data[descriptionField].trim() !== '' &&
+                    <div className={'app-table-row-cell app-table-row-desc'}>{data[descriptionField]}</div>
+                }
             </div>
-            {data[descriptionField] && data[descriptionField].trim() !== '' &&
-                <div className={'app-table-row-desc'}>{data[descriptionField]}</div>
-            }
             {data[subRowField] && data[subRowField].length > 0 &&
                 <div className={'app-table-sub-rows'}>
                     {data[subRowField].map((subItemData) =>
@@ -209,7 +229,7 @@ const Table = ({
                    dataSource,
                    fields,
                    hasHeader = true,
-                   hasContextMenu = true,
+                   hasContextMenu = false,
                    hasSelectableRows = true,
                    selectedItems = null,
                    setSelectedItems = null,
@@ -376,39 +396,30 @@ const Table = ({
             )}
             <div className={'app-table-body app-overflow-y app-scroll'}>
                 {filteredAndSortedData?.length === 0 ? (
-                    <p>{dataPlaceholder || 'No matching items found.'}</p>
+                    <p className={'app-table-no-matches'}>{dataPlaceholder || 'No matching items found.'}</p>
                 ) : (
-                    filteredAndSortedData.map((data, index) => (
-                        subRows || descriptions ? (
+                    filteredAndSortedData.map((data, index) => {
+                        const tableRow = <TableRow
+                            key={data.id || index}
+                            data={data}
+                            fields={fields}
+                            subRowField={subRowField}
+                            descriptions={descriptions}
+                            descriptionField={descriptionField}
+                            hasContextMenu={hasContextMenu}
+                            displayContextMenu={displayContextMenu}
+                            hasSelectableRows={hasSelectableRows}
+                            selectedItems={selectedItems}
+                            setSelectedItems={setSelectedItems}
+                            openModal={openModal}
+                        />
+
+                        return subRows ? (
                             <div key={index} className={'app-table-row-stack'}>
-                                <TableRow
-                                    key={data.id || index}
-                                    data={data}
-                                    fields={fields}
-                                    subRowField={subRowField}
-                                    descriptionField={descriptionField}
-                                    hasContextMenu={hasContextMenu}
-                                    displayContextMenu={displayContextMenu}
-                                    hasSelectableRows={hasSelectableRows}
-                                    selectedItems={selectedItems}
-                                    setSelectedItems={setSelectedItems}
-                                    openModal={openModal}
-                                />
+                                {tableRow}
                             </div>
-                        ) : (
-                            <TableRow
-                                key={data.id || index}
-                                data={data}
-                                fields={fields}
-                                hasContextMenu={hasContextMenu}
-                                displayContextMenu={displayContextMenu}
-                                hasSelectableRows={hasSelectableRows}
-                                selectedItems={selectedItems}
-                                setSelectedItems={setSelectedItems}
-                                openModal={openModal}
-                            />
-                        )
-                    ))
+                        ) : tableRow
+                    })
                 )}
             </div>
             {hasContextMenu && (
