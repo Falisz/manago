@@ -44,9 +44,9 @@ const TeamEdit = ({ teamId, parentId }) => {
                 code_name: team?.code_name || '',
                 name: team?.name || '',
                 parent_team: team?.parent?.id || null,
-                leader_ids: team?.leaders?.map((lead) => lead.id) || [null],
-                manager_ids: team?.managers?.map((mgr) => mgr.id) || [null],
-                member_ids: team?.members?.map((member) => member.id) || [null],
+                manager_ids: team?.managers?.filter((mgr) => mgr.team.id === teamId ).map((mgr) => mgr.id) || [null],
+                leader_ids: team?.leaders?.filter((lead) => lead.team.id === teamId).map((lead) => lead.id) || [null],
+                member_ids: team?.members?.filter((member) => member.team.id === teamId).map((member) => member.id) || [null],
             });
         });
 
