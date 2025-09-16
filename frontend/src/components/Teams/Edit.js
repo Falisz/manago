@@ -245,6 +245,7 @@ const TeamEdit = ({ teamId, parentId }) => {
                             className={'form-input'}
                             type='text'
                             name='code_name'
+                            pattern='^[a-zA-Z0-9_]+$'
                             value={formData.code_name}
                             onChange={handleChange}
                             placeholder='Enter codename'

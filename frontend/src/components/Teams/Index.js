@@ -11,6 +11,32 @@ import {Item, Menu, useContextMenu} from "react-contexify";
 
 const MENU_ID = '2137';
 
+
+
+    const HeaderCell = ({ header, filters, sortConfig, handleFilter, handleSorting }) =>
+        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
+            <div className={'app-list-header-cell-label'}>
+                {header.title}
+            </div>
+            <div className={'app-list-header-cell-actions'}>
+                <input
+                    className='search'
+                    title={header.title}
+                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
+                    name={header.key}
+                    value={filters[header.key] || ''}
+                    onChange={handleFilter}
+                />
+                <Button
+                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
+                    name={header.key}
+                    onClick={handleSorting}
+                    icon={sortConfig.key === header.key &&
+                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                />
+            </div>
+        </div>;
+
 const TeamsIndex = () => {
     const { openModal, refreshData, refreshTriggers, closeTopModal } = useModals();
     const { teams, teamsLoading: loading, fetchTeams, deleteTeam } = useTeam();
@@ -92,7 +118,6 @@ const TeamsIndex = () => {
     }, [refreshTriggers, fetchTeams]);
 
     const headers = useMemo(() => [
-        { title: 'Codename', key: 'code_name' },
         { title: 'Name', key: 'name' },
         { title: 'Managers', key: 'managers' },
         { title: 'Leaders', key: 'leaders' },
@@ -157,11 +182,9 @@ const TeamsIndex = () => {
             return Object.entries(filters).every(([key, value]) => {
                 if (!value) return true;
 
-                if (key === 'codename') {
-                    return team.code_name?.toLowerCase().includes(value.toLowerCase());
-                }
                 if (key === 'name') {
-                    return team.name?.toLowerCase().includes(value.toLowerCase());
+                    return team.name?.toLowerCase().includes(value.toLowerCase()) || 
+                    team.code_name?.toLowerCase().includes(value.toLowerCase());
                 }
                 if (key === 'members_count') {
                     return team.members ? team.members.length === value : false;
@@ -219,30 +242,6 @@ const TeamsIndex = () => {
 
     const selectionMode = selectedTeams?.size > 0;
 
-    const HeaderCell = ({ header }) =>
-        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
-            <div className={'app-list-header-cell-label'}>
-                {header.title}
-            </div>
-            <div className={'app-list-header-cell-actions'}>
-                <input
-                    className='search'
-                    title={header.title}
-                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-                    name={header.key}
-                    value={filters[header.key] || ''}
-                    onChange={handleFilter}
-                />
-                <Button
-                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-                    name={header.key}
-                    onClick={handleSorting}
-                    icon={sortConfig.key === header.key &&
-                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-                />
-            </div>
-        </div>;
-
     const TeamRow = ({ team, sub = false }) => 
             <>
                 <div 
@@ -254,13 +253,6 @@ const TeamsIndex = () => {
                     }}}
                     onContextMenu={(e) => displayMenu(e, team)}
                 >
-                    <div
-                        className={`app-list-row-cell ${ sub ? 'subteam-code-name' : 'code-name'} app-clickable`}
-                        onClick={() => {if (!selectionMode) openTeamDetails(team.id)}}
-                    >
-                        {sub && <Icon i={'subdirectory_arrow_right'} />}
-                        {team.code_name}
-                    </div>
                     <div
                         className={`app-list-row-cell ${ sub ? 'subteam-name' : 'name'} app-clickable`}
                         onClick={() => {if (!selectionMode) openTeamDetails(team.id)}}
@@ -347,6 +339,10 @@ const TeamsIndex = () => {
                         <HeaderCell
                             key={header.key}
                             header={header}
+                            sortConfig={sortConfig}
+                            filters={filters}
+                            handleFilter={handleFilter}
+                            handleSorting={handleSorting}
                         />
                     ))}
                     <Button

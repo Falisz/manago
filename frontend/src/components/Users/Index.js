@@ -11,6 +11,30 @@ import '../../assets/styles/Users.css';
 
 const MENU_ID = '2137';
 
+const HeaderCell = ({ header, filters, sortConfig, handleFilter, handleSorting }) =>
+        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
+            <div className={'app-list-header-cell-label'}>
+                {header.title}
+            </div>
+            <div className={'app-list-header-cell-actions'}>
+                <input
+                    className='search'
+                    title={header.title}
+                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
+                    name={header.key}
+                    value={filters[header.key] || ''}
+                    onChange={handleFilter}
+                />
+                <Button
+                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
+                    name={header.key}
+                    onClick={handleSorting}
+                    icon={sortConfig.key === header.key &&
+                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                />
+            </div>
+        </div>;
+
 const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=true, managed_users=false }) => {
     const { openModal, refreshData, closeTopModal } = useModals();
     const { deleteUser } = useUser();
@@ -176,30 +200,6 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
 
     const selectionMode = selectedUsers?.size > 0;
 
-    const HeaderCell = ({ header }) =>
-        <div className={`app-list-header-cell ${header.key}`} key={header.key}>
-            <div className={'app-list-header-cell-label'}>
-                {header.title}
-            </div>
-            <div className={'app-list-header-cell-actions'}>
-                <input
-                    className='search'
-                    title={header.title}
-                    placeholder={`Filter by the ${header.title.toLowerCase()}...`}
-                    name={header.key}
-                    value={filters[header.key] || ''}
-                    onChange={handleFilter}
-                />
-                <Button
-                    className={`order ${sortConfig.key === header.key ? sortConfig.direction : ''}`}
-                    name={header.key}
-                    onClick={handleSorting}
-                    icon={sortConfig.key === header.key &&
-                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-                />
-            </div>
-        </div>;
-
     return (
         <div className={`app-list users-list seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`}>
             <div className={`app-list-header-row${headerCollapsed ? ' collapsed' : ''}`}>
@@ -207,6 +207,10 @@ const UsersTable = ({ users, loading, selectedUsers, setSelectedUsers, managers=
                     <HeaderCell
                         key={header.key}
                         header={header}
+                        filters={filters}
+                        sortConfig={sortConfig}
+                        handleFilter={handleFilter}
+                        handleSorting={handleSorting}
                     />
                 ))}
                 <Button
