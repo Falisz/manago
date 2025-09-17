@@ -21,23 +21,24 @@ const FORM_CLEAN_STATE = {
 
 export const UserRoleAssignment = ({users}) => {
     const { roles, rolesLoading: loading, fetchRoles } = useRole();
-    const [ roleId, setRoleId ] = useState(null);
+    const [ formData, setFormData ] = useState({mode: 'add', roleId: null});
 
     useEffect(() => {
         fetchRoles().then();
     }, [fetchRoles]);
 
     const handleChange = (e) => {
-        const { value } = e.target;
-        setRoleId(value);
+        const { value, name } = e.target;
+        setFormData(prev => ({...prev, [name]: value}));
     }
 
     if (loading) return <Loader/>;
 
     return <div className='app-form' style={{minHeight: '100px'}}>
+        <h2>Role: </h2>
         <Dropdown
-            name={'role'}
-            value={roleId}
+            name={'roleId'}
+            value={formData.roleId}
             options={roles?.map(role => ({
                 id: role.id,
                 name: role.name
@@ -46,14 +47,28 @@ export const UserRoleAssignment = ({users}) => {
             placeholder={`Select role`}
             noneAllowed={true}
         />
+        <h2>Mode: </h2>
+        <Dropdown
+            name={'mode'}
+            value={formData.roleId}
+            options={[{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]}
+            onChange={handleChange}
+            placeholder={`Select mode`}
+            noneAllowed={true}
+        />
         <p>
             {
                 users?.map(user => (user.first_name + ' ' + user.last_name + ', '))
             }
         </p>
         {
-            roleId && <p>
-                        Selected Role ID: {roleId}
+            formData.roleId && <p>
+                        Selected mode: {formData.mode}
+                    </p>
+        }
+        {
+            formData.roleId && <p>
+                        Selected Role ID: {formData.roleId}
                     </p>
         }
     </div>
