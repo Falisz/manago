@@ -50,7 +50,7 @@ const TeamEdit = ({ teamId, parentId }) => {
             });
         });
 
-    }, [teamId, setLoading, fetchTeam, fetchUsers, fetchManagers, fetchTeams]);
+    }, [teamId, parentId, setLoading, fetchTeam, fetchUsers, fetchManagers, fetchTeams]);
 
     const handleChange = (e, index) => {
         const { name, value, type, checked } = e.target;
