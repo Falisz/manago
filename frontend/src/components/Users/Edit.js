@@ -19,6 +19,47 @@ const FORM_CLEAN_STATE = {
     manager_view_access: false
 };
 
+export const UserRoleAssignment = ({users}) => {
+    const { roles, rolesLoading: loading, fetchRoles } = useRole();
+    const [ roleId, setRoleId ] = useState(null);
+
+    useEffect(() => {
+        fetchRoles().then();
+    }, [fetchRoles]);
+
+    const handleChange = (e) => {
+        const { value } = e.target;
+        setRoleId(value);
+    }
+
+    if (loading) return <Loader/>;
+
+    return <div className='app-form' style={{minHeight: '100px'}}>
+        <Dropdown
+            name={'role'}
+            value={roleId}
+            options={roles?.map(role => ({
+                id: role.id,
+                name: role.name
+            }))}
+            onChange={handleChange}
+            placeholder={`Select role`}
+            noneAllowed={true}
+        />
+        <p>
+            {
+                users?.map(user => (user.first_name + ' ' + user.last_name + ', '))
+            }
+        </p>
+        {
+            roleId && <p>
+                        Selected Role ID: {roleId}
+                    </p>
+        }
+    </div>
+    
+};
+
 const UserEdit = ({ userId, preset }) => {
     const { loading, error, warning, success, setLoading, fetchUser, saveUser } = useUser();
     const { users: managers, fetchUsers: fetchManagers } = useUser();

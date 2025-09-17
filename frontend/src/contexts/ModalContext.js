@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useSearchParams } from 'react-router-dom';
 import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
-import UserEdit from '../components/Users/Edit';
+import UserEdit, {UserRoleAssignment} from '../components/Users/Edit';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
 import TeamDetails from '../components/Teams/Details';
@@ -121,6 +121,8 @@ export const ModalProvider = ({ children }) => {
                 return <UserDetails userId={modal.contentId} />;
             case 'userEdit':
                 return <UserEdit userId={modal.contentId} />;
+            case 'useRoleAssignment':
+                return <UserRoleAssignment users={modal.data} />;
             case 'userNew':
                 return <UserEdit />;
             case 'employeeNew':

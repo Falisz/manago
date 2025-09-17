@@ -88,6 +88,7 @@ const UsersIndexPage = ({content='users'}) => {
         { id: 'delete', label: 'Delete Team', selectionMode: false },
         { id: 'select-all', label: 'Select All', selectionMode: true },
         { id: 'clear-selection', label: 'Clear Selection', selectionMode: true },
+        { id: 'assign-roles', label: 'Assign Roles to seleted', selectionMode: true},
         { id: 'delete-selected', label: 'Delete Selected', selectionMode: true}
     ];
 
@@ -116,6 +117,9 @@ const UsersIndexPage = ({content='users'}) => {
                 break;
             case 'select-all':
                 setSelectedUsers(new Set(users.map(user => user.id)));
+                break;
+            case 'assign-roles':
+                openModal({content: 'useRoleAssignment', type: 'pop-up', data: users.filter(user => selectedUsers.has(user.id))})
                 break;
             case 'clear-selection':
                 setSelectedUsers(new Set());
