@@ -23,7 +23,7 @@ const RolesIndex = () => {
             display: true,
             type: 'icon',
             openModal: 'roleDetails',
-            style: {maxWidth: '25px', paddingRight: 0, display: 'flex', alignItems: 'center'}
+            style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'}
         },
         name: {
             display: true,
@@ -56,6 +56,7 @@ const RolesIndex = () => {
             <Table
                 dataSource={roles}
                 fields={fields}
+                style={{maxWidth: 'max(40%, 500px)'}}
                 hasHeader={false}
                 hasContextMenu={false}
                 hasSelectableRows={false}

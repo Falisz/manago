@@ -247,6 +247,7 @@ const Table = ({
                    subRowField = '',
                    contextMenuItems = [],
                    handleContextMenuClick,
+                   style
                }) => {
     const MENU_ID = 'table_context_menu';
 
@@ -386,12 +387,12 @@ const Table = ({
 
         return filteredData;
 
-    }, [dataSource, filters, sortConfig]);
+    }, [dataSource, fields, filters, sortConfig]);
 
     const selectionMode = selectedItems?.size > 0;
     
     return (
-        <div className={`app-table seethrough app-overflow-hidden ${selectionMode ? ' selection-mode' : ''}`}>
+        <div className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`} style={style}>
             {hasHeader && (
                 <TableHeader
                     fields={fields}
