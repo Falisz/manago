@@ -121,8 +121,10 @@ export const ModalProvider = ({ children }) => {
                 return <UserDetails userId={modal.contentId} />;
             case 'userEdit':
                 return <UserEdit userId={modal.contentId} />;
-            case 'useRoleAssignment':
+            case 'userRoleAssignment':
                 return <UserRoleAssignment users={modal.data} />;
+            case 'userManagerAssignment':
+                return <InWorks title={'User Manager Assignment'} modal={true} icon={'upcoming'} />;
             case 'userNew':
                 return <UserEdit />;
             case 'employeeNew':
@@ -139,6 +141,8 @@ export const ModalProvider = ({ children }) => {
                 return <TeamDetails teamId={modal.contentId} />;
             case 'teamEdit':
                 return <TeamEdit teamId={modal.contentId} />;
+            case 'teamMemberAssignment':
+                return <InWorks title={'Team Member Assignment'} modal={true} icon={'upcoming'} />;
             case 'teamNew':
                 return <TeamEdit />;
             case 'subteamNew':

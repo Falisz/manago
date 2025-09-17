@@ -63,7 +63,7 @@ const UsersIndexPage = ({content='users'}) => {
         openModal({
                     content: 'confirm',
                     type: 'pop-up',
-                    message: `Are you sure you want to delete ${selectedUsers.size} selected user${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
+                    message: `Are you sure you want to delete ${selectedUsers.size} selected User${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
                     onConfirm: () => {
                         deleteUsers(selectedUsers).then();
                         refreshData('users', true);
@@ -108,22 +108,26 @@ const UsersIndexPage = ({content='users'}) => {
         }
     }
 
-    const contextMenuItems = [
-        { id: 'select', label: 'Select User', selectionMode: false, 
+    const contextMenuActions = [
+        { id: 'select', label: 'Select User', selectionMode: false,
             action: (props) => handleUserSelect(props.id) },
         { id: 'edit', label: 'Edit User', selectionMode: false, 
             action: (props) => openModal({content: 'userEdit', contentId: props.id}) },
         { id: 'assign-role', label: 'Edit Roles', selectionMode: false, 
-            action: (props) => openModal({content: 'useRoleAssignment', type: 'dialog', data: [props]}) },
+            action: (props) => openModal({content: 'userRoleAssignment', type: 'dialog', data: [props]}) },
+        { id: 'assign-manager', label: 'Edit Managers', selectionMode: false,
+            action: (props) => openModal({content: 'userManagerAssignment', type: 'dialog', data: [props]}) },
         { id: 'delete', label: 'Delete Team', selectionMode: false,
             action: (props) => handleUserDelete(props.id) },
         { id: 'select-all', label: 'Select All', selectionMode: true,
             action: () => setSelectedUsers(new Set(users.map(user => user.id))) },
         { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
             action: () => setSelectedUsers(new Set()) },
-        { id: 'assign-roles', label: 'Assign Roles to seleted', selectionMode: true,
-            action: () => openModal({content: 'useRoleAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
-        { id: 'delete-selected', label: 'Delete Selected', selectionMode: true,
+        { id: 'bulk-assign-role', label: 'Assign Role', selectionMode: true,
+            action: () => openModal({content: 'userRoleAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
+        { id: 'bulk-assign-manager', label: 'Assign Manager', selectionMode: true,
+            action: () => openModal({content: 'userManagerAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
+        { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
             action: () => handleUsersDelete() }
     ];
 
@@ -159,10 +163,8 @@ const UsersIndexPage = ({content='users'}) => {
             <Table
                 dataSource={users}
                 fields={fields}
-                hasHeader={true}
-                hasContextMenu={true}
-                contextMenuItems={contextMenuItems}
                 hasSelectableRows={true}
+                contextMenuActions={contextMenuActions}
                 selectedItems={selectedUsers}
                 setSelectedItems={setSelectedUsers}
                 dataPlaceholder={'No Users found.'}

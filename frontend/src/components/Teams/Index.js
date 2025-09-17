@@ -1,5 +1,5 @@
 // FRONTEND/components/Teams/Index.js
-import React, {useEffect, useState, useCallback} from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useTeam from '../../hooks/useTeam';
 import Button from '../Button';
@@ -23,6 +23,63 @@ const TeamsIndex = () => {
         }
     }, [refreshTriggers, fetchTeams]);
 
+    const handleTeamSelect = (id) => {
+        setSelectedTeams(prev => {
+            const newSelected = new Set(Array.from(prev));
+            if (newSelected?.has(id)) {
+                newSelected.delete(id);
+            } else {
+                newSelected.add(id);
+            }
+            return newSelected;
+        });
+    };
+
+    const handleTeamDelete = (team) => {
+        let message = `Are you sure you want to delete this team? This action cannot be undone.`;
+        const teamId = team.id;
+        const users = team.members ? team.members.length : 0;
+        const subteams = team.subteams ? team.subteams.length : 0;
+
+        if (users > 0) {
+            message += ` There are currently ${users === 1 ? 'a' : users} user${users > 1 ? 's' : ''} assigned to this team.`;
+        }
+        if (subteams > 0) {
+            message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}. Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`;
+        }
+        openModal({
+            content: 'confirm',
+            type: 'pop-up',
+            message: message,
+            onConfirm: () => {
+                deleteTeam(teamId).then();
+                refreshData('teams', true);
+                closeTopModal();
+            },
+            onConfirm2: subteams > 0 ? () => {
+                deleteTeam(teamId, true).then();
+                refreshData('teams', true);
+                closeTopModal();
+            } : null,
+            confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
+            confirmLabel2: subteams > 0 ? 'Delete team and subteams' : undefined,
+        });
+    };
+
+    const handleTeamsDelete = () => {
+        openModal({
+            content: 'confirm',
+            type: 'pop-up',
+            message: `Are you sure you want to delete ${selectedTeams.size} selected Team${selectedTeams.size > 1 ? 's' : ''}? This action cannot be undone.`,
+            onConfirm: () => {
+                console.warn('Bulk Deletion to be implemented.');
+                refreshData('teams', true);
+                closeTopModal();
+            },
+        });
+
+    }
+
     const collectAllTeamIds = useCallback((teamList) => {
         let ids = [];
         teamList.forEach(team => {
@@ -33,8 +90,6 @@ const TeamsIndex = () => {
         });
         return ids;
     }, []);
-
-    const selectionMode = selectedTeams?.size > 0;
 
     const fields = {
         name: {
@@ -72,85 +127,35 @@ const TeamsIndex = () => {
         }
     }
 
-    const contextMenuItems = [
-        { id: 'select', label: 'Select Team', selectionMode: false },
-        { id: 'edit', label: 'Edit Team', selectionMode: false },
-        { id: 'delete', label: 'Delete Team', selectionMode: false },
-        { id: 'select-all', label: 'Select All', selectionMode: true },
-        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true },
-        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true }
+    const contextMenuActions = [
+        { id: 'select', label: 'Select Team', selectionMode: false,
+            action: (props) => handleTeamSelect(props.id) },
+        { id: 'edit', label: 'Edit Team', selectionMode: false,
+            action: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
+        { id: 'assign-member', label: 'Edit Members', selectionMode: false,
+            action: (props) => openModal({content: 'teamMemberAssignment', type: 'dialog', data: [props]}) },
+        { id: 'delete', label: 'Delete Team', selectionMode: false,
+            action: (props) => handleTeamDelete(props) },
+        { id: 'select-all', label: 'Select All', selectionMode: true,
+            action: () => setSelectedTeams(new Set(collectAllTeamIds(teams))) },
+        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
+            action: () => setSelectedTeams(new Set(teams.map(team => team.id))) },
+        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
+            action: () => setSelectedTeams(new Set()) },
+        { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
+            action: () => openModal({content: 'teamMemberAssignment', type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
+        { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
+            action: () => handleTeamsDelete() },
     ];
 
     if (loading) return <Loader />;
-
-    const handleContextMenuClick = ({ id, props }) => {
-        const team = props;
-        switch (id) {
-            case 'select':
-                setSelectedTeams(prev => {
-                    const newSelected = new Set(Array.from(prev));
-                    if (newSelected.has(team.id)) {
-                        newSelected.delete(team.id);
-                    } else {
-                        newSelected.add(team.id);
-                    }
-                    return newSelected;
-                });
-                break;
-            case 'edit':
-                openModal({ content: 'teamEdit', contentId: team.id });
-                break;
-            case 'delete':
-                let message = `Are you sure you want to delete this team? This action cannot be undone.`;
-                const teamId = team.id;
-                const users = team.members ? team.members.length : 0;
-                const subteams = team.subteams ? team.subteams.length : 0;
-
-                if (users > 0) {
-                    message += ` There are currently ${users === 1 ? 'a' : users} user${users > 1 ? 's' : ''} assigned to this team.`;
-                }
-                if (subteams > 0) {
-                    message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}. Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`;
-                }
-                openModal({
-                    content: 'confirm',
-                    type: 'pop-up',
-                    message: message,
-                    onConfirm: () => {
-                        deleteTeam(teamId).then();
-                        refreshData('teams', true);
-                        closeTopModal();
-                    },
-                    onConfirm2: subteams > 0 ? () => {
-                        deleteTeam(teamId, true).then();
-                        refreshData('teams', true);
-                        closeTopModal();
-                    } : null,
-                    confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
-                    confirmLabel2: subteams > 0 ? 'Delete team and subteams' : undefined,
-                });
-                break;
-            case 'select-all':
-                setSelectedTeams(new Set(collectAllTeamIds(teams)));
-                break;
-            case 'select-all-main':
-                setSelectedTeams(new Set(teams.map(team => team.id)));
-                break;
-            case 'clear-selection':
-                setSelectedTeams(new Set());
-                break;
-            default:
-                console.info(`${id} option to be implemented.`);
-                break;
-        }
-    };
 
     return (
         <>
             <div className='page-header'>
                 <h1 className={'page-title'}> Teams in Zyrah </h1>
                 {
-                    selectionMode &&
+                    selectedTeams?.size > 0 &&
                     <div className='selected-items'>
                         <p className='seethrough'>
                             {selectedTeams.size} team{selectedTeams.size !== 1 ? 's' : ''} selected.
@@ -176,15 +181,11 @@ const TeamsIndex = () => {
             <Table
                 dataSource={teams}
                 fields={fields}
-                hasHeader={true}
-                hasContextMenu={true}
-                contextMenuItems={contextMenuItems}
-                handleContextMenuClick={handleContextMenuClick}
                 hasSelectableRows={true}
+                contextMenuActions={contextMenuActions}
                 selectedItems={selectedTeams}
                 setSelectedItems={setSelectedTeams}
-                dataPlaceholder={'No teams found.'}
-                subRows={true}
+                dataPlaceholder={'No Teams found.'}
                 subRowField={'subteams'}
             />
         </>

@@ -196,7 +196,7 @@ button .material-symbols-rounded {
 
 .app-notice {
     height: fit-content;
-    margin: 150px auto 0;
+    margin: 0 auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
