@@ -25,6 +25,19 @@ const useUser = () => {
         }
     }, []);
 
+    const deleteUsers = useCallback(async (userIds) => {
+        try {
+            await axios.delete(`/users`, {data: {userIds: Array.from(userIds)}}, { withCredentials: true });
+            return true;
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            setError('Failed to delete user. Please try again.');
+            return false;
+        } finally {
+            setUsersLoading(false);
+        }
+    }, []);
+
     // Single user related states
     const [user, setUser] = useState(null);
     const userCacheRef = useRef({});
@@ -143,6 +156,7 @@ const useUser = () => {
         users,
         usersLoading,
         fetchUsers,
+        deleteUsers,
         user,
         loading,
         setLoading,

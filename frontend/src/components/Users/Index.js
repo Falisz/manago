@@ -8,7 +8,7 @@ import Table from '../Table';
 
 const UsersIndexPage = ({content='users'}) => {
     const { openModal, refreshData, closeTopModal, refreshTriggers } = useModals();
-    const { users, usersLoading: loading, fetchUsers, deleteUser } = useUser();
+    const { users, usersLoading: loading, fetchUsers, deleteUser, deleteUsers } = useUser();
     const [ selectedUsers, setSelectedUsers ] = useState(new Set());
 
     const itemName = {
@@ -87,7 +87,8 @@ const UsersIndexPage = ({content='users'}) => {
         { id: 'edit', label: 'Edit Team', selectionMode: false },
         { id: 'delete', label: 'Delete Team', selectionMode: false },
         { id: 'select-all', label: 'Select All', selectionMode: true },
-        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true }
+        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true },
+        { id: 'delete-selected', label: 'Delete Selected', selectionMode: true}
     ];
 
     if (loading) return <Loader />;
@@ -118,6 +119,18 @@ const UsersIndexPage = ({content='users'}) => {
                 break;
             case 'clear-selection':
                 setSelectedUsers(new Set());
+                break;
+            case 'delete-selected':
+                openModal({
+                    content: 'confirm',
+                    type: 'pop-up',
+                    message: `Are you sure you want to delete ${selectedUsers.length} selected user${selectedUsers.length > 1 ? 's' : ''}? This action cannot be undone.`,
+                    onConfirm: () => {
+                        deleteUsers(selectedUsers).then();
+                        refreshData('users', true);
+                        closeTopModal();
+                    },
+                });
                 break;
             default:
                 console.warn(`${id} option to be implemented.`);
