@@ -11,6 +11,10 @@ export const Role = sequelize.define('Role', {
         type: DataTypes.STRING(50),
         allowNull: false
     },
+    icon: {
+        type: DataTypes.STRING(50),
+        allowNull: true
+    },
     description: {
         type: DataTypes.TEXT,
         allowNull: true

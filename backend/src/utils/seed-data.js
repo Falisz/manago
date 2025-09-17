@@ -60,23 +60,23 @@ export async function seedData() {
         await seedModel(AppModule, 'app_modules', appModules, 'modules');
 
         const roles = [
-                { id: 1, name: 'Employee', system_default: true,
+                { id: 1, name: 'Employee', system_default: true, icon: 'account_circle',
                     description: "Default role assigned to all users. Allows access to basic features and self-service options." },
-                { id: 2, name: 'Specialist', system_default: true,
+                { id: 2, name: 'Specialist', system_default: false, icon: 'account_circle',
                     description: "Role for specialized users with access to advanced features." },
-                { id: 3, name: 'Team Leader', system_default: true,
+                { id: 3, name: 'Team Leader', system_default: true, icon: 'account_box',
                     description: "Role for team leaders with access to team management features." },
-                { id: 11, name: 'Manager', system_default: true,
+                { id: 11, name: 'Manager', system_default: true, icon: 'verified_user',
                     description: "Role for managers with access to management features." },
-                { id: 12, name: 'Branch Manager', system_default: true,
+                { id: 12, name: 'Branch Manager', system_default: true, icon: 'verified_user',
                     description: "Role for branch managers with access to branch management features." },
-                { id: 13, name: 'Project Manager', system_default: true,
+                { id: 13, name: 'Project Manager', system_default: true, icon: 'verified_user',
                     description: "Role for project managers with access to project management features." },
-                { id: 25, name: 'HR Rep', system_default: true,
+                { id: 25, name: 'HR Rep', system_default: true, icon: 'article_person',
                     description: "Role for HR representatives with access to employee management features." },
-                { id: 50, name: 'CEO', system_default: true,
+                { id: 50, name: 'CEO', system_default: true, icon: 'crown',
                     description: "Role for the CEO with access to all features." },
-                { id: 99, name: 'Admin', system_default: true,
+                { id: 99, name: 'Admin', system_default: true, icon: 'admin_panel_settings',
                     description: "Role for administrators with full access to the system." },
             ];
         await seedModel(Role, 'roles', roles, 'roles');
