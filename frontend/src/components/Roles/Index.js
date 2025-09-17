@@ -19,11 +19,17 @@ const RolesIndex = () => {
     }, [fetchRoles, refreshTriggers]);
 
     const fields = {
+        icon: {
+            display: true,
+            type: 'icon',
+            openModal: 'roleDetails',
+            style: {maxWidth: '25px', paddingRight: 0, display: 'flex', alignItems: 'center'}
+        },
         name: {
             display: true,
             type: 'string',
             openModal: 'roleDetails',
-            style: {fontSize: 1.25+'rem'}
+            style: {fontSize: 1.25+'rem', paddingLeft: 0}
         },
         users_count: {
             display: true,
