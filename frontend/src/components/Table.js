@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {Item, Menu, useContextMenu} from 'react-contexify';
+import {Item, Menu, RightSlot, useContextMenu} from 'react-contexify';
 import '../assets/styles/Table.css';
 import 'react-contexify/dist/ReactContexify.css';
 import {useModals} from '../contexts/ModalContext';
@@ -62,7 +62,6 @@ const TableRow = ({
                       data,
                       fields,
                       subRowField,
-                      descriptions,
                       descriptionField,
                       displayContextMenu,
                       isSubRow = false,
@@ -96,7 +95,7 @@ const TableRow = ({
             <div
                 className={`app-table-row${selectedItems?.has(data.id) ? 
                     ' selected' : ''}${isSubRow ? 
-                    ' sub-row' : ''}${descriptions ? 
+                    ' sub-row' : ''}${descriptionField ? 
                     ' with-desc' : ''}`}
                 onClick={(e) => handleSelect(e, data.id)}
                 onContextMenu={(e) => hasContextMenu && displayContextMenu(e, data)}
@@ -218,35 +217,30 @@ const TableRow = ({
  * @param {Object} fields
  * @param {boolean} hasHeader
  * @param {boolean} hasSelectableRows
- * @param {boolean} hasContextMenu
  * @param {Set | null} selectedItems
- * @param {Object[]} contextMenuItems
+ * @param {Array} contextMenuActions
+ * @param {string} contextMenuActions.id
+ * @param {string} contextMenuActions.label
+ * @param {boolean} contextMenuActions.selectionMode
+ * @param {function} contextMenuActions.action
+ * @param {function} contextMenuActions.shortcut
  * @param {function | null} setSelectedItems
  * @param {string | null} dataPlaceholder
- * @param {boolean} descriptions
- * @param {string} descriptionField
- * @param {boolean} subRows
- * @param {string} subRowField
- * @param {string} contextMenuItems.id
- * @param {string} contextMenuItems.label
- * @param {boolean} contextMenuItems.selectionMode
- * @param {function} handleContextMenuClick
+ * @param {string | null} descriptionField
+ * @param {string | null} subRowField
+ * @param {Object} style
  * **/
 const Table = ({
                    dataSource,
                    fields,
                    hasHeader = true,
-                   hasContextMenu = false,
-                   hasSelectableRows = true,
+                   hasSelectableRows = false,
+                   contextMenuActions = null,
                    selectedItems = null,
                    setSelectedItems = null,
-                   dataPlaceholder,
-                   descriptions = false,
-                   descriptionField = 'description',
-                   subRows = false,
-                   subRowField = '',
-                   contextMenuItems = [],
-                   handleContextMenuClick,
+                   dataPlaceholder = null,
+                   descriptionField = null,
+                   subRowField = null,
                    style
                }) => {
     const MENU_ID = 'table_context_menu';
@@ -412,9 +406,8 @@ const Table = ({
                             data={data}
                             fields={fields}
                             subRowField={subRowField}
-                            descriptions={descriptions}
                             descriptionField={descriptionField}
-                            hasContextMenu={hasContextMenu}
+                            hasContextMenu={contextMenuActions && contextMenuActions.length > 0}
                             displayContextMenu={displayContextMenu}
                             hasSelectableRows={hasSelectableRows}
                             selectedItems={selectedItems}
@@ -422,7 +415,7 @@ const Table = ({
                             openModal={openModal}
                         />
 
-                        return subRows ? (
+                        return subRowField ? (
                             <div key={index} className={'app-table-row-stack'}>
                                 {tableRow}
                             </div>
@@ -430,14 +423,13 @@ const Table = ({
                     })
                 )}
             </div>
-            {hasContextMenu && (
+            {contextMenuActions && contextMenuActions.length > 0 && (
                 <Menu className={'app-context-menu'} id={MENU_ID}>
-                    {contextMenuItems.filter(item => item.selectionMode === selectionMode).map(item => (
+                    {contextMenuActions.filter(item => item.selectionMode === selectionMode).map(item => (
                         <Item 
-                            key={item.id} 
-                            id={item.id} 
+                            key={item.id}
                             onClick={({ props }) => {if (!item.action) return; item.action(props)}}>
-                            {item.label}
+                            {item.label} { item.shortcut ? <RightSlot>{item.shortcut}</RightSlot> : null }
                         </Item>
                     ))}
                 </Menu>

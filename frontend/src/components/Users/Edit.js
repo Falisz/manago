@@ -20,6 +20,7 @@ const FORM_CLEAN_STATE = {
 };
 
 export const UserRoleAssignment = ({users}) => {
+    const { closeTopModal } = useModals();
     const { roles, rolesLoading: loading, fetchRoles } = useRole();
     const [ formData, setFormData ] = useState({mode: 'add', roleId: null});
 
@@ -32,46 +33,68 @@ export const UserRoleAssignment = ({users}) => {
         setFormData(prev => ({...prev, [name]: value}));
     }
 
+    const handleSubmit = () => {
+        console.warn('User Role assignment feature not implemented yet.');
+        closeTopModal();
+    }
+
     if (loading) return <Loader/>;
 
-    return <div className='app-form' style={{minHeight: '100px'}}>
-        <h2>Role: </h2>
-        <Dropdown
-            name={'roleId'}
-            value={formData.roleId}
-            options={roles?.map(role => ({
-                id: role.id,
-                name: role.name
-            }))}
-            onChange={handleChange}
-            placeholder={`Select role`}
-            noneAllowed={true}
-        />
-        <h2>Mode: </h2>
-        <Dropdown
-            name={'mode'}
-            value={formData.mode}
-            options={[{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]}
-            onChange={handleChange}
-            placeholder={`Select mode`}
-            noneAllowed={true}
-        />
-        <p>
-            {
-                users?.map(user => (user.first_name + ' ' + user.last_name + ', '))
-            }
-        </p>
-        {
-            formData.mode && <p>
-                        Selected mode: {formData.mode}
-                    </p>
-        }
-        {
-            formData.roleId && <p>
-                        Selected Role ID: {formData.roleId}
-                    </p>
-        }
-    </div>
+    return <>
+            <h1>
+                { users.length > 1 ?
+                `Assigning Role to ${users.length} Users` :
+                `Editing Roles of ${users[0].first_name + ' ' + users[0].last_name}` }
+            </h1>
+            <div className='app-form' style={{minHeight: '100px', padding: '0 0 150px'}}>
+                { users.length > 1 ? <>
+                    <h2 className={'form-header'}>Selected User</h2>
+                    <div>
+                        { users?.map( (user, index) =>
+                            (user.first_name + ' ' + user.last_name + (index !== users.length - 1  ?  ', ' : '')) )
+                        }
+                    </div>
+                </> : null
+                }
+                <h2 className={'form-header'}>Role</h2>
+                <div className='form-section'>
+                    <Dropdown
+                        name={'mode'}
+                        value={formData.mode}
+                        options={[{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]}
+                        onChange={handleChange}
+                        placeholder={`Select mode`}
+                        searchable={false}
+                        style={{width: '100px', minWidth: 'unset'}}
+                    />
+                    <Dropdown
+                        name={'roleId'}
+                        value={formData.roleId}
+                        options={roles?.map(role => ({
+                            id: role.id,
+                            name: role.name
+                        }))}
+                        onChange={handleChange}
+                        placeholder={`Select role`}
+                    />
+                </div>
+                <div className='form-section align-center'>
+                    <Button
+                        className={'save-button'}
+                        label={'Assign Role'}
+                        icon={'save'}
+                        onClick={handleSubmit}
+                    />
+                    <Button
+                        className={'discard-button'}
+                        type={'button'}
+                        label={'Discard'}
+                        icon={'close'}
+                        onClick={closeTopModal}
+                    />
+                </div>
+            </div>
+        </>
     
 };
 

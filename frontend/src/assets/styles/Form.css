@@ -110,6 +110,13 @@
     outline: none;
     background: none;
 }
+.app-form .app-dropdown .dropdown-selected-text {
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border: none;
+    outline: none;
+    background: none;
+}
 .app-form .app-dropdown .dropdown-search-input::placeholder {
     color: inherit;
     opacity: 1;

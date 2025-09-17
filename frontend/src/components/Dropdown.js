@@ -1,7 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from "./Icon";
 
-const Dropdown = ({ className='', placeholder=null, name, value, options, onChange, noneAllowed=false, upperCaseNames=false }) => {
+const Dropdown = ({
+                      className = '',
+                      placeholder = null,
+                      name,
+                      value,
+                      options,
+                      onChange,
+                      noneAllowed = false,
+                      upperCaseNames = false,
+                      searchable = true,
+                      style
+                  }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const dropdownRef = useRef(null);
@@ -32,7 +43,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
             };
             onChange(syntheticEvent);
             setIsOpen(false);
-            setTimeout(setSearchTerm(''), 400);
+            setTimeout(() => setSearchTerm(''), 400);
         }
     };
 
@@ -65,7 +76,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
     });
 
     return (
-        <div className={"app-dropdown " + className} ref={dropdownRef}>
+        <div className={"app-dropdown " + className} ref={dropdownRef} style={style}>
             <div
                 className="dropdown-selected"
                 onClick={() => setIsOpen(!isOpen)}
@@ -76,7 +87,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
                     }
                 }}
             >
-                <input
+                { searchable ? <input
                     className="dropdown-search-input"
                     ref={inputRef}
                     type="text"
@@ -90,7 +101,7 @@ const Dropdown = ({ className='', placeholder=null, name, value, options, onChan
                         else
                             setIsOpen(true)
                     }}
-                />
+                /> : <span className={'dropdown-selected-text'}>{getDisplayText()}</span> }
                 <Icon s={true} i={isOpen ? 'arrow_drop_up' : 'arrow_drop_down'} clickable={true}/>
             </div>
             <ul className={`dropdown-options app-scroll ${isOpen ? '' : 'hidden'}`}>
