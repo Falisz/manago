@@ -1,10 +1,11 @@
 Following roadmap and tasks to-do as of 2025-09-14:
 ### Frontend
 - [ ] General app behaviour
+  - [ ] Generalize Details and Edit Form components into templates to be used similarly like Table component.
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] Users and teams management
   - [ ] Selection feature in the user lists with actions like bulk delete, assign Role and assign Manager
-  - [ ] Team assignment form - for bulk team users assignments.
+  - [ ] Assignment form for UserManagers, UserRoles, TeamUsers assignments - both singular and bulk operations.
 - [ ] Branches
   - [ ] Different logo per branch (?) e.g., if a User is from Branch One, they have a diff logo than the user from Branch Two.
   - [ ] Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.

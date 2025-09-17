@@ -50,7 +50,7 @@ export const UserRoleAssignment = ({users}) => {
         <h2>Mode: </h2>
         <Dropdown
             name={'mode'}
-            value={formData.roleId}
+            value={formData.mode}
             options={[{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]}
             onChange={handleChange}
             placeholder={`Select mode`}
@@ -62,7 +62,7 @@ export const UserRoleAssignment = ({users}) => {
             }
         </p>
         {
-            formData.roleId && <p>
+            formData.mode && <p>
                         Selected mode: {formData.mode}
                     </p>
         }

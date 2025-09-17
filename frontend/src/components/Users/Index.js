@@ -46,6 +46,32 @@ const UsersIndexPage = ({content='users'}) => {
         });
     };
 
+    const handleUserDelete = (id) => {
+        openModal({
+                    content: 'confirm',
+                    type: 'pop-up',
+                    message: 'Are you sure you want to delete this user? This action cannot be undone.',
+                    onConfirm: () => {
+                        deleteUser(id).then();
+                        refreshData('users', true);
+                        closeTopModal();
+                    },
+                });
+    }
+
+    const handleUsersDelete = () => {
+        openModal({
+                    content: 'confirm',
+                    type: 'pop-up',
+                    message: `Are you sure you want to delete ${selectedUsers.size} selected user${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
+                    onConfirm: () => {
+                        deleteUsers(selectedUsers).then();
+                        refreshData('users', true);
+                        closeTopModal();
+                    },
+                });
+    }
+
     const fields = {
         name: {
             title: 'Name',
@@ -83,64 +109,25 @@ const UsersIndexPage = ({content='users'}) => {
     }
 
     const contextMenuItems = [
-        { id: 'select', label: 'Select Team', selectionMode: false },
-        { id: 'edit', label: 'Edit Team', selectionMode: false },
-        { id: 'delete', label: 'Delete Team', selectionMode: false },
-        { id: 'select-all', label: 'Select All', selectionMode: true },
-        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true },
-        { id: 'assign-roles', label: 'Assign Roles to seleted', selectionMode: true},
-        { id: 'delete-selected', label: 'Delete Selected', selectionMode: true}
+        { id: 'select', label: 'Select User', selectionMode: false, 
+            action: (props) => handleUserSelect(props.id) },
+        { id: 'edit', label: 'Edit User', selectionMode: false, 
+            action: (props) => openModal({content: 'userEdit', contentId: props.id}) },
+        { id: 'assign-role', label: 'Edit Roles', selectionMode: false, 
+            action: (props) => openModal({content: 'useRoleAssignment', type: 'dialog', data: [props]}) },
+        { id: 'delete', label: 'Delete Team', selectionMode: false,
+            action: (props) => handleUserDelete(props.id) },
+        { id: 'select-all', label: 'Select All', selectionMode: true,
+            action: () => setSelectedUsers(new Set(users.map(user => user.id))) },
+        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
+            action: () => setSelectedUsers(new Set()) },
+        { id: 'assign-roles', label: 'Assign Roles to seleted', selectionMode: true,
+            action: () => openModal({content: 'useRoleAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
+        { id: 'delete-selected', label: 'Delete Selected', selectionMode: true,
+            action: () => handleUsersDelete() }
     ];
 
     if (loading) return <Loader />;
-
-    const handleContextMenuClick = ({ id, props }) => {
-        const user = props;
-        switch (id) {
-            case 'select':
-                handleUserSelect(user.id);
-                break;
-            case 'delete':
-                openModal({
-                    content: 'confirm',
-                    type: 'pop-up',
-                    message: 'Are you sure you want to delete this user? This action cannot be undone.',
-                    onConfirm: () => {
-                        deleteUser(user.id).then();
-                        refreshData('users', true);
-                        closeTopModal();
-                    },
-                });
-                break;
-            case 'edit':
-                openModal({content: 'userEdit', contentId: user.id});
-                break;
-            case 'select-all':
-                setSelectedUsers(new Set(users.map(user => user.id)));
-                break;
-            case 'assign-roles':
-                openModal({content: 'useRoleAssignment', type: 'pop-up', data: users.filter(user => selectedUsers.has(user.id))})
-                break;
-            case 'clear-selection':
-                setSelectedUsers(new Set());
-                break;
-            case 'delete-selected':
-                openModal({
-                    content: 'confirm',
-                    type: 'pop-up',
-                    message: `Are you sure you want to delete ${selectedUsers.length} selected user${selectedUsers.length > 1 ? 's' : ''}? This action cannot be undone.`,
-                    onConfirm: () => {
-                        deleteUsers(selectedUsers).then();
-                        refreshData('users', true);
-                        closeTopModal();
-                    },
-                });
-                break;
-            default:
-                console.warn(`${id} option to be implemented.`);
-                break;
-        }
-    }
 
     return (
         <>
@@ -175,7 +162,6 @@ const UsersIndexPage = ({content='users'}) => {
                 hasHeader={true}
                 hasContextMenu={true}
                 contextMenuItems={contextMenuItems}
-                handleContextMenuClick={handleContextMenuClick}
                 hasSelectableRows={true}
                 selectedItems={selectedUsers}
                 setSelectedItems={setSelectedUsers}

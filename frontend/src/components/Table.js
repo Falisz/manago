@@ -433,7 +433,10 @@ const Table = ({
             {hasContextMenu && (
                 <Menu className={'app-context-menu'} id={MENU_ID}>
                     {contextMenuItems.filter(item => item.selectionMode === selectionMode).map(item => (
-                        <Item key={item.id} id={item.id} onClick={({ props }) => handleContextMenuClick({ id: item.id, props })}>
+                        <Item 
+                            key={item.id} 
+                            id={item.id} 
+                            onClick={({ props }) => {if (!item.action) return; item.action(props)}}>
                             {item.label}
                         </Item>
                     ))}
