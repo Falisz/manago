@@ -40,15 +40,19 @@ export const UserRoleAssignment = ({users}) => {
 
     if (loading) return <Loader/>;
 
+    const header = (formData.mode === 'add' ? 'Assigning Role to ' : 'Removing Role from ') +
+        (users.length > 1 ? `${users.length} Users` : `${users[0].first_name + ' ' + users[0].last_name}`)
+
+    // If only one user it should have the option like in editForm for MultiDropdown stuff.
+    // Change into two cases entirety of this return instead.
+
     return <>
             <h1>
-                { users.length > 1 ?
-                `Assigning Role to ${users.length} Users` :
-                `Editing Roles of ${users[0].first_name + ' ' + users[0].last_name}` }
+                {header}
             </h1>
             <div className='app-form' style={{minHeight: '100px', padding: '0 0 150px'}}>
                 { users.length > 1 ? <>
-                    <h2 className={'form-header'}>Selected User</h2>
+                    <h2 className={'form-header'}>Selected Users</h2>
                     <div>
                         { users?.map( (user, index) =>
                             (user.first_name + ' ' + user.last_name + (index !== users.length - 1  ?  ', ' : '')) )
