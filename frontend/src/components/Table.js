@@ -122,6 +122,20 @@ const TableRow = ({
                                 </span>
                             );
                             break;
+                        case 'icon':
+                            content = (
+                                <Icon
+                                    className={field.openModal ? 'app-clickable' : ''}
+                                    onClick={() => {
+                                        if (!selectionMode && field.openModal) {
+                                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
+                                        }
+                                    }}
+                                    i={value}
+                                    s={true}
+                                />
+                            );
+                            break;
                         case 'list':
                             if (value && value.length > 0) {
                                 content = value.map((item, index) => (
