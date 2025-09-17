@@ -281,4 +281,20 @@ router.delete('/:userId', async (req, res) => {
     }
 });
 
+router.delete('/', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { userIds } = req.body;
+
+        res.json({ message: 'Bulk-delete not implemented yet!' });
+
+    } catch (err) {
+        console.error('Error removing user:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
 export default router;
