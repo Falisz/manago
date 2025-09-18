@@ -1,0 +1,122 @@
+import React from 'react';
+import Button from "./Button";
+
+const DetailsHeader = ({structure, data}) => 
+    <div className='app-details-header'>
+        {Object.entries(structure).map(([key, value]) => {
+            if (key==='type') 
+                return null;
+
+            let content;
+
+            if (Array.isArray(value.dataField)) {
+                content = value.dataField.map(field => data[field] ?? '').join(' ')
+            } else if (typeof value.dataField === 'string') {
+                content = data[value.dataField] ?? value.text;
+            } else {
+                content = value.text;
+            }
+
+            if (key==='titlePrefix') {
+                return <div 
+                    className={'details-title-prefix' + (value.className ? ' ' + value.className : '')}
+                    title={value.title}
+                    style={value.style}
+                > 
+                    #{content}
+                </div>
+            } else if (key==='title')
+                return <div
+                    className={'details-title' + (value.className ? ' ' + value.className : '')}
+                    title={value.title}
+                    style={value.style}
+                >
+                    {content}
+                </div>
+            else if (key==='buttons')
+                return Object.values(value).map((button, index) => {
+                    return <Button
+                        key={index}
+                        className={button.className}
+                        onClick={() => button.onClick(data.id)}
+                        title={button.title}
+                        icon={button.icon}
+                        transparent={true}
+                    />
+                })
+            else 
+                return null;
+        })}
+    </div>
+
+const DetailsSection = ({structure, data}) => 
+    <div className='app-details-section'>
+        {Object.entries(structure).map(([key, value]) => {
+            if (key==='type') 
+                return null;
+
+            if (value.type === 'section-header') {
+                return <div className='section-header'>
+                    {value.text}
+                </div>;
+
+            } else if (value.type === 'data-group') {
+                let content = value.placeholder;
+
+                if (value.dataType === 'string') {
+                    content = data[value.dataField];
+                } else if (value.dataType === 'number') {
+                    content = data[value.dataField].toString();
+                } else if (value.dataType === 'boolean') {
+
+                    const val = data[value.dataField]
+
+                    content = val ? value.trueValue : value.falseValue;
+                } else if (value.dataType === 'list') {
+                    
+                    const items = data[value.dataField];
+
+                    if (items && items.length > 0) {
+                        content = Object.values(items).map(item => {
+                            const itemStruct = value.items;
+                            const id = item[itemStruct.dataIdField];
+                            const name = item[itemStruct.dataNameField];
+
+                            return <div 
+                                key={id}
+                                className={'data-group' + (itemStruct.onClick ? ' clickable' : '')}
+                                onClick={() => itemStruct.onClick(id)}
+                            >
+                                {name}
+                            </div>
+                        });
+                    }
+                }
+                
+                return <div className={'data-group'} title={value.label}>
+                            { value.label && <label>{value.label}</label>} 
+                            { content }
+                        </div>;
+                        
+            } else
+                return null;
+        })}
+    </div>
+
+const Details = ({structure, data, className, style}) => 
+    <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
+        {Object.values(structure).map((value) => {
+            if (!value.type) 
+                return null;
+
+            if (value.type === 'header')
+                return <DetailsHeader structure={value} data={data} />
+
+            if (value.type === 'section')
+                return <DetailsSection structure={value} data={data} />
+
+            return null;
+        })}
+    </div>
+
+export default Details;
