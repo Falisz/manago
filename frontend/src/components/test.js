@@ -4,8 +4,6 @@ import Loader from './Loader';
 import useUser from '../hooks/useUser';
 import { useModals } from '../contexts/ModalContext';
 
-
-
 const DetailsTest = () => {
     const { user, loading, fetchUser } = useUser();
     const { openModal } = useModals();
@@ -29,17 +27,17 @@ const DetailsTest = () => {
                     className: 'edit',
                     icon: 'edit',
                     title: 'Edit User',
-                    onClick: (id) => openModal({content: 'userEdit', contentId: user.id})
+                    onClick: () => openModal({content: 'userEdit', contentId: user.id})
                 },
                 delete: {
                     className: 'delete',
                     icon: 'delete',
                     title: 'Delete User',
-                    onClick: (id) => {}
+                    onClick: () => {}
                 }
             }
         },
-        loginDetails: {
+        loginDetailsSection: {
             type: 'section',
             header: {
                 type: 'section-header',
@@ -64,13 +62,13 @@ const DetailsTest = () => {
                 dataField: 'email'
             }
         },
-        roles: {
+        rolesSection: {
             type: 'section',
             header: {
                 type: 'section-header',
                 text: 'Roles',
                 editButton: {
-                    onClick: (user) => openModal({content: 'userRoleAssignment', data: [user], type: 'dialog'}),
+                    onClick: (user) => openModal({content: 'userRoleAssignment', data: user, type: 'dialog'}),
                 }
             },
             roles: {
@@ -79,13 +77,13 @@ const DetailsTest = () => {
                 dataField: 'roles',
                 placeholder: 'No Roles assigned.',
                 items: {
-                    dataIdField: 'id',
-                    dataNameField: 'name',
+                    idField: 'id',
+                    dataField: 'name',
                     onClick: (id) => {openModal({ content: 'roleDetails', contentId: id, type: 'dialog' })}
                 }
             }
         },
-        status: {
+        statusSection: {
             type: 'section',
             header: {
                 type: 'section-header',
@@ -93,49 +91,60 @@ const DetailsTest = () => {
             },
             isActive: {
                 type: 'data-group',
+                linear: true,
                 dataType: 'boolean',
                 dataField: 'active',
                 trueValue: 'Employee\'s account is active.',
-                falseValue: 'Employee\'s account is not active.'
+                trueIcon: 'check',
+                falseValue: 'Employee\'s account is not active.',
+                falseIcon: 'close',
             },
             hasManagerView: {
                 type: 'data-group',
+                linear: true,
                 dataType: 'boolean',
                 dataField: 'manager_view_access',
                 trueValue: 'User has an access to the Manager Portal.',
+                trueIcon: 'check',
             }
         },
-        managers: {
+        managersSection: {
             type: 'section',
             header: {
                 type: 'section-header',
-                text: 'Managers'
+                text: 'Managers',
+                editButton: {
+                    onClick: (user) => openModal({content: 'userManagerAssignment', data: [user], type: 'dialog'}),
+                }
             },
-            roles: {
+            managers: {
                 type: 'data-group',
                 dataType: 'list',
                 dataField: 'managers',
                 placeholder: 'No Managers assigned.',
                 items: {
-                    dataIdField: 'id',
-                    dataNameField: 'first_name',
+                    idField: 'id',
+                    dataField: ['first_name', 'last_name'],
                     onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
                 }
             }
         },
-        reportees: {
+        reporteesSection: {
             type: 'section',
             header: {
                 type: 'section-header',
                 text: 'Reportees',
+                editButton: {
+                    onClick: (user) => openModal({content: 'userReporteeAssignment', data: [user], type: 'dialog'}),
+                }
             },
             users: {
                 type: 'data-group',
                 dataType: 'list',
                 dataField: 'managed_users',
                 items: {
-                    dataIdField: 'id',
-                    dataNameField: 'first_name',
+                    idField: 'id',
+                    dataField: ['first_name', 'last_name'],
                     onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
                 }
             }

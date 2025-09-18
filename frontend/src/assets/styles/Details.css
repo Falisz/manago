@@ -159,6 +159,9 @@
     align-items: flex-start;
     padding-left: 5px;
 }
+.app-details-section .data-group.linear {
+    flex-direction: row;
+}
 .app-details-section .data-group label {
     margin-left: -5px;
     font-weight: bold;

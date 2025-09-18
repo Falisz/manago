@@ -1,7 +1,41 @@
 import React from 'react';
 import Button from "./Button";
+import Icon from "./Icon";
 
-const DetailsHeader = ({structure, data}) => 
+interface StructureConfig {
+    header: DetailsHeaderConfig;
+    [section: string]: DetailsSectionConfig;
+}
+interface DetailsHeaderConfig {
+    type: string;
+    titlePrefix?: DataFieldConfig;
+    title?: DataFieldConfig;
+    buttons?: Record<string, ButtonConfig>;
+}
+interface DetailsSectionConfig {
+    type: string,
+    header: DataFieldConfig,
+    [group: string]: DataFieldConfig,
+}
+interface ButtonConfig {
+    className?: string;
+    onClick: (id: string | number) => void;
+    title?: string;
+    icon?: string;
+    transparent?: boolean;
+}
+interface DataFieldConfig {
+    dataField: string | string[];
+    dataType: string;
+    text?: string;
+    className?: string;
+    title?: string;
+    style?: React.CSSProperties;
+    items?: DataFieldConfig[];
+    newItem?: DataFieldConfig;
+}
+
+const DetailsHeader = ({structure, data}: {structure: DetailsHeaderConfig, data: any}) =>
     <div className='app-details-header'>
         {Object.entries(structure).map(([key, value]) => {
             if (key==='type') 
@@ -33,23 +67,23 @@ const DetailsHeader = ({structure, data}) =>
                 >
                     {content}
                 </div>
-            else if (key==='buttons')
-                return Object.values(value).map((button, index) => {
-                    return <Button
+            else if (key==='buttons') {
+                return Object.values(value).map((button, index) =>
+                    <Button
                         key={index}
                         className={button.className}
-                        onClick={() => button.onClick(data.id)}
+                        onClick={button.onClick}
                         title={button.title}
                         icon={button.icon}
-                        transparent={true}
+                        transparent={button.transparent ?? true}
                     />
-                })
-            else 
+                )
+            } else
                 return null;
         })}
     </div>
 
-const DetailsSection = ({structure, data}) => 
+const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, data: any}) =>
     <div className='app-details-section'>
         {Object.entries(structure).map(([key, value]) => {
             if (key==='type') 
@@ -71,13 +105,18 @@ const DetailsSection = ({structure, data}) =>
 
                 if (value.dataType === 'string') {
                     content = data[value.dataField];
+
                 } else if (value.dataType === 'number') {
                     content = data[value.dataField].toString();
+
                 } else if (value.dataType === 'boolean') {
+                    const val = data[value.dataField];
 
-                    const val = data[value.dataField]
+                    content = <>
+                        {val ? value.trueIcon && <Icon i={value.trueIcon} /> : value.falseIcon && <Icon i={value.falseIcon} /> }
+                        {val ? value.trueValue : value.falseValue}
+                    </>;
 
-                    content = val ? value.trueValue : value.falseValue;
                 } else if (value.dataType === 'list') {
                     
                     const items = data[value.dataField];
@@ -85,10 +124,17 @@ const DetailsSection = ({structure, data}) =>
                     if (items && items.length > 0) {
                         content = Object.values(items).map(item => {
                             const itemStruct = value.items;
-                            const id = item[itemStruct.dataIdField];
-                            const name = item[itemStruct.dataNameField];
+                            const id = item[itemStruct.idField || 'id'];
+                            let name;
+                            if (Array.isArray(itemStruct.dataField)) {
+                                name = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
+                            } else if (typeof value.dataField === 'string') {
+                                name = item[itemStruct.dataField];
+                            } else {
+                                name = itemStruct.text || '';
+                            }
 
-                            return <div 
+                            return <div
                                 key={id}
                                 className={'data-group' + (itemStruct.onClick ? ' clickable' : '')}
                                 onClick={() => itemStruct.onClick(id)}
@@ -99,7 +145,7 @@ const DetailsSection = ({structure, data}) =>
                     }
                 }
                 
-                return <div className={'data-group'} title={value.label}>
+                return <div className={'data-group' + (value.linear ? ' linear' : '')} title={value.label}>
                             { value.label && <label>{value.label}</label>} 
                             { content }
                             { value.newItem && <Button
@@ -115,12 +161,14 @@ const DetailsSection = ({structure, data}) =>
         })}
     </div>
 
-const Details = ({structure, data, className, style}) => 
+const Details = ({structure, data, className, style}: {
+    structure: StructureConfig,
+    data: any,
+    className: string,
+    style: React.CSSProperties
+}) =>
     <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
         {Object.values(structure).map((value) => {
-            if (!value.type) 
-                return null;
-
             if (value.type === 'header')
                 return <DetailsHeader structure={value} data={data} />
 
