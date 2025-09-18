@@ -77,6 +77,7 @@ const AppSettings = () => {
                             options={configOptions.style}
                             onChange={handleChange}
                             upperCaseNames={true}
+                            searchable={false}
                         />
                     </div>
                     <div className={'form-group'}>
@@ -92,6 +93,7 @@ const AppSettings = () => {
                             options={configOptions.theme}
                             onChange={handleChange}
                             upperCaseNames={true}
+                            searchable={false}
                         />
                     </div>
                     <div className={'form-group'}>
