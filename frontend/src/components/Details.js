@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useRef} from 'react';
 import Button from "./Button";
 import Icon from "./Icon";
 
@@ -83,16 +83,18 @@ const DetailsHeader = ({structure, data}: {structure: DetailsHeaderConfig, data:
         })}
     </div>
 
-const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, data: any}) =>
-    <div className='app-details-section'>
+const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, data: any}) => {
+    const isEmpty = useRef(true);
+
+    const content = <div className='app-details-section'>
         {Object.entries(structure).map(([key, value]) => {
-            if (key==='type') 
+            if (key==='type')
                 return null;
 
             if (value.type === 'section-header') {
                 return <div className='section-header'>
                     {value.text}
-                    {value.editButton && <Button 
+                    {value.editButton && <Button
                         onClick={() => value.editButton.onClick(data)}
                         label={value.editButton.label}
                         transparent={value.editButton.transparent ?? true}
@@ -105,23 +107,32 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
 
                 if (value.dataType === 'string') {
                     content = data[value.dataField];
+                    if (content !== null)
+                        isEmpty.current = false;
 
                 } else if (value.dataType === 'number') {
                     content = data[value.dataField].toString();
+                    if (content !== null)
+                        isEmpty.current = false;
 
                 } else if (value.dataType === 'boolean') {
                     const val = data[value.dataField];
+                    if (val !== null)
+                        isEmpty.current = false;
 
                     content = <>
-                        {val ? value.trueIcon && <Icon i={value.trueIcon} /> : value.falseIcon && <Icon i={value.falseIcon} /> }
+                        {val ?
+                            value.trueIcon && <Icon className={'true'} i={value.trueIcon} /> :
+                            value.falseIcon && <Icon className={'false'} i={value.falseIcon} /> }
                         {val ? value.trueValue : value.falseValue}
                     </>;
 
                 } else if (value.dataType === 'list') {
-                    
+
                     const items = data[value.dataField];
 
                     if (items && items.length > 0) {
+                        isEmpty.current = false;
                         content = Object.values(items).map(item => {
                             const itemStruct = value.items;
                             const id = item[itemStruct.idField || 'id'];
@@ -144,22 +155,29 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
                         });
                     }
                 }
-                
+
                 return <div className={'data-group' + (value.linear ? ' linear' : '')} title={value.label}>
-                            { value.label && <label>{value.label}</label>} 
-                            { content }
-                            { value.newItem && <Button
-                                    onClick={() => value.newItem.onClick(data.id)}
-                                    label={value.newItem.label}
-                                    transparent={value.newItem.transparent ?? true}
-                                    icon={value.newItem.icon ?? 'add_circle'}
-                            />}
-                        </div>;
-                        
+                    { value.label && <label>{value.label}</label>}
+                    { content }
+                    { value.newItem && <Button
+                        onClick={() => value.newItem.onClick(data.id)}
+                        label={value.newItem.label}
+                        transparent={value.newItem.transparent ?? true}
+                        icon={value.newItem.icon ?? 'add_circle'}
+                    />}
+                </div>;
+
             } else
                 return null;
         })}
     </div>
+
+    if (structure.hideEmpty && isEmpty.current)
+        return null;
+
+    return content;
+}
+
 
 const Details = ({structure, data, className, style}: {
     structure: StructureConfig,

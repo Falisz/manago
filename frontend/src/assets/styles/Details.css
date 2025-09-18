@@ -176,3 +176,17 @@
 .app-details-section .data-group.clickable:hover {
     color: var(--link-hover-color);
 }
+.app-details-section .data-group icon {
+    font-size: 1.1em;
+    padding: 3px;
+    margin-right: 5px;
+    border-radius: 10px;
+}
+.app-details-section .data-group icon.true {
+    background-color: rgba(154, 205, 50, 0.5);
+    color: white;
+}
+.app-details-section .data-group icon.false {
+    background-color: rgba(255, 127, 80, 0.5);
+    color: white;
+}

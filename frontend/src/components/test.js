@@ -9,7 +9,7 @@ const DetailsTest = () => {
     const { openModal } = useModals();
 
     useEffect(() => {
-        fetchUser(100002).then();
+        fetchUser(475776).then();
     }, [fetchUser]);
 
     const exampleStructure = {
@@ -94,9 +94,9 @@ const DetailsTest = () => {
                 linear: true,
                 dataType: 'boolean',
                 dataField: 'active',
-                trueValue: 'Employee\'s account is active.',
+                trueValue: 'User\'s account is active.',
                 trueIcon: 'check',
-                falseValue: 'Employee\'s account is not active.',
+                falseValue: 'User\'s account is not active.',
                 falseIcon: 'close',
             },
             hasManagerView: {
@@ -104,8 +104,10 @@ const DetailsTest = () => {
                 linear: true,
                 dataType: 'boolean',
                 dataField: 'manager_view_access',
-                trueValue: 'User has an access to the Manager Portal.',
+                trueValue: 'User has access to the Manager Portal.',
                 trueIcon: 'check',
+                falseValue: 'User doesn\'t have access to the Manager Portal.',
+                falseIcon: 'close',
             }
         },
         managersSection: {
@@ -131,6 +133,7 @@ const DetailsTest = () => {
         },
         reporteesSection: {
             type: 'section',
+            hideEmpty: true,
             header: {
                 type: 'section-header',
                 text: 'Reportees',
