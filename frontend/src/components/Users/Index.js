@@ -114,9 +114,9 @@ const UsersIndexPage = ({content='users'}) => {
         { id: 'edit', label: 'Edit User', selectionMode: false, 
             action: (props) => openModal({content: 'userEdit', contentId: props.id}) },
         { id: 'assign-role', label: 'Edit Roles', selectionMode: false, 
-            action: (props) => openModal({content: 'userRoleAssignment', type: 'dialog', data: [props]}) },
+            action: (props) => openModal({content: 'userRoleAssignment', type: 'dialog', data: props}) },
         { id: 'assign-manager', label: 'Edit Managers', selectionMode: false,
-            action: (props) => openModal({content: 'userManagerAssignment', type: 'dialog', data: [props]}) },
+            action: (props) => openModal({content: 'userManagerAssignment', type: 'dialog', data: props}) },
         { id: 'delete', label: 'Delete Team', selectionMode: false,
             action: (props) => handleUserDelete(props.id) },
         { id: 'select-all', label: 'Select All', selectionMode: true,
@@ -124,9 +124,9 @@ const UsersIndexPage = ({content='users'}) => {
         { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
             action: () => setSelectedUsers(new Set()) },
         { id: 'bulk-assign-role', label: 'Assign Role', selectionMode: true,
-            action: () => openModal({content: 'userRoleAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
+            action: () => openModal({content: 'userRoleBulkAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
         { id: 'bulk-assign-manager', label: 'Assign Manager', selectionMode: true,
-            action: () => openModal({content: 'userManagerAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
+            action: () => openModal({content: 'userManagerBulkAssignment', type: 'dialog', data: users.filter(user => selectedUsers.has(user.id))}) },
         { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
             action: () => handleUsersDelete() }
     ];

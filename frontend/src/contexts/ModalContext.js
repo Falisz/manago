@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useSearchParams } from 'react-router-dom';
 import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
-import UserEdit, {UserRoleAssignment} from '../components/Users/Edit';
+import UserEdit, {UserRoleAssignment, UserRoleBulkAssignment} from '../components/Users/Edit';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
 import TeamDetails from '../components/Teams/Details';
@@ -122,9 +122,13 @@ export const ModalProvider = ({ children }) => {
             case 'userEdit':
                 return <UserEdit userId={modal.contentId} />;
             case 'userRoleAssignment':
-                return <UserRoleAssignment users={modal.data} />;
+                return <UserRoleAssignment user={modal.data} />;
+            case 'userRoleBulkAssignment':
+                return <UserRoleBulkAssignment users={modal.data} />;
             case 'userManagerAssignment':
                 return <InWorks title={'User Manager Assignment'} modal={true} icon={'upcoming'} />;
+            case 'userManagerBulkAssignment':
+                return <InWorks title={'User Manager Bulk Assignment'} modal={true} icon={'upcoming'} />;
             case 'userNew':
                 return <UserEdit />;
             case 'employeeNew':
@@ -143,6 +147,8 @@ export const ModalProvider = ({ children }) => {
                 return <TeamEdit teamId={modal.contentId} />;
             case 'teamMemberAssignment':
                 return <InWorks title={'Team Member Assignment'} modal={true} icon={'upcoming'} />;
+            case 'teamMemberBulkAssignment':
+                return <InWorks title={'Team Member Bulk Assignment'} modal={true} icon={'upcoming'} />;
             case 'teamNew':
                 return <TeamEdit />;
             case 'subteamNew':
@@ -159,7 +165,7 @@ export const ModalProvider = ({ children }) => {
                     cancelLabel={modal.cancelLabel}
                 />;
             default:
-                return <InWorks title={'Unknown modal.'} modal={true} />;
+                return <InWorks title={'Unknown Modal'} modal={true} />;
         }
     };
 
