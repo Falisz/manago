@@ -17,17 +17,17 @@ const DetailsTest = () => {
             type: 'header',
             titlePrefix: {
                 dataField: 'id',
-                title: 'User ID',
+                title: 'Team ID',
             },
             title: {
-                dataField: ['first_name', 'last_name'],
+                dataField: 'name',
             },
             buttons: {
                 edit: {
                     className: 'edit',
                     icon: 'edit',
                     title: 'Edit User',
-                    onClick: () => openModal({content: 'userEdit', contentId: user.id})
+                    onClick: () => openModal({content: 'teamEdit', contentId: user.id})
                 },
                 delete: {
                     className: 'delete',

@@ -38,7 +38,7 @@ interface DataFieldConfig {
 const DetailsHeader = ({structure, data}: {structure: DetailsHeaderConfig, data: any}) =>
     <div className='app-details-header'>
         {Object.entries(structure).map(([key, value]) => {
-            if (key==='type') 
+            if (key==='type' || !value)
                 return null;
 
             let content;
@@ -120,12 +120,12 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
                     if (val !== null)
                         isEmpty.current = false;
 
-                    content = <>
+                    content = <div className={'data-group linear'}>
                         {val ?
                             value.trueIcon && <Icon className={'true'} i={value.trueIcon} /> :
                             value.falseIcon && <Icon className={'false'} i={value.falseIcon} /> }
                         {val ? value.trueValue : value.falseValue}
-                    </>;
+                    </div>;
 
                 } else if (value.dataType === 'list') {
 
@@ -133,9 +133,13 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
 
                     if (items && items.length > 0) {
                         isEmpty.current = false;
-                        content = Object.values(items).map(item => {
+                        content = Object.values(items).map((item, index) => {
                             const itemStruct = value.items;
-                            const id = item[itemStruct.idField || 'id'];
+                            if (!itemStruct)
+                                return null;
+
+                            const id = itemStruct.idField ? item[itemStruct.idField] : item['id'];
+
                             let name;
                             if (Array.isArray(itemStruct.dataField)) {
                                 name = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
@@ -146,7 +150,7 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
                             }
 
                             return <div
-                                key={id}
+                                key={index}
                                 className={'data-group' + (itemStruct.onClick ? ' clickable' : '')}
                                 onClick={() => itemStruct.onClick(id)}
                             >
@@ -182,16 +186,16 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
 const Details = ({structure, data, className, style}: {
     structure: StructureConfig,
     data: any,
-    className: string,
-    style: React.CSSProperties
+    className?: string,
+    style?: React.CSSProperties
 }) =>
     <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
-        {Object.values(structure).map((value) => {
+        {Object.values(structure).map((value, index) => {
             if (value.type === 'header')
-                return <DetailsHeader structure={value} data={data} />
+                return <DetailsHeader key={index} structure={value} data={data} />
 
             if (value.type === 'section')
-                return <DetailsSection structure={value} data={data} />
+                return <DetailsSection key={index} structure={value} data={data} />
 
             return null;
         })}
