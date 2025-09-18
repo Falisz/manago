@@ -143,9 +143,15 @@
 }
 
 .app-details-section .section-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     font-size: 1.25em;
     text-transform: uppercase;
     font-weight: 400;
+}
+.app-details-section .section-header .app-button {
+    padding: 5px;
 }
 .app-details-section .data-group {
     display: flex;

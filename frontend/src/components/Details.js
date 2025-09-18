@@ -58,6 +58,12 @@ const DetailsSection = ({structure, data}) =>
             if (value.type === 'section-header') {
                 return <div className='section-header'>
                     {value.text}
+                    {value.editButton && <Button 
+                        onClick={() => value.editButton.onClick(data)}
+                        label={value.editButton.label}
+                        transparent={value.editButton.transparent ?? true}
+                        icon={value.editButton.icon ?? 'edit'}
+                    />}
                 </div>;
 
             } else if (value.type === 'data-group') {
@@ -96,6 +102,12 @@ const DetailsSection = ({structure, data}) =>
                 return <div className={'data-group'} title={value.label}>
                             { value.label && <label>{value.label}</label>} 
                             { content }
+                            { value.newItem && <Button
+                                    onClick={() => value.newItem.onClick(data.id)}
+                                    label={value.newItem.label}
+                                    transparent={value.newItem.transparent ?? true}
+                                    icon={value.newItem.icon ?? 'add_circle'}
+                            />}
                         </div>;
                         
             } else

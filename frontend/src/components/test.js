@@ -29,7 +29,7 @@ const DetailsTest = () => {
                     className: 'edit',
                     icon: 'edit',
                     title: 'Edit User',
-                    onClick: (id) => {}
+                    onClick: (id) => openModal({content: 'userEdit', contentId: user.id})
                 },
                 delete: {
                     className: 'delete',
@@ -68,7 +68,10 @@ const DetailsTest = () => {
             type: 'section',
             header: {
                 type: 'section-header',
-                text: 'Roles'
+                text: 'Roles',
+                editButton: {
+                    onClick: (user) => openModal({content: 'userRoleAssignment', data: [user], type: 'dialog'}),
+                }
             },
             roles: {
                 type: 'data-group',
