@@ -4,8 +4,7 @@ import Loader from '../Loader';
 import useUser from '../../hooks/useUser';
 import { useModals } from '../../contexts/ModalContext';
 import '../../assets/styles/Details.css';
-import Icon from "../Icon";
-import Button from "../Button";
+import Details from "../Details";
 
 const UserDetails = ({ userId }) => {
     const { user, loading, fetchUser, deleteUser } = useUser();
@@ -23,21 +22,159 @@ const UserDetails = ({ userId }) => {
         }
     }, [userId, fetchUser, refreshTriggers]);
 
-    const handleDelete = async (users = 0) => {
-        let message = 'Are you sure you want to delete this user? This action cannot be undone.'
-        if (users > 0) {
-            message += ` This role is currently assigned to ${users} user${users > 1 ? 's' : ''}.`
-        }
+    const handleDelete = async () => {
         openModal({
             content: 'confirm',
             type: 'pop-up',
-            message: message,
+            message: 'Are you sure you want to delete this user? This action cannot be undone.',
             onConfirm: () => {
                 deleteUser(userId).then();
                 refreshData('users', true);
                 closeTopModal();
             },
         });
+    };
+
+    const userStructure = {
+        header: {
+            type: 'header',
+            titlePrefix: {
+                dataField: 'id',
+                title: 'User ID',
+            },
+            title: {
+                dataField: ['first_name', 'last_name'],
+            },
+            buttons: {
+                edit: {
+                    className: 'edit',
+                    icon: 'edit',
+                    title: 'Edit User',
+                    onClick: () => openModal({content: 'userEdit', contentId: user.id})
+                },
+                delete: {
+                    className: 'delete',
+                    icon: 'delete',
+                    title: 'Delete User',
+                    onClick: handleDelete
+                }
+            }
+        },
+        loginDetailsSection: {
+            type: 'section',
+            header: {
+                type: 'section-header',
+                text: 'Login Details'
+            },
+            loginId: {
+                type: 'data-group',
+                label: 'Login ID',
+                dataType: 'string',
+                dataField: 'id'
+            },
+            loginAlias: {
+                type: 'data-group',
+                label: 'Login Alias',
+                dataType: 'string',
+                dataField: 'login'
+            },
+            loginEmail: {
+                type: 'data-group',
+                label: 'Login Email',
+                dataType: 'string',
+                dataField: 'email'
+            }
+        },
+        rolesSection: {
+            type: 'section',
+            header: {
+                type: 'section-header',
+                text: 'Roles',
+                editButton: {
+                    onClick: (user) => openModal({content: 'userRoleAssignment', data: user, type: 'dialog'}),
+                }
+            },
+            roles: {
+                type: 'data-group',
+                dataType: 'list',
+                dataField: 'roles',
+                placeholder: 'No Roles assigned.',
+                items: {
+                    idField: 'id',
+                    dataField: 'name',
+                    onClick: (id) => {openModal({ content: 'roleDetails', contentId: id, type: 'dialog' })}
+                }
+            }
+        },
+        statusSection: {
+            type: 'section',
+            header: {
+                type: 'section-header',
+                text: 'Status',
+            },
+            isActive: {
+                type: 'data-group',
+                linear: true,
+                dataType: 'boolean',
+                dataField: 'active',
+                trueValue: 'User\'s account is active.',
+                trueIcon: 'check',
+                falseValue: 'User\'s account is not active.',
+                falseIcon: 'close',
+            },
+            hasManagerView: {
+                type: 'data-group',
+                linear: true,
+                dataType: 'boolean',
+                dataField: 'manager_view_access',
+                trueValue: 'User has access to the Manager Portal.',
+                trueIcon: 'check',
+                falseValue: 'User doesn\'t have access to the Manager Portal.',
+                falseIcon: 'close',
+            }
+        },
+        managersSection: {
+            type: 'section',
+            header: {
+                type: 'section-header',
+                text: 'Managers',
+                editButton: {
+                    onClick: (user) => openModal({content: 'userManagerAssignment', data: [user], type: 'dialog'}),
+                }
+            },
+            managers: {
+                type: 'data-group',
+                dataType: 'list',
+                dataField: 'managers',
+                placeholder: 'No Managers assigned.',
+                items: {
+                    idField: 'id',
+                    dataField: ['first_name', 'last_name'],
+                    onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
+                }
+            }
+        },
+        reporteesSection: {
+            type: 'section',
+            hideEmpty: true,
+            header: {
+                type: 'section-header',
+                text: 'Reportees',
+                editButton: {
+                    onClick: (user) => openModal({content: 'userReporteeAssignment', data: [user], type: 'dialog'}),
+                }
+            },
+            users: {
+                type: 'data-group',
+                dataType: 'list',
+                dataField: 'managed_users',
+                items: {
+                    idField: 'id',
+                    dataField: ['first_name', 'last_name'],
+                    onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
+                }
+            }
+        }
     };
 
     if (loading) {
@@ -48,104 +185,12 @@ const UserDetails = ({ userId }) => {
         return <h1>User not found!</h1>;
     }
 
-    return (
-        <div className='detail-content'>
-            <div className='detail-header'>
-                <div className={'detail-title-prefix user-id'} title={'Employee ID'}>#{user.id}</div>
-                <div className={'detail-title user-name'} title={'Full Name'}>{user.first_name} {user.last_name}</div>
-                <Button
-                    className={'edit'}
-                    onClick={() => {openModal({content: 'userEdit', contentId: user.id })}}
-                    title={'Edit User details'}
-                    icon={'edit'}
-                    transparent={true}
-                />
-                <Button
-                    className={'delete'}
-                    onClick={handleDelete}
-                    title={'Delete the User'}
-                    icon={'delete'}
-                    transparent={true}
-                />
-            </div>
-            <div className='detail-section'>
-                <div className={'detail-section-header'}>Login details</div>
-                <div className={'detail-group user-id'} title={'Login ID'}>
-                    <label>Login ID</label> {user.id}
-                </div>
-                <div className={'detail-group user-login'} title={'Login alias'}>
-                    <label>Login alias</label> {user.login}
-                </div>
-                <div className={'detail-group user-email'} title={'Login e-mail'}>
-                    <label>Login e-mail</label> {user.email}
-                </div>
-            </div>
+    if (loading) return <Loader/>;
 
-            <div className='detail-section'>
-                <div className={'detail-section-header'}>Roles</div>
-                {user.roles.length > 0 ? user.roles.map((role) => (
-                        <div key={role.id} className={'detail-group'}>
-                            <span
-                                className={'detail-link'}
-                                onClick={() => openModal({ content: 'roleDetails', contentId: role.id, type: 'dialog' })}
-                            >
-                                {role.name}
-                            </span>
-
-                        </div>
-                    )) :
-                    <div className={'detail-data-placeholder'}>Na roles assigned.</div>}
-            </div>
-            <div className='detail-section'>
-                <div className={'detail-section-header'}>Status</div>
-                {user.active ?
-                    <div className={'detail-group linear'}>
-                        <Icon className={'true'} i={'check'}/> Employee's account is active
-                    </div> : 
-                    <div className={'detail-group linear'}>
-                        <Icon className={'false'} i={'close'}/> Employee's account is not active
-                    </div> }
-                {user.manager_view_access ?
-                    <div className={'detail-group linear'}>
-                        <Icon className={'true'} i={'check'}/> Employee has access to Manager View
-                    </div> : 
-                    <div className={'detail-group linear'}>
-                        <Icon className={'false'} i={'close'}/> Employee does not have access to Manager View
-                    </div> }
-            </div>
-            <div className='detail-section'>
-                <div className={'detail-section-header'}>Reports to</div>
-                {user.managers.length > 0 ? user.managers.map((manager) => (
-                    <div
-                        key={manager.id}
-                        className={'detail-group'}
-                    >
-                        <span
-                            className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', contentId: manager.id, type: 'dialog' })}
-                        >
-                            {manager.first_name} {manager.last_name}
-                        </span>
-                    </div>
-                )) :
-                <div className={'detail-data-placeholder'}>No manager assigned.</div>}
-            </div>
-            {user.managed_users.length > 0 ? (<div className='detail-section'>
-                <div className={'detail-section-header'}>Reportees</div> {user.managed_users.map((user) => (
-                    <div
-                        key={user.id}
-                        className={'detail-group'}
-                    >
-                        <span
-                            className={'detail-link'}
-                            onClick={() => openModal({ content: 'userDetails', contentId: user.id, type: 'dialog' } )}
-                        >
-                            {user.first_name} {user.last_name}
-                        </span>
-                    </div>
-                ))}</div>)  : null}
-        </div>
-    );
+    return <Details
+        structure={userStructure}
+        data={user}
+    />;
 };
 
 export default UserDetails;
