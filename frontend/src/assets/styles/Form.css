@@ -1,22 +1,20 @@
 .app-form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
     padding: 0 20px;
     align-items: flex-start;
 }
+
 .app-form .form-section {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 5px;
     width: 100%;
     transition: 0.3s ease-in-out;
 }
 
-.app-form .form-section+.form-section {
-    margin-top: 15px;
-}
 .app-form .form-section.vertical {
     flex-direction: column;
 }
@@ -30,20 +28,37 @@
     text-transform: uppercase;
     font-weight: 400;
 }
+
+.app-form .app-form-header {
+    font-size: 2em;
+    margin :0;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+
 .app-form .form-group {
     display: flex;
     flex-direction: column;
     gap: 5px;
     transition: 0.3s ease-in-out;
 }
-.app-form .form-section .form-group {
-    flex: 0;
-    width: max(170px, 50%);
-}
 .app-form .form-group.disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+.app-form .form-group-label {
+    margin: 0;
+    padding: 0;
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
 .app-form .form-label {
     text-transform: uppercase;
     font-family: 'Roboto Condensed', sans-serif;
@@ -177,12 +192,22 @@
     outline: none;
 }
 
+.app-form .multi-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.app-form .multi-dropdown-item {
+    display: flex;
+}
+
 .app-form .dropdown-item {
     flex: 0;
     display: flex;
     align-items: center;
     width: max(170px, 50%);
 }
+
 .app-form .new-dropdown-button {
     width: fit-content;
 }
@@ -190,6 +215,7 @@
     opacity: 0.5;
     cursor: default;
 }
+
 
 .app-form .action-button {
     display: inline-flex;

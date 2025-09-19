@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import { useModals } from '../contexts/ModalContext';
 import Dropdown from './Dropdown';
 import Button from './Button';
 import MultiDropdown from './MultiDropdown';
 
-const EditForm = ({structure, data}) => {
+const EditForm = ({structure, data, style, className}) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
     useEffect(() => {
-        if (data && structure?.dataStructure) {
-            const newFormData = Object.values(structure.dataStructure).reduce((acc, config) => {
+        if (data && structure?.inputs) {
+            const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
                 const fieldType = config.type;
 
@@ -84,66 +84,117 @@ const EditForm = ({structure, data}) => {
         }
     };
 
+    const inputSections = useMemo(() => {
+        const sections = {};
+        Object.entries(structure.inputs).forEach(([key, config]) => {
+            const { section } = config;
+            if (!sections[section]) {
+                sections[section] = {};
+            }
+            sections[section][key] = {...config };
+        });
+        if (structure.sections)
+        {
+            Object.entries(structure.sections).forEach(([key, config]) => {
+                if (config.header)
+                    sections[key].header = config.header;
+                if (config.style)
+                    sections[key].style = config.style;
+                if (config.className)
+                    sections[key].className = config.className;
+            })
+        }
+
+        return sections;
+    }, [structure]);
+
     return <form 
-                className={'app-form'}
+                className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}
+                style={style}
             >
-                {Object.values(structure).map(section => {
-                        if (section.type === 'header')
-                            return <h1>{section.title}</h1>
-                        else if (section.type === 'section') {
-                            return <div className='form-section'>
-                                {
-                                    Object.values(section).map((group, index) => {
-                                        if (typeof group === 'string') return null;
+                { structure.header && structure.header.title &&
+                    <h1 className={'app-form-header'}>{structure.header.title}</h1> }
 
-                                        let input;
-                                        const className = 'form-group' + (group.className ? ' ' + group.className : '');
-                                        
-                                        if (group.type === 'input')
-                                            input = <input
-                                                        className={'form-input'}
-                                                        type='text'
-                                                        name={group.dataField}
-                                                        value={formData[group.dataField]}
-                                                        onChange={handleChange}
-                                                        placeholder={`${group.label}`}
-                                                        required={group.required}
-                                                    />;
+                {Object.values(inputSections).map((section, key) => {
+                    return <div
+                        key={key}
+                        className={'form-section' + (section.className ? ' ' + section.className : '')}
+                        style={section.style}
+                    >
+                        {section.header && <h2>{section.header}</h2>}
+                        {Object.entries(section).map(([key, group], index) => {
+                            if (['header', 'style', 'className'].includes(key))
+                                return null;
 
-                                        if (group.type === 'textbox')
-                                            input = <textbox/>; 
+                            let input;
 
-                                        if (group.type === 'checkbox')
-                                            input = <input type={'checkbox'}/>; 
+                            if (group.inputType === 'input')
+                                input = <input
+                                    className={'form-input'}
+                                    type={'text'}
+                                    name={group.field}
+                                    value={formData[group.field]}
+                                    onChange={handleChange}
+                                    placeholder={`${group.inputLabel}`}
+                                    required={group.required}
+                                />;
 
-                                        if (group.type === 'dropdown')
-                                            input = <Dropdown 
-                                                        onChange={handleChange}
-                                                    />; 
+                            if (group.inputType === 'textarea')
+                                input = <textarea
+                                    className={'form-textarea'}
+                                    name={group.field}
+                                    value={formData[group.field]}
+                                    onChange={handleChange}
+                                    placeholder={`${group.inputLabel}`}
+                                    required={group.required}
+                                />;
 
-                                        if (group.type === 'multi-dropdown')
-                                            input = <MultiDropdown
-                                                        formData={formData}
-                                                        dataField={group.dataField}
-                                                        onChange={handleChange}
-                                                        itemSource={group.itemSource}
-                                                        itemNameField={group.itemNameField}
-                                                    />;
-                                                    
-                                        return (
-                                            <div key={index} className={className} style={group.style}>
-                                                {group.label && <label>{group.label}</label>}
-                                                {input}
-                                            </div>
-                                        );
-                                    })
-                                }
-                            </div>
-                        } else
-                            return null;
-                    })
-                }
+                            if (group.inputType === 'checkbox')
+                                input = <input
+                                    className={'form-checkbox'}
+                                    type={'checkbox'}
+                                    id={group.field}
+                                    name={group.field}
+                                    checked={formData[group.field]}
+                                    onChange={handleChange}
+                                />;
+
+                            if (group.inputType === 'dropdown')
+                                input = <Dropdown
+                                    className={group.className}
+                                    placeholder={`${group.inputLabel}`}
+                                    name={group.field}
+                                    value={formData[group.field]}
+                                    options={group.options}
+                                    onChange={handleChange}
+                                />;
+
+                            if (group.inputType === 'multi-dropdown')
+                                input = <MultiDropdown
+                                    formData={formData}
+                                    dataField={group.field}
+                                    onChange={handleChange}
+                                    itemSource={group.itemSource}
+                                    itemNameField={group.itemNameField}
+                                    itemName={group.itemName}
+                                    itemExcludedIds={group.itemExcludedIds}
+                                />;
+
+                            return (
+                                <div
+                                    key={index}
+                                    className={'form-group' + (group.className ? ' ' + group.className : '')}
+                                    style={group.style}
+                                >
+                                    {group.label && <h3 className={'form-group-label'}>{group.label}</h3>}
+                                    {input} {group.inputLabel && <label htmlFor={group.field}>{group.inputLabel}</label>}
+                                </div>
+                            );
+
+                        })}
+                    </div>
+                })}
                 <div className='form-section align-center'>
                     <Button
                         className={'save-button'}
