@@ -37,7 +37,7 @@ const Dropdown = ({
     const handleOptionClick = (option, isOpen) => {
         if (isOpen) {
             const syntheticEvent = {
-                target: { name, value: option },
+                target: { name, type: 'dropdown', value: option },
                 // eslint-disable-next-line
                 persist: () => {}, // For React event pooling compatibility
             };

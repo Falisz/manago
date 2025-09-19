@@ -1,0 +1,89 @@
+import React from 'react';
+import Dropdown from './Dropdown';
+import Button from './Button';
+
+const MultiDropdown = ({
+    formData, 
+    dataField, 
+    onChange, 
+    itemSource, 
+    itemNameField, 
+    itemIdField='id', 
+    itemName='Item', 
+    itemExcludedIds
+}) => {
+    
+    if (formData === undefined || !dataField || !onChange || !itemSource || !itemNameField) {
+        return <div>
+                Error using MultiDropdown component. Lacking props:
+                {formData === undefined && ' formData'}
+                {!dataField && ' dataField'}
+                {!onChange && ' onChange'}
+                {!itemSource && ' itemSource'}
+                {!itemNameField && ' itemNameField'}
+            </div>
+    }
+    
+    const newItem = itemSource && !formData[dataField]?.includes(null) && formData[dataField]?.length < itemSource.length;
+
+    const getOptions = (index) => {
+        
+        const currentSelected: boolean = formData[dataField] && formData[dataField][index];
+        const idField: string = itemIdField;
+        const nameField: Array<string> | string | null = itemNameField;
+
+        const filteredSource = itemSource?.filter(item => 
+            ( (currentSelected && item[idField] === currentSelected) || 
+                (!formData[dataField]?.includes(item[idField]) && !itemExcludedIds?.includes(item[idField])))).map(item => {
+                    let name;
+                    
+                    if (Array.isArray(nameField))
+                        name = nameField.map(field => item[field]).join(' ');
+                    else 
+                        name = item[nameField] || item[idField];
+
+                    return {id: item[idField], name};
+            }) || [];
+
+        return Array.from(filteredSource);
+    }
+
+    return <>
+        { itemSource?.length === 0 ? (<p>No {itemName}s available.</p>) : (
+            <>
+                <div className={'multi-dropdown'}>
+                    {formData[dataField]?.map((itemId, index) => (
+                        <div key={index} className='multi-dropdown-item'>
+                            <Dropdown
+                                name={dataField}
+                                value={itemId}
+                                options={getOptions(index)}
+                                onChange={(e) => onChange(e, 'set', index)}
+                                placeholder={`Select ${itemName}`}
+                                noneAllowed={true}
+                            />
+                            {(index > 0 || formData[dataField][0] !== null) && (
+                                <Button
+                                    className={'remove-button'}
+                                    onClick={() => onChange({target: {name: dataField, type: 'dropdown'}, persist: () => {}}, 'del', index)}
+                                    icon={'cancel'}
+                                    transparent={true}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
+                <Button
+                    className={'new-dropdown-button'}
+                    onClick={() => onChange({target: {name: dataField, type: 'dropdown'}, persist: () => {}}, 'add')}
+                    icon={'add_circle'}
+                    label={`Add Another ${itemName}`}
+                    disabled={!newItem}
+                    transparent={true}
+                />
+            </>
+        )}
+    </>;
+}
+
+export default MultiDropdown;
