@@ -14,7 +14,8 @@ import Logout from './components/Logout';
 import NotFound from './components/NotFound';
 import NoAccess from './components/NoAccess';
 import Loader from './components/Loader';
-import DetailsTest from './components/test'
+import DetailsTest from './components/test';
+import EditTest from './components/test2';
 import StaffView from './components/StaffView';
 import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
@@ -106,6 +107,7 @@ const AppContent = () => {
                         </Route>
                     ))}
                     <Route path='test' element={<DetailsTest />} />
+                    <Route path='edit-test' element={<EditTest />} />
                     <Route path="logout" element={ <Logout /> } />
                     <Route path="*" element={<NotFound />} />
                 </Route>
