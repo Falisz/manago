@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useModals } from '../contexts/ModalContext';
 import Dropdown from './Dropdown';
 import Button from './Button';
-import MultiDropdown from './MultiDropdown.tsx';
+import MultiDropdown from './MultiDropdown';
 
-// npm install --save-dev @types/react @types/react-dom
-
-const EditForm = ({structure, data}: {structure: any, data: any}) => {
+const EditForm = ({structure, data}) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
@@ -79,11 +77,10 @@ const EditForm = ({structure, data}: {structure: any, data: any}) => {
                         openModal({content: structure.onSave.openNew , contentId: savedItem.id});
                     }, 350);
                 } else {
-                    refreshData('user', userId);
+                    refreshData('user', data.id);
                 }
                 refreshData('users', true);
             }, 10);
-            setFormData(FORM_CLEAN_STATE);
         }
     };
 

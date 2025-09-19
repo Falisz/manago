@@ -2,40 +2,7 @@ import React, {useRef} from 'react';
 import Button from "./Button";
 import Icon from "./Icon";
 
-interface StructureConfig {
-    header: DetailsHeaderConfig;
-    [section: string]: DetailsSectionConfig;
-}
-interface DetailsHeaderConfig {
-    type: string;
-    titlePrefix?: DataFieldConfig;
-    title?: DataFieldConfig;
-    buttons?: Record<string, ButtonConfig>;
-}
-interface DetailsSectionConfig {
-    type: string,
-    header: DataFieldConfig,
-    [group: string]: DataFieldConfig,
-}
-interface ButtonConfig {
-    className?: string;
-    onClick: (id: string | number) => void;
-    title?: string;
-    icon?: string;
-    transparent?: boolean;
-}
-interface DataFieldConfig {
-    dataField: string | string[];
-    dataType: string;
-    text?: string;
-    className?: string;
-    title?: string;
-    style?: React.CSSProperties;
-    items?: DataFieldConfig[];
-    newItem?: DataFieldConfig;
-}
-
-const DetailsHeader = ({structure, data}: {structure: DetailsHeaderConfig, data: any}) =>
+const DetailsHeader = ({structure, data}) =>
     <div className='app-details-header'>
         {Object.entries(structure).map(([key, value]) => {
             if (key==='type' || !value)
@@ -83,7 +50,7 @@ const DetailsHeader = ({structure, data}: {structure: DetailsHeaderConfig, data:
         })}
     </div>
 
-const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, data: any}) => {
+const DetailsSection = ({structure, data}) => {
     const isEmpty = useRef(true);
 
     const content = <div className='app-details-section'>
@@ -104,21 +71,28 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
 
             } else if (value.type === 'data-group') {
                 let content = value.placeholder;
+                let isGroupEmpty = true;
 
                 if (value.dataType === 'string') {
                     content = data[value.dataField];
-                    if (content !== null)
+                    if (content !== null) {
                         isEmpty.current = false;
+                        isGroupEmpty = false;
+                    }
 
                 } else if (value.dataType === 'number') {
                     content = data[value.dataField].toString();
-                    if (content !== null)
+                    if (content !== null) {
                         isEmpty.current = false;
+                        isGroupEmpty = false;
+                    }
 
                 } else if (value.dataType === 'boolean') {
                     const val = data[value.dataField];
-                    if (val !== null)
+                    if (val !== null) {
                         isEmpty.current = false;
+                        isGroupEmpty = false;
+                    }
 
                     content = <div className={'data-group linear'}>
                         {val ?
@@ -127,12 +101,39 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
                         {val ? value.trueValue : value.falseValue}
                     </div>;
 
+                } else if (value.dataType === 'item') {
+
+                    const item = data[value.dataField];
+
+                    if (!item) return null;
+
+                    const itemStruct = value.item;
+                    const itemId = item[itemStruct.idField];
+
+                    isGroupEmpty = false;
+                    let itemName;
+                    if (Array.isArray(itemStruct.dataField)) {
+                        itemName = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
+                    } else if (typeof value.dataField === 'string') {
+                        itemName = item[itemStruct.dataField];
+                    } else {
+                        itemName = itemStruct.text || '';
+                    }
+                    content = <div
+                        key={itemId}
+                        className={'data-group' + (itemStruct.onClick ? ' clickable' : '')}
+                        onClick={() => itemStruct.onClick(itemId)}
+                    >
+                        {itemName}
+                    </div>
+
                 } else if (value.dataType === 'list') {
 
                     const items = data[value.dataField];
 
                     if (items && items.length > 0) {
                         isEmpty.current = false;
+                        isGroupEmpty = false;
                         content = Object.values(items).map((item, index) => {
                             const itemStruct = value.items;
                             if (!itemStruct)
@@ -160,6 +161,9 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
                     }
                 }
 
+                if (value.hideEmpty && isGroupEmpty)
+                    return null;
+
                 return <div className={'data-group' + (value.linear ? ' linear' : '')} title={value.label}>
                     { value.label && <label>{value.label}</label>}
                     { content }
@@ -183,12 +187,7 @@ const DetailsSection = ({structure, data}: {structure: DetailsSectionConfig, dat
 }
 
 
-const Details = ({structure, data, className, style}: {
-    structure: StructureConfig,
-    data: any,
-    className?: string,
-    style?: React.CSSProperties
-}) =>
+const Details = ({structure, data, className, style}) =>
     <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
         {Object.values(structure).map((value, index) => {
             if (value.type === 'header')

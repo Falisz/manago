@@ -26,7 +26,7 @@ const MultiDropdown = ({
     
     const newItem = itemSource && !formData[dataField]?.includes(null) && formData[dataField]?.length < itemSource.length;
 
-    const getOptions = (index) => {
+    const getOptions = (index: number) => {
         
         const currentSelected: boolean = formData[dataField] && formData[dataField][index];
         const idField: string = itemIdField;

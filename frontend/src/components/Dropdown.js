@@ -11,7 +11,7 @@ const Dropdown = ({
                       noneAllowed = false,
                       upperCaseNames = false,
                       searchable = true,
-                      style
+                      style = null
                   }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');

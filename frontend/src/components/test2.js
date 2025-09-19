@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import EditForm from './EditForm.tsx';
+import EditForm from './EditForm';
 import useUser from '../hooks/useUser';
 import useRole from '../hooks/useRole';
 
