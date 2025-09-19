@@ -128,6 +128,8 @@ const EditForm = ({structure, data, style, className}) => {
                                 return null;
 
                             let input;
+                            // TODO: Make Input, Checkbox and Textarea custom components
+                            // TODO: Add ComboDropdown input option for Bulk assignments <Add/Remove>+<option>
 
                             if (group.inputType === 'input')
                                 input = <input
