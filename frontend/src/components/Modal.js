@@ -3,7 +3,7 @@ import React, {useEffect, useRef} from 'react';
 import '../assets/styles/Modal.css';
 import Button from "./Button";
 
-const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton = true, zIndex = 1000 }) => {
+const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton = true, zIndex = 1000, style={} }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {
@@ -49,7 +49,7 @@ const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton 
             />
             <div
                 className={`app-modal-content app-scroll app-overflow-y ${type} ${!isVisible ? 'hidden' : ''}`}
-                style={{ zIndex: zIndex + 1 }}
+                style={{ ...style, zIndex: zIndex + 1 }}
                 tabIndex='-1'
                 ref={modalRef}
             >

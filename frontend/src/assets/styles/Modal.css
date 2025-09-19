@@ -31,7 +31,6 @@
     background: var(--background-gradient);
     padding: 25px;
     width: 50%;
-    overflow: unset;
     height: calc(100% - 50px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     outline: none;

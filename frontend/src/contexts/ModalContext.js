@@ -239,6 +239,7 @@ export const ModalProvider = ({ children }) => {
                     key={index}
                     type={modal.type}
                     isVisible={modal.isVisible}
+                    style={modal.style}
                     zIndex={1000 + index * 10}
                     onClose={closeTopModal}
                 >
