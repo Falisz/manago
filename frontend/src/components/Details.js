@@ -19,7 +19,8 @@ const DetailsHeader = ({structure, data}) =>
             }
 
             if (key==='titlePrefix') {
-                return <div 
+                return <div
+                    key={'title-prefix'}
                     className={'details-title-prefix' + (value.className ? ' ' + value.className : '')}
                     title={value.title}
                     style={value.style}
@@ -28,6 +29,7 @@ const DetailsHeader = ({structure, data}) =>
                 </div>
             } else if (key==='title')
                 return <div
+                    key={'title'}
                     className={'details-title' + (value.className ? ' ' + value.className : '')}
                     title={value.title}
                     style={value.style}
@@ -59,7 +61,7 @@ const DetailsSection = ({structure, data}) => {
                 return null;
 
             if (value.type === 'section-header') {
-                return <div className='section-header'>
+                return <div key={'section-header'} className='section-header'>
                     {value.text}
                     {value.editButton && <Button
                         onClick={() => value.editButton.onClick(data)}
@@ -164,7 +166,7 @@ const DetailsSection = ({structure, data}) => {
                 if (value.hideEmpty && isGroupEmpty)
                     return null;
 
-                return <div className={'data-group' + (value.linear ? ' linear' : '')} title={value.label}>
+                return <div key={key} className={'data-group' + (value.linear ? ' linear' : '')} title={value.label}>
                     { value.label && <label>{value.label}</label>}
                     { content }
                     { value.newItem && <Button
