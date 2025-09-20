@@ -6,7 +6,7 @@ import MultiDropdown from './MultiDropdown';
 import Checkbox from "./Checkbox";
 import ComboDropdown from "./ComboDropdown";
 
-const EditForm = ({structure, data, style, className}) => {
+const EditForm = ({structure, data, preset, style, className}) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
@@ -24,6 +24,18 @@ const EditForm = ({structure, data, style, className}) => {
                     }
 
                     acc[fieldName] = value;
+                } else if (preset && Array.isArray(preset)) {
+                    const presetValue = preset.find(item => item.field === fieldName);
+
+                    if (presetValue && presetValue.value !== undefined) {
+                        acc[fieldName] = presetValue.value;
+                    } else {
+                        if (fieldType === 'id-list') {
+                            acc[fieldName] = [];
+                        } else {
+                            acc[fieldName] = null;
+                        }
+                    }
                 } else {
                     if (fieldType === 'id-list') {
                         acc[fieldName] = [];
@@ -37,7 +49,7 @@ const EditForm = ({structure, data, style, className}) => {
 
             setFormData(newFormData);
         }
-    }, [data, structure]);
+    }, [data, preset, structure]);
 
     const handleChange = (e, mode='set', index) => {
         const {name, value, type, checked} = e.target;
@@ -141,8 +153,6 @@ const EditForm = ({structure, data, style, className}) => {
                                 return null;
 
                             let input;
-                            // TODO: Make Input and Textarea custom components
-                            // TODO: Add ComboDropdown input option for Bulk assignments <Add/Remove>+<option>
 
                             if (group.inputType === 'input')
                                 input = <input

@@ -119,12 +119,18 @@ const EditTest = () => {
         },
     };
 
+    const preset = [
+        {field: 'roles', value: [11]},
+        {field: 'manager_view_access', value: true}
+    ];
+
     if (usersLoading || rolesLoading)
         return <Loader/>
 
     return <EditForm
         structure={exampleStructure}
         className={'seethrough-3'}
+        preset={preset}
         style={{padding: '20px'}}
     />;
 }
