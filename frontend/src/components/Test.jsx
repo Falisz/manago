@@ -135,6 +135,7 @@ const EditTest = () => {
 
     return <EditForm
         structure={exampleStructure}
+        data={user}
         className={'seethrough-3'}
         style={{padding: '20px'}}
     />;

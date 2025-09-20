@@ -11,6 +11,11 @@ const EditForm = ({structure, data, preset, style, className}) => {
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
     useEffect(() => {
+        // console.log('Effect runs');
+        // console.log('Dependency data:', data);
+        // console.log('Dependency preset:', preset);
+        // console.log('Dependency structure:', structure);
+
         if (structure?.inputs) {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
@@ -30,14 +35,14 @@ const EditForm = ({structure, data, preset, style, className}) => {
                     if (presetValue && presetValue.value !== undefined) {
                         acc[fieldName] = presetValue.value;
                     } else {
-                        if (fieldType === 'id-list') {
+                        if (fieldType.includes('list')) {
                             acc[fieldName] = [];
                         } else {
                             acc[fieldName] = null;
                         }
                     }
                 } else {
-                    if (fieldType === 'id-list') {
+                    if (fieldType.includes('list')) {
                         acc[fieldName] = [];
                     } else {
                         acc[fieldName] = null;
@@ -76,6 +81,7 @@ const EditForm = ({structure, data, preset, style, className}) => {
                         }
                     }
                     if (mode === 'add') {
+                        console.log('adding');
                         return [...prev[name], null];
                     }
                     return value || prev[name];
@@ -131,9 +137,9 @@ const EditForm = ({structure, data, preset, style, className}) => {
         return sections;
     }, [structure]);
 
-    console.log(formData);
+    // console.log(formData);
 
-    return <form 
+    return <form
                 className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}
                 style={style}
