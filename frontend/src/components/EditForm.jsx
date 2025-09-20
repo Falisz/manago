@@ -90,7 +90,7 @@ const EditForm = ({structure, data, preset, style, className}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const savedItem = await structure.onSubmit.onSave(formData, data.id);
+        const savedItem = await structure.onSubmit.onSave(formData, data?.id || null);
         if (savedItem) {
             setDiscardWarning(false);
             setTimeout(() => {

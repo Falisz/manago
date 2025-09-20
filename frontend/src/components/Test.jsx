@@ -28,21 +28,24 @@ const EditTest = () => {
                 field: 'first_name',
                 type: 'string',
                 inputType: 'input',
-                label: 'First Name'
+                label: 'First Name',
+                required: true
             },
             lastName: {
                 section: 0,
                 label: 'Last Name',
                 field: 'last_name',
                 type: 'string',
-                inputType: 'input'
+                inputType: 'input',
+                required: true
             },
             email: {
                 section: 1,
                 label: 'Email Address',
                 field: 'email',
                 type: 'string',
-                inputType: 'input'
+                inputType: 'input',
+                required: true
             },
             login: {
                 section: 1,
@@ -119,10 +122,13 @@ const EditTest = () => {
         },
     };
 
-    const preset = [
-        {field: 'roles', value: [11]},
-        {field: 'manager_view_access', value: true}
-    ];
+    // const preset = [
+    //     {field: 'roles', value: [11]},
+    //     {field: 'manager_view_access', value: true}
+    // ];
+    // const preset = [
+    //     {field: 'roles', value: [1]},
+    // ]
 
     if (usersLoading || rolesLoading)
         return <Loader/>
@@ -130,7 +136,6 @@ const EditTest = () => {
     return <EditForm
         structure={exampleStructure}
         className={'seethrough-3'}
-        preset={preset}
         style={{padding: '20px'}}
     />;
 }
