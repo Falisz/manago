@@ -3,24 +3,35 @@ import { useModals } from '../contexts/ModalContext';
 import Dropdown from './Dropdown';
 import Button from './Button';
 import MultiDropdown from './MultiDropdown';
+import Checkbox from "./Checkbox";
+import ComboDropdown from "./ComboDropdown";
 
 const EditForm = ({structure, data, style, className}) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
     useEffect(() => {
-        if (data && structure?.inputs) {
+        if (structure?.inputs) {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
                 const fieldType = config.type;
 
-                let value = data[fieldName];
+                if (data) {
+                    let value = data[fieldName];
 
-                if (fieldType === 'id-list' && Array.isArray(value)) {
-                    value = value.map(item => item.id);
+                    if (fieldType === 'id-list' && Array.isArray(value)) {
+                        value = value.map(item => item.id);
+                    }
+
+                    acc[fieldName] = value;
+                } else {
+                    if (fieldType === 'id-list') {
+                        acc[fieldName] = [];
+                    } else {
+                        acc[fieldName] = null;
+                    }
                 }
 
-                acc[fieldName] = value;
                 return acc;
             }, {});
 
@@ -55,7 +66,7 @@ const EditForm = ({structure, data, style, className}) => {
                     if (mode === 'add') {
                         return [...prev[name], null];
                     }
-                    return prev[name];
+                    return value || prev[name];
                 } else {
                     return type === 'checkbox' ? checked : value;
                 }
@@ -67,19 +78,19 @@ const EditForm = ({structure, data, style, className}) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const savedItem = await structure.onSave.saveItem(formData, data.id);
+        const savedItem = await structure.onSubmit.onSave(formData, data.id);
         if (savedItem) {
             setDiscardWarning(false);
             setTimeout(() => {
                 closeTopModal();
-                if (!data) {
+                if (!data && structure.onSubmit.openIfNew) {
                     setTimeout(() => {
-                        openModal({content: structure.onSave.openNew , contentId: savedItem.id});
+                        openModal({content: structure.onSubmit.openIfNew , contentId: savedItem.id});
                     }, 350);
-                } else {
-                    refreshData('user', data.id);
                 }
-                refreshData('users', true);
+                if (structure.onSubmit.refreshTriggers) {
+                    structure.onSubmit.refreshTriggers.forEach(([type, value]) => refreshData(type, value));
+                }
             }, 10);
         }
     };
@@ -108,6 +119,8 @@ const EditForm = ({structure, data, style, className}) => {
         return sections;
     }, [structure]);
 
+    console.log(formData);
+
     return <form 
                 className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}
@@ -124,11 +137,11 @@ const EditForm = ({structure, data, style, className}) => {
                     >
                         {section.header && <h2>{section.header}</h2>}
                         {Object.entries(section).map(([key, group], index) => {
-                            if (['header', 'style', 'className'].includes(key))
+                            if ( ['header', 'style', 'className'].includes(key) )
                                 return null;
 
                             let input;
-                            // TODO: Make Input, Checkbox and Textarea custom components
+                            // TODO: Make Input and Textarea custom components
                             // TODO: Add ComboDropdown input option for Bulk assignments <Add/Remove>+<option>
 
                             if (group.inputType === 'input')
@@ -136,9 +149,9 @@ const EditForm = ({structure, data, style, className}) => {
                                     className={'form-input'}
                                     type={'text'}
                                     name={group.field}
-                                    value={formData[group.field]}
+                                    value={formData[group.field] || ''}
                                     onChange={handleChange}
-                                    placeholder={`${group.inputLabel}`}
+                                    placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
                                 />;
 
@@ -146,21 +159,20 @@ const EditForm = ({structure, data, style, className}) => {
                                 input = <textarea
                                     className={'form-textarea'}
                                     name={group.field}
-                                    value={formData[group.field]}
+                                    value={formData[group.field] || ''}
                                     onChange={handleChange}
-                                    placeholder={`${group.inputLabel}`}
+                                    placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
                                 />;
 
                             if (group.inputType === 'checkbox')
-                                input = <input
-                                    className={'form-checkbox'}
-                                    type={'checkbox'}
+                                input = <Checkbox
                                     id={group.field}
                                     name={group.field}
-                                    checked={formData[group.field]}
+                                    checked={formData[group.field] || false}
                                     onChange={handleChange}
-                                />;
+                                    label={group.inputLabel}
+                                />
 
                             if (group.inputType === 'dropdown')
                                 input = <Dropdown
@@ -183,6 +195,18 @@ const EditForm = ({structure, data, style, className}) => {
                                     itemExcludedIds={group.itemExcludedIds}
                                 />;
 
+                            if (group.inputType === 'combo-dropdown')
+                                input = <ComboDropdown
+                                    formData={formData}
+                                    dataField={group.field}
+                                    onChange={handleChange}
+                                    itemSource={group.itemSource}
+                                    itemNameField={group.itemNameField}
+                                    itemName={group.itemName}
+                                    modeField={group.modeField}
+                                    modeOptions={group.modeOptions}
+                                />;
+
                             return (
                                 <div
                                     key={index}
@@ -190,7 +214,7 @@ const EditForm = ({structure, data, style, className}) => {
                                     style={group.style}
                                 >
                                     {group.label && <h3 className={'form-group-label'}>{group.label}</h3>}
-                                    {input} {group.inputLabel && <label htmlFor={group.field}>{group.inputLabel}</label>}
+                                    {input}
                                 </div>
                             );
 

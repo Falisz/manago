@@ -2,11 +2,12 @@ import React, {useEffect} from 'react';
 import EditForm from './EditForm';
 import useUser from '../hooks/useUser';
 import useRole from '../hooks/useRole';
+import Loader from "./Loader";
 
 const EditTest = () => {
     const { user, fetchUser } = useUser();
-    const { users: managers, fetchUsers } = useUser();
-    const { roles, fetchRoles} = useRole();
+    const { usersLoading, users: managers, fetchUsers } = useUser();
+    const { rolesLoading, roles, fetchRoles} = useRole();
 
     useEffect(() => {
         fetchRoles().then();
@@ -95,20 +96,34 @@ const EditTest = () => {
                 type: 'string',
                 inputType: 'textarea',
             },
+            comboTest: {
+                section: 2,
+                label: 'Combo Test',
+                field: 'combo-test',
+                type: 'number',
+                inputType: 'combo-dropdown',
+                itemSource: roles,
+                itemNameField: 'name',
+                itemName: 'Role',
+                modeField: 'combo-test-mode',
+                modeOptions: [{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]
+            }
         },
         sections: {
             2: {style: {flexDirection: 'column'}},
         },
-        onSave: {
-            saveItem: (a, b) => console.log(a, b),
-            refreshTriggers: ['user', 'users'],
-            openNew: 'userDetails'
+        onSubmit: {
+            onSave: (a, b) => console.log(a, b),
+            refreshTriggers: [['users', true], (user? ['user', user.id] : null)],
+            openIfNew: 'userDetails'
         },
     };
 
+    if (usersLoading || rolesLoading)
+        return <Loader/>
+
     return <EditForm
         structure={exampleStructure}
-        data={user}
         className={'seethrough-3'}
         style={{padding: '20px'}}
     />;

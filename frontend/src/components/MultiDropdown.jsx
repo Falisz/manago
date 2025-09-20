@@ -3,15 +3,15 @@ import Dropdown from './Dropdown';
 import Button from './Button';
 
 const MultiDropdown = ({
-    formData, 
-    dataField, 
-    onChange, 
-    itemSource, 
-    itemNameField, 
-    itemIdField='id', 
-    itemName='Item', 
-    itemExcludedIds
-}) => {
+                           formData,
+                           dataField,
+                           onChange,
+                           itemSource,
+                           itemNameField,
+                           itemIdField = 'id',
+                           itemName = 'Item',
+                           itemExcludedIds
+                       }) => {
     
     if (formData === undefined || !dataField || !onChange || !itemSource || !itemNameField) {
         return <div>
