@@ -1,5 +1,5 @@
 // FRONTEND/components/Teams/Index.js
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useTeam from '../../hooks/useTeam';
 import Button from '../Button';
@@ -13,7 +13,7 @@ const TeamsIndex = () => {
 
     useEffect(() => {
         if (!teams) {
-            fetchTeams().then();
+            fetchTeams(true, true).then();
         }
     }, [fetchTeams, teams]);
 
@@ -80,17 +80,6 @@ const TeamsIndex = () => {
 
     }
 
-    const collectAllTeamIds = useCallback((teamList) => {
-        let ids = [];
-        teamList.forEach(team => {
-            ids.push(team.id);
-            if (team.subteams && team.subteams.length > 0) {
-                ids = [...ids, ...collectAllTeamIds(team.subteams)];
-            }
-        });
-        return ids;
-    }, []);
-
     const fields = {
         name: {
             title: 'Name',
@@ -133,17 +122,18 @@ const TeamsIndex = () => {
         { id: 'edit', label: 'Edit Team', selectionMode: false,
             action: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
         { id: 'assign-member', label: 'Edit Members', selectionMode: false,
-            action: (props) => openModal({content: 'teamMemberAssignment', type: 'dialog', data: [props]}) },
+            action: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) },
         { id: 'delete', label: 'Delete Team', selectionMode: false,
             action: (props) => handleTeamDelete(props) },
         { id: 'select-all', label: 'Select All', selectionMode: true,
-            action: () => setSelectedTeams(new Set(collectAllTeamIds(teams))) },
-        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
             action: () => setSelectedTeams(new Set(teams.map(team => team.id))) },
+        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
+            action: () => setSelectedTeams(new Set(teams.filter(team => team.parent_team === null).map(team => team.id))) },
         { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
             action: () => setSelectedTeams(new Set()) },
         { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
-            action: () => openModal({content: 'teamMemberAssignment', type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
+            action: () => openModal({content: 'teamUserBulkAssignment', style: {overflow: 'unset'},
+                type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
         { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
             action: () => handleTeamsDelete() },
     ];
@@ -179,7 +169,7 @@ const TeamsIndex = () => {
             </div>
 
             <Table
-                dataSource={teams}
+                dataSource={teams.filter(team => team.parent_team === null)}
                 fields={fields}
                 hasSelectableRows={true}
                 contextMenuActions={contextMenuActions}
