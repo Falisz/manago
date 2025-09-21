@@ -123,10 +123,14 @@ const DetailsSection = ({structure, data}) => {
                     }
                     content = <div
                         key={itemId}
-                        className={'data-group' + (itemStruct.onClick ? ' clickable' : '')}
-                        onClick={() => itemStruct.onClick(itemId)}
+                        className={'data-group'}
                     >
-                        {itemName}
+                        <span
+                            className={itemStruct.onClick ? 'app-clickable' : ''}
+                            onClick={() => itemStruct.onClick(itemId)}
+                        >
+                            {itemName}
+                        </span>
                     </div>
 
                 } else if (value.dataType === 'list') {
@@ -141,7 +145,7 @@ const DetailsSection = ({structure, data}) => {
                             if (!itemStruct)
                                 return null;
 
-                            const id = itemStruct.idField ? item[itemStruct.idField] : item['id'];
+                            const itemId = itemStruct.idField ? item[itemStruct.idField] : item['id'];
 
                             let name;
                             if (Array.isArray(itemStruct.dataField)) {
@@ -152,12 +156,36 @@ const DetailsSection = ({structure, data}) => {
                                 name = itemStruct.text || '';
                             }
 
+                            let suffix = null;
+                            if (itemStruct.suffix) {
+                                const subItem = item[itemStruct.suffix.dataField];
+                                const subItemId = subItem[itemStruct.suffix.idField];
+                                const subItemName = subItem[itemStruct.suffix.nameField];
+
+                                if ((itemStruct.suffix.condition === 'neq' && subItemId !== data['id']) ||
+                                    (itemStruct.suffix.condition === 'eq' && subItemId === data['id']) ||
+                                    !itemStruct.suffix.condition
+                                )
+                                    suffix = <span
+                                        className={itemStruct.onClick ? 'app-clickable' : ''}
+                                        onClick={() => itemStruct.suffix.onClick(subItemId)}
+                                    >
+                                        {subItemName}
+                                    </span>;
+                            }
+
                             return <div
                                 key={index}
-                                className={'data-group' + (itemStruct.onClick ? ' clickable' : '')}
-                                onClick={() => itemStruct.onClick(id)}
+                                className={'data-group linear'}
+                                style={suffix && {alignItems: 'baseline', gap: '5px'}}
                             >
-                                {name}
+                                <span
+                                    className={itemStruct.onClick ? 'app-clickable' : ''}
+                                    onClick={() => itemStruct.onClick(itemId)}
+                                >
+                                    {name}
+                                </span>
+                                {suffix && <small>({suffix})</small>}
                             </div>
                         });
                     }

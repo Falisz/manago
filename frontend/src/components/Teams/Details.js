@@ -64,7 +64,26 @@ const TeamDetails = ({ teamId }) => {
         return <h1>Team not found!</h1>;
     }
 
+    const userStructure = {
+        idField: 'id',
+        dataField: ['first_name', 'last_name'],
+        onClick: (id) => openModal({ content: 'userDetails', contentId: id, type: 'dialog' }),
+        suffix: {
+            dataField: 'team',
+            idField: 'id',
+            nameField: 'name',
+            condition: 'neq',
+            onClick: (id) => openModal({content: 'teamDetails', contentId: id, type: 'dialog' }),
+        }
+    };
+
     const teamStructure = {
+        idField: 'id',
+        dataField: 'name',
+        onClick: (id) => {openModal({ content: 'teamDetails', contentId: id, type: 'dialog' })}
+    }
+
+    const detailsStructure = {
         header: {
             type: 'header',
             titlePrefix: {
@@ -107,11 +126,7 @@ const TeamDetails = ({ teamId }) => {
                 dataType: 'item',
                 dataField: 'parent',
                 hideEmpty: true,
-                item: {
-                    idField: 'id',
-                    dataField: 'name',
-                    onClick: (id) => {openModal({ content: 'teamDetails', contentId: id, type: 'dialog' })}
-                }
+                item: teamStructure
             },
             subTeams: {
                 type: 'data-group',
@@ -119,11 +134,7 @@ const TeamDetails = ({ teamId }) => {
                 dataType: 'list',
                 dataField: 'sub_teams',
                 placeholder: 'No Roles assigned.',
-                items: {
-                    idField: 'id',
-                    dataField: 'name',
-                    onClick: (id) => {openModal({ content: 'teamDetails', contentId: id, type: 'dialog' })}
-                },
+                items: teamStructure,
                 newItem: {
                     label: 'Add Subteam',
                     onClick: () => openModal({ content: 'subteamNew', parentId: team.id })
@@ -142,11 +153,7 @@ const TeamDetails = ({ teamId }) => {
                 dataType: 'list',
                 dataField: 'managers',
                 placeholder: 'No Managers assigned.',
-                items: {
-                    idField: 'id',
-                    dataField: ['first_name', 'last_name'],
-                    onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })},
-                }
+                items: userStructure
             },
             leaders: {
                 type: 'data-group',
@@ -154,11 +161,7 @@ const TeamDetails = ({ teamId }) => {
                 dataType: 'list',
                 dataField: 'leaders',
                 placeholder: 'No Leaders assigned.',
-                items: {
-                    idField: 'id',
-                    dataField: ['first_name', 'last_name'],
-                    onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
-                }
+                items: userStructure
             },
             members: {
                 type: 'data-group',
@@ -166,17 +169,13 @@ const TeamDetails = ({ teamId }) => {
                 dataType: 'list',
                 dataField: 'members',
                 placeholder: 'No Members assigned.',
-                items: {
-                    idField: 'id',
-                    dataField: ['first_name', 'last_name'],
-                    onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
-                }
+                items: userStructure
             },
         }
     }
 
     return <Details
-        structure={teamStructure}
+        structure={detailsStructure}
         data={team}
     />
 };
