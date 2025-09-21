@@ -9,6 +9,7 @@ const ComboDropdown = ({
                            itemNameField,
                            itemIdField = 'id',
                            itemName = 'Item',
+                           itemExcludedIds,
                            modeField,
                            modeOptions,
                        }) => {
@@ -17,7 +18,8 @@ const ComboDropdown = ({
         const idField= itemIdField;
         const nameField = itemNameField;
 
-        const filteredSource = itemSource?.map(item => {
+        const filteredSource = itemSource?.filter(item =>
+             !formData[dataField]?.includes(item[idField]) && !itemExcludedIds?.includes(item[idField]) ).map(item => {
             let name;
 
             if (Array.isArray(nameField))

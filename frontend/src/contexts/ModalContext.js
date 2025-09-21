@@ -3,7 +3,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useSearchParams } from 'react-router-dom';
 import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
-import UserEdit, {UserRoleAssignment, UserRoleBulkAssignment} from '../components/Users/Edit';
+import UserEdit, {
+    UserRoleAssignment,
+    UserManagerAssignment,
+    UserRoleBulkAssignment,
+    UserManagerBulkAssignment
+} from '../components/Users/Edit';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
 import TeamDetails from '../components/Teams/Details';
@@ -126,9 +131,9 @@ export const ModalProvider = ({ children }) => {
             case 'userRoleBulkAssignment':
                 return <UserRoleBulkAssignment users={modal.data} />;
             case 'userManagerAssignment':
-                return <InWorks title={'User Manager Assignment'} modal={true} icon={'upcoming'} />;
+                return <UserManagerAssignment user={modal.data} />;
             case 'userManagerBulkAssignment':
-                return <InWorks title={'User Manager Bulk Assignment'} modal={true} icon={'upcoming'} />;
+                return <UserManagerBulkAssignment users={modal.data} />;
             case 'userNew':
                 return <UserEdit />;
             case 'employeeNew':

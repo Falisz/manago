@@ -44,12 +44,16 @@ const RoleEdit = ({ roleId }) => {
         },
     }), [saveRole, role, roleId]);
 
+    const roleData = useMemo(() => {
+        return role ? role : {};
+    }, [role]);
+
     if (loading) return <Loader />;
 
     return (
         <EditForm
             structure={formStructure}
-            data={roleId && role}
+            presetData={roleData}
         />
     );
 };

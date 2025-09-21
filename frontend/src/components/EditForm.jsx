@@ -6,45 +6,31 @@ import MultiDropdown from './MultiDropdown';
 import Checkbox from "./Checkbox";
 import ComboDropdown from "./ComboDropdown";
 
-const EditForm = ({ structure, data, preset, style, className }) => {
+const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
     useEffect(() => {
-        // console.log('Effect runs');
-        // console.log('Dependency data:', data);
-        // console.log('Dependency preset:', preset);
-        // console.log('Dependency structure:', structure);
-
         if (structure?.inputs) {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
                 const fieldType = config.type;
                 const teamCompliance = config.teamCompliance;
+                let value = presetData[fieldName];
 
-                if (data) {
-                    let value = data[fieldName];
-
+                if (presetData && value !== undefined) {
                     if (fieldType === 'id-list' && Array.isArray(value)) {
                         if (teamCompliance)
-                            value = value.filter(item => item.team.id === data.id)
+                            value = value.filter(item => item.team.id === presetData.id);
 
-                        value = value.map(item => item.id);
+                        value = value.map(item => {
+                            if (['string', 'number', 'boolean'].includes(typeof item))
+                                return item;
+
+                            return item.id;
+                        });
                     }
-
                     acc[fieldName] = value;
-                } else if (preset && Array.isArray(preset)) {
-                    const presetValue = preset.find(item => item.field === fieldName);
-
-                    if (presetValue && presetValue.value !== undefined) {
-                        acc[fieldName] = presetValue.value;
-                    } else {
-                        if (fieldType.includes('list')) {
-                            acc[fieldName] = [null];
-                        } else {
-                            acc[fieldName] = null;
-                        }
-                    }
                 } else {
                     if (fieldType.includes('list')) {
                         acc[fieldName] = [null];
@@ -58,7 +44,7 @@ const EditForm = ({ structure, data, preset, style, className }) => {
 
             setFormData(newFormData);
         }
-    }, [data, preset, structure]);
+    }, [presetData, structure]);
 
     const handleChange = (e, mode='set', index) => {
         const {name, value, type, checked} = e.target;
@@ -102,12 +88,12 @@ const EditForm = ({ structure, data, preset, style, className }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const savedItem = await structure.onSubmit.onSave(formData, data?.id || null);
+        const savedItem = await structure.onSubmit.onSave(formData, presetData?.id || null);
         if (savedItem) {
             setDiscardWarning(false);
             setTimeout(() => {
                 closeTopModal();
-                if (!data && structure.onSubmit.openIfNew) {
+                if (!presetData && structure.onSubmit.openIfNew) {
                     setTimeout(() => {
                         openModal({content: structure.onSubmit.openIfNew , contentId: savedItem.id});
                     }, 350);
@@ -159,13 +145,13 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                     >
                         {section.header && <h2>{section.header}</h2>}
                         {Object.entries(section).map(([key, group], index) => {
-                            if ( ['header', 'style', 'className'].includes(key) )
+                            if ( ['header', 'style', 'className'].includes(key) || group.type === 'hidden')
                                 return null;
 
-                            let input;
+                            let groupContent;
 
                             if (group.inputType === 'input' || group.inputType === 'text')
-                                input = <input
+                                groupContent = <input
                                     className={'form-input'}
                                     type={'text'}
                                     name={group.field}
@@ -176,7 +162,7 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                                 />;
 
                             if (group.inputType === 'textarea')
-                                input = <textarea
+                                groupContent = <textarea
                                     className={'form-textarea'}
                                     name={group.field}
                                     value={formData[group.field] || ''}
@@ -186,7 +172,7 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                                 />;
 
                             if (group.inputType === 'checkbox')
-                                input = <Checkbox
+                                groupContent = <Checkbox
                                     id={group.field}
                                     name={group.field}
                                     checked={formData[group.field] || false}
@@ -195,7 +181,7 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                                 />
 
                             if (group.inputType === 'dropdown')
-                                input = <Dropdown
+                                groupContent = <Dropdown
                                     className={group.className}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
@@ -222,7 +208,7 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                                         });
                                 }
 
-                                input = <MultiDropdown
+                                groupContent = <MultiDropdown
                                     formData={formData}
                                     dataField={group.field}
                                     onChange={handleChange}
@@ -233,18 +219,45 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                                 />;
                             }
 
+                            if (group.inputType === 'combo-dropdown') {
+                                let itemExcludedIds = [];
+                                if (group.itemExcludedIds) {
+                                    if (group.itemExcludedIds.data)
+                                        itemExcludedIds.push(...group.itemExcludedIds.data);
 
-                            if (group.inputType === 'combo-dropdown')
-                                input = <ComboDropdown
+                                    if (group.itemExcludedIds.formData)
+                                        group.itemExcludedIds.formData.forEach(field => {
+                                            if (Array.isArray(formData[field]) && formData[field].length)
+                                                itemExcludedIds.push(...formData[field]);
+                                            else
+                                                itemExcludedIds.push(formData[field]);
+                                        });
+                                }
+
+                                groupContent = <ComboDropdown
                                     formData={formData}
                                     dataField={group.field}
                                     onChange={handleChange}
                                     itemSource={group.itemSource}
                                     itemNameField={group.itemNameField}
                                     itemName={group.itemName}
+                                    itemExcludedIds={itemExcludedIds}
                                     modeField={group.modeField}
                                     modeOptions={group.modeOptions}
                                 />;
+                            }
+
+
+                            if (group.type === 'listing')
+                                groupContent = <div>{
+                                    formData[group.field]?.map((item, index) => {
+                                        let name = item[group.nameField];
+                                        if (Array.isArray(group.nameField)) {
+                                            name = group.nameField.map(field => item[field]).join(' ');
+                                        }
+                                        return <span key={index}>{name}{index !== (formData[group.field].length - 1) && ', ' }</span>
+                                    })
+                                }</div>;
 
                             return (
                                 <div
@@ -253,7 +266,7 @@ const EditForm = ({ structure, data, preset, style, className }) => {
                                     style={group.style}
                                 >
                                     {group.label && <h3 className={'form-group-label'}>{group.label}</h3>}
-                                    {input}
+                                    {groupContent}
                                 </div>
                             );
 

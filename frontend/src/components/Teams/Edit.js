@@ -52,7 +52,7 @@ const TeamEdit = ({ teamId, parentId }) => {
 
     const formStructure = useMemo(() => ({
         header: {
-            title: teamId ? `Editing ${team?.name}` : 'Creating new Team',
+            title: teamId ? `Editing ${team?.name}` : `Creating new ${parentId ? 'SubTeam' : 'Team'}`,
         },
         inputs: {
             name: {
@@ -121,12 +121,13 @@ const TeamEdit = ({ teamId, parentId }) => {
         },
     }), [saveTeam, team, teamId, getAvailableParentTeams, managers, users]);
 
-    let presetValues;
-    if (parentId) {
-        presetValues = [
-            {field: 'parent_team', value: parentId},
-        ];
-    }
+    const teamData = useMemo(() => {
+        const baseData = team ? team : {};
+        return {
+            ...baseData,
+            ...(parentId ? { parent_team: parentId } : {})
+        };
+    }, [team, parentId]);
 
     if (loading) return <Loader />;
 
@@ -135,8 +136,7 @@ const TeamEdit = ({ teamId, parentId }) => {
     return (
         <EditForm
             structure={formStructure}
-            data={teamId && team}
-            preset={presetValues}
+            presetData={teamData}
         />
     );
 }

@@ -134,6 +134,18 @@ const useUser = () => {
         }
     }, [fetchUser]);
 
+    const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
+        // MODES:
+        //      set - set exactly what resourceIds are assigned to each userId
+        //      add - append userIds with resourceIds
+        //      del - remove resourceIds from userIds
+        console.warn('User Role assignment feature not implemented yet. Provided data:');
+        console.log('resource: ', resource);
+        console.log('resourceIds: ', resourceIds);
+        console.log('userIds: ', userIds);
+        console.log('mode: ', mode);
+    }, []);
+
     const deleteUser = useCallback(async (userId) => {
         try {
             setLoading(true);
@@ -169,6 +181,7 @@ const useUser = () => {
         success,
         fetchUser,
         saveUser,
+        saveUserAssignment,
         deleteUser
     };
 }
