@@ -4,10 +4,10 @@ import Icon from "./Icon";
 const Dropdown = ({
                       className = '',
                       placeholder = null,
-                      name,
-                      value,
-                      options,
-                      onChange,
+                      name = '',
+                      value = null,
+                      options = [],
+                      onChange = null,
                       noneAllowed = false,
                       upperCaseNames = false,
                       searchable = true,
@@ -34,8 +34,8 @@ const Dropdown = ({
         }
     }, [isOpen]);
 
-    const handleOptionClick = (option, isOpen) => {
-        if (isOpen) {
+    const handleOptionClick = (option) => {
+        if (isOpen && onChange !== null) {
             const syntheticEvent = {
                 target: { name, type: 'dropdown', value: option },
                 // eslint-disable-next-line

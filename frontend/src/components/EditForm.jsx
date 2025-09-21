@@ -6,7 +6,7 @@ import MultiDropdown from './MultiDropdown';
 import Checkbox from "./Checkbox";
 import ComboDropdown from "./ComboDropdown";
 
-const EditForm = ({structure, data, preset, style, className}) => {
+const EditForm = ({ structure, data, preset, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     
@@ -20,11 +20,15 @@ const EditForm = ({structure, data, preset, style, className}) => {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
                 const fieldType = config.type;
+                const teamCompliance = config.teamCompliance;
 
                 if (data) {
                     let value = data[fieldName];
 
                     if (fieldType === 'id-list' && Array.isArray(value)) {
+                        if (teamCompliance)
+                            value = value.filter(item => item.team.id === data.id)
+
                         value = value.map(item => item.id);
                     }
 
@@ -36,14 +40,14 @@ const EditForm = ({structure, data, preset, style, className}) => {
                         acc[fieldName] = presetValue.value;
                     } else {
                         if (fieldType.includes('list')) {
-                            acc[fieldName] = [];
+                            acc[fieldName] = [null];
                         } else {
                             acc[fieldName] = null;
                         }
                     }
                 } else {
                     if (fieldType.includes('list')) {
-                        acc[fieldName] = [];
+                        acc[fieldName] = [null];
                     } else {
                         acc[fieldName] = null;
                     }
@@ -81,10 +85,12 @@ const EditForm = ({structure, data, preset, style, className}) => {
                         }
                     }
                     if (mode === 'add') {
-                        console.log('adding');
                         return [...prev[name], null];
                     }
-                    return value || prev[name];
+                    if (value === undefined) {
+                        return prev[name];
+                    }
+                    return value;
                 } else {
                     return type === 'checkbox' ? checked : value;
                 }
@@ -137,8 +143,6 @@ const EditForm = ({structure, data, preset, style, className}) => {
         return sections;
     }, [structure]);
 
-    // console.log(formData);
-
     return <form
                 className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}
@@ -160,7 +164,7 @@ const EditForm = ({structure, data, preset, style, className}) => {
 
                             let input;
 
-                            if (group.inputType === 'input')
+                            if (group.inputType === 'input' || group.inputType === 'text')
                                 input = <input
                                     className={'form-input'}
                                     type={'text'}
@@ -193,14 +197,31 @@ const EditForm = ({structure, data, preset, style, className}) => {
                             if (group.inputType === 'dropdown')
                                 input = <Dropdown
                                     className={group.className}
-                                    placeholder={`${group.inputLabel}`}
+                                    placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
-                                    value={formData[group.field]}
+                                    value={formData[group.field] || null}
                                     options={group.options}
                                     onChange={handleChange}
+                                    noneAllowed={group.noneAllowed}
                                 />;
 
-                            if (group.inputType === 'multi-dropdown')
+                            if (group.inputType === 'multi-dropdown') {
+
+                                let itemExcludedIds = [];
+
+                                if (group.itemExcludedIds) {
+                                    if (group.itemExcludedIds.data)
+                                        itemExcludedIds.push(...group.itemExcludedIds.data);
+
+                                    if (group.itemExcludedIds.formData)
+                                        group.itemExcludedIds.formData.forEach(field => {
+                                            if (Array.isArray(formData[field]) && formData[field].length)
+                                                itemExcludedIds.push(...formData[field]);
+                                            else
+                                                itemExcludedIds.push(formData[field]);
+                                        });
+                                }
+
                                 input = <MultiDropdown
                                     formData={formData}
                                     dataField={group.field}
@@ -208,8 +229,10 @@ const EditForm = ({structure, data, preset, style, className}) => {
                                     itemSource={group.itemSource}
                                     itemNameField={group.itemNameField}
                                     itemName={group.itemName}
-                                    itemExcludedIds={group.itemExcludedIds}
+                                    itemExcludedIds={itemExcludedIds}
                                 />;
+                            }
+
 
                             if (group.inputType === 'combo-dropdown')
                                 input = <ComboDropdown
