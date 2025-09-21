@@ -12,7 +12,7 @@ import UserEdit, {
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
 import TeamDetails from '../components/Teams/Details';
-import TeamEdit from '../components/Teams/Edit';
+import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
 import PostDetails from '../components/Posts/Details';
 import InWorks from '../components/InWorks';
 import ConfirmPrompt from "../components/ConfirmPrompt";
@@ -150,10 +150,10 @@ export const ModalProvider = ({ children }) => {
                 return <TeamDetails teamId={modal.contentId} />;
             case 'teamEdit':
                 return <TeamEdit teamId={modal.contentId} />;
-            case 'teamMemberAssignment':
-                return <InWorks title={'Team Member Assignment'} modal={true} icon={'upcoming'} />;
-            case 'teamMemberBulkAssignment':
-                return <InWorks title={'Team Member Bulk Assignment'} modal={true} icon={'upcoming'} />;
+            case 'TeamUserAssignment':
+                return <TeamUserAssignment team={modal.data} />;
+            case 'teamUserBulkAssignment':
+                return <TeamUserBulkAssignment teams={modal.data} />;
             case 'teamNew':
                 return <TeamEdit />;
             case 'subteamNew':

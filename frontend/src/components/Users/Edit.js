@@ -20,7 +20,6 @@ export const UserRoleAssignment = ({user}) => {
         inputs: {
             roles: {
                 section: 0,
-                label: 'Roles',
                 field: 'roles',
                 type: 'id-list',
                 inputType: 'multi-dropdown',
@@ -89,14 +88,9 @@ export const UserRoleBulkAssignment = ({users}) => {
 
     const formStructure = useMemo(() => ({
         header: {
-            title: `Role Assignment for ${users.length} Users`,
+            title: `Role Assignment to ${users.length} User${users.length > 1 ? 's' : ''}`,
         },
         inputs: {
-            mode: {
-                section: 0,
-                field: 'mode',
-                type: 'hidden'
-            },
             selectedUsers: {
                 section: 0,
                 label: 'Selected Users',
@@ -104,18 +98,28 @@ export const UserRoleBulkAssignment = ({users}) => {
                 nameField: ['first_name', 'last_name'],
                 type: 'listing'
             },
+            mode: {
+                section: 1,
+                label: 'Mode',
+                field: 'mode',
+                type: 'string',
+                inputType: 'dropdown',
+                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}],
+                itemName: 'Role',
+                searchable: false
+            },
             role: {
                 section: 1,
                 label: 'Role',
                 field: 'role',
                 type: 'number',
-                inputType: 'combo-dropdown',
-                itemSource: roles,
-                itemNameField: 'name',
-                itemName: 'Role',
-                modeField: 'mode',
-                modeOptions: [{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]
+                inputType: 'dropdown',
+                options: roles?.map(role => ({id: role.id, name: role.name})),
+                itemName: 'Role'
             }
+        },
+        sections: {
+            1: {style: {flexDirection: 'row'}}
         },
         onSubmit: {
             onSave: (data) => saveUserAssignment(
@@ -147,14 +151,9 @@ export const UserManagerBulkAssignment = ({users}) => {
 
     const formStructure = useMemo(() => ({
         header: {
-            title: `Manager Assignment for ${users.length} Users`,
+            title: `Manager Assignment to ${users.length} User${users.length > 1 ? 's' : ''}`,
         },
         inputs: {
-            mode: {
-                section: 0,
-                field: 'mode',
-                type: 'hidden'
-            },
             selectedUsers: {
                 section: 0,
                 label: 'Selected Users',
@@ -162,19 +161,29 @@ export const UserManagerBulkAssignment = ({users}) => {
                 nameField: ['first_name', 'last_name'],
                 type: 'listing'
             },
-            role: {
+            mode: {
+                section: 1,
+                label: 'Mode',
+                field: 'mode',
+                type: 'string',
+                inputType: 'dropdown',
+                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}],
+                itemName: 'Role',
+                searchable: false
+            },
+            manager: {
                 section: 1,
                 label: 'Manager',
-                field: 'manager',
-                type: 'number',
-                inputType: 'combo-dropdown',
-                itemSource: managers,
-                itemNameField: ['first_name', 'last_name'],
-                itemName: 'Manager',
-                itemExcludedIds: {data: users.map(user => user.id)},
-                modeField: 'mode',
-                modeOptions: [{id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}]
+                field: 'role',
+                type: 'manager',
+                inputType: 'dropdown',
+                options: managers?.filter(mgr => !users.find(user => user.id === mgr.id) )
+                    .map(mgr => ({id: mgr.id, name: mgr.first_name + ' ' + mgr.last_name})),
+                itemName: 'Manager'
             }
+        },
+        sections: {
+            1: {style: {flexDirection: 'row'}}
         },
         onSubmit: {
             onSave: (data) => saveUserAssignment(

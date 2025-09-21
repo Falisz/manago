@@ -6,6 +6,142 @@ import Loader from '../Loader';
 import '../../assets/styles/Form.css';
 import EditForm from "../EditForm";
 
+export const TeamUserAssignment = ({team}) => {
+    const {saveTeamAssignment} = useTeam();
+    const {users, usersLoading, fetchUsers} = useUser();
+    const {users: managers, usersLoading: managersLoading, fetchUsers: fetchManagers} = useUser();
+
+    useEffect(() => {
+        fetchUsers().then();
+        fetchManagers('managers').then();
+    }, [fetchUsers, fetchManagers]);
+
+    const formStructure = useMemo(() => ({
+        header: {
+            title: `Editing Members of ${team?.name}`,
+        },
+        inputs: {
+            managers: {
+                section: 0,
+                field: 'managers',
+                type: 'id-list',
+                teamCompliance: true,
+                inputType: 'multi-dropdown',
+                label: 'Team Managers',
+                itemSource: managers,
+                itemNameField: ['first_name', 'last_name'],
+                itemExcludedIds: { formData: ['leaders', 'members'] }
+            },
+            leaders: {
+                section: 1,
+                field: 'leaders',
+                type: 'id-list',
+                teamCompliance: true,
+                inputType: 'multi-dropdown',
+                label: 'Team Leaders',
+                itemSource: users,
+                itemNameField: ['first_name', 'last_name'],
+                itemExcludedIds: { formData: ['managers', 'members'] }
+            },
+            members: {
+                section: 2,
+                field: 'members',
+                type: 'id-list',
+                teamCompliance: true,
+                inputType: 'multi-dropdown',
+                label: 'Team Members',
+                itemSource: users,
+                itemNameField: ['first_name', 'last_name'],
+                itemExcludedIds: { formData: ['leaders', 'managers'] }
+            }
+        },
+        onSubmit: {
+            onSave: (data) => saveTeamAssignment('users', data, [team.id]),
+            refreshTriggers: [['teams', true], ['team', team.id]]
+        }
+    }), [team, users, managers, saveTeamAssignment]);
+
+    if (usersLoading || managersLoading) return <Loader/>;
+
+    return <EditForm
+        structure={formStructure}
+        presetData={team}
+    />;
+}
+
+export const TeamUserBulkAssignment = ({teams}) => {
+    const {users, usersLoading: loading, fetchUsers} = useUser();
+    const { saveTeamAssignment } = useTeam();
+
+    console.log(teams);
+
+    useEffect(() => {
+        fetchUsers().then();
+    }, [fetchUsers]);
+
+    const formStructure = useMemo(() => ({
+        header: {
+            title: `Member Assignment to ${teams.length} Team${teams.length > 1 ? 's' : ''}`,
+        },
+        inputs: {
+            selectedUsers: {
+                section: 0,
+                label: 'Selected Teams',
+                field: 'teams',
+                nameField: 'name',
+                type: 'listing'
+            },
+            mode: {
+                section: 1,
+                label: 'Mode',
+                field: 'mode',
+                type: 'string',
+                inputType: 'dropdown',
+                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}],
+                searchable: false
+            },
+            teamUser: {
+                section: 2,
+                label: 'User',
+                field: 'team_user',
+                type: 'number',
+                inputType: 'dropdown',
+                options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
+            },
+            teamRole: {
+                section: 2,
+                label: 'Role',
+                field: 'team_role',
+                type: 'number',
+                inputType: 'dropdown',
+                options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
+                searchable: false
+            }
+        },
+        sections: {
+          2: {style: {flexDirection: 'row'}}
+        },
+        onSubmit: {
+            onSave: (data) => saveTeamAssignment(
+                'teams',
+                [data.role],
+                [teams.map(team => team.id)],
+                data.mode
+            ),
+            refreshTriggers: [['teams', true]]
+        }
+    }), [teams, users, saveTeamAssignment]);
+
+    const presetData = useMemo(() => ({mode: 'add', teams, team_role: 2}), [teams]);
+
+    if (loading) return <Loader/>;
+
+    return <EditForm
+        structure={formStructure}
+        presetData={presetData}
+    />;
+}
+
 const TeamEdit = ({ teamId, parentId }) => {
     const { team, loading, error, setLoading, fetchTeam, saveTeam } = useTeam();
     const { teams, fetchTeams } = useTeam();
@@ -119,7 +255,7 @@ const TeamEdit = ({ teamId, parentId }) => {
             refreshTriggers: [['teams', true], ...(team ? [['team', team.id]] : [])],
             openIfNew: 'userDetails'
         },
-    }), [saveTeam, team, teamId, getAvailableParentTeams, managers, users]);
+    }), [saveTeam, team, teamId, parentId, getAvailableParentTeams, managers, users]);
 
     const teamData = useMemo(() => {
         const baseData = team ? team : {};
