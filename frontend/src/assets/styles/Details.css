@@ -29,7 +29,7 @@
     border-radius: 12px;
     padding: 10px;
 }
-.detail-header .app-button icon {
+.detail-header .app-button .icon {
     font-size: 1.5rem;
 }
 .detail-header .app-button.edit:hover {
@@ -73,17 +73,17 @@
 .detail-link:hover {
     color: var(--link-hover-color);
 }
-.detail-group icon {
+.detail-group .icon {
     font-size: 1.1em;
     padding: 3px;
     margin-right: 5px;
     border-radius: 10px;
 }
-.detail-group icon.true {
+.detail-group .icon.true {
     background-color: yellowgreen;
     color: white;
 }
-.detail-group icon.false {
+.detail-group .icon.false {
     background-color: coral;
     color: white;
 }
@@ -126,7 +126,7 @@
     border-radius: 12px;
     padding: 10px;
 }
-.app-details-header .app-button icon {
+.app-details-header .app-button .icon {
     font-size: 1.5rem;
 }
 .app-details-header .app-button.edit:hover {
@@ -176,17 +176,17 @@
 .app-details-section .data-group.clickable:hover {
     color: var(--link-hover-color);
 }
-.app-details-section .data-group icon {
+.app-details-section .data-group .icon {
     font-size: 1.1em;
     padding: 3px;
     margin-right: 5px;
     border-radius: 10px;
 }
-.app-details-section .data-group icon.true {
+.app-details-section .data-group .icon.true {
     background-color: rgba(154, 205, 50, 0.5);
     color: white;
 }
-.app-details-section .data-group icon.false {
+.app-details-section .data-group .icon.false {
     background-color: rgba(255, 127, 80, 0.5);
     color: white;
 }

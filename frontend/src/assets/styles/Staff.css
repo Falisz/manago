@@ -87,12 +87,12 @@
     align-items: center;
     color: var(--text-color-3);
 }
-.app.staff .app-nav .app-pages icon {
+.app.staff .app-nav .app-pages .icon {
     font-size: 1.5rem;
     margin: 5px;
     cursor: pointer;
 }
-.app.staff .app-nav .app-user .user-link icon {
+.app.staff .app-nav .app-user .user-link .icon {
     font-size: 1.25rem;
     cursor: pointer;
 }

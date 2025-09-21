@@ -334,7 +334,7 @@ button .material-symbols-rounded {
 .app-button.cancel:hover {
     background: #ff7040;
 }
-.app-button icon {
+.app-button .icon {
     font-size: 1rem;
 }
 .app.fluent .app-button {
@@ -469,7 +469,7 @@ button .material-symbols-rounded {
 .app-sub-menu .sub-menu-link:not(:last-child) {
     margin-bottom: 15px;
 }
-.app-sub-menu .sub-menu-link icon {
+.app-sub-menu .sub-menu-link .icon {
     margin-left: 10px;
 }
 
