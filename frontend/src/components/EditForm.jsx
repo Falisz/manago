@@ -4,7 +4,6 @@ import Dropdown from './Dropdown';
 import Button from './Button';
 import MultiDropdown from './MultiDropdown';
 import Checkbox from "./Checkbox";
-import ComboDropdown from "./ComboDropdown";
 
 const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});
@@ -185,9 +184,10 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     className={group.className}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
-                                    value={formData[group.field] || null}
+                                    value={formData[group.field] || group.default || null}
                                     options={group.options}
                                     onChange={handleChange}
+                                    searchable={group.searchable}
                                     noneAllowed={group.noneAllowed}
                                 />;
 
@@ -218,35 +218,6 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     itemExcludedIds={itemExcludedIds}
                                 />;
                             }
-
-                            if (group.inputType === 'combo-dropdown') {
-                                let itemExcludedIds = [];
-                                if (group.itemExcludedIds) {
-                                    if (group.itemExcludedIds.data)
-                                        itemExcludedIds.push(...group.itemExcludedIds.data);
-
-                                    if (group.itemExcludedIds.formData)
-                                        group.itemExcludedIds.formData.forEach(field => {
-                                            if (Array.isArray(formData[field]) && formData[field].length)
-                                                itemExcludedIds.push(...formData[field]);
-                                            else
-                                                itemExcludedIds.push(formData[field]);
-                                        });
-                                }
-
-                                groupContent = <ComboDropdown
-                                    formData={formData}
-                                    dataField={group.field}
-                                    onChange={handleChange}
-                                    itemSource={group.itemSource}
-                                    itemNameField={group.itemNameField}
-                                    itemName={group.itemName}
-                                    itemExcludedIds={itemExcludedIds}
-                                    modeField={group.modeField}
-                                    modeOptions={group.modeOptions}
-                                />;
-                            }
-
 
                             if (group.type === 'listing')
                                 groupContent = <div>{
