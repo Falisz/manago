@@ -86,6 +86,14 @@ const useTeam = () => {
         }
     }, [fetchTeam]);
 
+    const saveTeamAssignment = useCallback( async (resource, resourceIds, userIds, mode='set') => {
+        console.warn('Team Role assignment feature not implemented yet. Provided data:');
+        console.log('resource: ', resource);
+        console.log('resourceIds: ', resourceIds);
+        console.log('userIds: ', userIds);
+        console.log('mode: ', mode);
+    }, []);
+
     const deleteTeam = useCallback( async (roleId, cascade = false) => {
         try {
             setLoading(true);
@@ -120,6 +128,7 @@ const useTeam = () => {
         success,
         fetchTeam,
         saveTeam,
+        saveTeamAssignment,
         deleteTeam
     };
 };
