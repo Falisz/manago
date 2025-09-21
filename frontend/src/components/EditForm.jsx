@@ -128,13 +128,37 @@ const EditForm = ({ structure, presetData, style, className }) => {
         return sections;
     }, [structure]);
 
+    const header = useMemo(() => {
+        const headerModes = {
+            add: ['Adding', 'to'],
+            set: ['Setting', 'to'],
+            del: ['Removing', 'from'],
+        };
+
+        if (!structure.header || !structure.header.title) {
+            return '';
+        }
+
+        let header = structure.header.title;
+
+        if (structure.header.modes) {
+            header = header.replace('%m', headerModes[formData['mode']]?.[0], 0);
+            header = header.replace('%m', headerModes[formData['mode']]?.[1], 1);
+        }
+        if (structure.header.variantField) {
+            header = header.replace('%v',
+                structure.header.variantOptions[formData[structure.header.variantField]]);
+        }
+
+        return header;
+    }, [structure, formData]);
+
     return <form
                 className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}
                 style={style}
             >
-                { structure.header && structure.header.title &&
-                    <h1 className={'app-form-header'}>{structure.header.title}</h1> }
+                {header && <h1 className={'app-form-header'}>{header}</h1>}
 
                 {Object.values(inputSections).map((section, key) => {
                     return <div

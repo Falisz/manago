@@ -88,7 +88,8 @@ export const UserRoleBulkAssignment = ({users}) => {
 
     const formStructure = useMemo(() => ({
         header: {
-            title: `Role Assignment to ${users.length} User${users.length > 1 ? 's' : ''}`,
+            title: `%m Role %m ${users.length} User${users.length > 1 ? 's' : ''}`,
+            modes: true
         },
         inputs: {
             selectedUsers: {
@@ -104,7 +105,7 @@ export const UserRoleBulkAssignment = ({users}) => {
                 field: 'mode',
                 type: 'string',
                 inputType: 'dropdown',
-                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}],
+                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
                 itemName: 'Role',
                 searchable: false
             },
@@ -151,7 +152,8 @@ export const UserManagerBulkAssignment = ({users}) => {
 
     const formStructure = useMemo(() => ({
         header: {
-            title: `Manager Assignment to ${users.length} User${users.length > 1 ? 's' : ''}`,
+            title: `%m Manager %m ${users.length} User${users.length > 1 ? 's' : ''}`,
+            modes: true
         },
         inputs: {
             selectedUsers: {
@@ -167,14 +169,14 @@ export const UserManagerBulkAssignment = ({users}) => {
                 field: 'mode',
                 type: 'string',
                 inputType: 'dropdown',
-                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}],
-                itemName: 'Role',
+                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
+                itemName: 'Mode',
                 searchable: false
             },
             manager: {
                 section: 1,
                 label: 'Manager',
-                field: 'role',
+                field: 'manager',
                 type: 'manager',
                 inputType: 'dropdown',
                 options: managers?.filter(mgr => !users.find(user => user.id === mgr.id) )

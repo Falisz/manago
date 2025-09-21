@@ -73,15 +73,16 @@ export const TeamUserBulkAssignment = ({teams}) => {
     const {users, usersLoading: loading, fetchUsers} = useUser();
     const { saveTeamAssignment } = useTeam();
 
-    console.log(teams);
-
     useEffect(() => {
         fetchUsers().then();
     }, [fetchUsers]);
 
     const formStructure = useMemo(() => ({
         header: {
-            title: `Member Assignment to ${teams.length} Team${teams.length > 1 ? 's' : ''}`,
+            title: `%m %v %m ${teams.length} Team${teams.length > 1 ? 's' : ''}`,
+            modes: true,
+            variantField: 'team_role',
+            variantOptions: {1: 'Member', 2: 'Leader', 3: 'Manager'}
         },
         inputs: {
             selectedUsers: {
@@ -97,7 +98,7 @@ export const TeamUserBulkAssignment = ({teams}) => {
                 field: 'mode',
                 type: 'string',
                 inputType: 'dropdown',
-                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'remove', name: 'Remove'}],
+                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
                 searchable: false
             },
             teamUser: {
