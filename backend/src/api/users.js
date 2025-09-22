@@ -252,7 +252,7 @@ router.put('/managers/:userId', async (req, res) => {
         }
 
         const { userId } = req.params;
-        const { managers } = req.body;
+        const { managerIds } = req.body;
 
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
