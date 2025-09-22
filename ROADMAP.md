@@ -4,7 +4,6 @@ Following roadmap and tasks to-do as of 2025-09-22:
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] Users and teams management
   - [ ] Implement safe lock for Reportees not to be assigned as Managers. 
-  - [ ] Assignment form for UserManagers, UserRoles, TeamUsers assignments - both singular and bulk operations.
 - [ ] Branches
   - [ ] Different logo per branch (?) e.g., if a User is from Branch One, they have a diff logo than the user from Branch Two.
   - [ ] Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.

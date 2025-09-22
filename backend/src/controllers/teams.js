@@ -60,9 +60,9 @@ export async function getTeam(id, getMembers=true) {
     if (getMembers)
         team = {
             ...team,
-            members: await getTeamMembers(team.id, 0, true),
-            leaders: await getTeamMembers(team.id, 1, true),
-            managers: await getTeamMembers(team.id, 2, true, true),
+            members: await getTeamMembers(team.id, 1, true),
+            leaders: await getTeamMembers(team.id, 2, true),
+            managers: await getTeamMembers(team.id, 3, true, true),
         }
 
     return team;

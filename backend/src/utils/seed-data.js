@@ -287,61 +287,61 @@ export async function seedData() {
         await seedModel(Team, 'teams', teams, 'teams');
 
         const teamRoles = [
-            {id: 0, name: 'Member'},
-            {id: 1, name: 'Team Leader'},
-            {id: 2, name: 'Team Manager'},
+            {id: 1, name: 'Member'},
+            {id: 2, name: 'Team Leader'},
+            {id: 3, name: 'Team Manager'},
         ]
         await seedModel(TeamRole, 'team_roles', teamRoles, 'team roles');
 
         const teamUsers = [
             // Parent team managers (role 2)
-            {team: 1, user: 100004, role: 2},
-            {team: 2, user: 100005, role: 2},
-            {team: 3, user: 100006, role: 2},
+            {team: 1, user: 100004, role: 3},
+            {team: 2, user: 100005, role: 3},
+            {team: 3, user: 100006, role: 3},
             // Subteam leaders (role 1)
-            {team: 4, user: 100007, role: 1},
-            {team: 5, user: 100008, role: 1},
-            {team: 6, user: 100009, role: 1},
-            {team: 7, user: 100010, role: 1},
-            {team: 8, user: 100011, role: 1},
-            {team: 9, user: 100012, role: 1},
+            {team: 4, user: 100007, role: 2},
+            {team: 5, user: 100008, role: 2},
+            {team: 6, user: 100009, role: 2},
+            {team: 7, user: 100010, role: 2},
+            {team: 8, user: 100011, role: 2},
+            {team: 9, user: 100012, role: 2},
             // Subteam employees (role 0)
             // Sub 1.1
-            {team: 4, user: 100013, role: 0},
-            {team: 4, user: 100014, role: 0},
-            {team: 4, user: 100015, role: 0},
-            {team: 4, user: 100016, role: 0},
-            {team: 4, user: 100017, role: 0},
+            {team: 4, user: 100013, role: 1},
+            {team: 4, user: 100014, role: 1},
+            {team: 4, user: 100015, role: 1},
+            {team: 4, user: 100016, role: 1},
+            {team: 4, user: 100017, role: 1},
             // Sub 1.2
-            {team: 5, user: 100018, role: 0},
-            {team: 5, user: 100019, role: 0},
-            {team: 5, user: 100020, role: 0},
-            {team: 5, user: 100021, role: 0},
-            {team: 5, user: 100022, role: 0},
+            {team: 5, user: 100018, role: 1},
+            {team: 5, user: 100019, role: 1},
+            {team: 5, user: 100020, role: 1},
+            {team: 5, user: 100021, role: 1},
+            {team: 5, user: 100022, role: 1},
             // Sub 2.1
-            {team: 6, user: 100023, role: 0},
-            {team: 6, user: 100024, role: 0},
-            {team: 6, user: 100025, role: 0},
-            {team: 6, user: 100026, role: 0},
-            {team: 6, user: 100027, role: 0},
+            {team: 6, user: 100023, role: 1},
+            {team: 6, user: 100024, role: 1},
+            {team: 6, user: 100025, role: 1},
+            {team: 6, user: 100026, role: 1},
+            {team: 6, user: 100027, role: 1},
             // Sub 2.2
-            {team: 7, user: 100028, role: 0},
-            {team: 7, user: 100029, role: 0},
-            {team: 7, user: 100030, role: 0},
-            {team: 7, user: 100031, role: 0},
-            {team: 7, user: 100032, role: 0},
+            {team: 7, user: 100028, role: 1},
+            {team: 7, user: 100029, role: 1},
+            {team: 7, user: 100030, role: 1},
+            {team: 7, user: 100031, role: 1},
+            {team: 7, user: 100032, role: 1},
             // Sub 3.1
-            {team: 8, user: 100033, role: 0},
-            {team: 8, user: 100034, role: 0},
-            {team: 8, user: 100035, role: 0},
-            {team: 8, user: 100036, role: 0},
-            {team: 8, user: 100037, role: 0},
+            {team: 8, user: 100033, role: 1},
+            {team: 8, user: 100034, role: 1},
+            {team: 8, user: 100035, role: 1},
+            {team: 8, user: 100036, role: 1},
+            {team: 8, user: 100037, role: 1},
             // Sub 3.2
-            {team: 9, user: 100038, role: 0},
-            {team: 9, user: 100039, role: 0},
-            {team: 9, user: 100040, role: 0},
-            {team: 9, user: 100041, role: 0},
-            {team: 9, user: 100042, role: 0},
+            {team: 9, user: 100038, role: 1},
+            {team: 9, user: 100039, role: 1},
+            {team: 9, user: 100040, role: 1},
+            {team: 9, user: 100041, role: 1},
+            {team: 9, user: 100042, role: 1},
         ];
         await seedModel(TeamUser, 'team_users', teamUsers, 'team user assignments');
 

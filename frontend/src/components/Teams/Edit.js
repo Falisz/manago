@@ -126,7 +126,7 @@ export const TeamUserBulkAssignment = ({teams}) => {
             onSave: (data) => saveTeamAssignment(
                 'user',
                 [data.user],
-                [teams.map(team => team.id)],
+                teams.map(team => team.id),
                 data.role,
                 data.mode
             ),
