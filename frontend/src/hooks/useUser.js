@@ -121,8 +121,6 @@ const useUser = () => {
                 }
             }
 
-
-
             setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
 
             return fetchUser(userId, true);
@@ -135,15 +133,18 @@ const useUser = () => {
     }, [fetchUser]);
 
     const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
-        // MODES:
-        //      set - set exactly what resourceIds are assigned to each userId
-        //      add - append userIds with resourceIds
-        //      del - remove resourceIds from userIds
-        console.warn('User Role assignment feature not implemented yet. Provided data:');
-        console.log('resource: ', resource);
-        console.log('resourceIds: ', resourceIds);
-        console.log('userIds: ', userIds);
-        console.log('mode: ', mode);
+        try {
+            setError(null);
+            setWarning(null);
+            setSuccess(null);
+
+            await axios.post('/users/assignments', {resource, resourceIds, userIds, mode}, { withCredentials: true });
+
+        } catch (err) {
+            console.error('Error saving new user assignments:', err);
+            setWarning('Error occurred while saving new user assignments. ' + err.response?.data?.message);
+            return null;
+        }
     }, []);
 
     const deleteUser = useCallback(async (userId) => {

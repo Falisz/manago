@@ -86,12 +86,19 @@ const useTeam = () => {
         }
     }, [fetchTeam]);
 
-    const saveTeamAssignment = useCallback( async (resource, resourceIds, userIds, mode='set') => {
-        console.warn('Team Role assignment feature not implemented yet. Provided data:');
-        console.log('resource: ', resource);
-        console.log('resourceIds: ', resourceIds);
-        console.log('userIds: ', userIds);
-        console.log('mode: ', mode);
+    const saveTeamAssignment = useCallback( async (resource, resourceIds, teamIds, mode='set') => {
+        try {
+            setError(null);
+            setWarning(null);
+            setSuccess(null);
+
+            await axios.post('/teams/assignments', {resource, resourceIds, teamIds, mode}, { withCredentials: true });
+
+        } catch (err) {
+            console.error('Error saving new team assignments:', err);
+            setWarning('Error occurred while saving new team assignments. ' + err.response?.data?.message);
+            return null;
+        }
     }, []);
 
     const deleteTeam = useCallback( async (roleId, cascade = false) => {
