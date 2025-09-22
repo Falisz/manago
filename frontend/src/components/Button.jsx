@@ -1,10 +1,11 @@
-// FRONTEND/components/Button.js
+// FRONTEND/components/Button.jsx
 import React from 'react';
-import Icon from "./Icon";
+import Icon from './Icon';
 
 /**
  * This is a shorthand button component for an app.
  * @param children
+ * @param id
  * @param className
  * @param type
  * @param disabled
@@ -17,9 +18,21 @@ import Icon from "./Icon";
  * @returns {JSX.Element}
  * @constructor
  */
-const Button = ({ children, className=null, type='button', disabled = false, onClick,
-                    label, title, name, icon=null, transparent=false }) =>
+const Button = ({
+    children,
+    id,
+    className=null,
+    type='button',
+    disabled = false,
+    onClick,
+    label,
+    title,
+    name,
+    icon=null,
+    transparent=false
+}) =>
     <button
+        id={id}
         className={'app-button' + ( transparent ? (' no-bg') : '') + ( className ? (' ' + className) : '')}
         type={type}
         title={title}
