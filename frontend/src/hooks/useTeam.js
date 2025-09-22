@@ -86,13 +86,13 @@ const useTeam = () => {
         }
     }, [fetchTeam]);
 
-    const saveTeamAssignment = useCallback( async (resource, resourceIds, teamIds, mode='set') => {
+    const saveTeamAssignment = useCallback( async (resource, resourceIds, teamIds, role=2,mode='set') => {
         try {
             setError(null);
             setWarning(null);
             setSuccess(null);
 
-            return await axios.post('/teams/assignments', {resource, resourceIds, teamIds, mode}, { withCredentials: true });
+            return await axios.post('/teams/assignments', {resource, resourceIds, role, teamIds, mode}, { withCredentials: true });
 
         } catch (err) {
             console.error('Error saving new team assignments:', err);

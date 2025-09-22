@@ -56,7 +56,7 @@ export const TeamUserAssignment = ({team}) => {
             }
         },
         onSubmit: {
-            onSave: (data) => saveTeamAssignment('users', data, [team.id]),
+            onSave: (data) => saveTeamAssignment('user', data, [team.id]),
             refreshTriggers: [['teams', true], ['team', team.id]]
         }
     }), [team, users, managers, saveTeamAssignment]);
@@ -81,7 +81,7 @@ export const TeamUserBulkAssignment = ({teams}) => {
         header: {
             title: `%m %v %m ${teams.length} Team${teams.length > 1 ? 's' : ''}`,
             modes: true,
-            variantField: 'team_role',
+            variantField: 'role',
             variantOptions: {1: 'Member', 2: 'Leader', 3: 'Manager'}
         },
         inputs: {
@@ -104,7 +104,7 @@ export const TeamUserBulkAssignment = ({teams}) => {
             teamUser: {
                 section: 2,
                 label: 'User',
-                field: 'team_user',
+                field: 'user',
                 type: 'number',
                 inputType: 'dropdown',
                 options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
@@ -112,7 +112,7 @@ export const TeamUserBulkAssignment = ({teams}) => {
             teamRole: {
                 section: 2,
                 label: 'Role',
-                field: 'team_role',
+                field: 'role',
                 type: 'number',
                 inputType: 'dropdown',
                 options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
@@ -124,16 +124,17 @@ export const TeamUserBulkAssignment = ({teams}) => {
         },
         onSubmit: {
             onSave: (data) => saveTeamAssignment(
-                'teams',
-                [data.role],
+                'user',
+                [data.user],
                 [teams.map(team => team.id)],
+                data.role,
                 data.mode
             ),
             refreshTriggers: [['teams', true]]
         }
     }), [teams, users, saveTeamAssignment]);
 
-    const presetData = useMemo(() => ({mode: 'add', teams, team_role: 2}), [teams]);
+    const presetData = useMemo(() => ({mode: 'add', teams, role: 2}), [teams]);
 
     if (loading) return <Loader/>;
 
