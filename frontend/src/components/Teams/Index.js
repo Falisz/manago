@@ -129,7 +129,7 @@ const TeamsIndex = () => {
             { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
                 onClick: (selectedTeams) => handleTeamsDelete(selectedTeams) },
         ],
-        }), []);
+        }), [handleTeamDelete, handleTeamsDelete, openModal, teams]);
 
     if (loading) return <Loader />;
 

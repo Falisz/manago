@@ -126,7 +126,7 @@ export const UserRoleBulkAssignment = ({users}) => {
             onSave: (data) => saveUserAssignment(
                 'roles',
                 [data.role],
-                [users.map(user => user.id)],
+                users.map(user => user.id),
                 data.mode
             ),
             refreshTriggers: [['users', true]]
@@ -190,8 +190,8 @@ export const UserManagerBulkAssignment = ({users}) => {
         onSubmit: {
             onSave: (data) => saveUserAssignment(
                 'managers',
-                [data.role],
-                [users.map(user => user.id)],
+                [data.manager],
+                users.map(user => user.id),
                 data.mode
             ),
             refreshTriggers: [['users', true]]

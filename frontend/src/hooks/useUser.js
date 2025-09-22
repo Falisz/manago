@@ -138,7 +138,9 @@ const useUser = () => {
             setWarning(null);
             setSuccess(null);
 
-            await axios.post('/users/assignments', {resource, resourceIds, userIds, mode}, { withCredentials: true });
+            const res = await axios.post('/users/assignments', {resource, resourceIds, userIds, mode}, { withCredentials: true });
+
+            return res;
 
         } catch (err) {
             console.error('Error saving new user assignments:', err);

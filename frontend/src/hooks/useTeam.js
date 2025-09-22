@@ -92,7 +92,7 @@ const useTeam = () => {
             setWarning(null);
             setSuccess(null);
 
-            await axios.post('/teams/assignments', {resource, resourceIds, teamIds, mode}, { withCredentials: true });
+            return await axios.post('/teams/assignments', {resource, resourceIds, teamIds, mode}, { withCredentials: true });
 
         } catch (err) {
             console.error('Error saving new team assignments:', err);
