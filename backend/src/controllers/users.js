@@ -481,22 +481,99 @@ export async function updateUserManagers(userId, managerIds) {
 * Assigns (appends) managers (managerIds) to each provided user (userIds) if it does not exist yet.
 */
 export async function assignUserManagers(userIds, managerIds) {
-    const currentAssignments = await UserManager.findAll();
+    if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
+        return { success: false, message: 'Invalid input. userIds and managerIds must be arrays.', status: 400 };
+    }
 
+    const transaction = await sequelize.transaction();
 
+    try {
+        const currentAssignments = await UserManager.findAll({
+            where: {
+                user: userIds,
+                manager: managerIds
+            },
+            transaction
+        });
+
+        const existingPairs = new Set(currentAssignments.map(um => `${um.user}-${um.manager}`));
+
+        const newAssignments = [];
+
+        for (const userId of userIds) {
+            for (const managerId of managerIds) {
+                const key = `${userId}-${managerId}`;
+                if (!existingPairs.has(key)) {
+                    newAssignments.push({ user: userId, manager: managerId });
+                }
+            }
+        }
+
+        await UserManager.bulkCreate(newAssignments, { transaction });
+
+        await transaction.commit();
+        return { success: true, message: 'Managers assigned successfully.' };
+    } catch (err) {
+        await transaction.rollback();
+        return { success: false, message: 'Failed to assign managers.' };
+    }
 }
+
 /*
 * Sets provided managers (managerIds) to each provided user (userIds) and removed any other manager assignment for that user.
 */
-export async function setUserManagers(userIds, managerIds) {
 
+export async function setUserManagers(userIds, managerIds) {
+    if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
+        return { success: false, message: 'Invalid input. userIds and managerIds must be arrays.', status: 400 };
+    }
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        for (const userId of userIds) {
+            await UserManager.destroy({
+                where: { user: userId },
+                transaction
+            });
+
+            const newAssignments = managerIds.map(managerId => ({
+                user: userId,
+                manager: managerId
+            }));
+
+            await UserManager.bulkCreate(newAssignments, { transaction });
+        }
+
+        await transaction.commit();
+        return { success: true, message: 'Managers set successfully.' };
+    } catch (err) {
+        await transaction.rollback();
+        return { success: false, message: 'Failed to set managers.' };
+    }
 }
+
 /*
 * Removes provided managers (managerIds) from each provided user (userIds) if they have them.
 */
 export async function removeUserManagers(userIds, managerIds) {
+    if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
+        return { success: false, message: 'Invalid input. userIds and managerIds must be arrays.', status: 400 };
+    }
 
+    const transaction = await sequelize.transaction();
+
+    try {
+        
+
+        await transaction.commit();
+        return { success: true, message: 'Managers removed successfully.' };
+    } catch (err) {
+        await transaction.rollback();
+        return { success: false, message: 'Failed to remove managers.' };
+    }
 }
+
 
 /**
  * Retrieves users managed by a specific manager.
@@ -533,13 +610,17 @@ export async function getManagedUsers(managerId) {
 }
 
 export async function hasManagerAccess(userId) {
-    const userConfig = await UserConfigs.findOne({ where: { user: userId } });
+    const userConfig = await UserConfigs.findOne(
+        { where: { user: userId } }
+    );
 
     return userConfig && userConfig.manager_view_access;
 }
 
 export async function hasManagerView(userId) {
-    const userConfig = await UserConfigs.findOne({ where: { user: userId } });
+    const userConfig = await UserConfigs.findOne(
+        { where: { user: userId } }
+    );
 
     return userConfig && userConfig.manager_view_enabled;
 }
