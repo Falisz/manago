@@ -113,11 +113,7 @@ const useUser = () => {
                 await axios.put(`/roles/user/${userId}`, { roleIds: formData.roles.filter(role => role !== null) }, { withCredentials: true });
 
                 if (formData.managers && formData.managers.length > 0 ) {
-                    const managers = formData.managers.filter(role => role !== null).map((id, index) => ({
-                        manager: parseInt(id),
-                        primary: index === 0
-                    }));
-                    await axios.put(`/users/managers/${userId}`, { managers }, { withCredentials: true });
+                    await axios.put(`/users/managers/${userId}`, { managerIds: formData.managers.filter(role => role !== null) }, { withCredentials: true });
                 }
             }
 
