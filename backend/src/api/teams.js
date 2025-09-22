@@ -97,7 +97,7 @@ router.post('/assignments', async(req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        console.log(req.body);
+        console.log('Feature to be implemented. Sent data:',req.body);
 
     } catch (err) {
         console.error('Error editing user assignments:', err);

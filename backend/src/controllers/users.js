@@ -422,158 +422,96 @@ export async function getUserManagers(userId) {
 }
 
 /**
- * TO BE RETIRED
- * Updates managers assigned to a user.
- * @param {number} userId - User ID
- * @param {Array<{number}>} managerIds - Array of manager IDs
- * @returns {Promise<{success: boolean, message: string, status?: number}>}
- */
-export async function updateUserManagers(userId, managerIds) {
-    if (!userId || isNaN(userId)) {
-        return { success: false, message: 'Invalid user ID provided.', status: 400 };
-    }
-
-    if (!Array.isArray(managerObjs)) {
-        return { success: false, message: 'Invalid manager IDs provided. Must be an array of manager IDs.', status: 400 };
-    }
-
-    const existingManagers = await User.findAll({
-        where: { id: managerIds },
-        attributes: ['id']
-    });
-    const existingManagerIds = existingManagers.map(u => u.id);
-    const invalidManagerIds = managerIds.filter(id => !existingManagerIds.includes(id));
-
-    if (invalidManagerIds.length > 0) {
-        return { success: false, message: `Invalid manager IDs: ${invalidManagerIds.join(', ')}`, status: 400 };
-    }
-
-    const transaction = await sequelize.transaction();
-
-    try {
-        await UserManager.destroy({
-            where: { user: userId },
-            transaction
-        });
-
-        await Promise.all(
-            managerObjs.map(m =>
-                UserManager.create(
-                    {
-                        user: userId,
-                        manager: m.manager
-                    },
-                    { transaction }
-                )
-            )
-        );
-
-        await transaction.commit();
-
-        return { success: true, message: 'User managers updated successfully.' };
-    } catch (err) {
-        await transaction.rollback();
-        return { success: false, message: 'Failed to update user managers.' };
-    }
-}
-
-/*
-* Assigns (appends) managers (managerIds) to each provided user (userIds) if it does not exist yet.
+* Updates Managers assigned to a User based on mode.
+* - 'add': Appends managers to users if they don't exist yet
+* - 'set': Sets provided managers to users and removes any other manager assignments
+* - 'del': Removes provided managers from users if they have them
+* @param {Array<{number}>} userIds - Array of User IDs for whom Managers would be updated
+* @param {Array<{number}>} managerIds - Array of Manager IDs to be assigned/removed.
+* @param {string} mode - Update mode
+* @returns {Promise<{success: boolean, message: string, status?: number}>}
 */
-export async function assignUserManagers(userIds, managerIds) {
+export async function updateUserManagers(userIds, managerIds, mode = 'add') {
     if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
-        return { success: false, message: 'Invalid input. userIds and managerIds must be arrays.', status: 400 };
+        return { success: false, message: 'Invalid user or manager IDs provided.', status: 400 };
+    }
+
+    if (!['add', 'set', 'del'].includes(mode)) {
+        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".', status: 400 };
     }
 
     const transaction = await sequelize.transaction();
 
     try {
-        const currentAssignments = await UserManager.findAll({
-            where: {
-                user: userIds,
-                manager: managerIds
-            },
-            transaction
-        });
-
-        const existingPairs = new Set(currentAssignments.map(um => `${um.user}-${um.manager}`));
-
-        const newAssignments = [];
-
-        for (const userId of userIds) {
-            for (const managerId of managerIds) {
-                const key = `${userId}-${managerId}`;
-                if (!existingPairs.has(key)) {
-                    newAssignments.push({ user: userId, manager: managerId });
-                }
-            }
-        }
-
-        await UserManager.bulkCreate(newAssignments, { transaction });
-
-        await transaction.commit();
-        return { success: true, message: 'Managers assigned successfully.' };
-    } catch (err) {
-        await transaction.rollback();
-        return { success: false, message: 'Failed to assign managers.' };
-    }
-}
-
-/*
-* Sets provided managers (managerIds) to each provided user (userIds) and removed any other manager assignment for that user.
-*/
-
-export async function setUserManagers(userIds, managerIds) {
-    if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
-        return { success: false, message: 'Invalid input. userIds and managerIds must be arrays.', status: 400 };
-    }
-
-    const transaction = await sequelize.transaction();
-
-    try {
-        for (const userId of userIds) {
-            await UserManager.destroy({
-                where: { user: userId },
+        if (mode === 'add') {
+            const currentAssignments = await UserManager.findAll({
+                where: {
+                    user: userIds,
+                    manager: managerIds
+                },
                 transaction
             });
 
-            const newAssignments = managerIds.map(managerId => ({
-                user: userId,
-                manager: managerId
-            }));
+            const existingPairs = new Set(currentAssignments.map(um => `${um.user}-${um.manager}`));
+            const newAssignments = [];
 
-            await UserManager.bulkCreate(newAssignments, { transaction });
+            for (const userId of userIds) {
+                for (const managerId of managerIds) {
+                    if (!existingPairs.has(`${userId}-${managerId}`)) {
+                        newAssignments.push({ user: userId, manager: managerId });
+                    }
+                }
+            }
+
+            if (newAssignments.length > 0) {
+                await UserManager.bulkCreate(newAssignments, { transaction });
+            }
+
+            await transaction.commit();
+            return {
+                success: true,
+                message: `Managers assigned successfully. ${newAssignments.length} new assignments created.`
+            };
+
+        } else if (mode === 'set') {
+            for (const userId of userIds) {
+                await UserManager.destroy({
+                    where: { user: userId },
+                    transaction
+                });
+
+                const newAssignments = managerIds.map(managerId => ({
+                    user: userId,
+                    manager: managerId
+                }));
+
+                await UserManager.bulkCreate(newAssignments, { transaction });
+            }
+
+            await transaction.commit();
+            return {
+                success: true,
+                message: 'Managers set successfully.'
+            };
+
+        } else if (mode === 'del') {
+            const deletedCount = await UserManager.destroy({
+                where: { user: userIds, manager: managerIds },
+                transaction
+            });
+
+            await transaction.commit();
+            return {
+                success: true,
+                message: `Managers removed successfully. ${deletedCount} assignments removed.`
+            };
         }
 
-        await transaction.commit();
-        return { success: true, message: 'Managers set successfully.' };
     } catch (err) {
         await transaction.rollback();
-        return { success: false, message: 'Failed to set managers.' };
+        return { success: false, message: `Failed to ${mode} managers: ${err.message}` };
     }
 }
-
-/*
-* Removes provided managers (managerIds) from each provided user (userIds) if they have them.
-*/
-export async function removeUserManagers(userIds, managerIds) {
-    if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
-        return { success: false, message: 'Invalid input. userIds and managerIds must be arrays.', status: 400 };
-    }
-
-    const transaction = await sequelize.transaction();
-
-    try {
-        
-
-        await transaction.commit();
-        return { success: true, message: 'Managers removed successfully.' };
-    } catch (err) {
-        await transaction.rollback();
-        return { success: false, message: 'Failed to remove managers.' };
-    }
-}
-
 
 /**
  * Retrieves users managed by a specific manager.

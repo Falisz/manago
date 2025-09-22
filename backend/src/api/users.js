@@ -12,6 +12,9 @@ import {
     getManagedUsers,
     updateUserManagers,
 } from "../controllers/users.js";
+import {
+    updateUserRoles,
+} from "../controllers/roles.js";
 export const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -195,9 +198,20 @@ router.post('/assignments', async(req, res) => {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        console.log(req.body);
+        const { resource, resourceIds, userIds, mode } = req.body;
+        let result;
 
-        res.status(201).json({ message: 'ok' });
+        if (resource === 'manager') {
+            result = await updateUserManagers(userIds, resourceIds, mode);
+        } else if (resource === 'role') {
+            result = await updateUserRoles(userIds, resourceIds, mode);
+        }
+
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        res.json({ message: result.message });
 
     } catch (err) {
         console.error('Error editing user assignments:', err);
@@ -258,7 +272,7 @@ router.put('/managers/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const result = await updateUserManagers(parseInt(userId), managers);
+        const result = await updateUserManagers([parseInt(userId)], managerIds, 'set');
 
         if (!result.success) {
             return res.status(result.status || 400).json({ message: result.message });
@@ -304,6 +318,8 @@ router.delete('/', async (req, res) => {
         }
 
         const { userIds } = req.body;
+
+        console.log('Request for bulk-delete of ', userIds);
 
         res.json({ message: 'Bulk-delete not implemented yet!' });
 

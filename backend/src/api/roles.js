@@ -138,7 +138,7 @@ router.put('/user/:userId', async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const result = await updateUserRoles(parseInt(userId), roleIds);
+        const result = await updateUserRoles([parseInt(userId)], roleIds);
 
         if (!result.success) {
             return res.status(result.status || 400).json({ message: result.message });

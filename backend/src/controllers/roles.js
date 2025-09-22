@@ -1,7 +1,7 @@
 // BACKEND/controller/roles.js
 import sequelize from '../db.js';
 import Role from '../models/role.js';
-import User, { UserDetails, UserRole } from '../models/user.js';
+import User, {UserDetails, UserRole} from '../models/user.js';
 
 /**
  * @typedef {Object} UserRoleData
@@ -163,98 +163,158 @@ export async function updateRole(roleId, data) {
 }
 
 /**
- * Deletes a role and its assignments.
- * @param {number} roleId - Role ID
- * @returns {Promise<{success: boolean, message: string}>}
+ * Deletes one or multiple roles and their assignments.
+ * @param {number|number[]} roleIds - Single role ID or array of role IDs
+ * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
-export async function deleteRole(roleId) {
-    if (!roleId) {
-        return {success: false, message: 'Role ID not provided.'};
+export async function deleteRole(roleIds) {
+    const rolesToDelete = Array.isArray(roleIds) ? roleIds : [roleIds];
+
+    if (!rolesToDelete || rolesToDelete.length === 0 || rolesToDelete.some(id => id == null)) {
+        return { success: false, message: 'Role ID(s) not provided or invalid.' };
     }
 
     const transaction = await sequelize.transaction();
 
-    const role = await Role.findOne({
-        where: { id: roleId },
-        transaction
-    });
+    try {
+        const roles = await Role.findAll({
+            where: { id: rolesToDelete },
+            transaction
+        });
 
-    if (!role) {
+        if (roles.length === 0) {
+            await transaction.rollback();
+            return {
+                success: false,
+                message: `No roles found for provided ID(s): ${rolesToDelete.join(', ')}`
+            };
+        }
+
+        const foundRoleIds = roles.map(role => role.id);
+        const missingRoleIds = rolesToDelete.filter(id => !foundRoleIds.includes(id));
+
+        if (missingRoleIds.length > 0) {
+            console.warn(`Roles not found and will be skipped: ${missingRoleIds.join(', ')}`);
+        }
+
+        const roleAssignments = await UserRole.findAll({
+            where: { role: foundRoleIds },
+            transaction
+        });
+
+        await Promise.all(
+            roleAssignments.map(assignment => assignment.destroy({ transaction }))
+        );
+
+        await Promise.all(
+            roles.map(role => role.destroy({ transaction }))
+        );
+
+        await transaction.commit();
+
+        return {
+            success: true,
+            message: `Role(s) removed successfully. ${roles.length} role(s) deleted, ${roleAssignments.length} assignment(s) removed.`,
+            deletedCount: roles.length
+        };
+
+    } catch (error) {
         await transaction.rollback();
-        return { success: false, message: 'Role not found or already removed.' };
+        return {
+            success: false,
+            message: `Failed to delete role(s): ${error.message}`
+        };
     }
-
-    const roleAssignments = await UserRole.findAll({
-        where: {role: roleId},
-        transaction
-    });
-
-    await Promise.all(
-        roleAssignments.map(assignment => assignment.destroy({ transaction }))
-    );
-
-    await role.destroy({ transaction });
-
-    await transaction.commit();
-    return { success: true, message: 'Role removed successfully.' };
 }
 
 /**
- * Updates roles assigned to a user.
- * @param {number} userId - User ID
- * @param {number[]} roleIds - Array of role IDs
+ * Updates Roles assigned to a User based on mode.
+ * - 'add': Appends roles to users if they don't exist yet
+ * - 'set': Sets provided roles to users and removes any other role assignments
+ * - 'del': Removes provided roles from users if they have them
+ * @param {Array<{number}>} userIds - Array of User IDs for whom Roles would be updated
+ * @param {Array<{number}>} roleIds - Array of Role IDs to be assigned/removed.
+ * @param {string} mode - Update mode
  * @returns {Promise<{success: boolean, message: string, status?: number}>}
  */
-export async function updateUserRoles(userId, roleIds) {
-    if (!userId || isNaN(userId)) {
-        return { success: false, message: 'Invalid user ID provided.', status: 400 };
+export async function updateUserRoles(userIds, roleIds, mode = 'add') {
+    if (!Array.isArray(userIds) || !Array.isArray(roleIds)) {
+        return { success: false, message: 'Invalid user or role IDs provided.', status: 400 };
     }
 
-    if (!Array.isArray(roleIds) || roleIds.some(id => isNaN(id))) {
-        return { success: false, message: 'Invalid role IDs provided. Must be an array of integers.', status: 400 };
+    if (!['add', 'set', 'del'].includes(mode)) {
+        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".', status: 400 };
     }
 
     const transaction = await sequelize.transaction();
 
-    const existingRoles = await Role.findAll({
-        where: { id: roleIds },
-        attributes: ['id'],
-        transaction
-    });
+    try {
+        if (mode === 'add') {
+            const currentAssignments = await UserRole.findAll({
+                where: {
+                    user: userIds,
+                    role: roleIds
+                },
+                transaction
+            });
 
-    const existingRoleIds = existingRoles.map(role => role.id);
-    const invalidRoleIds = roleIds.filter(id => !existingRoleIds.includes(id));
+            const existingPairs = new Set(currentAssignments.map(ur => `${ur.user}-${ur.role}`));
+            const newAssignments = [];
 
-    if (invalidRoleIds.length > 0) {
+            for (const userId of userIds) {
+                for (const roleId of roleIds) {
+                    if (!existingPairs.has(`${userId}-${roleId}`)) {
+                        newAssignments.push({ user: userId, role: roleId });
+                    }
+                }
+            }
+
+            if (newAssignments.length > 0) {
+                await UserRole.bulkCreate(newAssignments, { transaction });
+            }
+
+            await transaction.commit();
+            return {
+                success: true,
+                message: `Roles assigned successfully. ${newAssignments.length} new assignments created.`
+            };
+
+        } else if (mode === 'set') {
+            for (const userId of userIds) {
+                await UserRole.destroy({
+                    where: { user: userId },
+                    transaction
+                });
+
+                const newAssignments = roleIds.map(roleId => ({
+                    user: userId,
+                    role: roleId
+                }));
+
+                await UserRole.bulkCreate(newAssignments, { transaction });
+            }
+
+            await transaction.commit();
+            return {
+                success: true,
+                message: 'Managers set successfully.'
+            };
+
+        } else if (mode === 'del') {
+            const deletedCount = await UserRole.destroy({
+                where: { user: userIds, manager: roleIds },
+                transaction
+            });
+
+            await transaction.commit();
+            return {
+                success: true,
+                message: `Managers removed successfully. ${deletedCount} assignments removed.`
+            };
+        }
+
+    } catch (err) {
         await transaction.rollback();
-        return { success: false, message: `Invalid role IDs: ${invalidRoleIds.join(', ')}`, status: 400 };
+        return { success: false, message: `Failed to ${mode} managers: ${err.message}` };
     }
-
-    const currentUserRoles = await UserRole.findAll({
-        where: { user: userId },
-        attributes: ['role'],
-        transaction
-    });
-
-    const currentRoleIds = currentUserRoles.map(ur => ur.role);
-
-    const rolesToAdd = roleIds.filter(id => !currentRoleIds.includes(id));
-    const rolesToRemove = currentRoleIds.filter(id => !roleIds.includes(id));
-
-    await Promise.all(
-        rolesToAdd.map(roleId =>
-            UserRole.create({ user: userId, role: roleId }, { transaction })
-        )
-    );
-
-    await UserRole.destroy({
-        where: {
-            user: userId,
-            role: rolesToRemove
-        },
-        transaction
-    });
-
-    await transaction.commit();
-    return { success: true, message: 'User roles updated successfully.' };
 }
