@@ -91,6 +91,20 @@ router.post('/', async (req, res) => {
     }
 })
 
+router.post('/assignments', async(req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        console.log(req.body);
+
+    } catch (err) {
+        console.error('Error editing user assignments:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
+
 router.put('/:teamId', async (req, res) => {
     try {
         if (!req.session.user) {
