@@ -65,30 +65,13 @@ const TableRow = ({
                       descriptionField,
                       displayContextMenu,
                       isSubRow = false,
-                      hasSelectableRows,
+                      handleSelect,
                       selectedItems,
-                      setSelectedItems,
                       hasContextMenu,
                       openModal
                   }) => {
 
     const selectionMode = selectedItems?.size > 0;
-
-    const handleSelect = (e, id) => {
-        if (!hasSelectableRows) return;
-        if (e.shiftKey || selectionMode) {
-            e.preventDefault();
-            setSelectedItems(prev => {
-                const newSelected = new Set(prev);
-                if (newSelected.has(id)) {
-                    newSelected.delete(id);
-                } else {
-                    newSelected.add(id);
-                }
-                return newSelected;
-            });
-        }
-    };
 
     return (
         <>
@@ -200,9 +183,8 @@ const TableRow = ({
                             hasContextMenu={hasContextMenu}
                             displayContextMenu={displayContextMenu}
                             isSubRow={true}
-                            hasSelectableRows={hasSelectableRows}
+                            handleSelect={handleSelect}
                             selectedItems={selectedItems}
-                            setSelectedItems={setSelectedItems}
                             openModal={openModal}
                         />
                     )}
@@ -214,39 +196,25 @@ const TableRow = ({
 
 /**
  * @param {Object[]} dataSource
- * @param {Object} fields
- * @param {boolean} hasHeader
+ * @param {Object} tableStructure
  * @param {boolean} hasSelectableRows
- * @param {Set | null} selectedItems
- * @param {Array} contextMenuActions
- * @param {string} contextMenuActions.id
- * @param {string} contextMenuActions.label
- * @param {boolean} contextMenuActions.selectionMode
- * @param {function} contextMenuActions.action
- * @param {function} contextMenuActions.shortcut
- * @param {function | null} setSelectedItems
  * @param {string | null} dataPlaceholder
- * @param {string | null} descriptionField
- * @param {string | null} subRowField
+ * @param {string} className
  * @param {Object} style
  * **/
 const Table = ({
                    dataSource,
-                   fields,
-                   hasHeader = true,
+                   tableStructure,
                    hasSelectableRows = false,
-                   contextMenuActions = null,
-                   selectedItems = null,
-                   setSelectedItems = null,
                    dataPlaceholder = null,
-                   descriptionField = null,
-                   subRowField = null,
+                   className,
                    style
                }) => {
     const MENU_ID = 'table_context_menu';
 
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [selectedItems, setSelectedItems] = useState(new Set());
     const { show } = useContextMenu({ id: MENU_ID, });
     const { openModal } = useModals();
 
@@ -278,10 +246,29 @@ const Table = ({
         setSortConfig({ key: name, direction });
     };
 
+    const handleSelect = (e, id) => {
+        if (!hasSelectableRows)
+            return;
+
+        if (selectionMode || e.shiftKey || e.ctrlKey) {
+            e.preventDefault();
+            setSelectedItems(prev => {
+                const newSelected = new Set(Array.from(prev));
+                if (newSelected?.has(id)) {
+                    newSelected.delete(id);
+                } else {
+                    newSelected.add(id);
+                }
+                return newSelected;
+            });
+        }        
+    };
+
     const filteredAndSortedData = useMemo(() => {
-        if (!dataSource) return [];
+        if (!dataSource || !tableStructure) return [];
 
         let filteredData = [...dataSource];
+        const fields = tableStructure?.tableFields;
 
         Object.keys(filters).forEach(key => {
             if (filters[key]) {
@@ -381,60 +368,115 @@ const Table = ({
 
         return filteredData;
 
-    }, [dataSource, fields, filters, sortConfig]);
+    }, [dataSource, tableStructure, filters, sortConfig]);
+
+    if (!dataSource)
+        return <div>Table cannot be rendered without Data Source.</div>;
+    
+    if (!tableStructure)
+        return <div>Table cannot be rendered without properly defined Table Structure.</div>;
 
     const selectionMode = selectedItems?.size > 0;
+    const hasHeader = tableStructure.hasHeader;
+    const pageHeader = tableStructure.pageHeader;
+    const tableFields = tableStructure.tableFields;
+    const subRowField = tableStructure.subRowField;
+    const descriptionField = tableStructure.descriptionField;
+    const contextMenuActions = tableStructure.contextMenuActions;
     
     return (
-        <div className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`} style={style}>
-            {hasHeader && (
-                <TableHeader
-                    fields={fields}
-                    filters={filters}
-                    sortConfig={sortConfig}
-                    handleFilter={handleFilter}
-                    handleSorting={handleSorting}
-                />
-            )}
-            <div className={'app-table-body app-overflow-y app-scroll'}>
-                {filteredAndSortedData?.length === 0 ? (
-                    <p className={'app-table-no-matches'}>{dataPlaceholder || 'No matching items found.'}</p>
-                ) : (
-                    filteredAndSortedData.map((data, index) => {
-                        const tableRow = <TableRow
-                            key={data.id || index}
-                            data={data}
-                            fields={fields}
-                            subRowField={subRowField}
-                            descriptionField={descriptionField}
-                            hasContextMenu={contextMenuActions && contextMenuActions.length > 0}
-                            displayContextMenu={displayContextMenu}
-                            hasSelectableRows={hasSelectableRows}
-                            selectedItems={selectedItems}
-                            setSelectedItems={setSelectedItems}
-                            openModal={openModal}
+        <>
+            {pageHeader && 
+                <div className='page-header'>
+                    {pageHeader.title &&
+                        <h1 className={'page-title'}> {pageHeader.title} </h1>
+                    }
+                    {selectionMode > 0 &&
+                        <div className='selected-items'>
+                            <p className='seethrough'>
+                                {selectedItems.size} {pageHeader.itemName || 'Item'}{selectedItems.size !== 1 ? 's' : ''} selected.
+                            </p>
+                            <Button
+                                onClick={() => setSelectedItems(new Set())}
+                                label={'Clear selection'}
+                            />
+                            <Button
+                                onClick={() => setSelectedItems(pageHeader.allElements)}
+                                label={'Select all'}
+                            />
+                        </div>
+                    }
+                    {tableStructure.pageHeader.newItemModal && 
+                        <Button
+                            className='new-item'
+                            onClick={() => openModal({ content: pageHeader.newItemModal })}
+                            label={`Add ${pageHeader.itemName || 'Item'}`}
+                            icon={'add'}
                         />
+                    }
+                </div>
+            }
+            <div className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`} style={style}>
+                {hasHeader && (
+                    <TableHeader
+                        fields={tableFields}
+                        filters={filters}
+                        sortConfig={sortConfig}
+                        handleFilter={handleFilter}
+                        handleSorting={handleSorting}
+                    />
+                )}
+                <div className={'app-table-body app-overflow-y app-scroll'}>
+                    {filteredAndSortedData?.length === 0 ? (
+                        <p className={'app-table-no-matches'}>{dataPlaceholder || 'No matching items found.'}</p>
+                    ) : (
+                        filteredAndSortedData.map((data, index) => {
+                            const tableRow = <TableRow
+                                key={index}
+                                data={data}
+                                fields={tableFields}
+                                handleSelect={(e, id) => handleSelect(e, id, data.id)}
+                                selectedItems={selectedItems}
+                                subRowField={subRowField}
+                                descriptionField={descriptionField}
+                                hasContextMenu={contextMenuActions && contextMenuActions.length > 0}
+                                displayContextMenu={displayContextMenu}
+                                openModal={openModal}
+                            />;
 
-                        return subRowField ? (
-                            <div key={index} className={'app-table-row-stack'}>
-                                {tableRow}
-                            </div>
-                        ) : tableRow
-                    })
+                            return subRowField ? (
+                                <div key={index} className={'app-table-row-stack'}>
+                                    {tableRow}
+                                </div>
+                            ) : tableRow
+                        })
+                    )}
+                </div>
+                {contextMenuActions && contextMenuActions.length > 0 && (
+                    <Menu className={'app-context-menu'} id={MENU_ID}>
+                        {contextMenuActions.filter(item => item.selectionMode === selectionMode).map(item => (
+                            <Item 
+                                key={item.id}
+                                onClick={({ props }) => {
+                                    if (item.select)
+                                        handleSelect(props[item.select]);
+                                    else if (item.setSelected)
+                                        setSelectedItems(item.setSelected);
+                                    else if (item.onClick)
+                                        if (item.selectionMode)
+                                            item.onClick(selectedItems);
+                                        else
+                                            item.onClick(props);
+                                    else 
+                                        return null;
+                                    }}>
+                                {item.label} { item.shortcut ? <RightSlot>{item.shortcut}</RightSlot> : null }
+                            </Item>
+                        ))}
+                    </Menu>
                 )}
             </div>
-            {contextMenuActions && contextMenuActions.length > 0 && (
-                <Menu className={'app-context-menu'} id={MENU_ID}>
-                    {contextMenuActions.filter(item => item.selectionMode === selectionMode).map(item => (
-                        <Item 
-                            key={item.id}
-                            onClick={({ props }) => {if (!item.action) return; item.action(props)}}>
-                            {item.label} { item.shortcut ? <RightSlot>{item.shortcut}</RightSlot> : null }
-                        </Item>
-                    ))}
-                </Menu>
-            )}
-        </div>
+        </>
     );
 }
 

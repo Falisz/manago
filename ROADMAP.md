@@ -1,11 +1,8 @@
-Following roadmap and tasks to-do as of 2025-09-14:
+Following roadmap and tasks to-do as of 2025-09-22:
 ### Frontend
 - [ ] General app behaviour
-  - [x] Generalize Details and Edit Form components into templates to be used similarly like Table component.
-  - [ ] Use Generalized Edit Form to replace Role Edit, Team Edit, and respective Assignments Edits
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] Users and teams management
-  - [ ] Selection feature in the user lists with actions like bulk delete, assign Role and assign Manager
   - [ ] Implement safe lock for Reportees not to be assigned as Managers. 
   - [ ] Assignment form for UserManagers, UserRoles, TeamUsers assignments - both singular and bulk operations.
 - [ ] Branches

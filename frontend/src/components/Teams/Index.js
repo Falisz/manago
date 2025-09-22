@@ -1,15 +1,13 @@
 // FRONTEND/components/Teams/Index.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useTeam from '../../hooks/useTeam';
-import Button from '../Button';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const TeamsIndex = () => {
     const { openModal, refreshData, refreshTriggers, closeTopModal } = useModals();
     const { teams, teamsLoading: loading, fetchTeams, deleteTeam } = useTeam();
-    const [ selectedTeams, setSelectedTeams ] = useState(new Set());
 
     useEffect(() => {
         if (!teams) {
@@ -23,19 +21,7 @@ const TeamsIndex = () => {
         }
     }, [refreshTriggers, fetchTeams]);
 
-    const handleTeamSelect = (id) => {
-        setSelectedTeams(prev => {
-            const newSelected = new Set(Array.from(prev));
-            if (newSelected?.has(id)) {
-                newSelected.delete(id);
-            } else {
-                newSelected.add(id);
-            }
-            return newSelected;
-        });
-    };
-
-    const handleTeamDelete = (team) => {
+    const handleTeamDelete = useCallback((team) => {
         let message = `Are you sure you want to delete this team? This action cannot be undone.`;
         const teamId = team.id;
         const users = team.members ? team.members.length : 0;
@@ -64,9 +50,9 @@ const TeamsIndex = () => {
             confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
             confirmLabel2: subteams > 0 ? 'Delete team and subteams' : undefined,
         });
-    };
+    },[closeTopModal, deleteTeam, openModal, refreshData]);
 
-    const handleTeamsDelete = () => {
+    const handleTeamsDelete = useCallback((selectedTeams) => {
         openModal({
             content: 'confirm',
             type: 'pop-up',
@@ -78,107 +64,82 @@ const TeamsIndex = () => {
             },
         });
 
-    }
+    }, [closeTopModal, openModal, refreshData]);
 
-    const fields = {
-        name: {
-            title: 'Name',
-            display: true,
-            sortable: true,
-            filterable: true,
-            type: 'string',
-            openModal: 'teamDetails'
+    const tableStructure = useMemo(() => ({
+        pageHeader: {
+            title: 'Teams in Zyrah',
+            itemName: 'Team',
+            allElements: new Set(teams?.map(team => team.id)),
+            newItemModal: 'teamNew'
         },
-        managers: {
-            title: 'Managers',
-            display: true,
-            sortable: true,
-            filterable: true,
-            type: 'list',
-            openModal: 'userDetails'
+        tableFields: {
+            name: {
+                title: 'Name',
+                display: true,
+                sortable: true,
+                filterable: true,
+                type: 'string',
+                openModal: 'teamDetails'
+            },
+            managers: {
+                title: 'Managers',
+                display: true,
+                sortable: true,
+                filterable: true,
+                type: 'list',
+                openModal: 'userDetails'
+            },
+            leaders: {
+                title: 'Leaders',
+                display: true,
+                sortable: true,
+                filterable: true,
+                type: 'list',
+                openModal: 'userDetails'
+            },
+            members_count: {
+                title: 'Members',
+                display: true,
+                sortable: true,
+                filterable: true,
+                type: 'number',
+                style: {maxWidth: 100+'px'},
+                computeValue: (data) => data.members?.length || 0
+            }
         },
-        leaders: {
-            title: 'Leaders',
-            display: true,
-            sortable: true,
-            filterable: true,
-            type: 'list',
-            openModal: 'userDetails'
-        },
-        members_count: {
-            title: 'Members',
-            display: true,
-            sortable: true,
-            filterable: true,
-            type: 'number',
-            style: {maxWidth: 100+'px'},
-            computeValue: (data) => data.members?.length || 0
-        }
-    }
-
-    const contextMenuActions = [
-        { id: 'select', label: 'Select Team', selectionMode: false,
-            action: (props) => handleTeamSelect(props.id) },
-        { id: 'edit', label: 'Edit Team', selectionMode: false,
-            action: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
-        { id: 'assign-member', label: 'Edit Members', selectionMode: false,
-            action: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) },
-        { id: 'delete', label: 'Delete Team', selectionMode: false,
-            action: (props) => handleTeamDelete(props) },
-        { id: 'select-all', label: 'Select All', selectionMode: true,
-            action: () => setSelectedTeams(new Set(teams.map(team => team.id))) },
-        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
-            action: () => setSelectedTeams(new Set(teams.filter(team => team.parent_team === null).map(team => team.id))) },
-        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
-            action: () => setSelectedTeams(new Set()) },
-        { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
-            action: () => openModal({content: 'teamUserBulkAssignment', style: {overflow: 'unset'},
-                type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
-        { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
-            action: () => handleTeamsDelete() },
-    ];
+        hasHeader: true,
+        subRowField: 'subteams',
+        contextMenuActions: [
+            { id: 'select', label: 'Select Team', selectionMode: false, select: 'id'},
+            { id: 'edit', label: 'Edit Team', selectionMode: false,
+                onClick: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
+            { id: 'assign-member', label: 'Edit Members', selectionMode: false,
+                onClick: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) },
+            { id: 'delete', label: 'Delete Team', selectionMode: false,
+                onClick: (props) => handleTeamDelete(props) },
+            { id: 'select-all', label: 'Select All', selectionMode: true, setSelected: new Set(teams?.map(team => team.id)) },
+            { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
+                setSelected: new Set(teams?.filter(team => team.parent_team === null).map(team => team.id)) },
+            { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
+                setSelected: new Set() },
+            { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
+                onClick: (selectedTeams) => openModal({content: 'teamUserBulkAssignment', style: {overflow: 'unset'},
+                    type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
+            { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
+                onClick: (selectedTeams) => handleTeamsDelete(selectedTeams) },
+        ],
+        }), []);
 
     if (loading) return <Loader />;
 
     return (
-        <>
-            <div className='page-header'>
-                <h1 className={'page-title'}> Teams in Zyrah </h1>
-                {
-                    selectedTeams?.size > 0 &&
-                    <div className='selected-items'>
-                        <p className='seethrough'>
-                            {selectedTeams.size} team{selectedTeams.size !== 1 ? 's' : ''} selected.
-                        </p>
-                        <Button
-                            onClick={() => setSelectedTeams(new Set())}
-                            label={'Clear selection'}
-                        />
-                        <Button
-                            onClick={() => setSelectedTeams(new Set(teams.map(team => team.id)))}
-                            label={'Select all'}
-                        />
-                    </div>
-                }
-                <Button
-                    className='new-team'
-                    onClick={() => openModal({ content: 'teamNew' })}
-                    label={'Add team'}
-                    icon={'add'}
-                />
-            </div>
-
-            <Table
-                dataSource={teams.filter(team => team.parent_team === null)}
-                fields={fields}
-                hasSelectableRows={true}
-                contextMenuActions={contextMenuActions}
-                selectedItems={selectedTeams}
-                setSelectedItems={setSelectedTeams}
-                dataPlaceholder={'No Teams found.'}
-                subRowField={'subteams'}
-            />
-        </>
+        <Table
+            dataSource={teams.filter(team => team.parent_team === null)}
+            tableStructure={tableStructure}
+            hasSelectableRows={true}
+            dataPlaceholder={'No Teams found.'}
+        />
     );
 };
 

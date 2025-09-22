@@ -1,69 +1,65 @@
 // FRONTEND/components/Roles/Index.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useRole from '../../hooks/useRole';
-import Button from '../Button';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const RolesIndex = () => {
-    const { openModal, refreshTriggers } = useModals();
+    const { refreshTriggers } = useModals();
     const { roles, rolesLoading: loading, fetchRoles } = useRole();
 
     useEffect(() => {
-        if (!roles) fetchRoles().then();
+        if (!roles) 
+            fetchRoles().then();
     }, [fetchRoles, roles]);
 
     useEffect(() => {
-        if (refreshTriggers?.roles) fetchRoles(false).then();
+        if (refreshTriggers?.roles) 
+            fetchRoles(false).then();
     }, [fetchRoles, refreshTriggers]);
 
-    const fields = {
-        icon: {
-            display: true,
-            type: 'icon',
-            openModal: 'roleDetails',
-            style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'}
+    const tableStructure = useMemo(() => ({
+        pageHeader: {
+            title: 'Roles',
+            itemName: 'Role',
+            newItemModal: 'roleNew'
         },
-        name: {
-            display: true,
-            type: 'string',
-            openModal: 'roleDetails',
-            style: {fontSize: 1.25+'rem', paddingLeft: 0}
+        tableFields: {
+            icon: {
+                display: true,
+                type: 'icon',
+                openModal: 'roleDetails',
+                style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'}
+            },
+            name: {
+                display: true,
+                type: 'string',
+                openModal: 'roleDetails',
+                style: {fontSize: 1.25+'rem', paddingLeft: 0}
+            },
+            users_count: {
+                display: true,
+                type: 'number',
+                formats: {0: 'No users with this role', 1: 'One user with this role', default: '%n users has this role'},
+                style: {textAlign: 'right', maxWidth: '200px'},
+                computeValue: (data) => data.users?.length || 0
+            }
         },
-        users_count: {
-            display: true,
-            type: 'number',
-            formats: {0: 'No users with this role', 1: 'One user with this role', default: '%n users has this role'},
-            style: {textAlign: 'right', maxWidth: '200px'},
-            computeValue: (data) => data.users?.length || 0
-        }
-    }
+        descriptionField: 'description'
+    }), []);
 
-    if (loading) return <Loader />;
+    if (loading)
+        return <Loader />;
 
     return (
-        <>
-            <div className='page-header'>
-                <h1 className={'page-title'}> Security Roles </h1>
-                <Button
-                    className='new-role'
-                    onClick={() => openModal({ content: 'roleNew' })}
-                    label={'Add role'}
-                    icon={'add'}
-                />
-            </div>
-            <Table
-                dataSource={roles}
-                fields={fields}
-                style={{maxWidth: 'max(40%, 500px)'}}
-                hasHeader={false}
-                hasContextMenu={false}
-                hasSelectableRows={false}
-                descriptions={true}
-                descriptionField={'description'}
-            />
-        </>
+        <Table
+            dataSource={roles}
+            tableStructure={tableStructure}
+            hasSelectableRows={false}
+            dataPlaceholder={'No Roles found.'}
+            style={{maxWidth: 'max(40%, 500px)'}}
+        />
     );
 };
 
