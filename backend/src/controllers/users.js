@@ -14,7 +14,6 @@ import { getUserRoles } from './roles.js';
  */
 /**
  * @typedef {Object} UserManager
- * @property {boolean} primary - Indicates if the manager is the primary manager
  * @property {UserData} Manager - Sequelize User association
  * @property {UserData} User - Sequelize User association
  */
@@ -404,7 +403,6 @@ export async function getUserManagers(userId) {
      */
     let managers = await UserManager.findAll({
         where: { user: userId },
-        order: [['primary', 'DESC']],
         include: [
             {
                 model: User,
@@ -417,34 +415,27 @@ export async function getUserManagers(userId) {
     managers = managers.map(m => ({
         id: m.Manager.id,
         first_name: m.Manager.UserDetails?.first_name,
-        last_name: m.Manager.UserDetails?.last_name,
-        primary: m.primary
+        last_name: m.Manager.UserDetails?.last_name
     }));
 
     return managers;
 }
 
 /**
+ * TO BE RETIRED
  * Updates managers assigned to a user.
  * @param {number} userId - User ID
- * @param {Array<{manager: number, primary?: boolean}>} managerObjs - Array of manager objects
+ * @param {Array<{number}>} managerIds - Array of manager IDs
  * @returns {Promise<{success: boolean, message: string, status?: number}>}
  */
-export async function updateUserManagers(userId, managerObjs) {
+export async function updateUserManagers(userId, managerIds) {
     if (!userId || isNaN(userId)) {
         return { success: false, message: 'Invalid user ID provided.', status: 400 };
     }
 
-    if (!Array.isArray(managerObjs) || managerObjs.some(m => isNaN(m.manager))) {
-        return { success: false, message: 'Invalid manager IDs provided. Must be an array of objects with manager IDs.', status: 400 };
+    if (!Array.isArray(managerObjs)) {
+        return { success: false, message: 'Invalid manager IDs provided. Must be an array of manager IDs.', status: 400 };
     }
-
-    const primaryManagers = managerObjs.filter(m => m.primary === true);
-    if (primaryManagers.length > 1) {
-        return { success: false, message: 'User can have only one primary manager assigned.', status: 400 };
-    }
-
-    const managerIds = managerObjs.map(m => m.manager);
 
     const existingManagers = await User.findAll({
         where: { id: managerIds },
@@ -470,8 +461,7 @@ export async function updateUserManagers(userId, managerObjs) {
                 UserManager.create(
                     {
                         user: userId,
-                        manager: m.manager,
-                        primary: m.primary === true
+                        manager: m.manager
                     },
                     { transaction }
                 )
@@ -485,6 +475,27 @@ export async function updateUserManagers(userId, managerObjs) {
         await transaction.rollback();
         return { success: false, message: 'Failed to update user managers.' };
     }
+}
+
+/*
+* Assigns (appends) managers (managerIds) to each provided user (userIds) if it does not exist yet.
+*/
+export async function assignUserManagers(userIds, managerIds) {
+    const currentAssignments = await UserManager.findAll();
+
+
+}
+/*
+* Sets provided managers (managerIds) to each provided user (userIds) and removed any other manager assignment for that user.
+*/
+export async function setUserManagers(userIds, managerIds) {
+
+}
+/*
+* Removes provided managers (managerIds) from each provided user (userIds) if they have them.
+*/
+export async function removeUserManagers(userIds, managerIds) {
+
 }
 
 /**
@@ -515,8 +526,7 @@ export async function getManagedUsers(managerId) {
     users = users.map(u => ({
         id: u?.User.id,
         first_name: u?.User.UserDetails?.first_name,
-        last_name: u?.User.UserDetails?.last_name,
-        primary: u.primary
+        last_name: u?.User.UserDetails?.last_name
     }));
 
     return users;

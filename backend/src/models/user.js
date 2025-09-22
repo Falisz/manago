@@ -119,17 +119,14 @@ export const UserManager = sequelize.define('UserManager', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' }
-    },
-    primary: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
     }
 }, {
     tableName: 'user_managers',
     timestamps: false,
-    indexes: [{ unique: true, fields: ['user', 'manager'] }]
+    indexes: [{ unique: true, fields: ['user', 'manager'] }],
+    primaryKey: false
 });
+UserManager.removeAttribute('id');
 
 User.hasOne(UserDetails, { foreignKey: 'user', sourceKey: 'id', as: 'UserDetails' });
 UserDetails.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
