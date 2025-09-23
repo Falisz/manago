@@ -321,7 +321,7 @@ router.delete('/', async (req, res) => {
 
         console.log('Request for bulk-delete of ', userIds);
 
-        res.json({ message: 'Bulk-delete not implemented yet!' });
+        res.status(400).json({ message: 'Bulk-delete not implemented yet!' });
 
     } catch (err) {
         console.error('Error removing user:', err);

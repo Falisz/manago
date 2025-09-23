@@ -171,6 +171,24 @@ router.delete('/:teamId', async (req, res) => {
         console.error('Error deleting team:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-})
+});
+
+router.delete('/', async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { teamIds } = req.body;
+
+        console.log('Request for bulk-delete of Teams: ', teamIds);
+
+        res.status(400).json({ message: 'Bulk-delete not implemented yet!' });
+
+    } catch (err) {
+        console.error('Error removing user:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+});
 
 export default router;
