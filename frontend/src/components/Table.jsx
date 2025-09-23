@@ -250,8 +250,10 @@ const Table = ({
         if (!hasSelectableRows)
             return;
 
-        if (selectionMode || e.shiftKey || e.ctrlKey) {
-            e.preventDefault();
+        if (selectionMode || e === 'contextMenuClick' || e.shiftKey || e.ctrlKey) {
+            if (e !== 'contextMenuClick')
+                e.preventDefault();
+            
             setSelectedItems(prev => {
                 const newSelected = new Set(Array.from(prev));
                 if (newSelected?.has(id)) {
@@ -459,7 +461,7 @@ const Table = ({
                                 key={item.id}
                                 onClick={({ props }) => {
                                     if (item.select)
-                                        handleSelect(props[item.select]);
+                                        handleSelect('contextMenuClick', props[item.select]);
                                     else if (item.setSelected)
                                         setSelectedItems(item.setSelected);
                                     else if (item.onClick)

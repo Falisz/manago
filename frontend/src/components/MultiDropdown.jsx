@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import Dropdown from './Dropdown';
 import Button from './Button';
 
@@ -12,25 +12,14 @@ const MultiDropdown = ({
                            itemName = 'Item',
                            itemExcludedIds
                        }) => {
-    
-    if (formData === undefined || !dataField || !onChange || !itemSource || !itemNameField) {
-        return <div>
-                Error using MultiDropdown component. Lacking props:
-                {formData === undefined && ' formData'}
-                {!dataField && ' dataField'}
-                {!onChange && ' onChange'}
-                {!itemSource && ' itemSource'}
-                {!itemNameField && ' itemNameField'}
-            </div>
-    }
-    
-    const newItem = itemSource && !formData[dataField]?.includes(null) && formData[dataField]?.length < itemSource.length;
 
-    const getOptions = (index: number) => {
-        
-        const currentSelected: boolean = formData[dataField] && formData[dataField][index];
-        const idField: string = itemIdField;
-        const nameField: Array<string> | string | null = itemNameField;
+    const getOptions = useCallback((index, itemExcludedIds) => {
+        if (!dataField || formData === undefined)
+            return null;
+
+        const currentSelected = formData[dataField] && formData[dataField][index];
+        const idField = itemIdField;
+        const nameField = itemNameField;
 
         const filteredSource = itemSource?.filter(item => 
             ( (currentSelected && item[idField] === currentSelected) || 
@@ -46,7 +35,21 @@ const MultiDropdown = ({
             }) || [];
 
         return Array.from(filteredSource);
+    }, [dataField, formData, itemIdField, itemNameField, itemSource]);           
+    
+
+    if (formData === undefined || !dataField || !onChange || !itemSource || !itemNameField) {
+        return <div>
+                Error using MultiDropdown component. Lacking props:
+                {formData === undefined && ' formData'}
+                {!dataField && ' dataField'}
+                {!onChange && ' onChange'}
+                {!itemSource && ' itemSource'}
+                {!itemNameField && ' itemNameField'}
+            </div>
     }
+    
+    const newItem = itemSource && !formData[dataField]?.includes(null) && formData[dataField]?.length < itemSource.length;
 
     return <>
         { itemSource?.length === 0 ? (<p>No {itemName}s available.</p>) : (
@@ -57,7 +60,7 @@ const MultiDropdown = ({
                             <Dropdown
                                 name={dataField}
                                 value={itemId}
-                                options={getOptions(index)}
+                                options={getOptions(index, itemExcludedIds)}
                                 onChange={(e) => onChange(e, 'set', index)}
                                 placeholder={`Select ${itemName}`}
                                 noneAllowed={true}

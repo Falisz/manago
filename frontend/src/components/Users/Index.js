@@ -102,7 +102,7 @@ const UsersIndexPage = ({content='users'}) => {
             { id: 'assign-manager', label: 'Edit Managers', selectionMode: false,
                 onClick: (props) => openModal({content: 'userManagerAssignment', type: 'dialog',
                     data: props, style: {overflow: 'unset'}}) },
-            { id: 'delete', label: 'Delete Team', selectionMode: false,
+            { id: 'delete', label: 'Delete User', selectionMode: false,
                 onClick: (props) => handleUserDelete(props.id) },
             { id: 'select-all', label: 'Select All', selectionMode: true, 
                 setSelected: new Set(users?.map(user => user.id)) },

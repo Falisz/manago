@@ -62,6 +62,7 @@ export const UserManagerAssignment = ({user}) => {
                 itemSource: managers,
                 itemNameField: ['first_name', 'last_name'],
                 itemName: 'Manager',
+                itemExcludedIds: {data: [parseInt(user.id)]}
             }
         },
         onSubmit: {
@@ -311,6 +312,7 @@ const UserEdit = ({userId, preset}) => {
                 itemSource: managers,
                 itemNameField: ['first_name', 'last_name'],
                 itemName: 'Manager',
+                itemExcludedIds: {data: [parseInt(userId)]},
             }
         },
         onSubmit: {
