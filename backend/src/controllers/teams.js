@@ -94,9 +94,9 @@ export async function getTeams(parent_team = null, getMembers=true) {
         if (getMembers)
             teamData = {
                 ...teamData,
-                members: await getTeamMembers(team.id, 0, true),
-                leaders: await getTeamMembers(team.id, 1),
-                managers: await getTeamMembers(team.id, 2),
+                members: await getTeamMembers(team.id, 1, true),
+                leaders: await getTeamMembers(team.id, 2),
+                managers: await getTeamMembers(team.id, 3),
             }
         return teamData;
     }));

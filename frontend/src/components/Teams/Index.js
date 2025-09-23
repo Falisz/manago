@@ -7,7 +7,7 @@ import Table from '../Table';
 
 const TeamsIndex = () => {
     const { openModal, refreshData, refreshTriggers, closeTopModal } = useModals();
-    const { teams, teamsLoading: loading, fetchTeams, deleteTeam } = useTeam();
+    const { teams, teamsLoading: loading, fetchTeams, deleteTeams, deleteTeam } = useTeam();
 
     useEffect(() => {
         if (!teams) {
@@ -50,7 +50,7 @@ const TeamsIndex = () => {
             confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
             confirmLabel2: subteams > 0 ? 'Delete team and subteams' : undefined,
         });
-    },[closeTopModal, deleteTeam, openModal, refreshData]);
+    },[closeTopModal, openModal, refreshData, deleteTeam]);
 
     const handleTeamsDelete = useCallback((selectedTeams) => {
         openModal({
@@ -58,13 +58,13 @@ const TeamsIndex = () => {
             type: 'pop-up',
             message: `Are you sure you want to delete ${selectedTeams.size} selected Team${selectedTeams.size > 1 ? 's' : ''}? This action cannot be undone.`,
             onConfirm: () => {
-                console.warn('Bulk Deletion to be implemented.');
+                deleteTeams(selectedTeams).then();
                 refreshData('teams', true);
                 closeTopModal();
             },
         });
 
-    }, [closeTopModal, openModal, refreshData]);
+    }, [closeTopModal, openModal, refreshData, deleteTeams]);
 
     const tableStructure = useMemo(() => ({
         pageHeader: {

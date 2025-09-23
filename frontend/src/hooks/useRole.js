@@ -30,21 +30,24 @@ const useRole = () => {
     const [error, setError] = useState(null);
 
     // Single role related callbacks
+    const clearNotices = () => {
+        setError(null);
+        setSuccess(null);
+    };
+
     const fetchRole = useCallback(async (roleId, reload = false) => {
         if (!roleId) return null;
 
         if (roleCacheRef.current[roleId] && !reload) {
             setRole(roleCacheRef.current[roleId]);
             setLoading(false);
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             return roleCacheRef.current[roleId];
         }
 
         try {
             setLoading(true);
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             const res = await axios.get(`/roles/${roleId}`, { withCredentials: true });
             setRole(res.data);
             roleCacheRef.current[roleId] = res.data;
@@ -65,8 +68,7 @@ const useRole = () => {
     const saveRole = useCallback(async (formData, roleId = null) => {
         const newRole = !roleId;
         try {
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             let res;
             if (newRole) {
                 res = await axios.post('/roles', formData, { withCredentials: true });
@@ -87,8 +89,7 @@ const useRole = () => {
     const deleteRole = useCallback( async (roleId) => {
         try {
             setLoading(true);
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             const res = await axios.delete(`/roles/${roleId}`, { withCredentials: true });
             setSuccess(res.data.message);
             setRole(null);

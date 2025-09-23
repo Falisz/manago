@@ -30,11 +30,8 @@ const useUser = () => {
             await axios.delete(`/users`, {data: {userIds: Array.from(userIds)}}, { withCredentials: true });
             return true;
         } catch (err) {
-            console.error('Error deleting user:', err);
-            setError('Failed to delete user. Please try again.');
+            console.error('Error deleting Users:', err);
             return false;
-        } finally {
-            setUsersLoading(false);
         }
     }, []);
 
@@ -47,22 +44,24 @@ const useUser = () => {
     const [error, setError] = useState(null);
 
     // Single user related callbacks
+    const clearNotices = () => {
+        setError(null);
+        setWarning(null);
+        setSuccess(null);
+    };
+
     const fetchUser = useCallback(async (userId, reload = false) => {
         if (!userId) return null;
 
         if (userCacheRef.current[userId] && !reload) {
             setUser(userCacheRef.current[userId]);
             setLoading(false);
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
+            clearNotices();
             return userCacheRef.current[userId];
         }
         try {
             setLoading(true);
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
+            clearNotices();
             const userData = {
                 ...(await axios.get(`/users/${userId}`, { withCredentials: true })).data,
                 managed_users: (await axios.get(
@@ -88,9 +87,7 @@ const useUser = () => {
     const saveUser = useCallback(async (formData, userId = null) => {
         const newUser = !userId;
         try {
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
+            clearNotices();
 
             const userData = {
                 login: formData.login,
@@ -120,7 +117,6 @@ const useUser = () => {
             setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
 
             return fetchUser(userId, true);
-
         } catch(err) {
             console.error('Error saving new user data:', err);
             setWarning('Error occurred while saving new user data. ' + err.response?.data?.message);
@@ -130,12 +126,8 @@ const useUser = () => {
 
     const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
         try {
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
-
+            clearNotices();
             return await axios.post('/users/assignments', {resource, resourceIds, userIds, mode}, { withCredentials: true });
-
         } catch (err) {
             console.error('Error saving new user assignments:', err);
             setWarning('Error occurred while saving new user assignments. ' + err.response?.data?.message);
@@ -146,9 +138,7 @@ const useUser = () => {
     const deleteUser = useCallback(async (userId) => {
         try {
             setLoading(true);
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
+            clearNotices();
             await axios.delete(`/users/${userId}`, { withCredentials: true });
             setUser(null);
             delete userCacheRef.current[userId];
@@ -159,9 +149,6 @@ const useUser = () => {
             return false;
         } finally {
             setLoading(false);
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
         }
     }, []);
 

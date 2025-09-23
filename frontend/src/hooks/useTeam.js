@@ -22,6 +22,16 @@ const useTeam = () => {
         }
     }, []);
 
+    const deleteTeams = useCallback(async (teamIds) => {
+        try {
+            await axios.delete(`/teams`, {data: {teamIds: Array.from(teamIds)}}, { withCredentials: true });
+            return true;
+        } catch (err) {
+            console.error('Error deleting Teams:', err);
+            return false;
+        }
+    }, []);
+
     // Single team related states
     const [team, setTeam] = useState(null);
     const teamCacheRef = useRef({});
@@ -31,21 +41,25 @@ const useTeam = () => {
     const [error, setError] = useState(null);
 
     // Single team related callbacks
+    const clearNotices = () => {
+        setError(null);
+        setWarning(null);
+        setSuccess(null);
+    };
+
     const fetchTeam = useCallback(async (teamId, reload = false) => {
         if (!teamId) return null;
 
         if (teamCacheRef.current[teamId] && !reload) {
             setTeam(teamCacheRef.current[teamId]);
             setLoading(false);
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             return teamCacheRef.current[teamId];
         }
         
         try {
             setLoading(true);
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             let res = await axios.get(`/teams/${teamId}`, { withCredentials: true });
             setTeam(res.data);
             teamCacheRef.current[teamId] = res.data;
@@ -66,8 +80,7 @@ const useTeam = () => {
     const saveTeam = useCallback(async (formData, teamId = null) => {
         const newTeam = !teamId;
         try {
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             let res;
             if (newTeam) {
                 res = await axios.post('/teams', formData, { withCredentials: true });
@@ -86,14 +99,10 @@ const useTeam = () => {
         }
     }, [fetchTeam]);
 
-    const saveTeamAssignment = useCallback( async (resource, resourceIds, teamIds, role=2,mode='set') => {
+    const saveTeamAssignment = useCallback( async (resource, resourceIds, teamIds, role=2, mode='set') => {
         try {
-            setError(null);
-            setWarning(null);
-            setSuccess(null);
-
+            clearNotices();
             return await axios.post('/teams/assignments', {resource, resourceIds, role, teamIds, mode}, { withCredentials: true });
-
         } catch (err) {
             console.error('Error saving new team assignments:', err);
             setWarning('Error occurred while saving new team assignments. ' + err.response?.data?.message);
@@ -101,18 +110,17 @@ const useTeam = () => {
         }
     }, []);
 
-    const deleteTeam = useCallback( async (roleId, cascade = false) => {
+    const deleteTeam = useCallback( async (teamId, cascade = false) => {
         try {
             setLoading(true);
-            setError(null);
-            setSuccess(null);
+            clearNotices();
             const res = await axios.delete(
-                `/teams/${roleId}${cascade ? '?cascade=true' : ''}`,
+                `/teams/${teamId}${cascade ? '?cascade=true' : ''}`,
                 { withCredentials: true }
             );
             setSuccess(res.data.message);
             setTeam(null);
-            delete teamCacheRef.current[roleId];
+            delete teamCacheRef.current[teamId];
             return true;
         } catch (err) {
             console.error('Error deleting the team:', err);
@@ -127,6 +135,7 @@ const useTeam = () => {
         teams,
         teamsLoading,
         fetchTeams,
+        deleteTeams,
         team,
         loading,
         setLoading,
