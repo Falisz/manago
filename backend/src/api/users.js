@@ -15,57 +15,72 @@ import {
 import {
     updateUserRoles,
 } from "../controllers/roles.js";
+
 export const router = express.Router();
 
-router.get('/', async (req, res) => {
+/**
+ * Fetch all users.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchUsers = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         const users = await getUsers();
-
         res.json(users);
-
     } catch (err) {
         console.error('Error fetching users:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/managers', async (req, res) => {
+/**
+ * Fetch all managers.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchManagers = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         const managers = await getManagers();
-
         res.json(managers);
-
     } catch (err) {
         console.error('Error fetching managers:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/employees', async (req, res) => {
+/**
+ * Fetch all employees.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchEmployees = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         const employees = await getEmployees();
-
         res.json(employees);
-
     } catch (err) {
         console.error('Error fetching employees:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/managers/:userId', async (req, res) => {
+/**
+ * Fetch managers for a specific user.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchUserManagers = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
@@ -78,16 +93,19 @@ router.get('/managers/:userId', async (req, res) => {
         }
 
         const managers = await getUserManagers(parseInt(userId));
-
         res.json(managers);
-
     } catch (err) {
         console.error('Error fetching managers:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/managed-users/:managerId', async (req, res) => {
+/**
+ * Fetch users managed by a specific manager.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchManagedUsers = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
@@ -100,16 +118,19 @@ router.get('/managed-users/:managerId', async (req, res) => {
         }
 
         const managedUsers = await getManagedUsers(parseInt(managerId));
-
         res.json(managedUsers);
-
     } catch (err) {
         console.error('Error fetching managed users:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/:userId', async (req, res) => {
+/**
+ * Fetch a specific user by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchUserById = async (req, res) => {
     try {
         if (!req.session.user) {
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
@@ -128,12 +149,57 @@ router.get('/:userId', async (req, res) => {
         }
 
         res.json(user);
-
     } catch (err) {
-        console.error('Error fetching users:', err);
+        console.error('Error fetching user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
+
+/**
+ * Create a new user.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const createNewUser = async (req, res) => {
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        }
+
+        const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
+
+        const result = await createUser({
+            login,
+            email,
+            password,
+            first_name,
+            last_name,
+            role,
+            active,
+            manager_view_access
+        });
+
+        if (!result.success) {
+            return res.status(400).json({ message: result.message });
+        }
+
+        const user = await getUser(parseInt(result.user.id));
+        res.status(201).json({ message: result.message, user: user });
+    } catch (err) {
+        console.error('Error creating user:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+// Router definitions
+router.get('/', fetchUsers);
+router.get('/managers', fetchManagers);
+router.get('/employees', fetchEmployees);
+router.get('/managers/:userId', fetchUserManagers);
+router.get('/managed-users/:managerId', fetchManagedUsers);
+router.get('/:userId', fetchUserById);
+router.post('/', createNewUser);
+
 
 router.get('/check-id/:userId', async (req, res) => {
     const { userId } = req.params;
