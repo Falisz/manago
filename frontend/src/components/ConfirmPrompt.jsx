@@ -1,7 +1,7 @@
-// FRONTEND/components/ConfirmPrompt.js
+// FRONTEND/Components/ConfirmPrompt.jsx
 import React from 'react';
 import { useModals } from '../contexts/ModalContext';
-import Button from "./Button";
+import Button from './Button';
 
 const ConfirmPrompt = ({
                     message='',
@@ -24,7 +24,7 @@ const ConfirmPrompt = ({
     };
 
     return (
-        <div className="confirm-prompt">
+        <div className='confirm-prompt'>
             <p>{message}</p>
             <Button
                 onClick={confirmAction}

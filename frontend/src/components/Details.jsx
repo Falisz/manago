@@ -1,8 +1,9 @@
+// FRONTEND/components/Details.jsx
 import React, {useRef} from 'react';
-import Button from "./Button";
-import Icon from "./Icon";
+import Button from './Button';
+import Icon from './Icon';
 
-const DetailsHeader = ({structure, data}) =>
+const DetailsHeader = ({ structure, data }) =>
     <div className='app-details-header'>
         {Object.entries(structure).map(([key, value]) => {
             if (key==='type' || !value)

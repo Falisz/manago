@@ -1,12 +1,12 @@
-//FRONTEND/StaffView.js
-import '../assets/styles/Staff.css';
+// FRONTEND/StaffView.jsx
+import '../styles/Staff.css';
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/staff-logo.svg';
 import MobileNav from './MobileNav';
 import useAppState from '../contexts/AppStateContext';
-import UserSubMenu from "./UserSubMenu";
-import Icon from "./Icon";
+import UserSubMenu from './UserSubMenu';
+import Icon from './Icon';
 
 const StaffView = () => {
     const { user, appState } = useAppState();

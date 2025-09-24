@@ -1,8 +1,8 @@
-// FRONTEND/contexts/AppStatusContext.js
+// FRONTEND/contexts/AppStatusContext.jsx
 import React, { createContext, useContext, useCallback, useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import componentMap from "../Components";
-import InWorks from "../components/InWorks";
+import componentMap from '../Components';
+import InWorks from '../components/InWorks';
 import Cookies from 'js-cookie';
 
 const mapPagesToComponents = (pages) => {
@@ -77,7 +77,6 @@ export const AppStateProvider = ({ children }) => {
     }, []);
 
     // App's Callbacks
-
     const logoutUser = useCallback(async () => {
         setLoading(true);
         try {

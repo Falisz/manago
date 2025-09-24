@@ -1,8 +1,8 @@
-// FRONTEND/App.js
+// FRONTEND/App.jsx
 // MAIN IMPORTS
 import React, {useEffect} from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import './assets/styles/App.css';
+import './styles/App.css';
 
 // APP CONTEXTS
 import useAppState, { AppStateProvider } from './contexts/AppStateContext';

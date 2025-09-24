@@ -1,5 +1,5 @@
-//FRONTEND/Component/Loader.js
-import '../assets/styles/Loader.css';
+// FRONTEND/Components/Loader.jsx
+import '../styles/Loader.css';
 
 export const Loader = () =>
     <div className='app-loading'>

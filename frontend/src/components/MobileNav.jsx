@@ -1,10 +1,10 @@
-//FRONTEND/MobileNav.js
+// FRONTEND/Components/MobileNav.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../assets/styles/MobileNav.css';
+import '../styles/MobileNav.css';
 import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
 import useAppState from '../contexts/AppStateContext';
-import Icon from "./Icon";
+import Icon from './Icon';
 
 const MobileNav = ({ logoText, currentView, currentPath }) => {
     const [mobileNavExpanded, setMobileNavExpanded] = useState(false);

@@ -3,7 +3,6 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import useTeam from '../../hooks/useTeam';
 import useUser from '../../hooks/useUser';
 import Loader from '../Loader';
-import '../../assets/styles/Form.css';
 import EditForm from "../EditForm";
 
 export const TeamUserAssignment = ({team}) => {

@@ -1,5 +1,6 @@
+// FRONTEND/components/Dropdown.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import Icon from "./Icon";
+import Icon from './Icon';
 
 const Dropdown = ({
                       className = '',
@@ -76,9 +77,9 @@ const Dropdown = ({
     });
 
     return (
-        <div className={"app-dropdown " + className} ref={dropdownRef} style={style}>
+        <div className={'app-dropdown ' + className} ref={dropdownRef} style={style}>
             <div
-                className="dropdown-selected"
+                className='dropdown-selected'
                 onClick={() => setIsOpen(!isOpen)}
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -88,9 +89,9 @@ const Dropdown = ({
                 }}
             >
                 { searchable ? <input
-                    className="dropdown-search-input"
+                    className='dropdown-search-input'
                     ref={inputRef}
-                    type="text"
+                    type='text'
                     value={searchTerm}
                     onChange={handleSearchChange}
                     placeholder={getDisplayText()}

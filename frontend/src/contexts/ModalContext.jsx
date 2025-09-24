@@ -1,4 +1,4 @@
-// FRONTEND/contexts/ModalContext.js
+// FRONTEND/contexts/ModalContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Modal from '../components/Modal';
@@ -15,7 +15,7 @@ import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
 import PostDetails from '../components/Posts/Details';
 import InWorks from '../components/InWorks';
-import ConfirmPrompt from "../components/ConfirmPrompt";
+import ConfirmPrompt from '../components/ConfirmPrompt';
 
 const ModalContext = createContext();
 

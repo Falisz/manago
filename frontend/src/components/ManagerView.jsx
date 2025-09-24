@@ -1,5 +1,5 @@
-//FRONTEND/ManagerView.js
-import '../assets/styles/Manager.css';
+// FRONTEND/ManagerView.jsx
+import '../styles/Manager.css';
 import React, {useState} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
@@ -110,7 +110,7 @@ const ManagerView = () => {
 
     const currentMainPage = appState.pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || (location.pathname === "/" ? appState.pages?.[0] : null);
+    ) || (location.pathname === '/' ? appState.pages?.[0] : null);
 
     return (
         <>

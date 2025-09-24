@@ -1,4 +1,4 @@
-// FRONTEND/components/Button.jsx
+// FRONTEND/Components/Button.jsx
 import React from 'react';
 import Icon from './Icon';
 

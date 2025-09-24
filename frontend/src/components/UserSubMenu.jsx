@@ -1,8 +1,8 @@
-// FRONTEND/components/UserSubMenu.js
+// FRONTEND/components/UserSubMenu.jsx
 import React from 'react';
-import useAppState from "../contexts/AppStateContext";
-import {Link} from "react-router-dom";
-import Icon from "./Icon";
+import useAppState from '../contexts/AppStateContext';
+import {Link} from 'react-router-dom';
+import Icon from './Icon';
 
 const UserSubMenu = () => {
     const { user, toggleView, toggleTheme } = useAppState();

@@ -1,6 +1,7 @@
 Following roadmap and tasks to-do as of 2025-09-22:
 ### Frontend
-- [ ] General app behaviour
+- [ ] General
+  - [ ] Rename and split CSS files to be matching specific components.
   - [ ] Implement role and permission based restrictions over the UI.
 - [ ] Timesheets
 - [ ] Schedules

@@ -1,3 +1,4 @@
+// FRONTEND/components/MultiDropdown.jsx
 import React, { useCallback } from 'react';
 import Dropdown from './Dropdown';
 import Button from './Button';
@@ -40,7 +41,7 @@ const MultiDropdown = ({
 
     if (formData === undefined || !dataField || !onChange || !itemSource || !itemNameField) {
         return <div>
-                Error using MultiDropdown component. Lacking props:
+                Error rendering MultiDropdown component. Lacking props:
                 {formData === undefined && ' formData'}
                 {!dataField && ' dataField'}
                 {!onChange && ' onChange'}

@@ -1,9 +1,11 @@
+// FRONTEND/components/EditForm.jsx
 import React, {useState, useEffect, useMemo} from 'react';
 import { useModals } from '../contexts/ModalContext';
 import Dropdown from './Dropdown';
 import Button from './Button';
 import MultiDropdown from './MultiDropdown';
-import Checkbox from "./Checkbox";
+import Checkbox from './Checkbox';
+import '../styles/Form.css';
 
 const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});

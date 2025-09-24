@@ -1,7 +1,7 @@
-//FRONTEND/components/InWorks.js
+// FRONTEND/Components/InWorks.jsx
 import {Link, useLocation} from 'react-router-dom';
 import {useModals} from '../contexts/ModalContext';
-import Icon from "./Icon";
+import Icon from './Icon';
 
 export const InWorks = ({ title, icon, description = null, modal = false }) => {
     const location = useLocation();

@@ -1,11 +1,11 @@
-//FRONTEND/Login.js
-import '../assets/styles/Login.css';
+// FRONTEND/Components/Login.jsx
+import '../styles/Login.css';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 import useAppState from '../contexts/AppStateContext';
-import Icon from "./Icon";
-import Button from "./Button";
+import Icon from './Icon';
+import Button from './Button';
 
 const Login = () => {
     const { authUser } = useAppState();

@@ -1,6 +1,7 @@
+// FRONTEND/components/Table.jsx
 import React, { useState, useMemo } from 'react';
 import {Item, Menu, RightSlot, useContextMenu} from 'react-contexify';
-import '../assets/styles/Table.css';
+import '../styles/Table.css';
 import 'react-contexify/dist/ReactContexify.css';
 import {useModals} from '../contexts/ModalContext';
 import Button from './Button';

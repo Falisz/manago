@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo } from 'react';
 import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
-import '../../assets/styles/Form.css';
 import EditForm from '../EditForm';
 
 const RoleEdit = ({ roleId }) => {

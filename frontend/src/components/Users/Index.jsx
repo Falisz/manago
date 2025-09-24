@@ -1,4 +1,4 @@
-// FRONTEND/components/Users/Index.js
+// FRONTEND/Components/Users/Index.jsx
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import useUser from '../../hooks/useUser';

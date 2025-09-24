@@ -1,9 +1,10 @@
+// FRONTEND/Components/AppModules.jsx
 import React from 'react';
-import '../assets/styles/AppSettings.css';
 import useAppState from '../contexts/AppStateContext';
 import { useModals } from '../contexts/ModalContext';
 import Icon from './Icon';
 
+// TODO: To be refactored using Table component and newly implemented ToggleSwitch components.
 const AppModules = () => {
     const { appState, toggleModule } = useAppState();
     const { openModal } = useModals();

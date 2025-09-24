@@ -1,9 +1,9 @@
-// FRONTEND/ConnectivityPopup.js
+// FRONTEND/Components/ConnectivityPopup.jsx
 import React from 'react';
 import useAppState from '../contexts/AppStateContext';
-import '../assets/styles/Connectivity.css';
+import '../styles/Connectivity.css';
 import Button from './Button';
-import Icon from "./Icon";
+import Icon from './Icon';
 
 const ConnectivityPopup = () => {
     const { appState } = useAppState();

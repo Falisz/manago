@@ -1,4 +1,4 @@
-// FRONTEND/components/Logout.js
+// FRONTEND/Components/Logout.jsx
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAppState from '../contexts/AppStateContext';

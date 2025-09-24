@@ -1,13 +1,14 @@
+// FRONTEND/Components/AppSettings.jsx
 import React, { useEffect, useState } from 'react';
 import useAppState from '../contexts/AppStateContext';
 import axios from 'axios';
-import '../assets/styles/Form.css';
-import '../assets/styles/AppSettings.css';
-import Loader from "./Loader";
-import AppModules from "./AppModules";
-import Dropdown from "./Dropdown";
-import Icon from "./Icon";
-import Button from "./Button";
+import '../styles/Form.css';
+import '../styles/AppSettings.css';
+import Loader from './Loader';
+import AppModules from './AppModules';
+import Dropdown from './Dropdown';
+import Icon from './Icon';
+import Button from './Button';
 
 const AppSettings = () => {
     const { appState, getConfigOptions, refreshConfig } = useAppState();
@@ -56,7 +57,7 @@ const AppSettings = () => {
 
     return (
         <>
-            <div className="page-section">
+            <div className='page-section'>
                 <div className='page-header'>
                     <h1 className={'page-title'}> App Style</h1>
                 </div>
@@ -72,7 +73,7 @@ const AppSettings = () => {
                             Style
                         </label>
                         <Dropdown
-                            name="style"
+                            name='style'
                             value={formConfig.style}
                             options={configOptions.style}
                             onChange={handleChange}
@@ -88,7 +89,7 @@ const AppSettings = () => {
                             Theme
                         </label>
                         <Dropdown
-                            name="theme"
+                            name='theme'
                             value={formConfig.theme}
                             options={configOptions.theme}
                             onChange={handleChange}
@@ -105,7 +106,7 @@ const AppSettings = () => {
                         </label>
                         <Dropdown
                             className={'palette'}
-                            name="color"
+                            name='color'
                             value={formConfig.color}
                             options={configOptions.color}
                             onChange={handleChange}
@@ -123,10 +124,10 @@ const AppSettings = () => {
                         </div>
                         <div className='background-gallery'>
                             {configOptions.background.map((opt) => (
-                                <label key={opt} className="radio-label">
+                                <label key={opt} className='radio-label'>
                                     <input
-                                        type="radio"
-                                        name="background"
+                                        type='radio'
+                                        name='background'
                                         value={opt}
                                         checked={formConfig.background === opt}
                                         onChange={handleChange}
