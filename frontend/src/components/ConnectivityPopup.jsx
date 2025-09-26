@@ -1,7 +1,7 @@
 // FRONTEND/Components/ConnectivityPopup.jsx
 import React from 'react';
 import useAppState from '../contexts/AppStateContext';
-import '../styles/Connectivity.css';
+import '../styles/ConnectivityPopup.css';
 import Button from './Button';
 import Icon from './Icon';
 

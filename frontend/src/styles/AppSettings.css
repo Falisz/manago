@@ -141,29 +141,3 @@
 .app-settings .form-group.disabled .background-thumbnail {
     cursor: not-allowed;
 }
-
-.modules-list p {
-    padding: 0;
-    margin: 0 0 10px 0;
-    cursor: default;
-}
-.modules-list .module-icon {
-    max-width: fit-content;
-}
-.modules-list .module-icon .icon {
-    font-size: 2rem;
-}
-.modules-list .module-title {
-    font-size: 1.5em;
-    text-transform: uppercase;
-    font-family: 'Roboto Condensed', sans-serif;
-    font-weight: 400;
-}
-.modules-list .module-switch {
-    max-width: fit-content;
-}
-.modules-list .module-description {
-    font-style: italic;
-    color: var(--text-color-3);
-    border-radius: 0 0 10px 10px;
-}

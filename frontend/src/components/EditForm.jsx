@@ -1,10 +1,10 @@
 // FRONTEND/components/EditForm.jsx
 import React, {useState, useEffect, useMemo} from 'react';
 import { useModals } from '../contexts/ModalContext';
-import Dropdown from './Dropdown';
+import ComboBox from './ComboBox';
 import Button from './Button';
-import MultiDropdown from './MultiDropdown';
-import Checkbox from './Checkbox';
+import MultiComboBox from './MultiComboBox';
+import CheckBox from './CheckBox';
 import '../styles/Form.css';
 
 const EditForm = ({ structure, presetData, style, className }) => {
@@ -197,7 +197,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                 />;
 
                             if (group.inputType === 'checkbox')
-                                groupContent = <Checkbox
+                                groupContent = <CheckBox
                                     id={group.field}
                                     name={group.field}
                                     checked={formData[group.field] || false}
@@ -206,7 +206,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                 />
 
                             if (group.inputType === 'dropdown')
-                                groupContent = <Dropdown
+                                groupContent = <ComboBox
                                     className={group.className}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
@@ -234,7 +234,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                         });
                                 }
 
-                                groupContent = <MultiDropdown
+                                groupContent = <MultiComboBox
                                     formData={formData}
                                     dataField={group.field}
                                     onChange={handleChange}

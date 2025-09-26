@@ -1,5 +1,5 @@
 // FRONTEND/ManagerView.jsx
-import '../styles/Manager.css';
+import '../styles/ManagerView.css';
 import React, {useState} from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';

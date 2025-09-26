@@ -1,8 +1,8 @@
-// FRONTEND/components/Dropdown.jsx
+// FRONTEND/components/ComboBox.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from './Icon';
 
-const Dropdown = ({
+const ComboBox = ({
                       className = '',
                       placeholder = null,
                       name = '',
@@ -139,4 +139,4 @@ const Dropdown = ({
     );
 };
 
-export default Dropdown;
+export default ComboBox;

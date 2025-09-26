@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Loader } from '../Loader';
 import { useModals } from '../../contexts/ModalContext';
-import '../../assets/styles/Posts.css';
+import '../../styles/Posts.css';
 
 const PostIndex = () => {
     const [posts, setPosts] = useState([]);

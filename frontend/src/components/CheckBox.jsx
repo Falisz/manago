@@ -1,6 +1,7 @@
 // FRONTEND/Components/Checkbox.jsx
 import React from 'react';
 import Icon from './Icon';
+import '../styles/Checkbox.css';
 
 const Checkbox = ({
                       className,

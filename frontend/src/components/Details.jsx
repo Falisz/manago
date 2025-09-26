@@ -2,6 +2,7 @@
 import React, {useRef} from 'react';
 import Button from './Button';
 import Icon from './Icon';
+import '../styles/Details.css';
 
 const DetailsHeader = ({ structure, data }) =>
     <div className='app-details-header'>

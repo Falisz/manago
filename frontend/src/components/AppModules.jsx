@@ -2,9 +2,8 @@
 import React from 'react';
 import useAppState from '../contexts/AppStateContext';
 import { useModals } from '../contexts/ModalContext';
-import Icon from './Icon';
+import Table from './Table';
 
-// TODO: To be refactored using Table component and newly implemented ToggleSwitch components.
 const AppModules = () => {
     const { appState, toggleModule } = useAppState();
     const { openModal } = useModals();
@@ -19,46 +18,43 @@ const AppModules = () => {
         });
     }
 
+    const tableStructure = {
+        pageHeader: {
+            title: 'App Modules',
+            itemName: 'Module',
+        },
+        tableFields: {
+            icon: {
+                display: true,
+                type: 'icon',
+                openModal: 'roleDetails',
+                style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'},
+                iconStyle: {fontSize: '2rem' }
+            },
+            title: {
+                display: true,
+                type: 'string',
+                openModal: 'roleDetails',
+                style: {fontSize: '1.5rem', paddingLeft: '20px', textTransform: 'uppercase', fontFamily: 'var(--font-family-condensed)' },
+            },
+            enabled: {
+                display: true,
+                type: 'toggleSwitch',
+                style: {textAlign: 'right', maxWidth: '200px'},
+                checked: (data) => data.enabled,
+                onChange: (data) => handleToggleConfirm(data.id, data.enabled),
+                disabled: (data) => data.id === 0,
+            },
+        },
+        descriptionField: 'description',
+    }
+
     return (
-        <>
-            <div className='page-header'>
-                <h1 className={'page-title'}> App Modules </h1>
-            </div>
-            <div className='app-table seethrough modules-list app-overflow-y app-scroll'>
-                <p>
-                    Depending on the different needs of your business you are able to enable different modules of this app.
-                </p>
-                { appState.modules?.length > 0 ? (appState.modules?.map((module) => {
-                    const isMain = module.id === 0;
-                    return (
-                        <div className='app-table-row with-desc' key={module.id}>
-                            <div className='app-table-row-cell module-icon'>
-                                {module.icon && <Icon i={module.icon} s={true} />}
-                            </div>
-                            <div className='app-table-row-cell module-title'>
-                                {module.title}
-                            </div>
-                            <div className='app-table-row-cell module-switch'>
-                                <div className='app-switch'
-                                     onClick={() => handleToggleConfirm(module.id, module.enabled)}
-                                >
-                                    <input
-                                        type='checkbox'
-                                        checked={module.enabled}
-                                        onChange={() => handleToggleConfirm(module.id, module.enabled)}
-                                        disabled={isMain}
-                                    />
-                                    <span className='toggle-slider'></span>
-                                </div>
-                            </div>
-                            <div className='app-table-row-cell app-table-row-desc module-description'>
-                                {module.description}
-                            </div>
-                        </div>
-                    ); }
-                )) : <p>No modules found.</p> }
-            </div>
-        </>
+        <Table
+            dataSource={appState.modules}
+            tableStructure={tableStructure}
+            dataPlaceholder={'No Modules found.'}
+        />
     );
 };
 

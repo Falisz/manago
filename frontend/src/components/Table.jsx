@@ -6,6 +6,7 @@ import 'react-contexify/dist/ReactContexify.css';
 import {useModals} from '../contexts/ModalContext';
 import Button from './Button';
 import Icon from './Icon';
+import ToggleSwitch from './ToggleSwitch';
 
 const TableHeader = ({
                          fields,
@@ -116,6 +117,7 @@ const TableRow = ({
                                     }}
                                     i={value}
                                     s={true}
+                                    style={field.iconStyle || null}
                                 />
                             );
                             break;
@@ -140,6 +142,13 @@ const TableRow = ({
                             break;
                         case 'boolean':
                             content = value ? '✔️' : '✖️';
+                            break;
+                        case 'toggleSwitch':
+                            content = <ToggleSwitch
+                                checked={field.checked(data)}
+                                onChange={() => field.onChange(data)}
+                                disabled={field.disabled(data)}
+                            />;
                             break;
                         case 'number':
                             if (field.computeValue)

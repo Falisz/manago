@@ -2,14 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import useAppState from '../contexts/AppStateContext';
 import axios from 'axios';
-import '../styles/Form.css';
 import '../styles/AppSettings.css';
+import '../styles/Form.css';
 import Loader from './Loader';
 import AppModules from './AppModules';
-import Dropdown from './Dropdown';
+import ComboBox from './ComboBox';
 import Icon from './Icon';
 import Button from './Button';
 
+// TODO: Move AppStyle to different component that will utilize EditForm - implement background selection in EditForm component instead.
 const AppSettings = () => {
     const { appState, getConfigOptions, refreshConfig } = useAppState();
     const [configOptions, setConfigOptions] = useState(null);
@@ -72,7 +73,7 @@ const AppSettings = () => {
                             <Icon i={'type_specimen'} s={true}/>
                             Style
                         </label>
-                        <Dropdown
+                        <ComboBox
                             name='style'
                             value={formConfig.style}
                             options={configOptions.style}
@@ -88,7 +89,7 @@ const AppSettings = () => {
                             <Icon i={'routine'} s={true}/>
                             Theme
                         </label>
-                        <Dropdown
+                        <ComboBox
                             name='theme'
                             value={formConfig.theme}
                             options={configOptions.theme}
@@ -104,7 +105,7 @@ const AppSettings = () => {
                             <Icon i={'palette'} s={true}/>
                             Color
                         </label>
-                        <Dropdown
+                        <ComboBox
                             className={'palette'}
                             name='color'
                             value={formConfig.color}

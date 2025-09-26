@@ -2,7 +2,7 @@
 import '../styles/Loader.css';
 
 export const Loader = () =>
-    <div className='app-loading'>
+    <div className='app-loader'>
         <div className='spinner'></div>
     </div>;
 

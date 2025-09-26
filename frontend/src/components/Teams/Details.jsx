@@ -3,7 +3,6 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useTeam from '../../hooks/useTeam';
 import { useModals } from '../../contexts/ModalContext';
-import '../../assets/styles/Details.css';
 import Details from "../Details";
 
 const TeamDetails = ({ teamId }) => {

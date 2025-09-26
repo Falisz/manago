@@ -1,9 +1,9 @@
-// FRONTEND/components/MultiDropdown.jsx
+// FRONTEND/components/MultiComboBox.jsx
 import React, { useCallback } from 'react';
-import Dropdown from './Dropdown';
+import ComboBox from './ComboBox';
 import Button from './Button';
 
-const MultiDropdown = ({
+const MultiComboBox = ({
                            formData,
                            dataField,
                            onChange,
@@ -58,7 +58,7 @@ const MultiDropdown = ({
                 <div className={'multi-dropdown'}>
                     {formData[dataField]?.map((itemId, index) => (
                         <div key={index} className='multi-dropdown-item'>
-                            <Dropdown
+                            <ComboBox
                                 name={dataField}
                                 value={itemId}
                                 options={getOptions(index, itemExcludedIds)}
@@ -90,4 +90,4 @@ const MultiDropdown = ({
     </>;
 }
 
-export default MultiDropdown;
+export default MultiComboBox;

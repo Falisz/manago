@@ -255,40 +255,7 @@
     color: orangered;
 }
 
-.app-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-}
-.app-checkbox .app-checkbox-tick {
-    display: flex;
-    align-items: center;
-    min-width: 1rem;
-    min-height: 1rem;
-    border-radius: 6px;
-    background: var(--text-color);
-    padding: 5px;
-    transition: .3s ease-in-out;
-}
-.app-checkbox .app-checkbox-tick .icon {
-    font-size: 1rem;
-    font-weight: 900;
-}
-.app-checkbox.checked .app-checkbox-tick {
-    background: var(--button-color);
-    color: white;
-}
-.app.fluent .app-checkbox .app-checkbox-tick {
-    background: var(--seethrough-background-2);
-    box-shadow: var(--weak-shade);
-}
-.app.fluent .app-checkbox .app-checkbox-tick {
-    color: var(--button-color);
-}
-.app-form .form-group .app-checkbox {
-    margin: 0 5px;
-}
+
 
 .app-combo-dropdown {
     display: flex;

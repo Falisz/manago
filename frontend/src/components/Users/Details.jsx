@@ -3,7 +3,6 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useUser from '../../hooks/useUser';
 import { useModals } from '../../contexts/ModalContext';
-import '../../assets/styles/Details.css';
 import Details from "../Details";
 
 const UserDetails = ({ userId }) => {

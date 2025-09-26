@@ -149,42 +149,42 @@ button .material-symbols-rounded {
 
 .app.bg-blue-galaxy {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-blue-galaxy.jpg') center center no-repeat;
+    url('../assets/background-blue-galaxy.jpg') center center no-repeat;
 }
 
 .app.bg-cloudy {
     background: linear-gradient(45deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .05)),
-    url('../background-cloudy.jpg') center center no-repeat;
+    url('../assets/background-cloudy.jpg') center center no-repeat;
 }
 
 .app.bg-violet-haze {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-violet-haze.jpg') center center no-repeat;
+    url('../assets/background-violet-haze.jpg') center center no-repeat;
 }
 
 .app.bg-raspberry-peach {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-raspberry-peach.jpg') center center no-repeat;
+    url('../assets/background-raspberry-peach.jpg') center center no-repeat;
 }
 
 .app.bg-blur-1 {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-blur-1.jpg') center center no-repeat;
+    url('../assets/background-blur-1.jpg') center center no-repeat;
 }
 
 .app.bg-blur-2 {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-blur-2.jpg') center center no-repeat;
+    url('../assets/background-blur-2.jpg') center center no-repeat;
 }
 
 .app.bg-blur-3 {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-blur-3.jpg') center center no-repeat;
+    url('../assets/background-blur-3.jpg') center center no-repeat;
 }
 
 .app.bg-blur-4 {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),
-    url('../background-blur-4.jpg') center center no-repeat;
+    url('../assets/background-blur-4.jpg') center center no-repeat;
 }
 .app.fluent {
     background-size: cover;
@@ -308,118 +308,6 @@ button .material-symbols-rounded {
     display: none;
 }
 
-.app-button {
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-    gap: 5px;
-    font-size: 0.9rem;
-    font-weight: 400;
-    padding: 8px;
-    background: var(--button-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-}
-.app-button:hover {
-    background: var(--highlight-color);
-}
-.app-button.discard,
-.app-button.cancel {
-    background: orangered;
-}
-.app-button.discard:hover,
-.app-button.cancel:hover {
-    background: #ff7040;
-}
-.app-button .icon {
-    font-size: 1rem;
-}
-.app.fluent .app-button {
-    padding: 10px;
-    font-weight: bold;
-    background: var(--seethrough-background);
-    border-radius: var(--big-border-radius);
-    box-shadow: var(--weak-shade);
-    color: var(--text-color);
-}
-.app.fluent .app-button:hover {
-    background: var(--seethrough-background-2);
-    color: var(--button-color);
-}
-.app.fluent .app-button.discard,
-.app.fluent .app-button.cancel {
-    background: var(--seethrough-background);
-    color: orangered;
-}
-.app.fluent .app-button.discard:hover,
-.app.fluent .app-button.cancel:hover {
-    color: #ff7040;
-}
-.app-button.no-bg,
-.app.fluent .app-button.no-bg {
-    background: none;
-    box-shadow: none;
-    color: var(--text-color);
-}
-
-/* Custom Toggle Switch */
-.app-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 24px;
-}
-
-.app-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.app-switch .toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--gray-darker);
-    border-radius: 24px;
-    transition: 0.3s ease-in-out;
-}
-
-.app-switch .toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    border-radius: 50%;
-    transition: 0.3s ease-in-out;
-}
-
-.app-switch input:checked + .toggle-slider {
-    background: var(--color-gradient);
-}
-
-.app-switch input:checked + .toggle-slider:before {
-    transform: translateX(26px);
-}
-
-.app-switch input:disabled + .toggle-slider {
-    background: var(--gray-dark);
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.app-switch input:disabled + .toggle-slider:before {
-    background: var(--gray-light);
-}
 
 .app-sub-menu {
     display: flex;

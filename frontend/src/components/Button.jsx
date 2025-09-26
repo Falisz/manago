@@ -1,6 +1,7 @@
 // FRONTEND/Components/Button.jsx
 import React from 'react';
 import Icon from './Icon';
+import '../styles/Button.css';
 
 /**
  * This is a shorthand button component for an app.
