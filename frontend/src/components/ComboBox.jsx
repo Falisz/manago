@@ -1,6 +1,7 @@
 // FRONTEND/components/ComboBox.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import Icon from './Icon';
+import '../styles/ComboBox.css';
 
 const ComboBox = ({
                       className = '',
@@ -16,12 +17,12 @@ const ComboBox = ({
                   }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const dropdownRef = useRef(null);
+    const comboBoxRef = useRef(null);
     const inputRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            if (comboBoxRef.current && !comboBoxRef.current.contains(event.target)) {
                 setIsOpen(false);
             }
         };
@@ -77,9 +78,9 @@ const ComboBox = ({
     });
 
     return (
-        <div className={'app-dropdown ' + className} ref={dropdownRef} style={style}>
+        <div className={'app-combo-box ' + className} ref={comboBoxRef} style={style}>
             <div
-                className='dropdown-selected'
+                className='combo-box-selected'
                 onClick={() => setIsOpen(!isOpen)}
                 tabIndex={0}
                 onKeyDown={(e) => {
@@ -89,7 +90,7 @@ const ComboBox = ({
                 }}
             >
                 { searchable ? <input
-                    className='dropdown-search-input'
+                    className='combo-box-search-input'
                     ref={inputRef}
                     type='text'
                     value={searchTerm}
@@ -102,14 +103,14 @@ const ComboBox = ({
                         else
                             setIsOpen(true)
                     }}
-                /> : <span className={'dropdown-selected-text'}>{getDisplayText()}</span> }
+                /> : <span className={'combo-box-selected-text'}>{getDisplayText()}</span> }
                 <Icon s={true} i={isOpen ? 'arrow_drop_up' : 'arrow_drop_down'} clickable={true}/>
             </div>
-            <ul className={`dropdown-options app-scroll ${isOpen ? '' : 'hidden'}`}>
+            <ul className={`combo-box-options app-scroll ${isOpen ? '' : 'hidden'}`}>
                 {noneAllowed &&
                     <li
                         key={0}
-                        className={`dropdown-option opt-none`}
+                        className={`combo-box-option opt-none`}
                         onClick={() => handleOptionClick(0, isOpen)}
                         onKeyDown={(e) => handleKeyDown(e, 0)}
                         tabIndex={0}
@@ -125,7 +126,7 @@ const ComboBox = ({
                     return (
                         <li
                             key={id}
-                            className={`dropdown-option opt-${id}`}
+                            className={`combo-box-option opt-${id}`}
                             onClick={() => handleOptionClick(id, isOpen)}
                             onKeyDown={(e) => handleKeyDown(e, id)}
                             tabIndex={0}

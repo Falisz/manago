@@ -1,0 +1,129 @@
+.app-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 20px;
+    align-items: flex-start;
+}
+
+.app-form .form-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    width: 100%;
+    transition: 0.3s ease-in-out;
+}
+.app-form .form-section.vertical {
+    flex-direction: column;
+}
+.app-form .form-section.align-center {
+    align-items: center;
+}
+
+.app-form .form-header {
+    width: 100%;
+    margin: 0;
+    font-size: 1.25em;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+.app-form .app-form-header {
+    font-size: 2em;
+    margin: 0 0 0 -20px;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    font-weight: 300;
+}
+
+.app-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transition: 0.3s ease-in-out;
+}
+.app-form .form-group.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.app-form .form-group-label {
+    margin: 0;
+    padding: 0;
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+.app-form .form-label {
+    text-transform: uppercase;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 500;
+    margin-top: 5px;
+}
+.app-form .form-input,
+.app-form .form-textarea {
+    font-size: 0.9rem;
+    border-radius: var(--def-border-radius);
+    padding: 10px 15px;
+    box-sizing: border-box;
+    margin: 0 5px;
+    outline: none;
+    border: none;
+    background: var(--text-color-3);
+    color: var(--background-color-3);
+    transition: 0.3s ease-in-out;
+    width: fit-content;
+    min-width: max(170px, 33%);
+}
+
+.app.fluent .app-form .form-input,
+.app.fluent .app-form .form-textarea {
+    color: var(--text-color);
+    background: var(--seethrough-background-2);
+    border-radius: var(--big-border-radius);
+}
+
+.app-form .form-textarea {
+    height: 5rem;
+}
+
+.app-form .action-button {
+    display: inline-flex;
+    align-items: center;
+    border: 0;
+    margin: 10px 0;
+    padding: 10px 15px;
+    background: var(--button-color);
+    color: white;
+    border-radius: var(--def-border-radius);
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    font-weight: bold;
+}
+.app-form .action-button .icon {
+    margin-right: 5px;
+    font-size: 1rem;
+}
+.app-form .action-button:hover {
+    background: var(--highlight-color);
+}
+.app-form .action-button+.action-button {
+    margin-left: 10px;
+}
+.app-form .discard-button {
+    background: orangered;
+}
+.app.fluent .app-form .action-button {
+    border-radius: var(--big-border-radius);
+    background: var(--seethrough-background-2);
+    box-shadow: var(--weak-shade);
+    color: var(--text-color-3);
+}
+.app.fluent .app-form .action-button:hover {
+    background: var(--seethrough-background-3);
+}
+.app.fluent .app-form .discard-button {
+    color: orangered;
+}

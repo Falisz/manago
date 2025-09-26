@@ -383,14 +383,4 @@ button .material-symbols-rounded {
     --contexify-menu-shadow: var(--weak-shade);
 }
 
-.confirm-prompt {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-.confirm-prompt p {
-    width: 100%;
-    flex: 1 100%;
-}
-
 

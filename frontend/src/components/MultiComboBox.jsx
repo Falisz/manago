@@ -2,6 +2,7 @@
 import React, { useCallback } from 'react';
 import ComboBox from './ComboBox';
 import Button from './Button';
+import '../styles/MultiComboBox.css';
 
 const MultiComboBox = ({
                            formData,
@@ -55,9 +56,9 @@ const MultiComboBox = ({
     return <>
         { itemSource?.length === 0 ? (<p>No {itemName}s available.</p>) : (
             <>
-                <div className={'multi-dropdown'}>
+                <div className={'app-multi-combo-box'}>
                     {formData[dataField]?.map((itemId, index) => (
-                        <div key={index} className='multi-dropdown-item'>
+                        <div key={index} className='combo-box-item'>
                             <ComboBox
                                 name={dataField}
                                 value={itemId}
@@ -78,7 +79,7 @@ const MultiComboBox = ({
                     ))}
                 </div>
                 <Button
-                    className={'new-dropdown-button'}
+                    className={'new-combo-box-button'}
                     onClick={() => onChange({target: {name: dataField, type: 'dropdown'}, persist: () => {}}, 'add')}
                     icon={'add_circle'}
                     label={`Add Another ${itemName}`}

@@ -3,17 +3,38 @@ Following roadmap and tasks to-do as of 2025-09-22:
 - [ ] General
   - [ ] Rename and split CSS files to be matching specific components.
   - [ ] Implement role and permission based restrictions over the UI.
-- [ ] Timesheets
-- [ ] Schedules
+- [ ] Time Management: Work Planner
+  - [ ] Planning roster and/or shift schedules. (Excel importable - provided downloadable template)
+  - [ ] Planning annual leaves, holidays, comp-offs, sick leaves, etc.
+  - [ ] Shifts data model (user, startTime, endTime, post)
+  - [ ] User/Team/Branch/Project Schedules.
+  - [ ] Schedule available for 
+  - [ ] Disposition and Leave requests
+  - [ ] Job Posts data model (optional - i.e. gastronomy or entertainment staff)
+  - [ ] Many configs related to it
+- [ ] Time Management: Timesheets 
+  - [ ] Recorded efforts.
+  - [ ] Timesheets, work reporting, late reporting.
+  - [ ] Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
+  - [ ] Clocking-in and out.
+  - [ ] Breaks tracking.
+  - [ ] Payroll planning.
+  - [ ] Task entry.
 - [ ] Branches
   - [ ] Different logo per branch (?) e.g., if a User is from Branch One, they have a diff logo than the user from Branch Two.
   - [ ] Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
   - [ ] Branch-Team assignment— if a Team has null for a Branch, it is considered as a cross-branch Team and can be a parent team of teams across different branches.
 - [ ] Projects
-- [ ] Leaves
+  - [ ] Project Roles - different from company-wide user roles.
+  - [ ] Access to different resources.
 - [ ] Tasks
+  - [ ] per User, Shift, Branch, Project, company-wide.
+  - [ ] typical tasks, motivation KPI contests for branches/teams/projects/users, etc.
 - [ ] Posts and channels
   - [ ] Post-Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
+- [ ] Trainings
+- [ ] Blogs
+- [ ] Goals/KPIs/Assessments
 ### Backend
 - [ ] API endpoints and controllers for bulk operations User, Role and Team resources.
 - [ ] Role and/or Permission based security restrictions to the API endpoints.

@@ -1,0 +1,18 @@
+.app-multi-combo-box {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.app-multi-combo-box .combo-box-item {
+    flex: 0;
+    display: flex;
+    align-items: center;
+    width: max(170px, 50%);
+}
+.new-combo-box-button {
+    width: fit-content;
+}
+.new-combo-box-button[disabled] {
+    opacity: 0.5;
+    cursor: default;
+}

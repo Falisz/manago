@@ -2,6 +2,7 @@
 import React from 'react';
 import { useModals } from '../contexts/ModalContext';
 import Button from './Button';
+import '../styles/ConfirmPrompt.css';
 
 const ConfirmPrompt = ({
                     message='',

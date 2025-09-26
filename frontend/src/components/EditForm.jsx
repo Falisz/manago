@@ -5,7 +5,7 @@ import ComboBox from './ComboBox';
 import Button from './Button';
 import MultiComboBox from './MultiComboBox';
 import CheckBox from './CheckBox';
-import '../styles/Form.css';
+import '../styles/EditForm.css';
 
 const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});

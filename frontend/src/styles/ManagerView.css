@@ -36,8 +36,8 @@
     text-decoration: none;
 }
 .app.manager ::selection {
-    color: unset;
-    background: unset;
+    color: var(--text-color-3);
+    background: var(--seethrough-background-3);
 }
 .app.manager .app-nav .app-home-link {
     display: block;

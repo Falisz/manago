@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import useAppState from '../contexts/AppStateContext';
 import axios from 'axios';
 import '../styles/AppSettings.css';
-import '../styles/Form.css';
+import '../styles/EditForm.css';
 import Loader from './Loader';
 import AppModules from './AppModules';
 import ComboBox from './ComboBox';

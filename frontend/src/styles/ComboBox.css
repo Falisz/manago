@@ -1,0 +1,100 @@
+.app-combo-box {
+    position: relative;
+    white-space: nowrap;
+    user-select: none;
+    max-width: 50%;
+    margin: 0 0 0 5px;
+    min-width: max(200px, 33%);
+}
+
+.app-combo-box .combo-box-selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    border: none;
+    border-radius: 8px;
+    background: var(--text-color-3);
+    color: var(--background-color-3);
+    cursor: pointer;
+    transition: .3s ease-in-out;
+}
+.app.fluent .app-combo-box .combo-box-selected {
+    color: var(--text-color);
+    background: var(--seethrough-background-2);
+}
+
+.app-combo-box .combo-box-search-input {
+    color: inherit;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    width: calc(100% + 24px);
+    border: none;
+    outline: none;
+    background: none;
+}
+.app-combo-box .combo-box-selected-text {
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border: none;
+    outline: none;
+    background: none;
+}
+.app-combo-box .combo-box-search-input::placeholder {
+    color: inherit;
+    opacity: 1;
+}
+.app-combo-box .icon.app-clickable {
+    position: absolute;
+    right: 5px;
+}
+.app.fluent .app-combo-box .combo-box-selected {
+    background-color: var(--seethrough-background-2);
+}
+.app-combo-box .combo-box-selected:focus {
+    outline: none;
+}
+.app.fluent .app-combo-box .combo-box-selected:hover,
+.app.fluent .app-combo-box .combo-box-selected:focus {
+    background-color: var(--seethrough-background-3);
+}
+
+.combo-box-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 5px 0;
+    padding: 0;
+    list-style: none;
+    background-color: var(--background-color-2);
+    border-radius: 12px;
+    box-shadow: var(--weak-shade);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    transition: .3s ease-in-out;
+}
+.app.fluent .combo-box-options {
+    background: var(--seethrough-background-3);
+    backdrop-filter: blur(10px);
+}
+.combo-box-options.hidden {
+    opacity: 0;
+    visibility: hidden;
+    margin-top: -15px;
+}
+.combo-box-option {
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+.combo-box-option.opt-none {
+    font-style: italic;
+}
+.combo-box-option:hover,
+.combo-box-option:focus {
+    background-color: var(--highlight-color);
+    color: white;
+    outline: none;
+}
