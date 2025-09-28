@@ -1,5 +1,6 @@
 // BACKEND/api/users.js
 import express from 'express';
+import checkAuthHandler from '../utils/check-auth.js';
 import {
     getUsers,
     getUser,
@@ -11,24 +12,19 @@ import {
     getUserManagers,
     getManagedUsers,
     updateUserManagers,
-} from "../controllers/users.js";
+} from '../controllers/users.js';
 import {
     updateUserRoles,
-} from "../controllers/roles.js";
+} from '../controllers/roles.js';
 
-export const router = express.Router();
-
+// API Handlers
 /**
  * Fetch all users.
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchUsers = async (req, res) => {
+const fetchUsersHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const users = await getUsers();
         res.json(users);
     } catch (err) {
@@ -42,12 +38,8 @@ const fetchUsers = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchManagers = async (req, res) => {
+const fetchManagersHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const managers = await getManagers();
         res.json(managers);
     } catch (err) {
@@ -61,12 +53,8 @@ const fetchManagers = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchEmployees = async (req, res) => {
+const fetchEmployeesHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const employees = await getEmployees();
         res.json(employees);
     } catch (err) {
@@ -80,12 +68,8 @@ const fetchEmployees = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchUserManagers = async (req, res) => {
+const fetchUserManagersHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
@@ -105,12 +89,8 @@ const fetchUserManagers = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchManagedUsers = async (req, res) => {
+const fetchManagedUsersHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { managerId } = req.params;
 
         if (!managerId || isNaN(managerId)) {
@@ -130,12 +110,8 @@ const fetchManagedUsers = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchUserById = async (req, res) => {
+const fetchUserByIdHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
@@ -160,12 +136,8 @@ const fetchUserById = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const createNewUser = async (req, res) => {
+const createNewUserHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
 
         const result = await createUser({
@@ -191,24 +163,15 @@ const createNewUser = async (req, res) => {
     }
 };
 
-// Router definitions
-router.get('/', fetchUsers);
-router.get('/managers', fetchManagers);
-router.get('/employees', fetchEmployees);
-router.get('/managers/:userId', fetchUserManagers);
-router.get('/managed-users/:managerId', fetchManagedUsers);
-router.get('/:userId', fetchUserById);
-router.post('/', createNewUser);
-
-
-router.get('/check-id/:userId', async (req, res) => {
+/**
+ * Check user ID availability.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const checkUserIdHandler = async (req, res) => {
     const { userId } = req.params;
 
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
@@ -223,74 +186,45 @@ router.get('/check-id/:userId', async (req, res) => {
         console.error(`Error checking user ID availability for ID ${userId}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.post('/', async (req, res) => {
+/**
+ * Update user assignments (managers or roles).
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateAssignmentsHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
-
-        const result = await createUser({
-            login,
-            email,
-            password,
-            first_name,
-            last_name,
-            role,
-            active,
-            manager_view_access
-        });
-
-        if (!result.success) {
-            return res.status(400).json({ message: result.message });
-        }
-
-        const user = await getUser(parseInt(result.user.id));
-
-        res.status(201).json({ message: result.message, user: user });
-
-    } catch (err) {
-        console.error('Error creating user:', err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-});
-
-router.post('/assignments', async(req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        const { resource, resourceIds, userIds, mode } = req.body;
+        const {resource, resourceIds, userIds, mode} = req.body;
         let result;
 
         if (resource === 'manager') {
             result = await updateUserManagers(userIds, resourceIds, mode);
         } else if (resource === 'role') {
             result = await updateUserRoles(userIds, resourceIds, mode);
+        } else {
+            return res.status(400).json({message: 'Unknown resource.'});
         }
 
         if (!result.success) {
-            return res.status(result.status || 400).json({ message: result.message });
+            return res.status(result.status || 400).json({message: result.message});
         }
 
-        res.json({ message: result.message });
+        res.json({message: result.message});
 
     } catch (err) {
         console.error('Error editing user assignments:', err);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({message: 'Server error.'});
     }
-});
+};
 
-router.put('/:userId', async (req, res) => {
+/**
+ * Update a specific user by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateUserHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
@@ -323,14 +257,15 @@ router.put('/:userId', async (req, res) => {
         console.error('Error updating user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.put('/managers/:userId', async (req, res) => {
+/**
+ * Update managers for a specific user.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateUserManagersHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userId } = req.params;
         const { managerIds } = req.body;
 
@@ -349,14 +284,15 @@ router.put('/managers/:userId', async (req, res) => {
         console.error('Error updating user roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.delete('/:userId', async (req, res) => {
+/**
+ * Delete a specific user by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const deleteUserHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
@@ -375,24 +311,46 @@ router.delete('/:userId', async (req, res) => {
         console.error('Error removing user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.delete('/', async (req, res) => {
+/**
+ * Bulk delete users by IDs.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const bulkDeleteUsersHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userIds } = req.body;
 
-        console.log('Request for bulk-delete of ', userIds);
+        const result = await removeUser(userIds);
 
-        res.status(400).json({ message: 'Bulk-delete not implemented yet!' });
+        if (!result.success) {
+            return res.status( 400).json({ message: result.message });
+        }
+
+        res.json({ message: 'User removed successfully!' });
 
     } catch (err) {
         console.error('Error removing user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
+
+// Router definitions
+export const router = express.Router();
+
+router.get('/', checkAuthHandler, fetchUsersHandler);
+router.get('/managers', checkAuthHandler, fetchManagersHandler);
+router.get('/employees', checkAuthHandler, fetchEmployeesHandler);
+router.get('/managers/:userId', checkAuthHandler, fetchUserManagersHandler);
+router.get('/managed-users/:managerId', checkAuthHandler, fetchManagedUsersHandler);
+router.get('/:userId', checkAuthHandler, fetchUserByIdHandler);
+router.get('/check-id/:userId', checkAuthHandler, checkUserIdHandler);
+router.post('/', checkAuthHandler, createNewUserHandler);
+router.post('/assignments', checkAuthHandler, updateAssignmentsHandler);
+router.put('/:userId', checkAuthHandler, updateUserHandler);
+router.put('/managers/:userId', checkAuthHandler, updateUserManagersHandler);
+router.delete('/:userId', checkAuthHandler, deleteUserHandler);
+router.delete('/', checkAuthHandler, bulkDeleteUsersHandler);
 
 export default router;

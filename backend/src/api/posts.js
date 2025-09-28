@@ -1,31 +1,31 @@
 // BACKEND/api/posts.js
 import express from 'express';
 import { createPost, deletePost, getPost, getPosts, updatePost } from '../controllers/posts.js';
-export const router = express.Router();
+import checkAuthHandler from '../utils/check-auth.js';
 
-// Get All Posts
-router.get('/', async (req, res) => {
+// API Handlers
+/**
+ * Fetch all posts.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchPostsHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const posts = await getPosts();
-
         res.json(posts);
     } catch (err) {
         console.error('Error fetching posts:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-// Get Post by its ID
-router.get('/:postId', async (req, res) => {
+/**
+ * Fetch a specific post by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchPostByIdHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { postId } = req.params;
 
         if (!postId || isNaN(postId)) {
@@ -43,16 +43,17 @@ router.get('/:postId', async (req, res) => {
         console.error('Error fetching post:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-// Create a new Post
-router.post('/new', async (req, res) => {
+/**
+ * Create a new post.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const createPostHandler = async (req, res) => {
     try {
         const { boardID, title, content } = req.body;
-
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
 
         if (!boardID || !content) {
             return res.status(400).json({ message: 'Board ID and content are required.' });
@@ -60,7 +61,7 @@ router.post('/new', async (req, res) => {
 
         const post = await createPost({
             boardID: parseInt(boardID),
-            authorID: req.session.user.id,
+            authorID: req.session.user,
             title: title || null,
             content
         });
@@ -70,20 +71,21 @@ router.post('/new', async (req, res) => {
         console.error('Error creating post:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-// Update an existing Post by its ID
-router.put('/:postId', async (req, res) => {
+/**
+ * Update an existing post by ID.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const updatePostHandler = async (req, res) => {
     try {
         const { postId } = req.params;
         const { title, content } = req.body;
 
         if (!postId || isNaN(postId)) {
             return res.status(400).json({ message: 'Invalid post ID.' });
-        }
-
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         if (!content) {
@@ -108,19 +110,20 @@ router.put('/:postId', async (req, res) => {
         console.error('Error updating post:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-// Delete existing post by its ID
-router.delete('/:postId', async (req, res) => {
+/**
+ * Delete a specific post by ID.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const deletePostHandler = async (req, res) => {
     try {
         const { postId } = req.params;
 
         if (!postId || isNaN(postId)) {
             return res.status(400).json({ message: 'Invalid post ID.' });
-        }
-
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
         const user = req.session.user;
@@ -130,7 +133,7 @@ router.delete('/:postId', async (req, res) => {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if (post?.author.id !== user.id && user.role !== 10) {
+        if (post.author.id !== user.id && user.role !== 10) {
             return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });
         }
 
@@ -141,6 +144,15 @@ router.delete('/:postId', async (req, res) => {
         console.error('Error deleting post:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
+
+// Router definitions
+export const router = express.Router();
+
+router.get('/', checkAuthHandler, fetchPostsHandler);
+router.get('/:postId', checkAuthHandler, fetchPostByIdHandler);
+router.post('/new', checkAuthHandler, createPostHandler);
+router.put('/:postId', checkAuthHandler, updatePostHandler);
+router.delete('/:postId', checkAuthHandler, deletePostHandler);
 
 export default router;

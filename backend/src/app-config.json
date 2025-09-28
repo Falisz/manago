@@ -1,9 +1,9 @@
 {
   "config": {
     "style": "fluent",
-    "theme": "light",
-    "color": "blue",
-    "background": "cloudy"
+    "theme": "dark",
+    "color": "pink",
+    "background": "violet-haze"
   },
   "options": {
     "style": [

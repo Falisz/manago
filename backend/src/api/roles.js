@@ -1,37 +1,40 @@
 // BACKEND/api/roles.js
 import express from 'express';
+import checkAuthHandler from '../utils/check-auth.js';
 import {
     getRoles,
     createRole,
     updateRole,
     deleteRole,
+    getRole,
     getUserRoles,
     updateUserRoles,
-    getRole
 } from '../controllers/roles.js';
-export const router = express.Router();
 
-router.get('/', async (req, res) => {
+// API Handlers
+/**
+ * Fetch all roles.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchRolesHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const roles = await getRoles();
 
         res.json(roles);
-
     } catch (err) {
         console.error('Error fetching roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/:roleId', async (req, res) => {
+/**
+ * Fetch a specific role by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchRoleByIdHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         const { roleId } = req.params;
 
         if (!roleId || isNaN(roleId)) {
@@ -45,18 +48,19 @@ router.get('/:roleId', async (req, res) => {
         }
 
         res.json(role);
-
     } catch (err) {
         console.error('Error fetching role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/user/:userId', async (req, res) => {
+/**
+ * Fetch roles for a specific user.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchUserRolesHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
@@ -66,19 +70,19 @@ router.get('/user/:userId', async (req, res) => {
         const roles = await getUserRoles(userId);
 
         res.json(roles);
-
     } catch (err) {
         console.error('Error fetching roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.post('/', async (req, res) => {
+/**
+ * Create a new role.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const createRoleHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { name, description } = req.body;
         const result = await createRole({
             name,
@@ -94,15 +98,15 @@ router.post('/', async (req, res) => {
         console.error('Error creating role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.put('/:roleId', async (req, res) => {
+/**
+ * Update a specific role by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateRoleHandler = async (req, res) => {
     try {
-
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { roleId } = req.params;
 
         if (!roleId || isNaN(roleId)) {
@@ -118,19 +122,19 @@ router.put('/:roleId', async (req, res) => {
         }
 
         res.json({ message: result.message, role: result.role });
-
     } catch (err) {
         console.error('Error updating role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.put('/user/:userId', async (req, res) => {
+/**
+ * Update roles for a specific user.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateUserRolesHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { userId } = req.params;
         const { roleIds } = req.body;
 
@@ -149,15 +153,15 @@ router.put('/user/:userId', async (req, res) => {
         console.error('Error updating user roles:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.delete('/:roleId', async (req, res) => {
+/**
+ * Delete a specific role by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const deleteRoleHandler = async (req, res) => {
     try {
-
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { roleId } = req.params;
 
         if (!roleId || isNaN(roleId)) {
@@ -171,11 +175,21 @@ router.delete('/:roleId', async (req, res) => {
         }
 
         res.json({ message: result.message });
-
     } catch (err) {
         console.error('Error deleting role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+}
+
+// Router definitions
+export const router = express.Router();
+
+router.get('/', checkAuthHandler, fetchRolesHandler);
+router.get('/:roleId', checkAuthHandler, fetchRoleByIdHandler);
+router.get('/user/:userId', checkAuthHandler, fetchUserRolesHandler);
+router.post('/', checkAuthHandler, createRoleHandler);
+router.put('/:roleId', checkAuthHandler, updateRoleHandler);
+router.put('/user/:userId', checkAuthHandler, updateUserRolesHandler);
+router.delete('/:roleId', checkAuthHandler, deleteRoleHandler);
 
 export default router;

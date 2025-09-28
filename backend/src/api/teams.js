@@ -1,37 +1,40 @@
 // BACKEND/api/teams.js
 import express from 'express';
+import checkAuthHandler from '../utils/check-auth.js';
 import {
     getTeams,
     getTeam,
     getAllTeams,
     createTeam,
-    updateTeamMembers,
+    updateTeamUsers,
     updateTeam,
     deleteTeam
 } from '../controllers/teams.js';
-export const router = express.Router();
 
-router.get('/', async (req, res) => {
+// API Handlers
+/**
+ * Fetch all teams.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchTeamsHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const teams = req.query.all === 'true' ? await getAllTeams() : await getTeams();
 
         res.json(teams);
-
     } catch (err) {
         console.error('Error fetching teams:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.get('/:teamId', async (req, res) => {
+/**
+ * Fetch a specific team by ID in URL.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchTeamHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         const { teamId } = req.params;
 
         if (!teamId || isNaN(teamId)) {
@@ -50,66 +53,75 @@ router.get('/:teamId', async (req, res) => {
         console.error('Error fetching team:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.post('/', async (req, res) => {
+/**
+ * Create a new team.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const createTeamHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
+        const { code_name, name, parent_team, leader_ids, manager_ids } = req.body;
 
-        const {code_name, name, parent_team, leader_ids, manager_ids} = req.body;
-
-        const result = await createTeam({code_name, name, parent_team});
+        const result = await createTeam({ code_name, name, parent_team });
 
         if (!result.success) {
             return res.status(400).json({ message: result.message });
         }
 
-        /** @type {Team} **/
-        const team = await getTeam(parseInt(result.team.id));
-
         if (manager_ids && manager_ids.length > 0) {
-            const teamManagers = manager_ids
-                .filter(id => id !== null);
-            await updateTeamMembers(team.id, teamManagers, 2);
+            const teamManagers = manager_ids.filter(id => id !== null);
+            await updateTeamUsers([result.team.id], teamManagers, 3);
         }
 
         if (leader_ids && leader_ids.length > 0) {
-            const teamLeaders = leader_ids
-                .filter(id => id !== null);
-            await updateTeamMembers(team.id, teamLeaders, 1);
+            const teamLeaders = leader_ids.filter(id => id !== null);
+            await updateTeamUsers([result.team.id], teamLeaders, 2);
         }
 
-        res.status(201).json({ message: result.message, team });
-
-        res.status(400).json();
-
+        res.status(201).json({ message: result.message, team: result.team });
     } catch (err) {
         console.error('Error creating a team:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-})
+};
 
-router.post('/assignments', async(req, res) => {
+/**
+ * Update team assignments (managers or leaders).
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateTeamAssignmentsHandler = async(req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        const {resource, resourceIds, teamIds, role, mode} = req.body;
+        let result;
+
+        if (resource === 'user') {
+            result = await updateTeamUsers(teamIds, resourceIds, role, mode);
+        } else {
+            return res.status(400).json({message: 'Unknown resource.'});
         }
 
-        console.log('Feature to be implemented. Sent data:',req.body);
+        if (!result.success) {
+            return res.status(result.status || 400).json({message: result.message});
+        }
+
+        res.json({message: result.message});
 
     } catch (err) {
         console.error('Error editing user assignments:', err);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(500).json({message: 'Server error.'});
     }
-});
+};
 
-router.put('/:teamId', async (req, res) => {
+/**
+ * Update a specific team by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateTeamHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         const { teamId } = req.params;
 
         if (!teamId || isNaN(teamId)) {
@@ -131,13 +143,13 @@ router.put('/:teamId', async (req, res) => {
         if (manager_ids && manager_ids.length > 0) {
             const teamManagers = manager_ids
                 .filter(id => id !== null);
-            await updateTeamMembers(teamId, teamManagers, 2, 'overwrite');
+            await updateTeamUsers(teamId, teamManagers, 2, 'set');
         }
 
         if (leader_ids && leader_ids.length > 0) {
             const teamLeaders = leader_ids
                 .filter(id => id !== null);
-            await updateTeamMembers(teamId, teamLeaders, 1, 'overwrite');
+            await updateTeamUsers(teamId, teamLeaders, 1, 'set');
         }
 
         const team = await getTeam(parseInt(result.team.id));
@@ -147,13 +159,15 @@ router.put('/:teamId', async (req, res) => {
     } catch (err) {
 
     }
-})
+};
 
-router.delete('/:teamId', async (req, res) => {
+/**
+ * Delete a specific team by ID.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const deleteTeamHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         const { teamId } = req.params;
 
         if (!teamId || isNaN(teamId)) {
@@ -171,14 +185,15 @@ router.delete('/:teamId', async (req, res) => {
         console.error('Error deleting team:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
 
-router.delete('/', async (req, res) => {
+/**
+ * Bulk delete teams by IDs.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const bulkDeleteTeamsHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         const { teamIds } = req.body;
 
         console.log('Request for bulk-delete of Teams: ', teamIds);
@@ -189,6 +204,17 @@ router.delete('/', async (req, res) => {
         console.error('Error removing user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
-});
+};
+
+// Router definitions
+export const router = express.Router();
+
+router.get('/', checkAuthHandler, fetchTeamsHandler);
+router.get('/:teamId', checkAuthHandler, fetchTeamHandler);
+router.post('/', checkAuthHandler, createTeamHandler);
+router.post('/assignments', checkAuthHandler, updateTeamAssignmentsHandler);
+router.put('/:teamId', checkAuthHandler, updateTeamHandler);
+router.delete('/:teamId', checkAuthHandler, deleteTeamHandler);
+router.delete('/', checkAuthHandler, bulkDeleteTeamsHandler);
 
 export default router;

@@ -18,40 +18,6 @@ import { getUserRoles } from './roles.js';
  * @property {UserData} User - Sequelize User association
  */
 
-
-/**
- * Authenticates a user by login (ID, email, or login) and password.
- * @param {string|number} login - User ID, email, or login name
- * @param {string} password - User password
- * @returns {Promise<{ valid: boolean, status?: number, message?: string, user?: Object }>}
- */
-export async function authUser(login, password) {
-    const isInteger = Number.isInteger(Number(login));
-    const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
-
-    let user = await User.findOne({
-        where: isInteger ? { id: login } : (isEmailFormat ? { email: login } : { login: login })
-    });
-
-    if (!user) {
-        return { valid: false, status: 401, message: 'Invalid credentials, user not found!' };
-    }
-
-    if (!user.active || user.removed) {
-        return { valid: false, status: 403, user: {id: user.id}, message: 'User inactive.' };
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-        return { valid: false, status: 401, user: {id: user.id}, message: 'Invalid credentials!' };
-    }
-
-    user = await getUser(user.id);
-
-    return { valid: true, user };
-}
-
 /**
  * Retrieves one user by their ID.
  * @param {number} id - User ID to fetch a specific user
@@ -78,17 +44,17 @@ export async function getUser(id, managers=true, roles=true) {
         ...user.toJSON(),
         ...user.UserDetails?.toJSON(),
         ...user.UserConfigs?.toJSON(),
-    }
+    };
 
     delete user.user;
     delete user.UserDetails;
     delete user.UserConfigs;
 
     if (managers)
-        user = {...user, managers: await getUserManagers(id)}
+        user = {...user, managers: await getUserManagers(id)};
 
     if (roles)
-        user = {...user, roles: await getUserRoles(id)}
+        user = {...user, roles: await getUserRoles(id)};
 
     return user;
 }
@@ -235,62 +201,85 @@ export async function editUser(userId, data) {
 }
 
 /**
- * Removes a user by marking as removed and deleting details/configs.
- * @param {number} userId - User ID
+ * Removes user(s) by marking as removed and deleting details/configs.
+ * @param {number|number[]} userIds - User ID or array of User IDs
  * @returns {Promise<{success: boolean, message: string}>}
  */
-export async function removeUser(userId) {
+export async function removeUser(userIds) {
+    if (!userIds || (Array.isArray(userIds) && userIds.length === 0)) {
+        return { success: false, message: 'User ID(s) not provided.' };
+    }
+
     const transaction = await sequelize.transaction();
 
-    const user = await User.findOne({
-        where: { id: userId, removed: false },
-        transaction
-    });
-    const userDetails = await UserDetails.findOne({
-        where: { user: userId },
-        transaction
-    })
-    const userConfigs = await UserConfigs.findOne({
-        where: { user: userId },
-        transaction
-    })
-    const userManagers = await UserManager.findOne({
-        where: { user: userId },
-        transaction
-    })
-    const userRoles = await UserRole.findOne({
-        where: { user: userId },
-        transaction
-    })
+    try {
+        userIds = Array.isArray(userIds) ? userIds : [userIds];
 
-    if (!user) {
-        return {success: false, message: 'User not found.'};
+        for (const id of userIds) {
+            if (!Number.isInteger(id)) {
+                await transaction.rollback();
+                return { success: false, message: `Invalid user ID: ${id}` };
+            }
+        }
+
+        const users = await User.findAll({
+            where: { id: userIds, removed: false },
+            transaction
+        });
+
+        if (users.length === 0) {
+            await transaction.rollback();
+            return { success: false, message: 'No users found or already removed.' };
+        }
+
+        if (users.length !== userIds.length) {
+            await transaction.rollback();
+            return { success: false, message: 'Some users were not found or already removed.' };
+        }
+
+        for (const user of users) {
+            const userDetails = await UserDetails.findOne({
+                where: { user: user.id },
+                transaction
+            });
+            const userConfigs = await UserConfigs.findOne({
+                where: { user: user.id },
+                transaction
+            });
+            const userManagers = await UserManager.findOne({
+                where: { user: user.id },
+                transaction
+            });
+            const userRoles = await UserRole.findOne({
+                where: { user: user.id },
+                transaction
+            });
+
+            await user.update({
+                active: false,
+                removed: true
+            }, { transaction });
+
+            if (userDetails) {
+                await userDetails.destroy({ transaction });
+            }
+            if (userConfigs) {
+                await userConfigs.destroy({ transaction });
+            }
+            if (userManagers) {
+                await userManagers.destroy({ transaction });
+            }
+            if (userRoles) {
+                await userRoles.destroy({ transaction });
+            }
+        }
+
+        await transaction.commit();
+        return { success: true, message: `User${userIds.length > 1 ? 's' : ''} removed successfully.` };
+    } catch (error) {
+        await transaction.rollback();
+        return { success: false, message: `Error removing user(s): ${error.message}` };
     }
-
-    await user.update({
-        active: false,
-        removed: true
-    }, {transaction});
-
-    if (userDetails) {
-        await userDetails.destroy({ transaction });
-    }
-
-    if (userConfigs) {
-        await userConfigs.destroy({ transaction });
-    }
-
-    if (userManagers) {
-        await userManagers.destroy({ transaction });
-    }
-
-    if (userRoles) {
-        await userRoles.destroy({ transaction });
-    }
-
-    await transaction.commit();
-
-    return {success: true, message: 'User removed successfully.'};
 }
 
 /**
@@ -545,6 +534,39 @@ export async function getManagedUsers(managerId) {
     }));
 
     return users;
+}
+
+/**
+ * Authenticates a user by login (ID, email, or login) and password.
+ * @param {string|number} login - User ID, email, or login name
+ * @param {string} password - User password
+ * @returns {Promise<{ valid: boolean, status?: number, message?: string, user?: Object }>}
+ */
+export async function authUser(login, password) {
+    const isInteger = Number.isInteger(Number(login));
+    const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
+
+    let user = await User.findOne({
+        where: isInteger ? { id: login } : (isEmailFormat ? { email: login } : { login: login })
+    });
+
+    if (!user) {
+        return { valid: false, status: 401, message: 'Invalid credentials, user not found!' };
+    }
+
+    if (!user.active || user.removed) {
+        return { valid: false, status: 403, user: {id: user.id}, message: 'User inactive.' };
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+        return { valid: false, status: 401, user: {id: user.id}, message: 'Invalid credentials!' };
+    }
+
+    user = await getUser(user.id);
+
+    return { valid: true, user };
 }
 
 export async function hasManagerAccess(userId) {

@@ -1,5 +1,6 @@
 // BACKEND/api/app.js
 import express from 'express';
+import checkAuthHandler from '../utils/check-auth.js';
 import {
     getModules,
     setModule,
@@ -15,14 +16,15 @@ import {
     setUserTheme,
     toggleManagerNav
 } from '../controllers/users.js';
-export const router = express.Router();
 
-// Server API endpoint
-router.get('/',  (req, res) => {
+// API Handlers
+/**
+ * Serve API endpoint for Staff Portal app.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const apiEndpointHandler = (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         return res.json({ message: 'This is API endpoint for the Staff Portal app. ' +
                 'To make requests please use Staff Portal app.' });
     } catch (err) {
@@ -30,10 +32,14 @@ router.get('/',  (req, res) => {
         res.status(500).json({ message: 'API Error.' });
 
     }
-})
+};
 
-// App Config endpoint
-router.get('/config', async (req, res) => {
+/**
+ * Fetch app configuration.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchConfigHandler = async (req, res) => {
     try {
         res.json({
             is_connected: true,
@@ -43,13 +49,15 @@ router.get('/config', async (req, res) => {
         console.error('Config get API error:', err);
         res.status(500).json({ message: 'API Error.', connected: false });
     }
-});
+};
 
-router.get('/config-options', async (req, res) => {
+/**
+ * Fetch app configuration options.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchConfigOptionsHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
         res.json({
             ...await getConfigOptions()
         });
@@ -57,18 +65,15 @@ router.get('/config-options', async (req, res) => {
         console.error('Config get API error:', err);
         res.status(500).json({ message: 'API Error.', connected: false });
     }
-});
+};
 
-router.put('/config', async (req, res) => {
+/**
+ * Update app configuration.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateConfigHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        if (!await hasManagerAccess(req.session.user.id)) {
-            return res.status(403).json({ message: 'Access denied. Manager required.' });
-        }
-
         const newConfig = req.body;
         await setConfig(newConfig);
         res.json({ success: true, message: 'Config updated successfully.' });
@@ -76,13 +81,17 @@ router.put('/config', async (req, res) => {
         console.error('Config update API error:', err);
         res.status(400).json({ message: err.message || 'API Error.' });
     }
-});
+}
 
-
-// App Modules endpoint
-router.get('/modules', async (req, res) => {
+/**
+ * Fetch app modules.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const fetchModulesHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
+        if (!req.session || !req.session.user) {
             if (req.query['psthr'] === 'true')
                 return res.json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
@@ -94,72 +103,72 @@ router.get('/modules', async (req, res) => {
         console.error('Config fetching error:', err);
         res.status(500).json({ message: 'Config fetching Error.', connected: false });
     }
-});
+};
 
-// Update module enabled status endpoint
-router.put('/modules/:id', async (req, res) => {
+/**
+ * Update module enabled status.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const updateModuleHandler = async (req, res) => {
+     try {
+         const { id } = req.params;
+         const { enabled } = req.body;
+
+         if (typeof enabled !== 'boolean') {
+             return res.status(400).json({ message: 'Invalid enabled value.' });
+         }
+
+         if (!await hasManagerAccess(req.session.user)) {
+             return res.status(403).json({ message: 'Access denied.' });
+         }
+
+         const updated = await setModule(parseInt(id), enabled);
+
+         if (updated[0] > 0) {
+             return res.json({ success: true });
+         } else {
+             return res.status(404).json({ message: 'Module not found.' });
+         }
+     } catch (err) {
+         console.error('Error updating module:', err);
+         return res.status(500).json({ message: 'API Error.' });
+     }
+ };
+
+/**
+ * Fetch app pages.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const fetchPagesHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
-        const { id } = req.params;
-        const { enabled } = req.body;
-
-        if (typeof enabled !== 'boolean') {
-            return res.status(400).json({ message: 'Invalid enabled value.' });
-        }
-
-        if (!await hasManagerAccess(req.session.user.id)) {
-            return res.status(403).json({ message: 'Access denied.' });
-        }
-
-        const updated = await setModule(parseInt(id), enabled);
-
-        if (updated[0] > 0) {
-            return res.json({ success: true });
-        } else {
-            return res.status(404).json({ message: 'Module not found.' });
-        }
-    } catch (err) {
-        console.error('Error updating module:', err);
-        return res.status(500).json({ message: 'API Error.' });
-    }
-});
-
-// App Pages endpoint
-router.get('/pages', async (req, res) => {
-    try {
-        if (!req.session.user) {
+        if (!req.session || !req.session.user) {
             if (req.query['psthr'] === 'true')
                 return res.json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
 
-        const managerView = await hasManagerView(req.session.user.id) ? 1 : 0;
+        const managerView = await hasManagerView(req.session.user) ? 1 : 0;
 
         res.json(await getPages(managerView));
-
     } catch (err) {
-
         console.error('Error fetching pages:', err.message);
         res.status(500).json({ message: 'API Error.' });
-
     }
-});
+};
 
-// Manager View toggle endpoint
-router.post('/manager-view', async (req, res) => {
+/**
+ * Toggle manager view for a user.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const toggleManagerViewHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({
-                success: false,
-                message: 'Unauthorized. Please log in.',
-                manager_view: false
-            });
-        }
-
-        const {manager_view} = req.body;
+        const { manager_view } = req.body;
 
         if (typeof manager_view === 'undefined') {
             return res.status(400).json({
@@ -169,7 +178,7 @@ router.post('/manager-view', async (req, res) => {
             });
         }
 
-        if (! await hasManagerAccess(req.session.user.id)) {
+        if (!await hasManagerAccess(req.session.user)) {
             return res.status(403).json({
                 success: false,
                 message: 'Manager view access not permitted.',
@@ -177,10 +186,9 @@ router.post('/manager-view', async (req, res) => {
             });
         }
 
-        const updated = await setManagerView(req.session.user.id, manager_view);
+        const updated = await setManagerView(req.session.user, manager_view);
 
         if (updated) {
-            req.session.user.manager_view_enabled = manager_view;
             return res.json({
                 success: true,
                 message: 'Manager view updated successfully.',
@@ -192,76 +200,81 @@ router.post('/manager-view', async (req, res) => {
                 message: 'Failed to update manager view.'
             });
         }
-
-
     } catch (err) {
-
         console.error('Error changing manager view state:', err);
         return res.status(500).json({
             success: false,
             message: 'API Error.',
             manager_view: false
         });
-
     }
-});
+};
 
-// Toggle ManagerView main nav endpoint
-router.post('/toggle-nav', async (req, res) => {
+/**
+ * Toggle manager view main navigation.
+ * @param {express.Request} req
+ * @param {Object} req.session
+ * @param {express.Response} res
+ */
+const toggleManagerNavHandler = async (req, res) => {
     try {
-        if (!req.session.user) {
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
-
         if (!req.body || typeof req.body.nav_collapsed !== 'boolean') {
-            return res.status(401).json({ message: 'Invalid or missing nav_collapsed value.' });
+            return res.status(400).json({ message: 'Invalid or missing nav_collapsed value.' });
         }
 
-        const {nav_collapsed} = req.body;
+        const { nav_collapsed } = req.body;
 
-        const updated = await toggleManagerNav(req.session.user.id, nav_collapsed);
+        const updated = await toggleManagerNav(req.session.user, nav_collapsed);
 
         if (updated) {
-            req.session.user.manager_nav_collapsed = nav_collapsed;
-            res.json({ success: true, navCollapse: nav_collapsed});
+            res.json({ success: true, navCollapse: nav_collapsed });
+        } else {
+            res.status(400).json({ success: false, message: 'Failed to update.' });
         }
-        else {
-            res.status(401).json({ success: false, message: 'Failed to update.'});
-        }
-
     } catch (err) {
         console.error('Error while toggling Manager View main-nav:', err);
         res.status(500).json({ message: 'API Error.' });
     }
-});
+};
 
-router.put('/user-theme/:userId', async (req, res) => {
-   try {
-       if (!req.session.user) {
-           return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-       }
+/**
+ * Update user theme.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateUserThemeHandler = async (req, res) => {
+    try {
+        if (!req.body || typeof req.body.theme_mode !== 'string') {
+            return res.status(400).json({ message: 'Invalid or missing theme_mode value.' });
+        }
 
-       if (!req.body || typeof req.body.theme_mode !== 'string') {
-           return res.status(401).json({ message: 'Invalid or missing theme_mode value.' });
-       }
+        const { userId } = req.params;
+        const { theme_mode } = req.body;
 
-       const { userId } = req.params;
-       const { theme_mode } = req.body;
+        const updated = await setUserTheme(userId, theme_mode);
 
-       const updated = await setUserTheme(userId, theme_mode);
+        if (!updated) {
+            return res.status(400).json({ success: false, message: 'Failed to update.' });
+        }
 
-       if (!updated) {
-           return res.status(401).json({ success: false, message: 'Failed to update.'});
-       }
+        res.json({ success: true, theme_mode });
+    } catch (err) {
+        console.error('Error while toggling User theme:', err);
+        res.status(500).json({ message: 'API Error.' });
+    }
+};
+// Router definitions
+export const router = express.Router();
 
-       req.session.user.theme_mode = theme_mode;
-
-       res.json({ success: true, theme_mode});
-
-   } catch (err) {
-       console.error('Error while toggling User theme:', err);
-       res.status(500).json({ message: 'API Error.' });
-   }
-});
+router.get('/', checkAuthHandler, apiEndpointHandler)
+router.get('/config', fetchConfigHandler);
+router.get('/config-options', fetchConfigOptionsHandler);
+router.put('/config', checkAuthHandler, updateConfigHandler);
+router.get('/modules', fetchModulesHandler);
+router.put('/modules/:id', checkAuthHandler, updateModuleHandler);
+router.get('/pages', fetchPagesHandler);
+router.post('/manager-view', checkAuthHandler, toggleManagerViewHandler);
+router.post('/toggle-nav', checkAuthHandler, toggleManagerNavHandler);
+router.put('/user-theme/:userId', checkAuthHandler, updateUserThemeHandler);
 
 export default router;

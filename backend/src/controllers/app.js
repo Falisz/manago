@@ -14,15 +14,6 @@ export async function getModules() {
 }
 
 /**
- * Checks if a module is enabled by its ID.
- * @param {number} id - The ID of the module to check.
- * @returns {Promise<boolean>} The enabled status of the module, or false if not found.
- */
-export async function checkModule(id) {
-    return (await AppModule.findOne({ where: { id } }))?.enabled ?? false;
-}
-
-/**
  * Updates the enabled status of a module by its ID.
  * @param {number} id - The ID of the module to update.
  * @param {boolean} value - The new enabled status to set.
