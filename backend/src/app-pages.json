@@ -62,7 +62,7 @@
       "path": "planner",
       "title": "Work Planner",
       "module": 4,
-      "icon": "calendar_month",
+      "icon": "edit_calendar",
       "component": "WorkPlanner",
       "subpages": [
         {
