@@ -1,7 +1,7 @@
 // BACKEND/api/posts.js
 import express from 'express';
 import { createPost, deletePost, getPost, getPosts, updatePost } from '../controllers/posts.js';
-import checkAuthHandler from '../utils/check-auth.js';
+import checkAuthHandler from '../utils/checkAuth.js';
 
 // API Handlers
 /**

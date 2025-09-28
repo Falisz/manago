@@ -59,27 +59,36 @@
       "subpages": []
     },
     {
-      "path": "schedule",
-      "title": "Schedule",
+      "path": "planner",
+      "title": "Work Planner",
       "module": 4,
       "icon": "calendar_month",
-      "component": "ScheduleShow",
+      "component": "WorkPlanner",
       "subpages": [
         {
-          "path": "past",
-          "title": "Past Schedules",
+          "path": "schedules",
+          "title": "Schedules",
           "icon": "",
-          "component": "SchedulePast",
-          "subpages": []
+          "component": "ScheduleIndex"
+        }, {
+          "path": "leaves",
+          "title": "Leaves and Holidays",
+          "icon": "",
+          "component": "LeavesIndex"
+        }, {
+          "path": "job-posts",
+          "title": "Job Posts",
+          "icon": "",
+          "component": "JobPostsIndex"
         }
       ]
     },
     {
-      "path": "Leaves",
-      "title": "Leaves",
+      "path": "timesheets",
+      "title": "timesheets",
       "module": 4,
       "icon": "calendar_month",
-      "component": "EmployeeLeaves"
+      "component": "TimesheetIndex"
     },
     {
       "path": "Tasks",

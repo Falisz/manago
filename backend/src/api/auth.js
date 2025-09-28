@@ -1,6 +1,6 @@
 // BACKEND/api/auth.js
 import express from 'express';
-import { securityLog } from '../utils/security-logs.js';
+import { securityLog } from '../utils/securityLogs.js';
 import { authUser, getUser } from '../controllers/users.js';
 
 // API Handlers

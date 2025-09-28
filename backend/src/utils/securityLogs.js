@@ -1,4 +1,4 @@
-import {AppSecurityLogs} from "../models/app-audit-logs.js";
+import {AppSecurityLogs} from "../models/appAuditLogs.js";
 import {now} from "sequelize/lib/utils";
 
 export async function securityLog(user, org, action, message) {

@@ -1,5 +1,5 @@
 //BACKEND/controllers/api.js
-import AppModule from '../models/app-module.js';
+import AppModule from '../models/appModule.js';
 import PagesData from '../app-pages.json' with { type: 'json' };
 import ConfigData from '../app-config.json' with { type: 'json' };
 import fs from 'fs';

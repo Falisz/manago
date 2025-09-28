@@ -1,7 +1,7 @@
 // BACKEND/utils/seed-data.js
 import bcrypt from 'bcrypt';
 import sequelize from '../db.js';
-import AppModule from "../models/app-module.js";
+import AppModule from "../models/appModule.js";
 import Role from '../models/role.js';
 import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
 import Team, {TeamRole, TeamUser} from '../models/team.js';
@@ -46,8 +46,8 @@ export async function seedData() {
                     description: "It can be used for project-related management allowing major logical divisions within the company."},
                 {id: 3, title: 'Branches', icon: 'graph_3', enabled: false,
                     description: "Similarly to the projects, but it allows for major physical divisions for the company."},
-                {id: 4, title: 'Timesheets', icon: 'calendar_month', enabled: false,
-                    description: "This is powerful tool for timesheets, payroll and schedule planning, leaves and time offs."},
+                {id: 4, title: 'Time Management', icon: 'calendar_month', enabled: false,
+                    description: "This is powerful tool for schedule planning, timesheets, job posts, payroll, leaves and time offs."},
                 {id: 5, title: 'Tasks', icon: 'task_alt', enabled: false,
                     description: "This module allows to-do and Kanban tasks and plans management."},
                 {id: 6, title: 'Trainings', icon: 'school', enabled: false,

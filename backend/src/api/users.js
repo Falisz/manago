@@ -1,6 +1,6 @@
 // BACKEND/api/users.js
 import express from 'express';
-import checkAuthHandler from '../utils/check-auth.js';
+import checkAuthHandler from '../utils/checkAuth.js';
 import {
     getUsers,
     getUser,

@@ -6,7 +6,7 @@ import cors from 'cors';
 import winston from 'winston';
 import dotenv from 'dotenv';
 import sequelize from './db.js';
-import seedData from './utils/seed-data.js';
+import seedData from './utils/seedData.js';
 import appRoutes from './api/app.js';
 import authRoutes from './api/auth.js';
 import usersRoutes from './api/users.js';

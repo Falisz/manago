@@ -7,8 +7,7 @@ Following roadmap and tasks to-do as of 2025-09-22:
   - [ ] Planning roster and/or shift schedules. (Excel importable - provided downloadable template)
   - [ ] Planning annual leaves, holidays, comp-offs, sick leaves, etc.
   - [ ] Shifts data model (user, startTime, endTime, post)
-  - [ ] User/Team/Branch/Project Schedules.
-  - [ ] Schedule available for 
+  - [ ] Schedule available for User/Team/Branch/Project.
   - [ ] Disposition and Leave requests
   - [ ] Job Posts data model (optional - i.e. gastronomy or entertainment staff)
   - [ ] Many configs related to it
