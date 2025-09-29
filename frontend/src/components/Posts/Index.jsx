@@ -29,7 +29,7 @@ const PostIndex = () => {
     if (loading) {
         return <Loader />;
     }
-
+    console.log(posts);
     return (
         <>
             {posts.length === 0 || error ? (
@@ -40,7 +40,7 @@ const PostIndex = () => {
                         <li key={post.id} className='post-item'>
                             <h2
                                 className='post-title-button'
-                                onClick={() => openModal({ content: 'postDetails', type: 'dialog', data: { id: post.id } })}>
+                                onClick={() => openModal({ content: 'postDetails', type: 'dialog', contentId: post.id })}>
                                 {post.title || 'Untitled Post'}
                             </h2>
                             <p>
@@ -59,18 +59,6 @@ const PostIndex = () => {
                                     ? `${post.content.substring(0, 200)}...`
                                     : post.content}
                             </p>
-                            {post.isEdited && (
-                                <p>
-                                    Last edited:{' '}
-                                    {new Date(post.updatedAt).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
-                            )}
                         </li>
                     ))}
                 </ul>

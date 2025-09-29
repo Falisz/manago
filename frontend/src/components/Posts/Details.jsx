@@ -49,20 +49,19 @@ const PostDetails = ({ postId }) => {
                     hour: '2-digit',
                     minute: '2-digit'
                 })}
+                {post.updatedAt !== post.createdAt && (
+                    <>{' '}(Last edited:{' '}
+                        {new Date(post.updatedAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    )</>
+                )}
             </p>
             <p>{post.content}</p>
-            {post.isEdited && (
-                <p>
-                    Last edited:{' '}
-                    {new Date(post.updatedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })}
-                </p>
-            )}
         </>
     );
 };
