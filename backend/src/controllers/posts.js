@@ -4,7 +4,7 @@ import {Post, Channel} from '../models/posts.js';
 
 /**
  * @typedef {Object} RawPostData
- * @property {Object} User - Sequelize User association
+ * @property {Object} Author - Sequelize User association
  * @property {Object} Channel - Sequelize Channel association
  * @property {Object} User.UserDetails - Sequelize UserDetails association
  * @property {Object} author - Author
@@ -18,11 +18,11 @@ import {Post, Channel} from '../models/posts.js';
 function postCleanUp(post) {
     let newPost = {
         ...post.toJSON(),
-        author: post.User?.toJSON(),
+        author: post.Author?.toJSON(),
         channel: post.Channel?.toJSON(),
     };
     delete newPost.Channel;
-    delete newPost.User;
+    delete newPost.Author;
 
     if (newPost.author && newPost.author.UserDetails)
         newPost.author = {
@@ -43,6 +43,7 @@ export async function getPost(postId) {
         include: [
             {
                 model: User,
+                as: 'Author',
                 attributes: ['id'],
                 include: [
                     { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
@@ -64,6 +65,7 @@ export async function getPosts() {
         include: [
             {
                 model: User,
+                as: 'Author',
                 attributes: ['id'],
                 include: [
                     { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
