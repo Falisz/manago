@@ -1,8 +1,8 @@
 // BACKEND/controller/teams.js
-import Team, { TeamUser } from '../models/team.js';
-import User, { UserDetails } from '../models/user.js';
-import {Op} from 'sequelize';
-import sequelize from '../db.js';
+import { Team, TeamUser } from '../models/teams.js';
+import { User, UserDetails } from '../models/users.js';
+import { Op } from 'sequelize';
+import sequelize from '../utils/database.js';
 
 /**
  * @typedef {Object} Team

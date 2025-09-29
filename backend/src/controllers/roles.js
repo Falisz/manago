@@ -1,7 +1,6 @@
 // BACKEND/controller/roles.js
-import sequelize from '../db.js';
-import Role from '../models/role.js';
-import User, {UserDetails, UserRole} from '../models/user.js';
+import sequelize from '../utils/database.js';
+import {User, UserDetails, Role, UserRole} from '../models/users.js';
 
 /**
  * @typedef {Object} UserRoleData

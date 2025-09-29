@@ -1,6 +1,7 @@
-// BACKEND/models/shift.js
-import sequelize from '../db.js';
+// BACKEND/models/workShifts.js
+import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import {User} from "./users.js";
 
 export const DispositionPreset = sequelize.define('DispositionPreset', {
     name: {
@@ -15,14 +16,12 @@ export const DispositionPreset = sequelize.define('DispositionPreset', {
         type: DataTypes.TIME,
         allowNull: false,
     },
-    color: {
-        type: DataTypes.STRING(7),
-        allowNull: true,
-    }
+    color: DataTypes.STRING(7)
 }, {
     tableName: 'disposition_presets',
     timestamps: false,
 });
+// OFF: 00:00 - 00:00, FULL: 00:00 - 23:59, MS: 08:00 - 16:00, AS: 16:00 - 23:59
 
 export const Disposition = sequelize.define('Disposition', {
     user: {
@@ -40,20 +39,13 @@ export const Disposition = sequelize.define('Disposition', {
     },
     preset: {
         type: DataTypes.INTEGER,
-        allowNull: true,
         references: { model: DispositionPreset, key: 'id' }
     },
-    notes: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    }
+    notes: DataTypes.TEXT
 }, {
     tableName: 'dispositions',
     timestamps: false,
 });
-
-Disposition.hasOne(DispositionPreset, { foreignKey: 'preset', sourceKey: 'id' });
-DispositionPreset.belongsTo(Disposition, { foreignKey: 'preset', targetKey: 'id' });
 
 export const JobPost = sequelize.define('JobPost', {
     id: {
@@ -65,16 +57,13 @@ export const JobPost = sequelize.define('JobPost', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    color: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    }
+    color: DataTypes.STRING(7)
 }, {
     tableName: 'job_posts',
     timestamps: false,
 });
 
-const Shift = sequelize.define('Shift', {
+export const Shift = sequelize.define('Shift', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -82,23 +71,18 @@ const Shift = sequelize.define('Shift', {
     },
     user: {
         type: DataTypes.INTEGER,
-        allowNull: true,
-    },
-    date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
+        references: { model: User, key: 'id' }
     },
     start_time: {
-        type: DataTypes.TIME,
-        allowNull: true,
+        type: DataTypes.DATE,
+        allowNull: false,
     },
     end_time: {
-        type: DataTypes.TIME,
-        allowNull: true,
+        type: DataTypes.DATE,
+        allowNull: false,
     },
     job_post: {
         type: DataTypes.INTEGER,
-        allowNull: true,
         references: { model: JobPost, key: 'id' }
     }
 }, {
@@ -106,7 +90,21 @@ const Shift = sequelize.define('Shift', {
     timestamps: false,
 });
 
-Shift.hasOne(JobPost, { foreignKey: 'job_post', sourceKey: 'id' });
-JobPost.belongsTo(Shift, { foreignKey: 'job_post', targetKey: 'id' });
-
-export default Shift;
+//
+// Model Associations for workShifts.js
+//
+// User <-> Disposition
+User.hasMany(Disposition, { foreignKey: 'user', sourceKey: 'id', as: 'Dispositions' });
+Disposition.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+//
+// DispositionPreset <-> Disposition
+DispositionPreset.hasMany(Disposition, { foreignKey: 'preset', sourceKey: 'id' });
+Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id' });
+//
+// User <-> Shift
+User.hasMany(Shift, { foreignKey: 'user', sourceKey: 'id', as: 'Shifts' });
+Shift.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+//
+// JobPost <-> Shift
+JobPost.hasMany(Shift, { foreignKey: 'job_post', sourceKey: 'id' });
+Shift.belongsTo(JobPost, { foreignKey: 'job_post', targetKey: 'id' });

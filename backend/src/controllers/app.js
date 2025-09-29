@@ -1,6 +1,5 @@
 //BACKEND/controllers/api.js
-import AppModule from '../models/appModule.js';
-import PagesData from '../app-pages.json' with { type: 'json' };
+import {AppModule, AppPage} from '../models/appResources.js';
 import ConfigData from '../app-config.json' with { type: 'json' };
 import fs from 'fs';
 import path from 'path';
@@ -29,8 +28,14 @@ export async function setModule(id, value) {
  * @returns {Promise<Object[]>} Array of page objects with nested subpages
  */
 export async function getPages(view = 0) {
-    const key = view === 1 ? 'manager_view' : 'staff_view';
-    let pages = JSON.parse(JSON.stringify(PagesData[key]));
+    const viewKey = view === 1 ? 'manager_view' : 'staff_view';
+
+    const appPage = await AppPage.findOne({ where: { view: viewKey } });
+    if (!appPage) {
+        return [];
+    }
+
+    let pages = appPage.pages;
     const modules = await getModules();
     const moduleStatus = new Map(modules.map(module => [module.id, module.enabled]));
 

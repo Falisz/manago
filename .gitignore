@@ -3,6 +3,7 @@
 /.pnp
 .pnp.js
 node_modules/
+logs/
 coverage/
 build/
 /.idea/

@@ -1,12 +1,10 @@
 // BACKEND/utils/seed-data.js
 import bcrypt from 'bcrypt';
-import sequelize from '../db.js';
-import AppModule from "../models/appModule.js";
-import Role from '../models/role.js';
-import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
-import Team, {TeamRole, TeamUser} from '../models/team.js';
-import Channel from "../models/channel.js";
-import Post from "../models/post.js";
+import sequelize from '../utils/database.js';
+import {AppModule, AppPage} from '../models/appResources.js';
+import {User, UserDetails, UserConfigs, UserManager, Role, UserRole} from '../models/users.js';
+import {Team, TeamRole, TeamUser} from '../models/teams.js';
+import {Post, Channel} from '../models/posts.js';
 
 /**
  * Seeds data to a model if the table is empty.
@@ -31,10 +29,10 @@ async function seedModel(model, tableName, data, itemsName = "records") {
  * Seeds initial data to the database.
  * @returns {Promise<void>}
  */
-export async function seedData() {
+export async function seedData(force = false) {
     try {
-        console.log('\n[INFO] Starting data seeding...');
-        await sequelize.sync({ alter: true });
+        console.log('\n[INFO] Starting data ' + (force ? 'reseeding' : 'seeding') + '...');
+        await sequelize.sync({ [force ? 'force' : 'alter']: true });
 
         const appModules = [
                 {id: 0, title: 'Main', icon: 'dashboard', enabled: true,
@@ -59,6 +57,194 @@ export async function seedData() {
             ];
         await seedModel(AppModule, 'app_modules', appModules, 'modules');
 
+        const appPages = [
+            {
+                view: 'staff_view',
+                pages: [
+                    {
+                        "path": "/",
+                        "title": "Home",
+                        "module": 0,
+                        "icon": "home",
+                        "component": "Dashboard",
+                        "subpages": []
+                    },
+                    {
+                        "path": "schedule",
+                        "title": "Schedule",
+                        "module": 4,
+                        "icon": "calendar_month",
+                        "component": "Schedule",
+                        "subpages": [
+                            {
+                                "path": "dispositions",
+                                "title": "Dispositions",
+                                "icon": "",
+                                "component": "Dispositions",
+                                "subpages": []
+                            }
+                        ]
+                    },
+                    {
+                        "path": "trainings",
+                        "title": "Trainings",
+                        "module": 6,
+                        "icon": "school",
+                        "component": "Trainings",
+                        "subpages": []
+                    },
+                    {
+                        "path": "posts",
+                        "title": "Posts",
+                        "module": 7,
+                        "icon": "forum",
+                        "component": "PostsIndex",
+                        "subpages": []
+                    }
+                ]
+            },
+            {
+                view: 'manager_view',
+                pages: [
+                    {
+                        "path": "/",
+                        "title": "Home",
+                        "module": 0,
+                        "icon": "home",
+                        "component": "ManagerDashboard",
+                        "subpages": []
+                    },
+                        {
+                            "path": "employees",
+                            "title": "Employees",
+                            "module": 0,
+                            "icon": "people",
+                            "component": "EmployeesIndex",
+                            "subpages": [
+                                {
+                                    "path": "managers",
+                                    "title": "Managers",
+                                    "icon": "",
+                                    "component": "ManagersIndex"
+                                },
+                                {
+                                    "path": "all-users",
+                                    "title": "All Users",
+                                    "icon": "",
+                                    "component": "UsersIndex"
+                                },
+                                {
+                                    "path": "teams",
+                                    "title": "Teams",
+                                    "module": 1,
+                                    "icon": "groups",
+                                    "component": "TeamsIndex"
+                                },
+                                {
+                                    "path": "roles",
+                                    "title": "Security Roles",
+                                    "icon": "",
+                                    "component": "RolesIndex"
+                                }
+                            ]
+                        },
+                        {
+                            "path": "projects",
+                            "title": "Projects",
+                            "module": 2,
+                            "icon": "fact_check",
+                            "component": "ProjectIndex",
+                            "subpages": []
+                        },
+                        {
+                            "path": "branches",
+                            "title": "Branches",
+                            "module": 3,
+                            "icon": "hub",
+                            "component": "BranchIndex",
+                            "subpages": []
+                        },
+                        {
+                            "path": "planner",
+                            "title": "Work Planner",
+                            "module": 4,
+                            "icon": "edit_calendar",
+                            "component": "WorkPlanner",
+                            "subpages": [
+                                {
+                                    "path": "schedules",
+                                    "title": "Schedules",
+                                    "icon": "",
+                                    "component": "ScheduleIndex"
+                                }, {
+                                    "path": "leaves",
+                                    "title": "Leaves and Holidays",
+                                    "icon": "",
+                                    "component": "LeavesIndex"
+                                }, {
+                                    "path": "job-posts",
+                                    "title": "Job Posts",
+                                    "icon": "",
+                                    "component": "JobPostsIndex"
+                                }
+                            ]
+                        },
+                        {
+                            "path": "timesheets",
+                            "title": "timesheets",
+                            "module": 4,
+                            "icon": "calendar_month",
+                            "component": "TimesheetIndex"
+                        },
+                        {
+                            "path": "Tasks",
+                            "title": "Tasks",
+                            "module": 5,
+                            "icon": "task",
+                            "component": "TasksDashboard"
+                        },
+                        {
+                            "path": "Trainings",
+                            "title": "Trainings",
+                            "module": 6,
+                            "icon": "school",
+                            "component": "TrainingsDashboard"
+                        },
+                        {
+                            "path": "posts",
+                            "title": "Posts",
+                            "module": 7,
+                            "icon": "forum",
+                            "component": "PostsIndex",
+                            "subpages": [
+                                {
+                                    "path": "archive",
+                                    "title": "Posts Archive",
+                                    "icon": "",
+                                    "component": "PostsArchive",
+                                    "subpages": []
+                                }
+                            ]
+                        },
+                        {
+                            "path": "Blogs",
+                            "title": "Blogs",
+                            "module": 8,
+                            "icon": "feed",
+                            "component": "Blogs"
+                        },
+                        {
+                            "path": "app-settings",
+                            "title": "App Settings",
+                            "module": 0,
+                            "icon": "settings",
+                            "component": "AppSettings"
+                        }
+                    ]
+            }
+        ]
+        await seedModel(AppPage, 'app_pages', appPages, 'pages');
+
         const roles = [
                 { id: 1, name: 'Employee', system_default: true, icon: 'account_circle',
                     description: "Default role assigned to all users. Allows access to basic features and self-service options." },
@@ -80,12 +266,6 @@ export async function seedData() {
                     description: "Role for administrators with full access to the system." },
             ];
         await seedModel(Role, 'roles', roles, 'roles');
-        await sequelize.query(`
-            SELECT setval(
-                pg_get_serial_sequence('roles', 'id'),
-                COALESCE((SELECT MAX(id) FROM roles), 1)
-            );
-        `);
 
         let userCount = await User.count();
         if (userCount > 0) {
@@ -427,8 +607,7 @@ export async function seedData() {
                         author: users[0].id,
                         title: 'Welcome to the Forum',
                         content: 'This is the first post in our new forum. Feel free to share your thoughts!',
-                        createdAt: new Date(),
-                        isEdited: false
+                        createdAt: new Date()
                     },
                     {
                         channel: channels[1].id,
@@ -436,7 +615,6 @@ export async function seedData() {
                         title: 'Company Update',
                         content: 'We have some exciting news to share about upcoming projects!',
                         createdAt: new Date(Date.now() - 86400000), // 1 day ago
-                        isEdited: true,
                         updatedAt: new Date()
                     },
                     {
@@ -444,8 +622,7 @@ export async function seedData() {
                         author: users[1]?.id || users[0].id,
                         title: null,
                         content: 'I have an idea for improving our workflow. Let’s discuss!',
-                        createdAt: new Date(Date.now() - 172800000), // 2 days ago
-                        isEdited: false
+                        createdAt: new Date(Date.now() - 172800000) // 2 days ago
                     }
                 ];
                 await Post.bulkCreate(posts);
@@ -466,7 +643,8 @@ export default seedData;
 import { fileURLToPath } from "url";
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log('[INFO] Running data seeding...');
-    seedData()
+    const isForce = process.argv[2] === 'force';
+    seedData(isForce)
         .then(() => {
             console.log('[INFO] Seeding finished successfully.');
             process.exit(0);

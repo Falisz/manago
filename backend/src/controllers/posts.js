@@ -1,7 +1,6 @@
 //BACKEND/controller/pages.js
-import {User, UserDetails} from '../models/user.js';
-import Post from '../models/post.js';
-import Channel from '../models/channel.js';
+import {User, UserDetails} from '../models/users.js';
+import {Post, Channel} from '../models/posts.js';
 
 /**
  * @typedef {Object} RawPostData

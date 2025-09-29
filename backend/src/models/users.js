@@ -1,18 +1,12 @@
-import {DataTypes} from "sequelize";
-import sequelize from "../db.js";
-import Role from "./role.js";
+// BACKEND/models/users.js
+import sequelize from '../utils/database.js';
+import {DataTypes} from 'sequelize';
 
 export const User = sequelize.define('User', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false,
-        defaultValue: () => Math.floor(Math.random() * 900000) + 100000
-    },
     login: {
         type: DataTypes.STRING(100),
         unique: true,
-        allowNull: true
+        allowNull: false
     },
     email: {
         type: DataTypes.STRING(100),
@@ -43,14 +37,14 @@ export const UserDetails = sequelize.define('UserDetails', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
-        references: { model: 'users', key: 'id' }
+        references: { model: User, key: 'id' }
     },
     first_name: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING,
         allowNull: false
     },
     last_name: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING,
         allowNull: false
     }
 }, {
@@ -63,10 +57,10 @@ export const UserConfigs = sequelize.define('UserConfigs', {
         type: DataTypes.INTEGER,
         primaryKey: true,
         allowNull: false,
-        references: { model: 'users', key: 'id' }
+        references: { model: User, key: 'id' }
     },
     theme_mode: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING,
         allowNull: false,
         defaultValue: 'dark'
     },
@@ -90,58 +84,78 @@ export const UserConfigs = sequelize.define('UserConfigs', {
     timestamps: false
 });
 
-export const UserRole = sequelize.define('UserRole', {
-    user: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'users', key: 'id' }
-    },
-    role: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'roles', key: 'id' }
-    }
-}, {
-    tableName: 'user_roles',
-    timestamps: false,
-    indexes: [{ unique: true, fields: ['user', 'role'] }],
-    primaryKey: false
-});
-UserRole.removeAttribute('id');
-
 export const UserManager = sequelize.define('UserManager', {
     user: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'id' }
+        references: { model: User, key: 'id' }
     },
     manager: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'id' }
+        references: { model: User, key: 'id' }
     }
 }, {
     tableName: 'user_managers',
     timestamps: false,
     indexes: [{ unique: true, fields: ['user', 'manager'] }],
-    primaryKey: false
+    noPrimaryKey: true
 });
-UserManager.removeAttribute('id');
 
+export const Role = sequelize.define('Role', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    icon: DataTypes.STRING,
+    description: DataTypes.TEXT,
+    system_default: DataTypes.BOOLEAN
+}, {
+    tableName: 'roles',
+    timestamps: false
+});
+
+export const UserRole = sequelize.define('UserRole', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: User, key: 'id' }
+    },
+    role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Role, key: 'id' }
+    }
+}, {
+    tableName: 'user_roles',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['user', 'role'] }],
+    noPrimaryKey: true
+});
+
+//
+// Model Associations for users.js
+//
+// User <-> UserDetails (one-to-one)
 User.hasOne(UserDetails, { foreignKey: 'user', sourceKey: 'id', as: 'UserDetails' });
 UserDetails.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
-
+//
+// User <-> UserConfigs (one-to-one)
 User.hasOne(UserConfigs, { foreignKey: 'user', sourceKey: 'id', as: 'UserConfigs' });
 UserConfigs.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
-
+//
+// User <-> UserManager (as managed user)
 User.hasMany(UserManager, { foreignKey: 'user', sourceKey: 'id', as: 'ManagedUsers' });
 UserManager.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+//
+// User <-> UserManager (as manager)
 User.hasMany(UserManager, { foreignKey: 'manager', sourceKey: 'id', as: 'Managers' });
 UserManager.belongsTo(User, { foreignKey: 'manager', targetKey: 'id', as: 'Manager' });
-
+//
+// User <-> UserRole
 User.hasMany(UserRole, { foreignKey: 'user', sourceKey: 'id' });
 UserRole.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+//
+// Role <-> UserRole
 Role.hasMany(UserRole, { foreignKey: 'role', sourceKey: 'id' });
 UserRole.belongsTo(Role, { foreignKey: 'role', targetKey: 'id' });
-
-export default User;

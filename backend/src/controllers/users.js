@@ -1,8 +1,7 @@
 // BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
-import sequelize from '../db.js';
-import User, {UserDetails, UserConfigs, UserRole, UserManager} from '../models/user.js';
-import Role from '../models/role.js';
+import sequelize from '../utils/database.js';
+import {User, UserDetails, UserConfigs, UserManager, Role, UserRole} from '../models/users.js';
 import { getUserRoles } from './roles.js';
 
 /**
@@ -92,6 +91,7 @@ export async function getUsers() {
 /**
  * Creates a new user.
  * @param {Object} data - User data
+ * @param {number|null} data.id - User ID
  * @param {string|null} data.login - User login
  * @param {string} data.email - User email
  * @param {string} data.password - User password
@@ -114,6 +114,13 @@ export async function createUser(data) {
         if (data.login !== null && data.login !== undefined && await User.findOne({where: {login: data.login}})) {
             return {success: false, message: 'Login must be unique.'};
         }
+
+        if (!data.id)
+            while (true) {
+                data.id = Math.floor(Math.random() * 900000) + 100000;
+                if (!(await User.findOne({where: {id: data.id}})))
+                    break;
+            }
 
         const hashedPassword = await bcrypt.hash(data.password || '1234', 10);
 

@@ -5,7 +5,7 @@ import SequelizeStore from 'connect-session-sequelize';
 import cors from 'cors';
 import winston from 'winston';
 import dotenv from 'dotenv';
-import sequelize from './db.js';
+import sequelize from './utils/database.js';
 import seedData from './utils/seedData.js';
 import appRoutes from './api/app.js';
 import authRoutes from './api/auth.js';
@@ -66,7 +66,7 @@ const logger = winston.createLogger({
         })
     ),
     transports: [
-        new winston.transports.File({ filename: 'requests.log' })
+        new winston.transports.File({ filename: 'logs/requests.log' })
     ]
 });
 

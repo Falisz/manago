@@ -1,8 +1,9 @@
-import {AppSecurityLogs} from "../models/appAuditLogs.js";
+// BACKEND/utils/securityLogs.js
+import {AppSecurityLog} from "../models/appResources.js";
 import {now} from "sequelize/lib/utils";
 
 export async function securityLog(user, org, action, message) {
-    await AppSecurityLogs.create({
+    await AppSecurityLog.create({
         timestamp: now(),
         user: user,
         org: org,

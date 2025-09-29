@@ -1,15 +1,9 @@
-
-// BACKEND/models/leave.js
-import sequelize from '../db.js';
+// BACKEND/models/workDays.js
+import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
-import User from './user.js';
+import {User} from './users.js';
 
 export const Holiday = sequelize.define('Holiday', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
     date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
@@ -48,11 +42,7 @@ export const LeavePool = sequelize.define('LeavePool', {
         type: DataTypes.FLOAT,
         allowNull: false,
     }, 
-    parent_pool: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: { model: LeavePool, key: 'id' }
-    },
+    parent_pool: DataTypes.INTEGER,
     start_date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
@@ -86,10 +76,7 @@ export const LeaveType = sequelize.define('LeaveType', {
         allowNull: false,
         references: { model: LeavePool, key: 'id' }
     },
-    color: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    }
+    color: DataTypes.STRING
 }, { 
     tableName: 'leave_types',
     timestamps: false 
@@ -126,28 +113,16 @@ export const Leave = sequelize.define('Leave', {
     },
     approver: {
         type: DataTypes.INTEGER,
-        allowNull: true,
         references: { model: User, key: 'id' }
     },
-    user_note: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    approver_note: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    }
+    user_note: DataTypes.TEXT,
+    approver_note: DataTypes.TEXT
 }, { 
     tableName: 'leaves', 
     timestamps: false 
 });
 
 export const HolidayWorking = sequelize.define('HolidayWorking', {
-    user: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: User, key: 'id' }
-    },
     holiday: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -165,29 +140,17 @@ export const HolidayWorking = sequelize.define('HolidayWorking', {
     },
     approver: {
         type: DataTypes.INTEGER,
-        allowNull: true,
         references: { model: User, key: 'id' }
     },
-    user_note: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    approver_note: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    }
+    user_note: DataTypes.TEXT,
+    approver_note: DataTypes.TEXT
 }, {
     tableName: 'holiday_workings',
     timestamps: false,
-    indexes: [{ unique: true, fields: ['user', 'date'] }]
+    indexes: [{ unique: true, fields: ['holiday', 'user'] }]
 });
 
 export const WeekendWorking = sequelize.define('WeekendWorking', {
-    user: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: User, key: 'id' }
-    },
     date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
@@ -204,71 +167,67 @@ export const WeekendWorking = sequelize.define('WeekendWorking', {
     },
     approver: {
         type: DataTypes.INTEGER,
-        allowNull: true,
         references: { model: User, key: 'id' }
     },
-    user_note: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    },
-    approver_note: {
-        type: DataTypes.TEXT,
-        allowNull: true,
-    }
+    user_note: DataTypes.TEXT,
+    approver_note: DataTypes.TEXT
 }, {
     tableName: 'weekend_workings',
     timestamps: false,
     indexes: [{ unique: true, fields: ['user', 'date'] }]
 });
 
+//
+// Model Associations
+//
 // LeavePool <-> LeavePool (self-referential parent-child)
 LeavePool.hasMany(LeavePool, { foreignKey: 'parent_pool', as: 'ChildPools' });
 LeavePool.belongsTo(LeavePool, { foreignKey: 'parent_pool', as: 'ParentPool' });
-
+//
 // LeavePool <-> LeaveType
 LeavePool.hasMany(LeaveType, { foreignKey: 'leave_pool', sourceKey: 'id' });
 LeaveType.belongsTo(LeavePool, { foreignKey: 'leave_pool', targetKey: 'id' });
-
+//
 // LeaveType <-> Leave
 LeaveType.hasMany(Leave, { foreignKey: 'type', sourceKey: 'id' });
 Leave.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
-
+//
 // User <-> Leave (user)
 User.hasMany(Leave, { foreignKey: 'user', sourceKey: 'id', as: 'LeavesRequested' });
 Leave.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'RequestingUser' });
-
+//
 // User <-> Leave (approver)
 User.hasMany(Leave, { foreignKey: 'approver', sourceKey: 'id', as: 'LeavesApproved' });
 Leave.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
-
+//
 // RequestStatus <-> Leave
 RequestStatus.hasMany(Leave, { foreignKey: 'status', sourceKey: 'id' });
 Leave.belongsTo(RequestStatus, { foreignKey: 'status', targetKey: 'id' });
-
+//
 // User <-> HolidayWorking (user)
 User.hasMany(HolidayWorking, { foreignKey: 'user', sourceKey: 'id', as: 'HolidayWorkingsRequested' });
 HolidayWorking.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'HolidayWorkingUser' });
-
+//
 // User <-> HolidayWorking (approver)
 User.hasMany(HolidayWorking, { foreignKey: 'approver', sourceKey: 'id', as: 'HolidayWorkingsApproved' });
 HolidayWorking.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'HolidayWorkingApprover' });
-
+//
 // Holiday <-> HolidayWorking
 Holiday.hasMany(HolidayWorking, { foreignKey: 'holiday', sourceKey: 'id' });
 HolidayWorking.belongsTo(Holiday, { foreignKey: 'holiday', targetKey: 'id' });
-
+//
 // RequestStatus <-> HolidayWorking
 RequestStatus.hasMany(HolidayWorking, { foreignKey: 'status', sourceKey: 'id' });
 HolidayWorking.belongsTo(RequestStatus, { foreignKey: 'status', targetKey: 'id' });
-
+//
 // User <-> WeekendWorking (user)
 User.hasMany(WeekendWorking, { foreignKey: 'user', sourceKey: 'id', as: 'WeekendWorkingsRequested' });
 WeekendWorking.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'WeekendWorkingUser' });
-
+//
 // User <-> WeekendWorking (approver)
 User.hasMany(WeekendWorking, { foreignKey: 'approver', sourceKey: 'id', as: 'WeekendWorkingsApproved' });
 WeekendWorking.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'WeekendWorkingApprover' });
-
+//
 // RequestStatus <-> WeekendWorking
 RequestStatus.hasMany(WeekendWorking, { foreignKey: 'status', sourceKey: 'id' });
 WeekendWorking.belongsTo(RequestStatus, { foreignKey: 'status', targetKey: 'id' });
