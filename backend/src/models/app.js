@@ -20,6 +20,30 @@ export const AppModule = sequelize.define('AppModules', {
     timestamps: false
 });
 
+export const AppConfig = sequelize.define('AppConfig', {
+    configName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    selectedOption: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    module: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {model: AppModule, key: 'id'}
+    },
+    options: {
+        type: DataTypes.JSON,
+        allowNull: false
+    }
+}, {
+    tableName: 'app_configs',
+    timestamps: false
+});
+
 export const AppPage = sequelize.define('AppPages', {
     view: {
         type: DataTypes.STRING,
@@ -61,6 +85,10 @@ export const AppSecurityLog = sequelize.define('AppSecurityLog', {
 
 //
 // Model Associations for appResources.js
+//
+// AppModule <-> AppConfig
+AppModule.hasMany(AppConfig, { foreignKey: 'module', sourceKey: 'id', as: 'AuditLogs' });
+AppConfig.belongsTo(AppModule, { foreignKey: 'module', targetKey: 'id', as: 'User' });
 //
 // User <-> AppAuditLog
 User.hasMany(AppAuditLog, { foreignKey: 'user', sourceKey: 'id', as: 'AuditLogs' });

@@ -1,7 +1,7 @@
 // BACKEND/utils/seed-data.js
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
-import {AppModule, AppPage} from '../models/appResources.js';
+import {AppConfig, AppModule, AppPage} from '../models/app.js';
 import {User, UserDetails, UserConfigs, UserManager, Role, UserRole} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
 import {Post, Channel} from '../models/posts.js';
@@ -56,6 +56,34 @@ export async function seedData(force = false) {
                     description: "Use this module for edited articles, like news or blogposts."}
             ];
         await seedModel(AppModule, 'app_modules', appModules, 'modules');
+
+        const appConfigs = [
+            {
+                configName: 'style',
+                selectedOption: 'fluent',
+                module: 0,
+                options: ['fluent', 'flat']
+            },
+            {
+                configName: 'theme',
+                selectedOption: 'dark',
+                module: 0,
+                options: ['dark', 'light', 'system']
+            },
+            {
+                configName: 'color',
+                selectedOption: 'pink',
+                module: 0,
+                options: ['mono', 'red', 'blue', 'green', 'cyan', 'magenta', 'yellow', 'pink', 'lime', 'orange']
+            },
+            {
+                configName: 'background',
+                selectedOption: 'violet-haze',
+                module: 0,
+                options: ['cloudy', 'blue-galaxy', 'violet-haze', 'raspberry-peach', 'blur-1', 'blur-2', 'blur-3', 'blur-4']
+            }
+        ];
+        await seedModel(AppConfig, 'app_configs', appConfigs, 'configs');
 
         const appPages = [
             {

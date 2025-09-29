@@ -1,8 +1,5 @@
 //BACKEND/controllers/api.js
-import {AppModule, AppPage} from '../models/appResources.js';
-import ConfigData from '../app-config.json' with { type: 'json' };
-import fs from 'fs';
-import path from 'path';
+import {AppConfig, AppModule, AppPage} from '../models/app.js';
 
 /**
  * Retrieves all modules sorted by ID in ascending order.
@@ -55,31 +52,49 @@ export async function getPages(view = 0) {
     return pages;
 }
 
+/**
+ * Retrieves the current configuration from the database.
+ * @returns {Promise<Object>} Configuration object.
+ */
 export async function getConfig() {
-    return JSON.parse(JSON.stringify(ConfigData['config']));
-}
-
-export async function setConfig(newConfig) {
-    const validKeys = Object.keys(ConfigData['options']);
-    const validatedConfig = {};
-
-    for (const key of validKeys) {
-        if (newConfig.hasOwnProperty(key)) {
-            const value = newConfig[key];
-            if (ConfigData['options'][key].includes(value)) {
-                    validatedConfig[key] = value;
-                } else {
-                    throw new Error(`Invalid value '${value}' for '${key}'. Must be one of: ${ConfigData['options'][key].join(', ')}`);
-                }
-            }
+    const configs = await AppConfig.findAll();
+    const configObject = {};
+    for (const config of configs) {
+        configObject[config.configName] = config.selectedOption;
     }
-
-    ConfigData['config'] = { ...ConfigData['config'], ...validatedConfig };
-
-    const filePath = path.resolve('./src/app-config.json');
-    fs.writeFileSync(filePath, JSON.stringify(ConfigData, null, 2), 'utf8');
+    return configObject;
 }
 
+/**
+ * Updates the configuration with new values.
+ * @param {Object} newConfig - New configuration values.
+ * @returns {Promise<void>}
+ */
+export async function setConfig(newConfig) {
+    const configs = await AppConfig.findAll();
+    const availableOptions = new Map(configs.map(config => [config.configName, config.options]));
+
+    for (const [configName, value] of Object.entries(newConfig)) {
+        if (!availableOptions.has(configName)) {
+            throw new Error(`Invalid configuration: ${configName}`);
+        }
+        if (!availableOptions.get(configName).includes(value)) {
+            throw new Error(`Invalid value '${value}' for '${configName}'. Must be one of: 
+            ${availableOptions.get(configName).join(', ')}`);
+        }
+        await AppConfig.update({ selectedOption: value }, { where: { configName } });
+    }
+}
+
+/**
+ * Retrieves all configuration options.
+ * @returns {Promise<Object>} Available configuration options.
+ */
 export async function getConfigOptions() {
-    return JSON.parse(JSON.stringify(ConfigData['options']));
+    const configs = await AppConfig.findAll();
+    const optionsObject = {};
+    for (const config of configs) {
+        optionsObject[config.configName] = config.options;
+    }
+    return optionsObject;
 }
