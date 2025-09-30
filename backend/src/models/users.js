@@ -4,17 +4,31 @@ import {DataTypes} from 'sequelize';
 
 export const User = sequelize.define('User', {
     login: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING,
         unique: true,
+        allowNull: false
+    },
+    first_name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    last_name: {
+        type: DataTypes.STRING,
         allowNull: false
     },
     email: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.STRING,
         unique: true,
         allowNull: false
     },
+    address: DataTypes.STRING,
+    city: DataTypes.STRING,
+    postal_code: DataTypes.STRING,
+    country: DataTypes.STRING,
+    phone: DataTypes.STRING,
+    avatar: DataTypes.STRING,
     password: {
-        type: DataTypes.STRING(200),
+        type: DataTypes.STRING,
         allowNull: false
     },
     active: {
@@ -26,38 +40,11 @@ export const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
-    }
-}, {
-    tableName: 'users',
-    timestamps: false
-});
-
-export const UserDetails = sequelize.define('UserDetails', {
-    user: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        allowNull: false,
-        references: { model: User, key: 'id' }
     },
-    first_name: {
+    locale: {
         type: DataTypes.STRING,
-        allowNull: false
-    },
-    last_name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    }
-}, {
-    tableName: 'user_details',
-    timestamps: false
-});
-
-export const UserConfigs = sequelize.define('UserConfigs', {
-    user: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
         allowNull: false,
-        references: { model: User, key: 'id' }
+        defaultValue: 'en'
     },
     theme_mode: {
         type: DataTypes.STRING,
@@ -80,7 +67,7 @@ export const UserConfigs = sequelize.define('UserConfigs', {
         defaultValue: false
     }
 }, {
-    tableName: 'user_configs',
+    tableName: 'users',
     timestamps: false
 });
 
@@ -135,14 +122,6 @@ export const UserRole = sequelize.define('UserRole', {
 
 //
 // Model Associations for users.js
-//
-// User <-> UserDetails (one-to-one)
-User.hasOne(UserDetails, { foreignKey: 'user', sourceKey: 'id', as: 'UserDetails' });
-UserDetails.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
-//
-// User <-> UserConfigs (one-to-one)
-User.hasOne(UserConfigs, { foreignKey: 'user', sourceKey: 'id', as: 'UserConfigs' });
-UserConfigs.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 //
 // User <-> UserManager (as managed user)
 User.hasMany(UserManager, { foreignKey: 'user', sourceKey: 'id', as: 'ManagedUsers' });
