@@ -1,13 +1,12 @@
 // BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
-import {User, UserDetails, UserConfigs, UserManager, Role, UserRole} from '../models/users.js';
+import {User, UserManager, Role, UserRole} from '../models/users.js';
 import { getUserRoles } from './roles.js';
 
 /**
  * @typedef {Object} UserData
  * @property {number} id - User ID
- * @property {Object} UserDetails - Sequelize UserDetails association
  * @property {Object} UserConfigs - Sequelize UserConfigs association
  * @property {function} toJSON - Sequelize toJSON method
  */
@@ -29,25 +28,15 @@ export async function getUser(id, managers=true, roles=true) {
 
     let user = await User.findOne({
         attributes: { exclude: ['password', 'removed'] },
-        where: { id, removed: false },
-        include: [
-            { model: UserDetails,  as: 'UserDetails' },
-            { model: UserConfigs,  as: 'UserConfigs' }
-        ]
+        where: { id, removed: false }
     });
 
     if (!user)
         return null;
 
     user = {
-        ...user.toJSON(),
-        ...user.UserDetails?.toJSON(),
-        ...user.UserConfigs?.toJSON(),
+        ...user.toJSON()
     };
-
-    delete user.user;
-    delete user.UserDetails;
-    delete user.UserConfigs;
 
     if (managers)
         user = {...user, managers: await getUserManagers(id)};
@@ -65,9 +54,6 @@ export async function getUsers() {
     let users = await User.findAll({
         attributes: { exclude: ['password', 'removed'] },
         where: {removed: false },
-        include: [
-            { model: UserDetails,  as: 'UserDetails' }
-        ],
         order: [['id', 'ASC']]
     });
 
@@ -77,11 +63,9 @@ export async function getUsers() {
     users = await Promise.all(users.map(async user => {
         const userData = {
             ...user.toJSON(),
-            ...user.UserDetails.toJSON(),
             managers: await getUserManagers(user.id),
             roles: await getUserRoles(user.id)
         };
-        delete userData.UserDetails;
         return userData;
     }));
 
@@ -130,16 +114,8 @@ export async function createUser(data) {
             password: hashedPassword,
             active: true,
             removed: false,
-        }, { transaction });
-
-        await UserDetails.create({
-            user: user.id,
             first_name: data.first_name,
             last_name: data.last_name,
-        }, { transaction });
-
-        await UserConfigs.create({
-            user: user.id,
             manager_view_access: data.manager_view_access || false,
             manager_view_enabled: false,
             manager_nav_collapsed: false
@@ -166,11 +142,7 @@ export async function editUser(userId, data) {
     }
 
     const user = await User.findOne({
-        where: { id: userId, removed: false },
-        include: [
-            { model: UserDetails,  as: 'UserDetails' },
-            { model: UserConfigs,  as: 'UserConfigs' },
-        ],
+        where: { id: userId, removed: false }
     });
 
     if (!user) {
@@ -179,30 +151,24 @@ export async function editUser(userId, data) {
 
     const userUpdate = {};
 
-    if (data.login !== undefined) userUpdate.login = data.login;
-    if (data.email) userUpdate.email = data.email;
+    if (data.login !== undefined && data.login !== user.login && 
+        await User.findOne({ where: { login: data.login, id: { [sequelize.Op.ne]: userId } } }))
+            return { success: false, message: 'Login must be unique.' };
+    else 
+        userUpdate.login = data.login;
+    if (data.email && data.email !== user.email && 
+        await User.findOne({ where: { email: data.email, id: { [sequelize.Op.ne]: userId } } })) 
+            return { success: false, message: 'Email must be unique.' };
+    else
+        userUpdate.email = data.email;
     if (data.password) userUpdate.password = await bcrypt.hash(data.password, 10);
     if (data.active !== undefined) userUpdate.active = data.active;
-
+    if (data.first_name) userUpdate.first_name = data.first_name;
+    if (data.last_name) userUpdate.last_name = data.last_name;
+    if (data.manager_view_access !== undefined) userUpdate.manager_view_access = data.manager_view_access;
+    if (data.manager_view_enabled !== undefined) userUpdate.manager_view_enabled = data.manager_view_enabled;
+    
     const updatedUser = await user.update(userUpdate);
-
-    if (data.first_name || data.last_name) {
-        await UserDetails.update(
-            {
-                first_name: data.first_name || user.UserDetails.first_name,
-                last_name: data.last_name || user.UserDetails.last_name
-            },
-            { where: { user: userId } }
-        );
-    }
-
-    await UserConfigs.update(
-        {
-            manager_view_enabled: user.UserConfigs.manager_view_enabled && data.manager_view_access,
-            manager_view_access: data.manager_view_access,
-        },
-        { where: { user: userId } }
-    );
 
     return {success: true, message: 'User updated successfully.', user: updatedUser};
 }
