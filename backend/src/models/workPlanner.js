@@ -3,12 +3,23 @@ import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import {User} from "./users.js";
 
-export const JobPost = sequelize.define('JobPost', {
-    id: {
+export const Schedule = sequelize.define('Schedule', {
+    name: DataTypes.STRING,
+    description: DataTypes.TEXT,
+    author: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
+        allowNull: false,
+        references: { model: User, key: 'id' }
     },
+    start_date: DataTypes.DATEONLY,
+    end_date: DataTypes.DATEONLY,
+    is_published: DataTypes.BOOLEAN
+}, {
+    tableName: 'schedules',
+    timestamps: false,
+}); 
+
+export const JobPost = sequelize.define('JobPost', {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -20,11 +31,6 @@ export const JobPost = sequelize.define('JobPost', {
 });
 
 export const Shift = sequelize.define('Shift', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    },
     user: {
         type: DataTypes.INTEGER,
         references: { model: User, key: 'id' }
@@ -40,6 +46,10 @@ export const Shift = sequelize.define('Shift', {
     job_post: {
         type: DataTypes.INTEGER,
         references: { model: JobPost, key: 'id' }
+    },
+    schedule: {
+        type: DataTypes.INTEGER,
+        references: { model: Schedule, key: 'id' }
     }
 }, {
     tableName: 'shifts',
