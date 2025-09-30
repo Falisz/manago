@@ -1,6 +1,6 @@
 // BACKEND/controller/roles.js
 import sequelize from '../utils/database.js';
-import {User, UserDetails, Role, UserRole} from '../models/users.js';
+import {User, Role, UserRole} from '../models/users.js';
 
 /**
  * @typedef {Object} UserRoleData
@@ -84,14 +84,7 @@ export async function getUsersWithRole(roleId) {
         include: [
             {
                 model: User,
-                attributes: ['id'],
-                include: [
-                    {
-                        model: UserDetails,
-                        as: 'UserDetails',
-                        attributes: ['first_name', 'last_name']
-                    }
-                ]
+                attributes: ['id', 'first_name', 'last_name']
             }
         ]
     });

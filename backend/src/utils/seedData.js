@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
 import {AppConfig, AppModule, AppPage} from '../models/app.js';
-import {User, UserDetails, UserConfigs, UserManager, Role, UserRole} from '../models/users.js';
+import {User, UserManager, Role, UserRole} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
 import {Post, Channel} from '../models/posts.js';
 
