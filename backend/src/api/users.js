@@ -4,7 +4,7 @@ import checkAuthHandler from '../utils/checkAuth.js';
 import {
     getUser,
     createUser,
-    editUser,
+    updateUser,
     removeUser,
     getUserManagers,
     updateUserManagers
@@ -230,7 +230,7 @@ const updateUserHandler = async (req, res) => {
 
         const { login, email, password, first_name, last_name, active, manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
 
-        const result = await editUser(parseInt(userId), {
+        const result = await updateUser(parseInt(userId), {
             login,
             email,
             password,
