@@ -25,13 +25,15 @@ import { getUserRoles } from './roles.js';
 export async function getUser({id, group, roles=true, managers=true, managed_users=false} = {}) {
     if (!id || isNaN(id)) {
         const where = { removed: false };
+        let include = [];
 
         if (group === 'all') {
             delete where.removed;
         } else if (group === 'employees') {
-            where['$UserRoles.Role.name$'] = ['Employee', 'Team Leader', 'Specialist'];
+            include = [ {model: UserRole, required: true, include: [ { model: Role, where: { name: ['Employee', 'Team Leader', 'Specialist'] } } ]} ];
+
         } else if (group === 'managers') {
-            where['$UserRoles.Role.name$'] = ['Manager', 'Branch Manager', 'Project Manager', 'CEO'];
+            include = [ { model: UserRole, required: true, include: [ { model: Role, where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] } } ]} ];
         }
 
         /**
@@ -39,7 +41,7 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
          */
         let users = await User.findAll({
             attributes: { exclude: ['password', 'removed'] },
-            where,
+            where, include,
             order: [['id', 'ASC']]
         });
 
@@ -50,7 +52,7 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
             const userData = user.toJSON();
 
             if (roles)
-                userData.roles = await getUserRoles(user.id);
+                userData.roles = await getUserRoles({userId: user.id});
             if (managers)
                 userData.managers = await getUserManagers({userId: user.id});
             if (managed_users)
@@ -73,7 +75,7 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
     user = user.toJSON();
 
     if (roles)
-        user = {...user, roles: await getUserRoles(id)};
+        user = {...user, roles: await getUserRoles({userId: id})};
 
     if (managers)
         user = {...user, managers: await getUserManagers({userId: id})};
@@ -260,23 +262,23 @@ export async function removeUser(userIds) {
  * @returns {Promise<UserManager[]>} Array of managers assigned to the user
  */
 export async function getUserManagers({ userId, managerId }) {
-    if (!userId && isNaN(userId) || !managerId && isNaN(managerId)) {
+    if (!userId && isNaN(userId) && !managerId && isNaN(managerId)) {
         return null;
     }
 
     let result = await UserManager.findAll({
         where: managerId ? { manager: managerId } : { user: userId },
         include: [{
-            model: User, as: (managerId ? 'Manager' : 'User' ),
+            model: User, as: (managerId ? 'User' : 'Manager' ),
             attributes: ['id', 'first_name', 'last_name']
         }]
     });
 
     return result.map(item => {
         item = {
-            ...item[managerId ? 'Manager' : 'User'].toJSON(),
+            ...item[managerId ? 'User' : 'Manager'].toJSON(),
         };
-        delete item[managerId ? 'Manager' : 'User'];
+        delete item[managerId ? 'User' : 'Manager'];
         return item;
     }) || null;
 }

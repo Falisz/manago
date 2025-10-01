@@ -168,21 +168,22 @@ export async function deleteRole(roleIds) {
  * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
  */
 export async function getUserRoles({userId, roleId}) {
-    if (!userId && isNaN(userId) || !roleId && isNaN(roleId)) {
+    if (!userId && isNaN(userId) && !roleId && isNaN(roleId)) {
         return null;
     }
 
     let result = await UserRole.findAll({
         where: roleId ? { role: roleId } : {user: userId },
-        include: roleId ? [ { model: Role } ] : 
-            [ { model: User, attributes: ['id', 'first_name', 'last_name'] }]
+        include: roleId ?  
+            [ { model: User, attributes: ['id', 'first_name', 'last_name'] }] :
+            [ { model: Role, attributes: ['id', 'name'] } ]
     });
 
     return result.map(item => {
         item = {
-            ...item[roleId ? 'Role' : 'User'].toJSON(),
+            ...item[roleId ? 'User' : 'Role' ].toJSON(),
         };
-        delete item[roleId ? 'Role' : 'User'];
+        delete item[roleId ? 'User' : 'Role' ];
         return item;
     }) || null;
 }

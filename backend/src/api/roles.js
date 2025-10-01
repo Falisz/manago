@@ -40,7 +40,7 @@ const fetchRoleByIdHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid role ID.' });
         }
 
-        const role = await getRole(parseInt(roleId));
+        const role = await getRole({id: roleId});
 
         if (!role) {
             return res.status(404).json({ message: 'Role not found.' });
