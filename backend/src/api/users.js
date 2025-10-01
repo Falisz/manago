@@ -2,16 +2,12 @@
 import express from 'express';
 import checkAuthHandler from '../utils/checkAuth.js';
 import {
-    getUsers,
     getUser,
     createUser,
     editUser,
     removeUser,
-    getManagers,
-    getEmployees,
     getUserManagers,
-    getManagedUsers,
-    updateUserManagers,
+    updateUserManagers
 } from '../controllers/users.js';
 import {
     updateUserRoles,
@@ -25,7 +21,7 @@ import {
  */
 const fetchUsersHandler = async (req, res) => {
     try {
-        const users = await getUsers();
+        const users = await getUser();
         res.json(users);
     } catch (err) {
         console.error('Error fetching users:', err);
@@ -40,7 +36,7 @@ const fetchUsersHandler = async (req, res) => {
  */
 const fetchManagersHandler = async (req, res) => {
     try {
-        const managers = await getManagers();
+        const managers = await getUser({group: 'managers', managed_users: true});
         res.json(managers);
     } catch (err) {
         console.error('Error fetching managers:', err);
@@ -55,7 +51,7 @@ const fetchManagersHandler = async (req, res) => {
  */
 const fetchEmployeesHandler = async (req, res) => {
     try {
-        const employees = await getEmployees();
+        const employees = await getUser({group: 'employees'});
         res.json(employees);
     } catch (err) {
         console.error('Error fetching employees:', err);
@@ -76,7 +72,8 @@ const fetchUserManagersHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const managers = await getUserManagers(parseInt(userId));
+        const managers = await getUserManagers({ userId });
+
         res.json(managers);
     } catch (err) {
         console.error('Error fetching managers:', err);
@@ -97,7 +94,7 @@ const fetchManagedUsersHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid manager ID.' });
         }
 
-        const managedUsers = await getManagedUsers(parseInt(managerId));
+        const managedUsers = await getUserManagers({ managerId });
         res.json(managedUsers);
     } catch (err) {
         console.error('Error fetching managed users:', err);
@@ -118,7 +115,7 @@ const fetchUserByIdHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const user = await getUser(parseInt(userId));
+        const user = await getUser({id: userId});
 
         if (!user) {
             return res.status(404).json({ message: 'User not found.' });
@@ -155,7 +152,7 @@ const createNewUserHandler = async (req, res) => {
             return res.status(400).json({ message: result.message });
         }
 
-        const user = await getUser(parseInt(result.user.id));
+        const user = await getUser({id: result.user.id});
         res.status(201).json({ message: result.message, user: user });
     } catch (err) {
         console.error('Error creating user:', err);
@@ -176,7 +173,7 @@ const checkUserIdHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const user = await getUsers(parseInt(userId));
+        const user = await getUser({id: userId});
 
         const isAvailable = !user;
 
@@ -249,7 +246,7 @@ const updateUserHandler = async (req, res) => {
             return res.status( 400).json({ message: result.message });
         }
 
-        const user = await getUsers(parseInt(result.user.id));
+        const user = await getUser({id: result.user.id});
 
         res.json({ message: result.message, user: user });
 

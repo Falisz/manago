@@ -17,7 +17,7 @@ import {
  */
 const fetchTeamsHandler = async (req, res) => {
     try {
-        const teams = req.query.all === 'true' ? await getTeam(null, 0) : await getTeam(null, null);
+        const teams = req.query.all === 'true' ? await getTeam({all: true}) : await getTeam();
 
         res.json(teams);
     } catch (err) {
@@ -39,7 +39,7 @@ const fetchTeamHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid team ID.' });
         }
 
-        const team = await getTeam(parseInt(teamId));
+        const team = await getTeam({id: teamId});
 
         if (!team) {
             return res.status(404).json({ message: 'Team not found.' });
@@ -150,7 +150,7 @@ const updateTeamHandler = async (req, res) => {
             await updateTeamUsers(teamId, teamLeaders, 1, 'set');
         }
 
-        const team = await getTeam(parseInt(result.team.id));
+        const team = await getTeam({id: result.team.id});
 
         res.json({ message: result.message, team });
 

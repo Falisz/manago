@@ -66,7 +66,7 @@ const fetchUserRolesHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const roles = await getUserRoles(userId);
+        const roles = await getUserRoles({userId});
 
         res.json(roles);
     } catch (err) {

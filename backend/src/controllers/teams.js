@@ -27,6 +27,74 @@ import sequelize from '../utils/database.js';
  */
 
 /**
+ * Retrieves one team by its ID or if id is null retrieves all team. ts subteams recursively.
+ * @param {number} id - optional - Team ID to fetch a specific user
+ * @param {number || null} parent_team - optional - ID of the parent team.
+ * @param {boolean} get_subteams - optional - Should be subteams fetched for the found Teams?
+ * @param {boolean} get_members - optional - Should be members fetched for the found Teams?
+ * @returns {Promise<Object|null>} Single team or null
+ */
+export async function getTeam({id, all=false, parent_team=null, get_subteams=true, get_members=true} = {}) {
+    if (!id || isNaN(id)) {
+        let teams;
+
+        if (all)
+            teams = await Team.findAll();
+        else
+            teams = await Team.findAll({ where: { parent_team }});
+
+        if (!teams)
+            return null;
+
+        teams = await Promise.all(teams.map(async team => {
+            let teamData = team.toJSON();
+
+            if (get_subteams)
+                teamData.subteams = await getTeam({parent_team: team.id});
+            
+            if (get_members)
+                teamData = {
+                    ...teamData,
+                    members: await getTeamUsers(team.id, 1, true),
+                    leaders: await getTeamUsers(team.id, 2),
+                    managers: await getTeamUsers(team.id, 3),
+                }
+            
+            return teamData;
+        }));
+
+        return teams || null;
+
+    }
+
+    let team = await Team.findOne({ where: { id } });
+
+    if (!team)
+        return null;
+
+    team = {
+        ...team.toJSON(),
+        subteams: await getTeam({parent_team: team.id})
+    };
+
+    if (team.parent_team)
+        team = {
+            ...team,
+            parent: await getTeam({id: team.parent_team, get_subteams: false, get_members: false}),
+        }
+        
+    if (get_members)
+        team = {
+            ...team,
+            members: await getTeamUsers(team.id, 1, true),
+            leaders: await getTeamUsers(team.id, 2, true),
+            managers: await getTeamUsers(team.id, 3, true, true),
+        }
+
+    return team;
+}
+
+/**
  * Creates a new team.
  * @param {Object} data - Team data
  * @param {string} data.code_name - Team code name
@@ -55,73 +123,6 @@ export async function createTeam(data) {
     });
 
     return {success: true, message: 'Team created successfully.', team: team.toJSON()};
-}
-
-/**
- * Retrieves one team by its ID or if id is null retrieves all team. ts subteams recursively.
- * @param {number} id - optional - Team ID to fetch a specific user
- * @param {number || null} parent_team - optional - ID of the parent team.
- * @param {boolean} get_subteams - optional - Should be subteams fetched for the found Teams?
- * @param {boolean} get_members - optional - Should be members fetched for the found Teams?
- * @returns {Promise<Object|null>} Single team or null
- */
-export async function getTeam(id, parent_team, get_subteams=true, get_members=true) {
-    if (!id || isNaN(id)) {
-        let teams;
-
-        if (parent_team === 0)
-            teams = await Team.findAll();
-        else
-            teams = await Team.findAll({ where: { parent_team }});
-
-        if (!teams)
-            return null;
-
-        teams = await Promise.all(teams.map(async team => {
-            let teamData = {
-                ...team.toJSON(),
-                subteams: await getTeam(null, team.id)
-            };
-            if (get_members)
-                teamData = {
-                    ...teamData,
-                    members: await getTeamUsers(team.id, 1, true),
-                    leaders: await getTeamUsers(team.id, 2),
-                    managers: await getTeamUsers(team.id, 3),
-                }
-            return teamData;
-        }));
-
-        return teams || null;
-
-    }
-
-    let team = await Team.findOne({ where: { id } });
-
-    if (!team)
-        return null;
-
-    team = {
-        ...team.toJSON(),
-        sub_teams: await getTeam(null, id, false),
-    };
-
-    if (team.parent_team) {
-        team = {
-            ...team,
-            parent: await getTeam(null, team.parent_team, false),
-        }
-    }
-
-    if (get_members)
-        team = {
-            ...team,
-            members: await getTeamUsers(team.id, 1, true),
-            leaders: await getTeamUsers(team.id, 2, true),
-            managers: await getTeamUsers(team.id, 3, true, true),
-        }
-
-    return team;
 }
 
 /**

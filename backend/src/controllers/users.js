@@ -22,15 +22,15 @@ import { getUserRoles } from './roles.js';
  * @param {boolean} roles - optional - Should roles be added to the output user
  * @returns {Promise<Object|Object[]|null>} User, array of users or null
  */
-export async function getUser(id, roles=true, managers=true, managed_users=false) {
+export async function getUser({id, group, roles=true, managers=true, managed_users=false} = {}) {
     if (!id || isNaN(id)) {
         const where = { removed: false };
 
-        if (id === 'all') {
+        if (group === 'all') {
             delete where.removed;
-        } else if (id === 'employees') {
+        } else if (group === 'employees') {
             where['$UserRoles.Role.name$'] = ['Employee', 'Team Leader', 'Specialist'];
-        } else if (id === 'managers') {
+        } else if (group === 'managers') {
             where['$UserRoles.Role.name$'] = ['Manager', 'Branch Manager', 'Project Manager', 'CEO'];
         }
 
@@ -47,12 +47,15 @@ export async function getUser(id, roles=true, managers=true, managed_users=false
             return null;
 
         users = await Promise.all(users.map(async user => {
-            const userData = {
-                ...user.toJSON(),
-                ...(roles ? {roles: await getUserRoles(user.id)} : {}),
-                ...(managers ? {managers: await getUserManagers(user.id)} : {}),
-                ...(managed_users ? {managed_users: await getManagedUsers(user.id)} : {})
-            };
+            const userData = user.toJSON();
+
+            if (roles)
+                userData.roles = await getUserRoles(user.id);
+            if (managers)
+                userData.managers = await getUserManagers({userId: user.id});
+            if (managed_users)
+                userData.managed_users = await getUserManagers({managerId: user.id});
+            
             return userData;
         }));
 
@@ -73,10 +76,10 @@ export async function getUser(id, roles=true, managers=true, managed_users=false
         user = {...user, roles: await getUserRoles(id)};
 
     if (managers)
-        user = {...user, managers: await getUserManagers(id)};
+        user = {...user, managers: await getUserManagers({userId: id})};
 
     if (managed_users)
-        user = {...user, managed_users: await getManagedUsers(id)};
+        user = {...user, managed_users: await getUserManager({managerId: id})};
 
     return user;
 }
@@ -251,31 +254,31 @@ export async function removeUser(userIds) {
 }
 
 /**
- * Retrieves managers assigned to a specific user.
- * @param {number} userId - User ID
+ * Retrieves managers assigned to a specific userId, or managed users assigned to a specific managerId.
+ * @param {number} userId - User ID (optional)
+ * @param {number} managerId - Manager ID (optional)
  * @returns {Promise<UserManager[]>} Array of managers assigned to the user
  */
-export async function getUserManagers(userId) {
-    if (!userId) {
-        return [];
+export async function getUserManagers({ userId, managerId }) {
+    if (!userId && isNaN(userId) || !managerId && isNaN(managerId)) {
+        return null;
     }
 
-    /**
-     * @type {UserManager[]}
-     */
-    let managers = await UserManager.findAll({
-        where: { user: userId },
-        include: [
-            {
-                model: User,
-                as: 'Manager',
-                attributes: ['id', 'first_name', 'last_name']
-            }
-        ]
+    let result = await UserManager.findAll({
+        where: managerId ? { manager: managerId } : { user: userId },
+        include: [{
+            model: User, as: (managerId ? 'Manager' : 'User' ),
+            attributes: ['id', 'first_name', 'last_name']
+        }]
     });
-    managers = managers.toJSON ? managers.toJSON() : managers;
 
-    return managers;
+    return result.map(item => {
+        item = {
+            ...item[managerId ? 'Manager' : 'User'].toJSON(),
+        };
+        delete item[managerId ? 'Manager' : 'User'];
+        return item;
+    }) || null;
 }
 
 /**
@@ -371,35 +374,6 @@ export async function updateUserManagers(userIds, managerIds, mode = 'add') {
 }
 
 /**
- * Retrieves users managed by a specific manager.
- * @param {number} managerId - Manager ID
- * @returns {Promise<UserManager[]>} Array of users managed by the manager
- */
-export async function getManagedUsers(managerId) {
-    if (!managerId) {
-        return [];
-    }
-
-    /**
-     * @type {UserManager[]}
-     */
-    let users = await UserManager.findAll({
-        where: { manager: managerId },
-        include: [
-            {
-                model: User,
-                as: 'User',
-                attributes: ['id', 'first_name', 'last_name']
-            }
-        ]
-    });
-
-    users = users.toJSON ? users.toJSON() : users;
-
-    return users;
-}
-
-/**
  * Authenticates a user by login (ID, email, or login) and password.
  * @param {string|number} login - User ID, email, or login name
  * @param {string} password - User password
@@ -427,7 +401,7 @@ export async function authUser(login, password) {
         return { valid: false, status: 401, user: {id: user.id}, message: 'Invalid credentials!' };
     }
 
-    user = await getUser(user.id);
+    user = await getUser({id: user.id});
 
     return { valid: true, user };
 }

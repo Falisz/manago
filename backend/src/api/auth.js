@@ -19,7 +19,7 @@ const authHandler = async (req, res) => {
             });
         }
 
-        const user = await getUser(req.session.user);
+        const user = await getUser({id: req.session.user});
 
         if (!user || user.removed) {
             await securityLog(req.session.id, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`, 'Auth Check', 'Failure: No user found or user removed');

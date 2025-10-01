@@ -15,7 +15,7 @@ import {Post, Channel} from '../models/posts.js';
  * @param {number|null} id - Post ID (optional)
  * @returns {Promise<Object|Object[]|null>} Single post object, array of posts, or null if not found
 **/
-export async function getPost(id) {
+export async function getPost({id} = {}) {
 
     /**
      * Cleans up a post object by merging associations and removing redundant fields.
