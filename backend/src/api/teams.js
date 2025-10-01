@@ -2,13 +2,11 @@
 import express from 'express';
 import checkAuthHandler from '../utils/checkAuth.js';
 import {
-    getTeams,
     getTeam,
-    getAllTeams,
     createTeam,
-    updateTeamUsers,
     updateTeam,
-    deleteTeam
+    deleteTeam,
+    updateTeamUsers
 } from '../controllers/teams.js';
 
 // API Handlers
@@ -19,7 +17,7 @@ import {
  */
 const fetchTeamsHandler = async (req, res) => {
     try {
-        const teams = req.query.all === 'true' ? await getAllTeams() : await getTeams();
+        const teams = req.query.all === 'true' ? await getTeam(null, 0) : await getTeam(null, null);
 
         res.json(teams);
     } catch (err) {

@@ -58,12 +58,14 @@ export async function createTeam(data) {
 }
 
 /**
- * Retrieves one team by its ID.
- * @param {number} id - Team ID to fetch a specific user
- * @param {boolean} getMembers - optional - fetchAllMembers
+ * Retrieves one team by its ID or if id is null retrieves all team. ts subteams recursively.
+ * @param {number} id - optional - Team ID to fetch a specific user
+ * @param {number || null} parent_team - optional - ID of the parent team.
+ * @param {boolean} get_subteams - optional - Should be subteams fetched for the found Teams?
+ * @param {boolean} get_members - optional - Should be members fetched for the found Teams?
  * @returns {Promise<Object|null>} Single team or null
  */
-export async function getTeam(id, parent_team, get_members=true) {
+export async function getTeam(id, parent_team, get_subteams=true, get_members=true) {
     if (!id || isNaN(id)) {
         let teams;
 
@@ -78,9 +80,9 @@ export async function getTeam(id, parent_team, get_members=true) {
         teams = await Promise.all(teams.map(async team => {
             let teamData = {
                 ...team.toJSON(),
-                subteams: await getTeams(team.id)
+                subteams: await getTeam(null, team.id)
             };
-            if (getMembers)
+            if (get_members)
                 teamData = {
                     ...teamData,
                     members: await getTeamUsers(team.id, 1, true),
@@ -101,13 +103,13 @@ export async function getTeam(id, parent_team, get_members=true) {
 
     team = {
         ...team.toJSON(),
-        sub_teams: await getTeams(id, false),
+        sub_teams: await getTeam(null, id, false),
     };
 
     if (team.parent_team) {
         team = {
             ...team,
-            parent: await getTeam(team.parent_team, false),
+            parent: await getTeam(null, team.parent_team, false),
         }
     }
 
@@ -120,26 +122,6 @@ export async function getTeam(id, parent_team, get_members=true) {
         }
 
     return team;
-}
-
-/**
- * Retrieves all teams and its subteams recursively.
- * @param {number || null} parent_team - Optional - ID of the parent team.
- * If left empty, only get a whole Team tree excluding subteams from the root teams.
- * If 0 used - it gets all Teams including subteams.
- * @param {boolean} getMembers - Optional - Should be members fetched with the Teams?
- * @returns {Promise<Object[]|null>} Array of teams or null
- */
-export async function getTeams(parent_team = null, getMembers=true) {
-    
-}
-/**
- * Alias for getTeams(0) function that gets all Teams including the subteams.
- * @param {boolean} getMembers - Optional - Should be members fetched with the Teams?
- * @returns {Promise<Object[]|null>} Array of teams or null
- */
-export async function getAllTeams(getMembers=true) {
-    return getTeams(0, getMembers);
 }
 
 /**
