@@ -307,6 +307,7 @@ export async function updateTeamUsers(teamIds, userIds, roleId=1, mode = 'add') 
             }
 
             await transaction.commit();
+            
             return {
                 success: true,
                 message: 'Team Members set successfully.'

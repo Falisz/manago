@@ -9,32 +9,6 @@ import {User, Role, UserRole} from '../models/users.js';
  */
 
 /**
- * Creates a new role.
- * @param {Object} data - Role data
- * @param {string} data.name - Role name
- * @param {string} data.description - Role description
- * @returns {Promise<{success: boolean, message: string, role?: Object}>}
- */
-export async function createRole(data) {
-
-    if (!data.name) {
-        return {success: false, message: 'Mandatory data not provided.'};
-    }
-
-    if (await Role.findOne({where: {name: data.name}})) {
-        return {success: false, message: 'The role with this exact name already exists.'};
-    }
-
-    const role = await Role.create({
-        name: data.name,
-        description: data?.description || null,
-        system_default: false,
-    });
-
-    return {success: true, message: 'Role created successfully.', role: role.toJSON()};
-}
-
-/**
  * Retrieves one or all roles.
  * @param {number|null} roleId - Optional role ID to fetch a specific role
  * @returns {Promise<Object|Object[]|null>} Single role, array of roles, or null
@@ -65,6 +39,32 @@ export async function getRole(id) {
         ...role.toJSON(),
         users: await getUsersWithRole(id),
     };
+}
+
+/**
+ * Creates a new role.
+ * @param {Object} data - Role data
+ * @param {string} data.name - Role name
+ * @param {string} data.description - Role description
+ * @returns {Promise<{success: boolean, message: string, role?: Object}>}
+ */
+export async function createRole(data) {
+
+    if (!data.name) {
+        return {success: false, message: 'Mandatory data not provided.'};
+    }
+
+    if (await Role.findOne({where: {name: data.name}})) {
+        return {success: false, message: 'The role with this exact name already exists.'};
+    }
+
+    const role = await Role.create({
+        name: data.name,
+        description: data?.description || null,
+        system_default: false,
+    });
+
+    return {success: true, message: 'Role created successfully.', role: role.toJSON()};
 }
 
 /**
@@ -163,6 +163,34 @@ export async function deleteRole(roleIds) {
 }
 
 /**
+ * Retrieves roles assigned to a user.
+ * @param {number} userId - User ID
+ * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
+ */
+export async function getUserRoles(userId) {
+    if (!userId) {
+        return {success: false, message: 'User ID not provided.'};
+    }
+
+    const roles = await UserRole.findAll({
+        attributes: {exclude: ['id']},
+        where: { user: userId },
+        order: [['role', 'ASC']],
+        include: [
+            { model: Role }
+        ],
+    });
+
+    return roles.map(role => {
+        role = {
+            ...role.Role.toJSON(),
+        };
+        delete role.Role;
+        return role;
+    }) || null;
+}
+
+/**
  * Updates Roles assigned to a User based on mode.
  * - 'add': Appends roles to users if they don't exist yet
  * - 'set': Sets provided roles to users and removes any other role assignments
@@ -252,34 +280,6 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
         await transaction.rollback();
         return { success: false, message: `Failed to ${mode} managers: ${err.message}` };
     }
-}
-
-/**
- * Retrieves roles assigned to a user.
- * @param {number} userId - User ID
- * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
- */
-export async function getUserRoles(userId) {
-    if (!userId) {
-        return {success: false, message: 'User ID not provided.'};
-    }
-
-    const roles = await UserRole.findAll({
-        attributes: {exclude: ['id']},
-        where: { user: userId },
-        order: [['role', 'ASC']],
-        include: [
-            { model: Role }
-        ],
-    });
-
-    return roles.map(role => {
-        role = {
-            ...role.Role.toJSON(),
-        };
-        delete role.Role;
-        return role;
-    }) || null;
 }
 
 /**

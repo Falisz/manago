@@ -1,7 +1,7 @@
 // BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
-import {User, UserManager, Role, UserRole} from '../models/users.js';
+import { User, UserManager, Role, UserRole } from '../models/users.js';
 import { getUserRoles } from './roles.js';
 
 /**
@@ -16,14 +16,48 @@ import { getUserRoles } from './roles.js';
  */
 
 /**
- * Retrieves one user by their ID.
- * @param {number} id - User ID to fetch a specific user
- * @param {boolean} managers - Should managers be added to the output user
- * @param {boolean} roles - Should roles be added to the output user
- * @returns {Promise<Object|null>} Single user or null
+ * Retrieves one user by their ID or all users if ID is not provided.
+ * @param {number|string} id - optional - User ID to fetch a specific user or user group type.
+ * @param {boolean} managers - optional - Should managers be added to the output user
+ * @param {boolean} roles - optional - Should roles be added to the output user
+ * @returns {Promise<Object|Object[]|null>} User, array of users or null
  */
-export async function getUser(id, managers=true, roles=true) {
-    if (!id) return null;
+export async function getUser(id, roles=true, managers=true, managed_users=false) {
+    if (!id || isNaN(id)) {
+        const where = { removed: false };
+
+        if (id === 'all') {
+            delete where.removed;
+        } else if (id === 'employees') {
+            where['$UserRoles.Role.name$'] = ['Employee', 'Team Leader', 'Specialist'];
+        } else if (id === 'managers') {
+            where['$UserRoles.Role.name$'] = ['Manager', 'Branch Manager', 'Project Manager', 'CEO'];
+        }
+
+        /**
+         * @type {UserData[]}
+         */
+        let users = await User.findAll({
+            attributes: { exclude: ['password', 'removed'] },
+            where,
+            order: [['id', 'ASC']]
+        });
+
+        if (!users)
+            return null;
+
+        users = await Promise.all(users.map(async user => {
+            const userData = {
+                ...user.toJSON(),
+                ...(roles ? {roles: await getUserRoles(user.id)} : {}),
+                ...(managers ? {managers: await getUserManagers(user.id)} : {}),
+                ...(managed_users ? {managed_users: await getManagedUsers(user.id)} : {})
+            };
+            return userData;
+        }));
+
+        return users || null;
+    }
 
     let user = await User.findOne({
         attributes: { exclude: ['password', 'removed'] },
@@ -33,42 +67,18 @@ export async function getUser(id, managers=true, roles=true) {
     if (!user)
         return null;
 
-    user = {
-        ...user.toJSON()
-    };
-
-    if (managers)
-        user = {...user, managers: await getUserManagers(id)};
+    user = user.toJSON();
 
     if (roles)
         user = {...user, roles: await getUserRoles(id)};
 
+    if (managers)
+        user = {...user, managers: await getUserManagers(id)};
+
+    if (managed_users)
+        user = {...user, managed_users: await getManagedUsers(id)};
+
     return user;
-}
-/**
- * Retrieves all users.
- * @returns {Promise<Object|Object[]|null>} Array of users or null
- */
-export async function getUsers() {
-    let users = await User.findAll({
-        attributes: { exclude: ['password', 'removed'] },
-        where: {removed: false },
-        order: [['id', 'ASC']]
-    });
-
-    if (!users)
-        return null;
-
-    users = await Promise.all(users.map(async user => {
-        const userData = {
-            ...user.toJSON(),
-            managers: await getUserManagers(user.id),
-            roles: await getUserRoles(user.id)
-        };
-        return userData;
-    }));
-
-    return users || null;
 }
 
 /**
@@ -130,12 +140,12 @@ export async function createUser(data) {
 }
 
 /**
- * Edits an existing user.
+ * Updates an existing user.
  * @param {number} userId - User ID
  * @param {Object} data - User data to update
  * @returns {Promise<{success: boolean, message: string, user?: Object}>}
  */
-export async function editUser(userId, data) {
+export async function updateUser(userId, data) {
     if (!userId) {
         return {success: false, message: 'User ID not provided.'};
     }
@@ -238,87 +248,6 @@ export async function removeUser(userIds) {
         await transaction.rollback();
         return { success: false, message: `Error removing user(s): ${error.message}` };
     }
-}
-
-/**
- * Retrieves all users with the 'Employee', 'Team Leader', or 'Specialist' role.
- * @returns {Promise<UserData[]>} Array of employees
- */
-export async function getEmployees() {
-    /**
-     * @type {UserData[]}
-     */
-    let employees = await User.findAll({
-        include: [
-            {
-                model: UserRole,
-                required: true,
-                include: [
-                    {
-                        model: Role,
-                        where: { name: ['Employee', 'Team Leader', 'Specialist'] },
-                        attributes: ['name']
-                    }
-                ],
-                attributes: ['user', 'role']
-            }
-        ],
-        where: { removed: false },
-        attributes: { exclude: ['password', 'removed'] },
-        order: [['id', 'ASC']]
-    });
-
-    employees = await Promise.all(employees.map(async e => {
-        const userData = {
-            ...e?.toJSON(),
-            roles: await getUserRoles(e.id),
-            managers: await getUserManagers(e.id)
-        };
-        return userData;
-    }));
-
-    return employees || [];
-}
-
-/**
- * Retrieves all users with the 'Manager' role.
- * @returns {Promise<UserData[]>} Array of managers
- */
-export async function getManagers() {
-    /**
-     * @type {UserData[]}
-     */
-    let managers = await User.findAll({
-        include: [
-            {
-                model: UserRole,
-                required: true,
-                include: [
-                    {
-                        model: Role,
-                        where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] },
-                        attributes: ['name']
-                    }
-                ],
-                attributes: ['user', 'role']
-            }
-        ],
-        where: { removed: false },
-        attributes: { exclude: ['password', 'removed'] },
-        order: [['id', 'ASC']]
-    });
-
-    managers = await Promise.all(managers.map(async m => {
-        const userData = {
-            ...m?.toJSON(),
-            roles: await getUserRoles(m.id),
-            managers: await getUserManagers(m.id),
-            managed_users: await getManagedUsers(m.id)
-        };
-        return userData;
-    }));
-
-    return managers || [];
 }
 
 /**

@@ -10,37 +10,11 @@ import {Post, Channel} from '../models/posts.js';
  * @property {function} toJSON - Sequelize toJSON method
  */
 
-/**
- * Creates a new post.
- * @param {Object} data - Post data
- * @param {number} data.channel_id - Channel ID
- * @param {number} data.author_id - Author ID
- * @param {string|null} data.title - Post title
- * @param {string} data.content - Post content
- * @returns {Promise<Object|null>} Created post or null if invalid
- */
-export async function createPost(data) {
-    const channel = await Channel.findOne({ where: { id: data.channel_id } });
-    if (!channel) {
-        return null;
-    }
-
-    const user = await User.findOne({ where: { id: data.author_id } });
-    if (!user) {
-        return null;
-    }
-
-    return await Post.create({
-        channel: data.channel_id,
-        author: data.author_id,
-        title: data.title,
-        content: data.content,
-        createdAt: new Date(),
-        isEdited: false,
-        updatedAt: null
-    });
-}
-
+/** 
+ * Retrieves posts. If id is provided, retrieves a single post by ID.
+ * @param {number|null} id - Post ID (optional)
+ * @returns {Promise<Object|Object[]|null>} Single post object, array of posts, or null if not found
+**/
 export async function getPost(id) {
 
     /**
@@ -73,6 +47,37 @@ export async function getPost(id) {
     let post = await Post.findOne({ where: { id }, include });
 
     return postCleanUp(post);
+}
+
+/**
+ * Creates a new post.
+ * @param {Object} data - Post data
+ * @param {number} data.channel_id - Channel ID
+ * @param {number} data.author_id - Author ID
+ * @param {string|null} data.title - Post title
+ * @param {string} data.content - Post content
+ * @returns {Promise<Object|null>} Created post or null if invalid
+ */
+export async function createPost(data) {
+    const channel = await Channel.findOne({ where: { id: data.channel_id } });
+    if (!channel) {
+        return null;
+    }
+
+    const user = await User.findOne({ where: { id: data.author_id } });
+    if (!user) {
+        return null;
+    }
+
+    return await Post.create({
+        channel: data.channel_id,
+        author: data.author_id,
+        title: data.title,
+        content: data.content,
+        createdAt: new Date(),
+        isEdited: false,
+        updatedAt: null
+    });
 }
 
 /**

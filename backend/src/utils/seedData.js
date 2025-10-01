@@ -627,8 +627,6 @@ const seedStructure = [
     { model: AppPage, tableName: 'app_pages', data: appPages, itemsName: 'pages' },
     { model: Role, tableName: 'roles', data: roles, itemsName: 'roles' },
     { model: User, tableName: 'users', data: users, itemsName: 'users' },
-    { model: UserDetails, tableName: 'user_details', data: userDetails, itemsName: 'user details' },
-    { model: UserConfigs, tableName: 'user_configs', data: userConfigs, itemsName: 'user configurations' },
     { model: UserRole, tableName: 'user_roles', data: userRoles, itemsName: 'user roles assignments' },
     { model: Team, tableName: 'teams', data: teams, itemsName: 'teams' },
     { model: TeamRole, tableName: 'team_roles', data: teamRoles, itemsName: 'team roles' },
