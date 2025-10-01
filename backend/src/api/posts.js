@@ -1,6 +1,6 @@
 // BACKEND/api/posts.js
 import express from 'express';
-import { createPost, deletePost, getPost, getPosts, updatePost } from '../controllers/posts.js';
+import { createPost, deletePost, getPost, updatePost } from '../controllers/posts.js';
 import checkAuthHandler from '../utils/checkAuth.js';
 
 // API Handlers
@@ -11,7 +11,7 @@ import checkAuthHandler from '../utils/checkAuth.js';
  */
 const fetchPostsHandler = async (req, res) => {
     try {
-        const posts = await getPosts();
+        const posts = await getPost();
         res.json(posts);
     } catch (err) {
         console.error('Error fetching posts:', err);

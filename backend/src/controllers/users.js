@@ -7,7 +7,6 @@ import { getUserRoles } from './roles.js';
 /**
  * @typedef {Object} UserData
  * @property {number} id - User ID
- * @property {Object} UserConfigs - Sequelize UserConfigs association
  * @property {function} toJSON - Sequelize toJSON method
  */
 /**
@@ -211,14 +210,6 @@ export async function removeUser(userIds) {
         }
 
         for (const user of users) {
-            const userDetails = await UserDetails.findOne({
-                where: { user: user.id },
-                transaction
-            });
-            const userConfigs = await UserConfigs.findOne({
-                where: { user: user.id },
-                transaction
-            });
             const userManagers = await UserManager.findOne({
                 where: { user: user.id },
                 transaction
@@ -233,12 +224,6 @@ export async function removeUser(userIds) {
                 removed: true
             }, { transaction });
 
-            if (userDetails) {
-                await userDetails.destroy({ transaction });
-            }
-            if (userConfigs) {
-                await userConfigs.destroy({ transaction });
-            }
             if (userManagers) {
                 await userManagers.destroy({ transaction });
             }
@@ -276,11 +261,6 @@ export async function getEmployees() {
                     }
                 ],
                 attributes: ['user', 'role']
-            },
-            {
-                model: UserDetails,
-                as: 'UserDetails',
-                attributes: ['first_name', 'last_name']
             }
         ],
         where: { removed: false },
@@ -291,11 +271,9 @@ export async function getEmployees() {
     employees = await Promise.all(employees.map(async e => {
         const userData = {
             ...e?.toJSON(),
-            ...e.UserDetails?.toJSON(),
             roles: await getUserRoles(e.id),
             managers: await getUserManagers(e.id)
         };
-        delete userData.UserDetails;
         return userData;
     }));
 
@@ -323,11 +301,6 @@ export async function getManagers() {
                     }
                 ],
                 attributes: ['user', 'role']
-            },
-            {
-                model: UserDetails,
-                as: 'UserDetails',
-                attributes: ['first_name', 'last_name']
             }
         ],
         where: { removed: false },
@@ -338,12 +311,10 @@ export async function getManagers() {
     managers = await Promise.all(managers.map(async m => {
         const userData = {
             ...m?.toJSON(),
-            ...m.UserDetails?.toJSON(),
             roles: await getUserRoles(m.id),
             managers: await getUserManagers(m.id),
             managed_users: await getManagedUsers(m.id)
         };
-        delete userData.UserDetails;
         return userData;
     }));
 
@@ -369,16 +340,11 @@ export async function getUserManagers(userId) {
             {
                 model: User,
                 as: 'Manager',
-                attributes: ['id'],
-                include: [{ model: UserDetails, as: 'UserDetails' }]
+                attributes: ['id', 'first_name', 'last_name']
             }
         ]
     });
-    managers = managers.map(m => ({
-        id: m.Manager.id,
-        first_name: m.Manager.UserDetails?.first_name,
-        last_name: m.Manager.UserDetails?.last_name
-    }));
+    managers = managers.toJSON ? managers.toJSON() : managers;
 
     return managers;
 }
@@ -494,17 +460,12 @@ export async function getManagedUsers(managerId) {
             {
                 model: User,
                 as: 'User',
-                attributes: ['id'],
-                include: [{ model: UserDetails, as: 'UserDetails' }]
+                attributes: ['id', 'first_name', 'last_name']
             }
         ]
     });
 
-    users = users.map(u => ({
-        id: u?.User.id,
-        first_name: u?.User.UserDetails?.first_name,
-        last_name: u?.User.UserDetails?.last_name
-    }));
+    users = users.toJSON ? users.toJSON() : users;
 
     return users;
 }
@@ -543,49 +504,39 @@ export async function authUser(login, password) {
 }
 
 export async function hasManagerAccess(userId) {
-    const userConfig = await UserConfigs.findOne(
-        { where: { user: userId } }
-    );
+    const user = await User.findOne({ where: { id: userId } });
 
-    return userConfig && userConfig.manager_view_access;
+    return user && user.manager_view_access;
 }
 
 export async function hasManagerView(userId) {
-    const userConfig = await UserConfigs.findOne(
-        { where: { user: userId } }
-    );
+    const user = await User.findOne({ where: { id: userId } });
 
-    return userConfig && userConfig.manager_view_enabled;
+    return user && user.manager_view_enabled;
 }
 
 export async function setManagerView(userId, value) {
-    const [updated] = await UserConfigs.update(
-        { manager_view_enabled: value },
-        { where: { user: userId } }
-    );
+    const [updated] = await User.update({ manager_view_enabled: value }, { where: { id: userId } });
 
     return updated === 1;
 }
 
 export async function toggleManagerNav(userId, value) {
-    const [updated] = await UserConfigs.update(
-        { manager_nav_collapsed: value },
-        { where: { user: userId } }
-    );
+    const [updated] = await User.update({ manager_nav_collapsed: value }, { where: { id: userId } });
 
     return updated === 1;
 }
 
 /**
  * Sets theme of the user.
- * @param {number} user - User ID
+ * @param {number} userId - User ID
  * @param {number} theme_mode - Theme mode - 0 for Dark, 1 for Light
  * @returns {Promise<boolean>}
  */
-export async function setUserTheme(user, theme_mode) {
-    if (!user) return null;
+export async function setUserTheme(userId, theme_mode) {
+    if (!userId) return null;
 
-    const [updated] = await UserConfigs.update({ theme_mode }, { where: { user } });
+    const [updated] = await User.update({ theme_mode }, { where: { id: userId } });
 
     return updated === 1;
 }

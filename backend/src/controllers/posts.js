@@ -1,83 +1,15 @@
 //BACKEND/controller/pages.js
-import {User, UserDetails} from '../models/users.js';
+import {User} from '../models/users.js';
 import {Post, Channel} from '../models/posts.js';
 
 /**
  * @typedef {Object} RawPostData
  * @property {Object} Author - Sequelize User association
  * @property {Object} Channel - Sequelize Channel association
- * @property {Object} User.UserDetails - Sequelize UserDetails association
  * @property {Object} author - Author
  * @property {function} toJSON - Sequelize toJSON method
  */
-/**
- * Cleans up a post object by merging associations and removing redundant fields.
- * @param {RawPostData} post - Raw post data from Sequelize query
- * @returns {Object} Cleaned post object
- */
-function postCleanUp(post) {
-    let newPost = {
-        ...post.toJSON(),
-        author: post.Author?.toJSON(),
-        channel: post.Channel?.toJSON(),
-    };
-    delete newPost.Channel;
-    delete newPost.Author;
 
-    if (newPost.author && newPost.author.UserDetails)
-        newPost.author = {
-            ...newPost.author,
-            ...newPost.author.UserDetails,
-        }
-    delete newPost.author.UserDetails;
-
-    return newPost;
-}
-
-export async function getPost(postId) {
-    if (!postId)
-        return null;
-
-    let post = await Post.findOne({
-        where: { id: postId },
-        include: [
-            {
-                model: User,
-                as: 'Author',
-                attributes: ['id'],
-                include: [
-                    { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
-                ]
-            },
-            { model: Channel, attributes: ['id', 'name'] }
-        ]
-    });
-
-    return postCleanUp(post);
-}
-
-/**
- * Retrieves all posts.
- * @returns {Promise<Object[]|null>} Array of posts, or null
- */
-export async function getPosts() {
-    const posts = await Post.findAll({
-        include: [
-            {
-                model: User,
-                as: 'Author',
-                attributes: ['id'],
-                include: [
-                    { model: UserDetails, as: 'UserDetails', attributes: ['first_name', 'last_name'] }
-                ]
-            },
-            { model: Channel, attributes: ['id', 'name'] }
-        ],
-        order: [['createdAt', 'DESC']]
-    });
-
-    return posts.map(post => (postCleanUp(post)));
-}
 /**
  * Creates a new post.
  * @param {Object} data - Post data
@@ -107,6 +39,40 @@ export async function createPost(data) {
         isEdited: false,
         updatedAt: null
     });
+}
+
+export async function getPost(id) {
+
+    /**
+     * Cleans up a post object by merging associations and removing redundant fields.
+     * @param {RawPostData} post - Raw post data from Sequelize query
+     * @returns {Object | Promise<Object[]|null>} Cleaned post object
+     */
+    function postCleanUp(post) {
+    let newPost = {
+        ...post.toJSON(),
+        author: post.Author?.toJSON(),
+        channel: post.Channel?.toJSON(),
+    };
+    delete newPost.Channel;
+    delete newPost.Author;
+
+    return newPost;
+}
+
+    const include = [
+        { model: User, as: 'Author', attributes: ['id', 'first_name', 'last_name'] },
+        { model: Channel, attributes: ['id', 'name'] }
+    ];
+
+    if (!id) {
+        const posts = await Post.findAll({ include, order: [['createdAt', 'DESC']] });
+        return posts.map(post => (postCleanUp(post)));
+    }
+    
+    let post = await Post.findOne({ where: { id }, include });
+
+    return postCleanUp(post);
 }
 
 /**

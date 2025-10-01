@@ -2,7 +2,6 @@
 import express from 'express';
 import checkAuthHandler from '../utils/checkAuth.js';
 import {
-    getRoles,
     createRole,
     updateRole,
     deleteRole,
@@ -19,7 +18,7 @@ import {
  */
 const fetchRolesHandler = async (req, res) => {
     try {
-        const roles = await getRoles();
+        const roles = await getRole();
 
         res.json(roles);
     } catch (err) {

@@ -9,96 +9,6 @@ import {User, Role, UserRole} from '../models/users.js';
  */
 
 /**
- * Retrieves one or all roles.
- * @param {number|null} roleId - Optional role ID to fetch a specific role
- * @returns {Promise<Object|Object[]|null>} Single role, array of roles, or null
- */
-export async function getRole(roleId) {
-    let role = await Role.findOne({
-        where: { id: roleId },
-    });
-
-    if (!role) {
-        return null
-    }
-
-    return {
-        ...role.toJSON(),
-        users: await getUsersWithRole(roleId),
-    };
-}
-/**
- * Retrieves all roles.
- * @returns {Promise<Object|Object[]|null>} Array of roles or null
- */
-export async function getRoles() {
-    const roles = await Role.findAll({order: [['id', 'ASC']]});
-
-    return await Promise.all(
-        (roles || []).map(async role => {
-            const roleObj = { ...role.toJSON() };
-            roleObj.users = await getUsersWithRole(roleObj.id);
-            return roleObj;
-        })
-    );
-}
-
-/**
- * Retrieves roles assigned to a user.
- * @param {number} userId - User ID
- * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
- */
-export async function getUserRoles(userId) {
-    if (!userId) {
-        return {success: false, message: 'User ID not provided.'};
-    }
-
-    const roles = await UserRole.findAll({
-        attributes: {exclude: ['id']},
-        where: { user: userId },
-        order: [['role', 'ASC']],
-        include: [
-            { model: Role }
-        ],
-    });
-
-    return roles.map(role => {
-        role = {
-            ...role.Role.toJSON(),
-        };
-        delete role.Role;
-        return role;
-    }) || null;
-}
-
-/**
- * Retrieves all users for a given role ID.
- * @param {number} roleId - Role ID
- * @returns {Promise<Array<{id: number, first_name: string, last_name: string}>>}
- */
-export async function getUsersWithRole(roleId) {
-    if (!roleId) return [];
-
-    const userRoles = await UserRole.findAll({
-        where: { role: roleId },
-        include: [
-            {
-                model: User,
-                attributes: ['id', 'first_name', 'last_name']
-            }
-        ]
-    });
-
-    return userRoles
-        .map(ur => ({
-            id: ur.User?.id,
-            first_name: ur.User?.UserDetails?.first_name,
-            last_name: ur.User?.UserDetails?.last_name
-        }))
-        .filter(u => u.id);
-}
-
-/**
  * Creates a new role.
  * @param {Object} data - Role data
  * @param {string} data.name - Role name
@@ -122,6 +32,39 @@ export async function createRole(data) {
     });
 
     return {success: true, message: 'Role created successfully.', role: role.toJSON()};
+}
+
+/**
+ * Retrieves one or all roles.
+ * @param {number|null} roleId - Optional role ID to fetch a specific role
+ * @returns {Promise<Object|Object[]|null>} Single role, array of roles, or null
+ */
+export async function getRole(id) {
+
+    if (!id || isNaN(id)) {
+        const roles = await Role.findAll({ order: [['id', 'ASC']] });
+
+        return await Promise.all(
+            (roles || []).map(async role => {
+                const roleObj = { ...role.toJSON() };
+                roleObj.users = await getUsersWithRole(roleObj.id);
+                return roleObj;
+            })
+        );
+    }
+
+    let role = await Role.findOne({
+        where: { id },
+    });
+
+    if (!role) {
+        return null
+    }
+
+    return {
+        ...role.toJSON(),
+        users: await getUsersWithRole(id),
+    };
 }
 
 /**
@@ -309,4 +252,54 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
         await transaction.rollback();
         return { success: false, message: `Failed to ${mode} managers: ${err.message}` };
     }
+}
+
+/**
+ * Retrieves roles assigned to a user.
+ * @param {number} userId - User ID
+ * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
+ */
+export async function getUserRoles(userId) {
+    if (!userId) {
+        return {success: false, message: 'User ID not provided.'};
+    }
+
+    const roles = await UserRole.findAll({
+        attributes: {exclude: ['id']},
+        where: { user: userId },
+        order: [['role', 'ASC']],
+        include: [
+            { model: Role }
+        ],
+    });
+
+    return roles.map(role => {
+        role = {
+            ...role.Role.toJSON(),
+        };
+        delete role.Role;
+        return role;
+    }) || null;
+}
+
+/**
+ * Retrieves all users for a given role ID.
+ * @param {number} roleId - Role ID
+ * @returns {Promise<Array<{id: number, first_name: string, last_name: string}>>}
+ */
+export async function getUsersWithRole(roleId) {
+    if (!roleId) return [];
+
+    const userRoles = await UserRole.findAll({
+        where: { role: roleId },
+        include: [{ model: User, attributes: ['id', 'first_name', 'last_name'] }]
+    });
+
+    return userRoles
+        .map(ur => ({
+            id: ur.User?.id,
+            first_name: ur.User?.first_name,
+            last_name: ur.User?.last_name
+        }))
+        .filter(u => u.id);
 }
