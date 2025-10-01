@@ -131,7 +131,7 @@ const TeamDetails = ({ teamId }) => {
                 type: 'data-group',
                 label: 'Sub Teams',
                 dataType: 'list',
-                dataField: 'sub_teams',
+                dataField: 'subteams',
                 placeholder: 'No Roles assigned.',
                 items: teamStructure,
                 newItem: {
