@@ -222,7 +222,7 @@ const updateAssignmentsHandler = async (req, res) => {
  */
 const updateUserHandler = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { D } = req.params;
 
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
@@ -246,9 +246,7 @@ const updateUserHandler = async (req, res) => {
             return res.status( 400).json({ message: result.message });
         }
 
-        const user = await getUser({id: result.user.id});
-
-        res.json({ message: result.message, user: user });
+        res.json({ message: result.message, user: await getUser({id: userId}) });
 
     } catch (err) {
         console.error('Error updating user:', err);

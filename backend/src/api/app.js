@@ -10,11 +10,9 @@ import {
     setConfig
 } from '../controllers/app.js';
 import {
+    updateUser,
     hasManagerAccess,
     hasManagerView,
-    setManagerView,
-    setUserTheme,
-    toggleManagerNav
 } from '../controllers/users.js';
 
 // API Handlers
@@ -186,7 +184,7 @@ const toggleManagerViewHandler = async (req, res) => {
             });
         }
 
-        const updated = await setManagerView(req.session.user, manager_view);
+        const updated = await updateUser(req.session.user, {manager_view_enabled: manager_view});
 
         if (updated) {
             return res.json({
@@ -224,7 +222,7 @@ const toggleManagerNavHandler = async (req, res) => {
 
         const { nav_collapsed } = req.body;
 
-        const updated = await toggleManagerNav(req.session.user, nav_collapsed);
+        const updated = await updateUser(req.session.user, {manager_nav_collapsed: nav_collapsed});
 
         if (updated) {
             res.json({ success: true, navCollapse: nav_collapsed });
@@ -251,7 +249,7 @@ const updateUserThemeHandler = async (req, res) => {
         const { userId } = req.params;
         const { theme_mode } = req.body;
 
-        const updated = await setUserTheme(userId, theme_mode);
+        const updated = await updateUser(userId, { theme_mode });
 
         if (!updated) {
             return res.status(400).json({ success: false, message: 'Failed to update.' });

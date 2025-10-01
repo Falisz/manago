@@ -81,7 +81,7 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
         user = {...user, managers: await getUserManagers({userId: id})};
 
     if (managed_users)
-        user = {...user, managed_users: await getUserManager({managerId: id})};
+        user = {...user, managed_users: await getUserManagers({managerId: id})};
 
     return user;
 }
@@ -163,28 +163,24 @@ export async function updateUser(userId, data) {
         return {success: false, message: 'User not found.'};
     }
 
-    const userUpdate = {};
-
     if (data.login !== undefined && data.login !== user.login && 
         await User.findOne({ where: { login: data.login, id: { [sequelize.Op.ne]: userId } } }))
             return { success: false, message: 'Login must be unique.' };
-    else 
-        userUpdate.login = data.login;
+            
     if (data.email && data.email !== user.email && 
         await User.findOne({ where: { email: data.email, id: { [sequelize.Op.ne]: userId } } })) 
             return { success: false, message: 'Email must be unique.' };
-    else
-        userUpdate.email = data.email;
-    if (data.password) userUpdate.password = await bcrypt.hash(data.password, 10);
-    if (data.active !== undefined) userUpdate.active = data.active;
-    if (data.first_name) userUpdate.first_name = data.first_name;
-    if (data.last_name) userUpdate.last_name = data.last_name;
-    if (data.manager_view_access !== undefined) userUpdate.manager_view_access = data.manager_view_access;
-    if (data.manager_view_enabled !== undefined) userUpdate.manager_view_enabled = data.manager_view_enabled;
-    
-    const updatedUser = await user.update(userUpdate);
+            
+    if (data.password) 
+        data.password = await bcrypt.hash(data.password, 10);
 
-    return {success: true, message: 'User updated successfully.', user: updatedUser};
+    const [updated] = await user.update(data);
+
+    if (updated === 0) {
+        return {success: false, message: 'No changes made to the user.'};
+    }
+
+    return {success: true, message: 'User updated successfully.'};
 }
 
 /**
@@ -418,30 +414,4 @@ export async function hasManagerView(userId) {
     const user = await User.findOne({ where: { id: userId } });
 
     return user && user.manager_view_enabled;
-}
-
-export async function setManagerView(userId, value) {
-    const [updated] = await User.update({ manager_view_enabled: value }, { where: { id: userId } });
-
-    return updated === 1;
-}
-
-export async function toggleManagerNav(userId, value) {
-    const [updated] = await User.update({ manager_nav_collapsed: value }, { where: { id: userId } });
-
-    return updated === 1;
-}
-
-/**
- * Sets theme of the user.
- * @param {number} userId - User ID
- * @param {number} theme_mode - Theme mode - 0 for Dark, 1 for Light
- * @returns {Promise<boolean>}
- */
-export async function setUserTheme(userId, theme_mode) {
-    if (!userId) return null;
-
-    const [updated] = await User.update({ theme_mode }, { where: { id: userId } });
-
-    return updated === 1;
 }
