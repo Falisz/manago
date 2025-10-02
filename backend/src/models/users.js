@@ -18,8 +18,7 @@ export const User = sequelize.define('User', {
     },
     email: {
         type: DataTypes.STRING,
-        unique: true,
-        allowNull: false
+        unique: true
     },
     address: DataTypes.STRING,
     city: DataTypes.STRING,
