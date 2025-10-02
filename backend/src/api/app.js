@@ -18,10 +18,10 @@ import {
 // API Handlers
 /**
  * Serve API endpoint for Staff Portal app.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const apiEndpointHandler = (req, res) => {
+const apiEndpointHandler = (_req, res) => {
     try {
         return res.json({ message: 'This is API endpoint for the Staff Portal app. ' +
                 'To make requests please use Staff Portal app.' });
@@ -34,10 +34,10 @@ const apiEndpointHandler = (req, res) => {
 
 /**
  * Fetch app configuration.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchConfigHandler = async (req, res) => {
+const fetchConfigHandler = async (_req, res) => {
     try {
         res.json({
             is_connected: true,
@@ -51,10 +51,10 @@ const fetchConfigHandler = async (req, res) => {
 
 /**
  * Fetch app configuration options.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchConfigOptionsHandler = async (req, res) => {
+const fetchConfigOptionsHandler = async (_req, res) => {
     try {
         res.json({
             ...await getConfigOptions()

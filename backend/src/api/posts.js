@@ -6,10 +6,10 @@ import checkAuthHandler from '../utils/checkAuth.js';
 // API Handlers
 /**
  * Fetch all posts.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchPostsHandler = async (req, res) => {
+const fetchPostsHandler = async (_req, res) => {
     try {
         const posts = await getPost();
         res.json(posts);

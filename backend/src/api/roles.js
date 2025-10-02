@@ -13,10 +13,10 @@ import {
 // API Handlers
 /**
  * Fetch all roles.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchRolesHandler = async (req, res) => {
+const fetchRolesHandler = async (_req, res) => {
     try {
         const roles = await getRole();
 
