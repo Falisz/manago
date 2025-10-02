@@ -380,33 +380,62 @@ export async function authUser(login, password) {
         where: isInteger ? { id: login } : (isEmailFormat ? { email: login } : { login: login })
     });
 
-    if (!user) {
-        return { valid: false, status: 401, message: 'Invalid credentials, user not found!' };
-    }
+    if (!user)
+        return { 
+            valid: false,
+            status: 401, 
+            message: 'Invalid credentials, user not found!' 
+        };
 
-    if (!user.active || user.removed) {
-        return { valid: false, status: 403, user: {id: user.id}, message: 'User inactive.' };
-    }
+    if (!user.active || user.removed)
+        return { 
+            valid: false, 
+            status: 403, 
+            user: {id: user.id}, message: 'User inactive.' 
+        };
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid) {
-        return { valid: false, status: 401, user: {id: user.id}, message: 'Invalid credentials!' };
-    }
+    if (!isPasswordValid)
+        return { 
+            valid: false, 
+            status: 401, 
+            user: {id: user.id}, 
+            message: 'Invalid credentials!' 
+        };
 
     user = await getUser({id: user.id});
 
-    return { valid: true, user };
+    return { 
+        valid: true, 
+        user 
+    };
 }
 
-export async function hasManagerAccess(userId) {
-    const user = await User.findOne({ where: { id: userId } });
+/**
+ * Checks if given User has Access to Manager View.
+ * @param {number} id - ID of a User
+ * @returns {boolean}
+ */
+export async function hasManagerAccess(id) {
+    if (!id)
+        return false;
+
+    const user = await User.findByPk(id);
 
     return user && user.manager_view_access;
 }
 
-export async function hasManagerView(userId) {
-    const user = await User.findOne({ where: { id: userId } });
+/**
+ * Checks if given User has Manager View enabled.
+ * @param {number} id - ID of a User
+ * @returns {boolean}
+ */
+export async function hasManagerView(id) {
+    if (!id)
+        return false;
+
+    const user = await User.findByPk(id);
 
     return user && user.manager_view_enabled;
 }
