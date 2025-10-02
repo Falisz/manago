@@ -8,7 +8,7 @@ import {
     getRole,
     getUserRoles,
     updateUserRoles,
-} from '../controllers/roles.js';
+} from '../controllers/users.js';
 
 // API Handlers
 /**

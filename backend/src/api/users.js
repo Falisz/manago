@@ -7,19 +7,17 @@ import {
     updateUser,
     removeUser,
     getUserManagers,
-    updateUserManagers
+    updateUserManagers,
+    updateUserRoles
 } from '../controllers/users.js';
-import {
-    updateUserRoles,
-} from '../controllers/roles.js';
 
 // API Handlers
 /**
  * Fetch all users.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchUsersHandler = async (req, res) => {
+const fetchUsersHandler = async (_req, res) => {
     try {
         const users = await getUser();
         res.json(users);
@@ -31,10 +29,10 @@ const fetchUsersHandler = async (req, res) => {
 
 /**
  * Fetch all managers.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchManagersHandler = async (req, res) => {
+const fetchManagersHandler = async (_req, res) => {
     try {
         const managers = await getUser({group: 'managers', managed_users: true});
         res.json(managers);
@@ -46,10 +44,10 @@ const fetchManagersHandler = async (req, res) => {
 
 /**
  * Fetch all employees.
- * @param {express.Request} req
+ * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchEmployeesHandler = async (req, res) => {
+const fetchEmployeesHandler = async (_req, res) => {
     try {
         const employees = await getUser({group: 'employees'});
         res.json(employees);
