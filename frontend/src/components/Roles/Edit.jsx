@@ -28,6 +28,13 @@ const RoleEdit = ({ roleId }) => {
                 label: 'Name',
                 required: true,
             },
+            icon: {
+                section: 0,
+                field: 'icon',
+                type: 'string',
+                inputType: 'input',
+                label: 'Icon',
+            },
             description: {
                 section: 1,
                 field: 'description',

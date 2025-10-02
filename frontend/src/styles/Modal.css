@@ -30,7 +30,7 @@
     right: 0;
     background: var(--background-gradient);
     padding: 25px;
-    width: 50%;
+    width: max(25%, 300px);
     height: calc(100% - 50px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     outline: none;
@@ -48,6 +48,7 @@
     left: 50%;
     transform: translateX(-50%);
     height: fit-content;
+    width: max(50%, 300px);
     max-height: calc(100% - 200px);
     border-radius: var(--def-border-radius);
 }
