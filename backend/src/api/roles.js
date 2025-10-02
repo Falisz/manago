@@ -112,9 +112,9 @@ const updateRoleHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid role ID.' });
         }
 
-        const { name, description } = req.body;
+        const { name, description, icon } = req.body;
 
-        const result = await updateRole(parseInt(roleId), {name, description});
+        const result = await updateRole(parseInt(roleId), {name, description, icon});
 
         if (!result.success) {
             return res.status(400).json({ message: result.message });

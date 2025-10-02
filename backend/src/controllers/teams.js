@@ -56,14 +56,12 @@ export async function getTeam({id, all=false, parent_team=null, get_subteams=tru
     if (get_subteams)
         team.subteams = await getTeam({parent_team: team.id});
         
-    if (get_members)
-        team = {
-            ...team,
-            members: await getTeamUsers(team.id, 1, true),
-            leaders: await getTeamUsers(team.id, 2, true),
-            managers: await getTeamUsers(team.id, 3, true, true),
-        }
-
+    if (get_members) {
+        team.members = await getTeamUsers(team.id, 1, true);
+        team.leaders = await getTeamUsers(team.id, 2, true);
+        team.managers = await getTeamUsers(team.id, 3, true, true);
+    }
+    
     return team;
 }
 
