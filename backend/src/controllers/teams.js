@@ -45,12 +45,10 @@ export async function getTeam({id, all=false, parent_team=null, get_subteams=tru
     }
 
     // Logic if the ID is provided - fetch specific Team
-    let team = await Team.findOne({ where: { id } });
+    const team = await Team.findOne({ where: { id }, raw: true });
 
     if (!team)
         return null;
-
-    team = team.toJSON ? team : team.toJSON();
 
     if (team.parent_team)
         team.parent= await getTeam({id: team.parent_team, get_subteams: false, get_members: false});
@@ -92,7 +90,7 @@ export async function createTeam(data) {
         };
 
     const team = await Team.create({
-        id: randomId(Team),
+        id: await randomId(Team),
         name: data.name,
         code_name: data.code_name,
         parent_team: data.parent_team || null,

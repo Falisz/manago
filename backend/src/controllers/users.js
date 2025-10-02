@@ -1,5 +1,6 @@
 // BACKEND/controller/users.js
 import bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
 import { User, UserManager, Role, UserRole } from '../models/users.js';
 import { TeamUser } from '../models/teams.js';
@@ -57,24 +58,23 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
     }
 
     // Logic if the ID is provided - fetch specific User
-    let user = await User.findOne({
+    const user = await User.findOne({
         attributes: { exclude: ['password', 'removed'] },
-        where: { id, removed: false }
+        where: { id, removed: false },
+        raw: true
     });
 
     if (!user)
         return null;
 
-    user = user.toJSON ? user : user.toJSON();
-
     if (roles)
-        user = {...user, roles: await getUserRoles({userId: id})};
+        user.roles = await getUserRoles({userId: id});
 
     if (managers)
-        user = {...user, managers: await getUserManagers({userId: id})};
+        user.managers = await getUserManagers({userId: id});
 
     if (managed_users)
-        user = {...user, managed_users: await getUserManagers({managerId: id})};
+        user.managed_users = await getUserManagers({managerId: id});
 
     return user;
 }
@@ -122,7 +122,7 @@ export async function createUser(data) {
     data.id = randomId(User);
 
     const user = await User.create({
-        id: randomId(User),
+        id: await randomId(User),
         login: data.login || null,
         email: data.email,
         password: await bcrypt.hash(data.password || '1234', 10),
@@ -165,14 +165,14 @@ export async function updateUser(id, data) {
         };
 
     if (data.login !== undefined && data.login !== user.login && 
-        await User.findOne({ where: { login: data.login, id: { [sequelize.Op.ne]: userId } } }))
+        await User.findOne({ where: { login: data.login, id: { [Op.ne]: userId } } }))
             return { 
                 success: false, 
                 message: 'Login must be unique.' 
             };
             
     if (data.email && data.email !== user.email && 
-        await User.findOne({ where: { email: data.email, id: { [sequelize.Op.ne]: userId } } })) 
+        await User.findOne({ where: { email: data.email, id: { [Op.ne]: userId } } })) 
             return { 
                 success: false, 
                 message: 'Email must be unique.' 
@@ -226,7 +226,7 @@ export async function removeUser(id) {
         );
 
         await UserManager.destroy(
-            { where: { [sequelize.Op.or]: { user: id, manager: id} }, transaction }
+            { where: { [Op.or]: { user: id, manager: id} }, transaction }
         );
 
         await TeamUser.destroy(
@@ -469,12 +469,10 @@ export async function getRole({id, users=true} = {}) {
     }
 
     // Logic if ID is provided - fetch specific Role
-    let role = await Role.findOne({ where: { id } });
+    let role = await Role.findOne({ where: { id }, raw: true });
 
     if (!role)
         return null;
-
-    role = role.toJSON ? role : role.toJSON();
 
     if (users) 
         role.users = await getUserRoles({ roleId: id });
@@ -504,7 +502,7 @@ export async function createRole(data) {
         };
 
     const role = await Role.create({
-        id: randomId(Role),
+        id: await randomId(Role),
         name: data.name,
         description: data.description || null,
         system_default: false,
@@ -539,7 +537,7 @@ export async function updateRole(id, data) {
             message: 'Role not found.'
         };
 
-    if (data.name && await Role.findOne({ where: { name: data.name, id: { [sequelize.Op.ne]: id } }}))
+    if (data.name && await Role.findOne({ where: { name: data.name, id: { [Op.ne]: id } }}))
         return {
             success: false, 
             message: 'The other Role with this exact name already exists.'

@@ -67,7 +67,7 @@ export async function createPost(data) {
     }
 
     return await Post.create({
-        id: randomId(Post),
+        id: await randomId(Post),
         channel: data.channel_id,
         author: data.author_id,
         title: data.title,
