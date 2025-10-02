@@ -3,50 +3,29 @@ import { Team, TeamUser } from '../models/teams.js';
 import { User } from '../models/users.js';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
+import randomId from '../utils/randomId.js';
 
 /**
- * @typedef {Object} Team
- * @property {number} id - The team ID
- * @property {string} name - The team name
- */
-
-/**
- * @typedef {Object} User
- * @property {number} id - The user ID
- * @property {string} first_name - The user's first name
- * @property {string} last_name - The user's last name
- */
-
-/**
- * @typedef {Object} TeamUser
- * @property {number} team - The team ID
- * @property {number} user - The user ID
- * @property {number} role - The role type (0: member, 1: leader, 2: manager)
- * @property {Team} Team - The associated team
- * @property {User} User - The associated user
- */
-
-/**
- * Retrieves one team by its ID or if id is null retrieves all team. ts subteams recursively.
+ * Retrieves one Team by its ID or all Team if ID is not provided.
  * @param {number} id - optional - Team ID to fetch a specific user
- * @param {number || null} parent_team - optional - ID of the parent team.
- * @param {boolean} get_subteams - optional - Should be subteams fetched for the found Teams?
+ * @param {number|null} parent_team - optional - ID of the parent Team.
+ * @param {boolean} get_subteams - optional - Should be Subteams fetched for the found Teams?
  * @param {boolean} get_members - optional - Should be members fetched for the found Teams?
- * @returns {Promise<Object|null>} Single team or null
+ * @returns {Promise<Object|null>} Single Team or null
  */
 export async function getTeam({id, all=false, parent_team=null, get_subteams=true, get_members=true} = {}) {
+    
+    // Logic if no ID is provided - fetch all Teams
     if (!id || isNaN(id)) {
-        let teams;
+        const teams = await Team.findAll({ 
+            where: all ? {} : { parent_team}, 
+            order: [['id', 'ASC']] 
+        });
 
-        if (all)
-            teams = await Team.findAll();
-        else
-            teams = await Team.findAll({ where: { parent_team }});
+        if (!teams || teams.length === 0)
+            return [];
 
-        if (!teams)
-            return null;
-
-        teams = await Promise.all(teams.map(async team => {
+        return await Promise.all(teams.map(async team => {
             let teamData = team.toJSON();
 
             if (get_subteams)
@@ -61,27 +40,23 @@ export async function getTeam({id, all=false, parent_team=null, get_subteams=tru
                 }
             
             return teamData;
-        }));
-
-        return teams || null;
+        })) || [];
 
     }
 
+    // Logic if the ID is provided - fetch specific Team
     let team = await Team.findOne({ where: { id } });
 
     if (!team)
         return null;
 
-    team = {
-        ...team.toJSON(),
-        subteams: await getTeam({parent_team: team.id})
-    };
+    team = team.toJSON ? team : team.toJSON();
 
     if (team.parent_team)
-        team = {
-            ...team,
-            parent: await getTeam({id: team.parent_team, get_subteams: false, get_members: false}),
-        }
+        team.parent= await getTeam({id: team.parent_team, get_subteams: false, get_members: false});
+
+    if (get_subteams)
+        team.subteams = await getTeam({parent_team: team.id});
         
     if (get_members)
         team = {
@@ -95,7 +70,7 @@ export async function getTeam({id, all=false, parent_team=null, get_subteams=tru
 }
 
 /**
- * Creates a new team.
+ * Creates a new Team.
  * @param {Object} data - Team data
  * @param {string} data.code_name - Team code name
  * @param {string|null} data.name - optional - Team name
@@ -103,134 +78,125 @@ export async function getTeam({id, all=false, parent_team=null, get_subteams=tru
  * @returns {Promise<{success: boolean, message: string, team?: Team}>}
  */
 export async function createTeam(data) {
-    if (!data.code_name) {
-        return {success: false, message: 'Mandatory data not provided.'};
-    }
 
-    await Team.sync();
-    await sequelize.query(
-        "SELECT setval('teams_id_seq', (SELECT MAX(id) + 1 FROM teams), false);"
-    );
+    if (!data.code_name)
+        return {
+            success: false, 
+            message: 'Mandatory data not provided.'
+        };
 
-    if (await Team.findOne({where: {code_name: data.code_name}})) {
-        return {success: false, message: 'The team with this exact code name already exists.'};
-    }
+    if (await Team.findOne({where: {code_name: data.code_name}}))
+        return {
+            success: false,
+            message: 'The team with this exact code name already exists.'
+        };
 
     const team = await Team.create({
+        id: randomId(Team),
+        name: data.name,
         code_name: data.code_name,
-        name: data.name || null,
         parent_team: data.parent_team || null,
     });
 
-    return {success: true, message: 'Team created successfully.', team: team.toJSON()};
+    return {
+        success: true,
+        message: 'Team created successfully.',
+        team: team.toJSON()
+    };
 }
 
 /**
- * Updates an existing team.
+ * Updates an existing Team.
  * @param {number} id - Team ID
  * @param {Object} data - Team data to update
- * @returns {Promise<{success: boolean, message: string, team?: Team}>}
+ * @returns {Promise<{success: boolean, message: string, team?: Object}>}
  */
 export async function updateTeam(id, data) {
-    if (!id) {
-        return {success: false, message: 'Team ID not provided.'};
-    }
+    if (!id)
+        return {
+            success: false,
+            message: 'Team ID not provided.'
+        };
 
-    const team = await Team.findOne({
-        where: { id },
-    });
+    const team = await Team.findOne({ where: { id } });
 
-    if (!team) {
-        return {success: false, message: 'Team not found.'};
-    }
+    if (!team)
+        return {
+            success: false,
+            message: 'Team not found.'
+        };
 
-    const teamUpdate = {};
+    if (data.code_name && 
+        await Team.findOne({where: {id: { [Op.ne]: id }, code_name: data.code_name}}))
+            return {
+                success: false,
+                message: 'The team with this exact code name already exists.'
+            };
+        
+    const updatedTeam = await team.update(data);
 
-    if (data.code_name) {
-        if (await Team.findOne({where: {id: { [Op.ne]: id }, code_name: data.code_name}})) {
-            return {success: false, message: 'The team with this exact code name already exists.'};
-        }
-        teamUpdate.code_name = data.code_name;
-    }
-
-    if (data.name) teamUpdate.name = data.name;
-
-    if (data.parent_team !== undefined) teamUpdate.parent_team = data.parent_team;
-
-    const updatedTeam = await team.update(teamUpdate);
-
-    return {success: true, message: 'Team updated successfully.', team: updatedTeam.toJSON()};
+    return {
+        success: true,
+        message: 'Team updated successfully.',
+        team: updatedTeam.toJSON()
+    };
 }
 
 /**
- * Deletes team(s) and their assignments.
+ * Deletes one or multiple Teams and their assignments.
  * @param {number|number[]} id - Team ID or array of Team IDs
- * @param {boolean} cascade - optional - Should subteams be deleted too. If false, they get orphaned.
+ * @param {boolean} cascade - optional - Should Subteams be deleted too. If false, they get orphaned.
  * @returns {Promise<{success: boolean, message: string}>}
  */
-export async function deleteTeam(id, cascade = false) {
-    if (!id || (Array.isArray(id) && id.length === 0)) {
-        return { success: false, message: 'Team ID(s) not provided.' };
-    }
+export async function deleteTeam(id, cascade=false) {
+
+    if (!isNumberOrNumberArray(id))
+        return { 
+            success: false, 
+            message: `Invalid Role ID${Array.isArray(id) ? 's' : ''} provided.` 
+        };
 
     const transaction = await sequelize.transaction();
 
     try {
-        const teamIds = Array.isArray(id) ? id : [id];
 
-        for (const teamId of teamIds) {
-            if (!Number.isInteger(teamId)) {
-                await transaction.rollback();
-                return { success: false, message: `Invalid team ID: ${teamId}` };
-            }
-        }
-
-        const teams = await Team.findAll({
-            where: { id: teamIds },
-            transaction
-        });
-
-        if (teams.length === 0) {
-            await transaction.rollback();
-            return { success: false, message: 'No teams found or already removed.' };
-        }
-
-        if (teams.length !== teamIds.length) {
-            await transaction.rollback();
-            return { success: false, message: 'Some teams were not found.' };
-        }
-
-        for (const team of teams) {
-            if (cascade) {
-                const subTeams = await Team.findAll({
-                    where: { parent_team: team.id },
-                    transaction
-                });
-
-                await Promise.all(subTeams.map(async (subTeam) => {
-                    await TeamUser.destroy({
-                        where: { team: subTeam.id },
-                        transaction
-                    });
-                    await subTeam.destroy({ transaction });
-                }));
-            } else {
-                await Team.update(
-                    { parent_team: null },
-                    { where: { parent_team: team.id }, transaction }
-                );
-            }
-
-            await TeamUser.destroy({
-                where: { team: team.id },
-                transaction
+        if (cascade) {
+            const subTeams = await Team.findAll({
+                where: { parent_team: id }
             });
 
-            await team.destroy({ transaction });
+            const subTeamIds = subTeams.map(t => t.id);
+            
+            if (subTeamIds.length > 0) {
+                const result = await deleteTeam(subTeamIds, true);
+
+                if (!result.success) {
+                    await transaction.rollback();
+                    return result;
+                }
+            }
+        }   
+
+        const deletedTeams = await Role.destroy({ where: { id }, transaction });
+        
+        if (!deletedTeams) {
+            await transaction.rollback();
+            return { 
+                success: false, 
+                message: `No Teams found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
+                    ${Array.isArray(id) ? id.join(', ') : id}` 
+            };
         }
 
+        await TeamUser.destroy({ where: { team: id }, transaction });
+
         await transaction.commit();
-        return { success: true, message: `Team${teamIds.length > 1 ? 's' : ''} removed successfully.` };
+        
+        return { 
+            success: true, 
+            message: `${deletedTeams} Team${deletedTeams > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount: deletedTeams 
+        };
     } catch (error) {
         await transaction.rollback();
         return { success: false, message: `Error deleting team(s): ${error.message}` };
@@ -239,9 +205,9 @@ export async function deleteTeam(id, cascade = false) {
 
 /**
  * Updates Team Members assigned to a Team based on mode.
- * - 'add': Appends members to teams if they don't exist yet
- * - 'set': Sets provided members to teams and removes any other manager assignments
- * - 'del': Removes provided members from teams if they have them
+ * - 'add': Appends members to Teams if they don't exist yet
+ * - 'set': Sets provided members to Teams and removes any other manager assignments
+ * - 'del': Removes provided members from Teams if they have them
  * @param {Array<{number}>} teamIds - Array of Team IDs for whom Members would be updated
  * @param {Array<{number}>} userIds - Array of User IDs to be assigned/removed.
  * @param {number} roleId - A role to set for provided users in append and overwrite modes.
@@ -333,11 +299,11 @@ export async function updateTeamUsers(teamIds, userIds, roleId=1, mode = 'add') 
 }
 
 /**
- * Retrieves members of a team, optionally filtered by role and can include sub and sup teams' members.
+ * Retrieves members of a Team, optionally filtered by role and can include sub and sup Teams' members.
  * @param {number} teamId - Team ID
  * @param {number || null} [role] - Optional - Role filter (0: member, 1: leader, 2: manager)
- * @param include_subteams {boolean} - Optional - Should the result include subteams.
- * @param include_parent_teams {boolean} - Optional - Should the result include parent teams.
+ * @param include_subteams {boolean} - Optional - Should the result include Subteams.
+ * @param include_parent_teams {boolean} - Optional - Should the result include parent Teams.
  * @returns {Promise<TeamUser[] || null>} Array of user objects
  */
 export async function getTeamUsers(teamId, role = null, include_subteams = false, include_parent_teams = false) {
@@ -388,8 +354,7 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
     if (role !== undefined && role !== null) {
         where.role = role;
     }
-
-    /** @type {TeamUser[]} **/
+    
     let teamMembers = await TeamUser.findAll({
         where,
         include: [

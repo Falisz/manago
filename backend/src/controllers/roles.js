@@ -1,171 +1,174 @@
 // BACKEND/controller/roles.js
 import sequelize from '../utils/database.js';
 import {User, Role, UserRole} from '../models/users.js';
+import randomId from '../utils/randomId.js';
+import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 
 /**
- * @typedef {Object} UserRoleData
- * @property {Object} Role - Sequelize Role association
- * @property {function} toJSON - Sequelize toJSON method
+ * Retrieves one Role by its ID or all Roles if an ID is not provided.
+ * @param {number|null} id - optional - Role ID to fetch a specific Role
+ * @param {boolean} users - optional - whether to include users assigned to the Role(s)
+ * @returns {Promise<Object|Object[]|null>} Single Role, array of Roles, or null
  */
+export async function getRole({id, users=true} = {}) {
 
-/**
- * Retrieves one or all roles.
- * @param {number|null} roleId - Optional role ID to fetch a specific role
- * @returns {Promise<Object|Object[]|null>} Single role, array of roles, or null
- */
-export async function getRole({id} = {}) {
-
+    // Logic if no ID is provided - fetch all Roles
     if (!id || isNaN(id)) {
-        const roles = await Role.findAll({ order: [['id', 'ASC']] });
+        const roles = await Role.findAll({ 
+            order: [['id', 'ASC']] 
+        });
 
-        return await Promise.all(
-            (roles || []).map(async role => ({
-                ...role.toJSON(),
-                users: await getUserRoles({roleId: role.id})
-            }))
+        if (!roles || roles.length === 0)
+            return [];
+
+        return await Promise.all(roles.map(async role => {
+                const roleData = role.toJSON();
+
+                if (users)
+                    roleData.users = await getUserRoles({ roleId: role.id });
+
+                return roleData;
+            })
         ) || [];
     }
 
-    let role = await Role.findOne({
-        where: { id },
-    });
+    // Logic if ID is provided - fetch specific Role
+    let role = await Role.findOne({ where: { id } });
 
-    if (!role) {
-        return null
-    }
+    if (!role)
+        return null;
 
-    return {
-        ...role.toJSON(),
-        users: await getUserRoles({roleId: id}),
-    };
+    role = role.toJSON ? role : role.toJSON();
+
+    if (users) 
+        role.users = await getUserRoles({ roleId: id });
+
+    return role;
 }
 
 /**
- * Creates a new role.
+ * Creates a new Role.
  * @param {Object} data - Role data
  * @param {string} data.name - Role name
- * @param {string} data.description - Role description
+ * @param {string} data.description - optional - Role description
  * @returns {Promise<{success: boolean, message: string, role?: Object}>}
  */
 export async function createRole(data) {
 
-    if (!data.name) {
-        return {success: false, message: 'Mandatory data not provided.'};
-    }
+    if (!data.name)
+        return {
+            success: false, 
+            message: 'Name is required to create a new Role!'
+        };
 
-    if (await Role.findOne({where: {name: data.name}})) {
-        return {success: false, message: 'The role with this exact name already exists.'};
-    }
+    if (await Role.findOne({ where: { name: data.name }}))
+        return {
+            success: false, 
+            message: 'The Role with this exact name already exists.'
+        };
 
     const role = await Role.create({
+        id: randomId(Role),
         name: data.name,
-        description: data?.description || null,
+        description: data.description || null,
         system_default: false,
     });
 
-    return {success: true, message: 'Role created successfully.', role: role.toJSON()};
+    return {
+        success: true, 
+        message: 'Role created successfully.', 
+        role: role.toJSON()
+    };
 }
 
 /**
- * Updates an existing role.
- * @param {number} roleId - Role ID
+ * Updates an existing Role.
+ * @param {number} id - Role ID
  * @param {Object} data - Role data to update
  * @returns {Promise<{success: boolean, message: string, role?: Object}>}
  */
-export async function updateRole(roleId, data) {
-    if (!roleId) {
-        return {success: false, message: 'Role ID not provided.'};
-    }
+export async function updateRole(id, data) {
 
-    const role = await Role.findOne({
-        where: { id: roleId },
-    });
+    if (!id)
+        return {
+            success: false, 
+            message: 'Role ID not provided.'
+        };
 
-    if (!role) {
-        return {success: false, message: 'Role not found.'};
-    }
+    const role = await Role.findOne({ where: { id } });
 
-    const roleUpdate = {};
+    if (!role)
+        return {
+            success: false, 
+            message: 'Role not found.'
+        };
 
-    if (data.name) roleUpdate.name = data.name;
-    if (data.description) roleUpdate.description = data.description;
-    roleUpdate.system_default = false;
+    if (data.name && await Role.findOne({ where: { name: data.name, id: { [sequelize.Op.ne]: id } }}))
+        return {
+            success: false, 
+            message: 'The other Role with this exact name already exists.'
+        };
 
-    const updatedRole = await role.update(roleUpdate);
+    const updatedRole = await role.update(data);
 
-    return {success: true, message: 'Role updated successfully.', role: updatedRole.toJSON()};
+    return {
+        success: true, 
+        message: 'Role updated successfully.', 
+        role: updatedRole.toJSON()
+    };
 }
 
 /**
- * Deletes one or multiple roles and their assignments.
- * @param {number|number[]} roleIds - Single role ID or array of role IDs
+ * Deletes one or multiple Roles and their assignments.
+ * @param {number|number[]} id - Single Role ID or array of Role IDs
  * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
-export async function deleteRole(roleIds) {
-    const rolesToDelete = Array.isArray(roleIds) ? roleIds : [roleIds];
+export async function deleteRole(id) {
 
-    if (!rolesToDelete || rolesToDelete.length === 0 || rolesToDelete.some(id => id == null)) {
-        return { success: false, message: 'Role ID(s) not provided or invalid.' };
-    }
+    if (!isNumberOrNumberArray(id))
+        return { 
+            success: false, 
+            message: `Invalid Role ID${Array.isArray(id) ? 's' : ''} provided.` 
+        };
 
     const transaction = await sequelize.transaction();
 
     try {
-        const roles = await Role.findAll({
-            where: { id: rolesToDelete },
-            transaction
-        });
+        const deletedRoles = await Role.destroy({ where: { id }, transaction });
 
-        if (roles.length === 0) {
+        if (!deletedRoles) {
             await transaction.rollback();
-            return {
-                success: false,
-                message: `No roles found for provided ID(s): ${rolesToDelete.join(', ')}`
+            return { 
+                success: false, 
+                message: `No Roles found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
+                 ${Array.isArray(id) ? id.join(', ') : id}` 
             };
         }
 
-        const foundRoleIds = roles.map(role => role.id);
-        const missingRoleIds = rolesToDelete.filter(id => !foundRoleIds.includes(id));
-
-        if (missingRoleIds.length > 0) {
-            console.warn(`Roles not found and will be skipped: ${missingRoleIds.join(', ')}`);
-        }
-
-        const roleAssignments = await UserRole.findAll({
-            where: { role: foundRoleIds },
-            transaction
-        });
-
-        await Promise.all(
-            roleAssignments.map(assignment => assignment.destroy({ transaction }))
-        );
-
-        await Promise.all(
-            roles.map(role => role.destroy({ transaction }))
-        );
+        await UserRole.destroy({ where: { role: id }, transaction });
 
         await transaction.commit();
 
         return {
             success: true,
-            message: `Role(s) removed successfully. ${roles.length} role(s) deleted, ${roleAssignments.length} assignment(s) removed.`,
-            deletedCount: roles.length
+            message: `${deletedRoles} Role${deletedRoles > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount: deletedRoles
         };
 
     } catch (error) {
         await transaction.rollback();
         return {
             success: false,
-            message: `Failed to delete role(s): ${error.message}`
+            message: `Failed to delete Role${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${error.message}`
         };
     }
 }
 
 /**
- * Retrieves roles assigned to a specific userId or all users assigned to a specific roleId.
+ * Retrieves Roles assigned to a specific userId or all users assigned to a specific roleId.
  * @param {number|null} userId - optional - User ID
  * @param {number|null} roleId - optional - Role ID
- * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of roles or error
+ * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of Roles/Users or error
  */
 export async function getUserRoles({userId, roleId}) {
     if (!userId && isNaN(userId) && !roleId && isNaN(roleId)) {
@@ -190,9 +193,9 @@ export async function getUserRoles({userId, roleId}) {
 
 /**
  * Updates Roles assigned to a User based on mode.
- * - 'add': Appends roles to users if they don't exist yet
- * - 'set': Sets provided roles to users and removes any other role assignments
- * - 'del': Removes provided roles from users if they have them
+ * - 'add': Appends Roles to users if they don't exist yet
+ * - 'set': Sets provided Roles to users and removes any other Role assignments
+ * - 'del': Removes provided Roles from users if they have them
  * @param {Array<{number}>} userIds - Array of User IDs for whom Roles would be updated
  * @param {Array<{number}>} roleIds - Array of Role IDs to be assigned/removed.
  * @param {string} mode - Update mode
