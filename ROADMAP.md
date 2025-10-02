@@ -1,8 +1,8 @@
-Following roadmap and tasks to-do as of 2025-09-22:
+Following roadmap and tasks to-do as of 2025-10-02:
 ### Frontend
 - [ ] General
   - [ ] Rename and split CSS files to be matching specific components.
-  - [ ] Implement role and permission based restrictions over the UI.
+  - [ ] Implement Roles and/or Permission based restrictions over the UI.
 - [ ] Time Management: Work Planner
   - [ ] Planning roster and/or shift schedules. (Excel importable - provided downloadable template)
   - [ ] Planning annual leaves, holidays, comp-offs, sick leaves, etc.
@@ -35,6 +35,4 @@ Following roadmap and tasks to-do as of 2025-09-22:
 - [ ] Blogs
 - [ ] Goals/KPIs/Assessments
 ### Backend
-- [ ] API endpoints and controllers for bulk operations Users, Roles and Teams resources.
 - [ ] Roles and/or Permission based security restrictions to the API endpoints.
-- [ ] Making API endpoint to be more REST-like.
