@@ -1,21 +1,44 @@
 // BACKEND/controller/workPlanner.js
-import { Shift, JobPost, Schedule } from '../models/workPlanner.js';
+import { Shift, JobPost, Schedule, Holiday } from '../models/workPlanner.js';
 import { User } from '../models/users.js';
 import { getUser } from './users.js';
+import { Op } from 'sequelize';
 
-// Schedules
-export async function createSchedule(data) {
-    if (!data.user && await getUser(data.user))
-        throw new Error('Author User is required to create a schedule');
+// Holidays
+export async function getHoliday({id, start_date, end_date} = {}) {
 
-    return await Schedule.create(data);
+    if (!id) {    
+        const where = {};
+
+        if (start_date && end_date)
+            where.date = {[Op.between]: [start_date, end_date]}
+        else if (start_date)
+            where.date = {[Op.gte]: start_date}
+        else if (end_date)
+            where.date = {[Op.lte]: end_date}
+        
+        return await Holiday.findAll({ where }) || {};
+    }
+
+    return await Holiday.findByPk(id) || null;
 }
 
-export async function getSchedule(id) {
+// Schedules
+export async function getSchedule({id} = {}) {
     if (!id)
         return await Schedule.findAll() || [];
 
     return await Schedule.findByPk(id) || null;
+}
+
+export async function createSchedule(data) {
+    if (!data.user && await getUser(data.user))
+        return {
+            success: true,
+            message: 'Author User is required to create a schedule'
+        }
+
+    return await Schedule.create(data);
 }
 
 export async function updateSchedule(id, data) {
