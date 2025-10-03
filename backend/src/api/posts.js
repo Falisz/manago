@@ -2,45 +2,28 @@
 import express from 'express';
 import { createPost, deletePost, getPost, updatePost } from '../controllers/posts.js';
 import checkAuthHandler from '../utils/checkAuth.js';
+import checkResourceIdHandler from "../utils/checkResourceId.js";
+import {hasManagerAccess} from "../controllers/users.js";
 
 // API Handlers
 /**
  * Fetch all posts.
- * @param {express.Request} _req
- * @param {express.Response} res
- */
-const fetchPostsHandler = async (_req, res) => {
-    try {
-        const posts = await getPost();
-        res.json(posts);
-    } catch (err) {
-        console.error('Error fetching posts:', err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Fetch a specific post by ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchPostByIdHandler = async (req, res) => {
+const fetchPostsHandler = async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const { postId } = req.params;
+        const posts = await getPost({ id });
 
-        if (!postId || isNaN(postId)) {
-            return res.status(400).json({ message: 'Invalid post ID.' });
-        }
-
-        const post = await getPost(parseInt(postId));
-
-        if (!post) {
+        if (req.params.id && !posts)
             return res.status(404).json({ message: 'Post not found.' });
-        }
 
-        res.json(post);
+        res.json(posts);
+
     } catch (err) {
-        console.error('Error fetching post:', err);
+        console.error('Error fetching posts:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -53,15 +36,14 @@ const fetchPostByIdHandler = async (req, res) => {
  */
 const createPostHandler = async (req, res) => {
     try {
-        const { boardID, title, content } = req.body;
+        const { channel, title, content } = req.body;
 
-        if (!boardID || !content) {
-            return res.status(400).json({ message: 'Board ID and content are required.' });
-        }
+        if (!channel || !content)
+            return res.status(400).json({ message: 'Channel ID and Content are required.' });
 
         const post = await createPost({
-            boardID: parseInt(boardID),
-            authorID: req.session.user,
+            channel_id: parseInt(channel),
+            author_id: req.session.user,
             title: title || null,
             content
         });
@@ -84,28 +66,26 @@ const updatePostHandler = async (req, res) => {
         const { postId } = req.params;
         const { title, content } = req.body;
 
-        if (!postId || isNaN(postId)) {
+        if (!postId || isNaN(postId))
             return res.status(400).json({ message: 'Invalid post ID.' });
-        }
 
-        if (!content) {
+        if (!content)
             return res.status(400).json({ message: 'Content is required.' });
-        }
 
         const user = req.session.user;
         const post = await getPost(parseInt(postId));
 
-        if (!post) {
+        if (!post)
             return res.status(404).json({ message: 'Post not found.' });
-        }
 
-        if (post.author.id !== user.id) {
+        if (post['author'].id !== user.id)
             return res.status(403).json({ message: 'Forbidden: You are not the author of this post.' });
-        }
+
 
         const updatedPost = await updatePost(parseInt(postId), { title: title || null, content });
 
         res.json({ message: 'Post updated successfully!', post: updatedPost });
+
     } catch (err) {
         console.error('Error updating post:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -120,29 +100,31 @@ const updatePostHandler = async (req, res) => {
  */
 const deletePostHandler = async (req, res) => {
     try {
-        const { postId } = req.params;
+        const { id } = req.params;
 
-        if (!postId || isNaN(postId)) {
+        if (!id || isNaN(id))
             return res.status(400).json({ message: 'Invalid post ID.' });
-        }
+
 
         const user = req.session.user;
-        const post = await getPost(parseInt(postId));
+        const post = await getPost(parseInt(id));
 
-        if (!post) {
+        if (!post)
             return res.status(404).json({ message: 'Post not found.' });
-        }
 
-        if (post.author.id !== user.id && user.role !== 10) {
+        const managerAccess = hasManagerAccess(user.id);
+
+        if (post['Author'].id !== user.id && managerAccess)
             return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });
-        }
 
-        await deletePost(parseInt(postId));
+        await deletePost(parseInt(id));
 
         res.json({ message: 'Post deleted successfully!' });
+
     } catch (err) {
         console.error('Error deleting post:', err);
         res.status(500).json({ message: 'Server error.' });
+
     }
 };
 
@@ -150,9 +132,9 @@ const deletePostHandler = async (req, res) => {
 export const router = express.Router();
 
 router.get('/', checkAuthHandler, fetchPostsHandler);
-router.get('/:postId', checkAuthHandler, fetchPostByIdHandler);
+router.get('/:id', checkAuthHandler, checkResourceIdHandler, fetchPostsHandler);
 router.post('/new', checkAuthHandler, createPostHandler);
-router.put('/:postId', checkAuthHandler, updatePostHandler);
-router.delete('/:postId', checkAuthHandler, deletePostHandler);
+router.put('/:id', checkAuthHandler, checkResourceIdHandler, updatePostHandler);
+router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deletePostHandler);
 
 export default router;
