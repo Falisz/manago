@@ -18,7 +18,13 @@ const authHandler = async (req, res) => {
                 message: 'User authorization failed, no user session found.'
             });
 
-        const user = await getUser({ id: req.session.user, include_configs: true });
+        const user = await getUser({
+            id: req.session.user,
+            roles: false,
+            managers: false,
+            managed_users: false,
+            include_configs: true
+        });
 
         if (!user) {
             await securityLog(req.session.id, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
