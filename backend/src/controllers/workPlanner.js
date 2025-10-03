@@ -38,7 +38,7 @@ export async function createSchedule(data) {
             message: 'Author User is required to create a schedule'
         }
 
-    return await Schedule.create(data);
+    return Schedule.create(data);
 }
 
 export async function updateSchedule(id, data) {
@@ -51,7 +51,7 @@ export async function deleteSchedule(id) {
 
 // Shifts
 export async function createShift(data) {
-    return await Shift.create(data);
+    return Shift.create(data);
 }
 
 // where fields start_time and end_time should have $gte and $lte operators respectively i.e.:
@@ -91,7 +91,7 @@ export async function createJobPost(data) {
     if (!data.name) {
         throw new Error('Job Post name is required');
     }
-    return await JobPost.create(data);
+    return JobPost.create(data);
 }
 
 export async function getJobPost(where) {
