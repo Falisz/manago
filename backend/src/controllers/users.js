@@ -35,25 +35,25 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
             attributes: { exclude: ['password', 'removed'] },
             where, 
             include,
-            order: [['id', 'ASC']]
+            order: [['id', 'ASC']],
+            raw: true
         });
 
         if (!users || users.length === 0)
             return [];
 
         return await Promise.all(users.map(async user => {
-            const userData = user.toJSON();
 
             if (roles)
-                userData.roles = await getUserRoles({userId: user.id});
+                user.roles = await getUserRoles({userId: user.id});
 
             if (managers)
-                userData.managers = await getUserManagers({userId: user.id});
+                user.managers = await getUserManagers({userId: user.id});
 
             if (managed_users)
-                userData.managed_users = await getUserManagers({managerId: user.id});
+                user.managed_users = await getUserManagers({managerId: user.id});
             
-            return userData;
+            return user;
         })) || [];
     }
 
@@ -446,24 +446,23 @@ export async function hasManagerView(id) {
  * @param {boolean} users - optional - whether to include users assigned to the Role(s)
  * @returns {Promise<Object|Object[]|null>} Single Role, array of Roles, or null
  */
-export async function getRole({id, users=true} = {}) {
+export async function getRole({id, users=false} = {}) {
 
     // Logic if no ID is provided - fetch all Roles
     if (!id || isNaN(id)) {
         const roles = await Role.findAll({ 
-            order: [['id', 'ASC']] 
+            order: [['id', 'ASC']],
+            raw: true
         });
 
         if (!roles || roles.length === 0)
             return [];
 
         return await Promise.all(roles.map(async role => {
-                const roleData = role.toJSON();
-
                 if (users)
-                    roleData.users = await getUserRoles({ roleId: role.id });
+                    role.users = await getUserRoles({ roleId: role.id });
 
-                return roleData;
+                return role;
             })
         ) || [];
     }

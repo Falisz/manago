@@ -19,27 +19,25 @@ export async function getTeam({id, all=false, parent_team=null, get_subteams=tru
     if (!id || isNaN(id)) {
         const teams = await Team.findAll({ 
             where: all ? {} : { parent_team}, 
-            order: [['id', 'ASC']] 
+            order: [['id', 'ASC']],
+            raw: true
         });
 
         if (!teams || teams.length === 0)
             return [];
 
         return await Promise.all(teams.map(async team => {
-            let teamData = team.toJSON();
 
             if (get_subteams)
-                teamData.subteams = await getTeam({parent_team: team.id});
+                team.subteams = await getTeam({parent_team: team.id});
             
-            if (get_members)
-                teamData = {
-                    ...teamData,
-                    members: await getTeamUsers(team.id, 1, true),
-                    leaders: await getTeamUsers(team.id, 2),
-                    managers: await getTeamUsers(team.id, 3),
-                }
+            if (get_members) {
+                team.members = await getTeamUsers(team.id, 1, true);
+                team.leaders = await getTeamUsers(team.id, 2, true);
+                team.managers = await getTeamUsers(team.id, 3, true, true);
+            }
             
-            return teamData;
+            return team;
         })) || [];
 
     }
