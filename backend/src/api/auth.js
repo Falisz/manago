@@ -13,26 +13,29 @@ import { authUser, getUser } from '../controllers/users.js';
  */
 const authHandler = async (req, res) => {
     try {
-        if (!req.session || !req.session.user) {
+        if (!req.session || !req.session.user)
             return res.json({
                 message: 'User authorization failed, no user session found.'
             });
-        }
 
-        const user = await getUser({id: req.session.user});
+        const user = await getUser({ id: req.session.user, include_configs: true });
 
-        if (!user || user.removed) {
-            await securityLog(req.session.id, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`, 'Auth Check', 'Failure: No user found or user removed');
+        if (!user) {
+            await securityLog(req.session.id, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
+                'Auth Check', 'Failure: No user found or user removed');
             return res.json({
                 message: 'User authorization failed, no user found.'
             });
         }
 
-        await securityLog(user.id, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`, 'Auth Check', 'Success');
+        await securityLog(user['id'], `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
+            'Auth Check', 'Success');
+
         return res.json({
             message: 'User authorization successful!',
             user,
         });
+
     } catch (err) {
         console.error('Access checkup error:', err);
         return res.status(500).json({
