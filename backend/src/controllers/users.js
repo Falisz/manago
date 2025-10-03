@@ -527,7 +527,7 @@ export async function createRole(data) {
     return {
         success: true, 
         message: 'Role created successfully.', 
-        role: role.toJSON()
+        role: role.id
     };
 }
 

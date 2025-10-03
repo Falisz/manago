@@ -58,16 +58,20 @@ export async function getPost({id} = {}) {
  */
 export async function createPost(data) {
     const channel = await Channel.findOne({ where: { id: data.channel_id } });
-    if (!channel) {
-        return null;
-    }
+    if (!channel)
+        return {
+            success: false,
+            message: 'The provided Channel does not exist.'
+        };
 
     const user = await User.findOne({ where: { id: data.author_id } });
-    if (!user) {
-        return null;
-    }
+    if (!user)
+        return {
+            success: false,
+            message: 'The provided User does not exist.'
+        };
 
-    return await Post.create({
+    const post = await Post.create({
         id: await randomId(Post),
         channel: data.channel_id,
         author: data.author_id,
@@ -77,6 +81,12 @@ export async function createPost(data) {
         isEdited: false,
         updatedAt: null
     });
+
+    return {
+        success: true,
+        message: 'Post created successfully.',
+        post: post.id
+    };
 }
 
 /**

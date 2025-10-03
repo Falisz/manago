@@ -95,7 +95,7 @@ export async function createTeam(data) {
     return {
         success: true,
         message: 'Team created successfully.',
-        team: team.toJSON()
+        team: team.id
     };
 }
 
