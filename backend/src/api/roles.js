@@ -1,6 +1,7 @@
 // BACKEND/api/roles.js
 import express from 'express';
 import checkAuthHandler from '../utils/checkAuth.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     createRole,
     updateRole,
@@ -12,14 +13,16 @@ import {
 // API Handlers
 /**
  * Fetch all Roles or a Role by its ID.
- * @param {express.Request} _req
+ * @param {express.Request} req
  * @param {express.Response} res
  */
 const fetchRolesHandler = async (req, res) => {
+    const { id } = req.params;
+
     try {
         const falsy = [0, '0', 'false', false, 'no', 'not'];
         const roles = await getRole({
-            id: req.params.roleId,
+            id,
             users: falsy.includes(req.query.users) ? false : true
         });
 
@@ -28,7 +31,7 @@ const fetchRolesHandler = async (req, res) => {
 
         res.json(roles);
     } catch (err) {
-        console.error('Error fetching roles:', err);
+        console.error(`Error fetching Role${id ? ' (ID: ' + id + ')' : 's'}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 }
@@ -39,26 +42,20 @@ const fetchRolesHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const fetchUsersWithRoleHandler = async (req, res) => {
+    const { id } = req.params;
+    
     try {
-        const { roleId } = req.params;
-
-        if (!roleId)
-            return res.status(400).json({ message: 'Role ID is missing.' });
-
-        if (isNaN(roleId))
-            return res.status(400).json({ message: 'Invalid Role ID.' });
-        
-        const users = await getUserRoles({roleId});
+        const users = await getUserRoles({ id });
 
         res.json(users);
     } catch (err) {
-        console.error('Error fetching roles:', err);
+        console.error('Error fetching Users with Role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Create a new role.
+ * Create a new Role.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -70,13 +67,12 @@ const createRoleHandler = async (req, res) => {
             description
         });
 
-        if (!result.success) {
+        if (!result.success)
             return res.status(400).json({ message: result.message });
-        }
 
         res.status(201).json({ message: result.message, role: result.role });
     } catch (err) {
-        console.error('Error creating role:', err);
+        console.error('Error creating Role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -87,24 +83,19 @@ const createRoleHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const updateRoleHandler = async (req, res) => {
+    const { id } = req.params;
+    
     try {
-        const { roleId } = req.params;
-
-        if (!roleId || isNaN(roleId)) {
-            return res.status(400).json({ message: 'Invalid role ID.' });
-        }
-
         const { name, description, icon } = req.body;
 
-        const result = await updateRole(parseInt(roleId), {name, description, icon});
+        const result = await updateRole(parseInt(id), {name, description, icon});
 
-        if (!result.success) {
+        if (!result.success)
             return res.status(400).json({ message: result.message });
-        }
 
         res.json({ message: result.message, role: result.role });
     } catch (err) {
-        console.error('Error updating role:', err);
+        console.error('Error updating Role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -115,14 +106,10 @@ const updateRoleHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const deleteRoleHandler = async (req, res) => {
+    const { id } = req.params;
+
     try {
-        const { roleId } = req.params;
-
-        if (!roleId || isNaN(roleId)) {
-            return res.status(400).json({ message: 'Invalid role ID.' });
-        }
-
-        const result = await deleteRole(parseInt(roleId));
+        const result = await deleteRole(parseInt(id));
 
         if (!result.success) {
             return res.status(400).json({ message: result.message });
@@ -130,7 +117,7 @@ const deleteRoleHandler = async (req, res) => {
 
         res.json({ message: result.message });
     } catch (err) {
-        console.error('Error deleting role:', err);
+        console.error('Error deleting Role:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 }
@@ -139,10 +126,10 @@ const deleteRoleHandler = async (req, res) => {
 export const router = express.Router();
 
 router.get('/', checkAuthHandler, fetchRolesHandler);
-router.get('/:roleId', checkAuthHandler, fetchRolesHandler);
-router.get('/:roleId/users', checkAuthHandler, fetchUsersWithRoleHandler);
+router.get('/:id', checkAuthHandler, fetchRolesHandler);
+router.get('/:id/users', checkAuthHandler, checkResourceIdHandler, fetchUsersWithRoleHandler);
 router.post('/', checkAuthHandler, createRoleHandler);
-router.put('/:roleId', checkAuthHandler, updateRoleHandler);
-router.delete('/:roleId', checkAuthHandler, deleteRoleHandler);
+router.put('/:id', checkAuthHandler, checkResourceIdHandler, updateRoleHandler);
+router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deleteRoleHandler);
 
 export default router;
