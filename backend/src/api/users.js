@@ -17,6 +17,8 @@ import {
 /**
  * Fetch Users or a User by their ID.
  * @param {express.Request} req
+ * @param {boolean} req.include_ppi
+ * @param {boolean} req.include_configs
  * @param {express.Response} res
  */
 const fetchUsersHandler = async (req, res) => {
@@ -30,10 +32,12 @@ const fetchUsersHandler = async (req, res) => {
             group: req.query.group,
             roles: !falsy.includes(req.query.roles),
             managers: !falsy.includes(req.query.managers),
-            managed_users: !falsy.includes(req.query.managed_users)
+            managed_users: !falsy.includes(req.query.managed_users),
+            include_ppi: req.include_ppi,
+            include_configs: req.include_configs
         });
 
-        if (req.params.userId && !users)
+        if (req.params.id && !users)
             return res.status(404).json({ message: 'User not found.' });
 
         res.json(users);

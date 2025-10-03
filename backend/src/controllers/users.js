@@ -15,10 +15,19 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
  * @param {boolean} managers - optional - Should Managers be added to the output User
  * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
  * @param {boolean} removed - optional - default false - Should be removed Users included
+ * @param {boolean} include_ppi - optional - Should PPI data be included
+ * @param {boolean} include_configs - optional - Should User configurations be included
  * @returns {Promise<Object|Object[]|null>} User, array of Users, or null
  */
 export async function getUser({id, group, roles=true, managers=true,
-                                  managed_users=true, removed=false} = {}) {
+                                  managed_users=true, removed=false, include_ppi=false,
+                                  include_configs=false} = {}) {
+
+    let exclude = ['password', 'removed'];
+    if (!include_ppi)
+        exclude.push('login', 'email', 'address', 'city', 'postal_code', 'phone', 'country');
+    if (!include_configs)
+        exclude.push('locale', 'theme_mode', 'manager_view_access', 'manager_view_enabled', 'manager_nav_collapsed');
 
     // Logic if no ID is provided - fetch all Users
     if (!id || isNaN(id)) {
@@ -46,7 +55,7 @@ export async function getUser({id, group, roles=true, managers=true,
         }];
 
         const users = await User.findAll({
-            attributes: { exclude: ['password', 'removed'] },
+            attributes: { exclude },
             where, 
             include,
             order: [['id', 'ASC']]
@@ -75,7 +84,7 @@ export async function getUser({id, group, roles=true, managers=true,
 
     // Logic if the ID is provided - fetch a specific User
     const user = await User.findOne({
-        attributes: { exclude: ['password', 'removed'] },
+        attributes: { exclude },
         where: { id, removed },
         raw: true
     });
