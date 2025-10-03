@@ -14,7 +14,7 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
  * @param {boolean} roles - optional - Should roles be added to the output User
  * @returns {Promise<Object|Object[]|null>} User, array of Users or null
  */
-export async function getUser({id, group, roles=true, managers=true, managed_users=false} = {}) {
+export async function getUser({id, group, roles=true, managers=true, managed_users=true} = {}) {
 
     // Logic if no ID is provided - fetch all Users
     if (!id || isNaN(id)) {
