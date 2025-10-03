@@ -15,7 +15,7 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
  * @param {boolean} managers - optional - Should Managers be added to the output User
  * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
  * @param {boolean} removed - optional - default false - Should be removed Users included
- * @returns {Promise<Object|Object[]|null>} User, array of Users or null
+ * @returns {Promise<Object|Object[]|null>} User, array of Users, or null
  */
 export async function getUser({id, group, roles=true, managers=true,
                                   managed_users=true, removed=false} = {}) {
@@ -73,7 +73,7 @@ export async function getUser({id, group, roles=true, managers=true,
         })) || [];
     }
 
-    // Logic if the ID is provided - fetch specific User
+    // Logic if the ID is provided - fetch a specific User
     const user = await User.findOne({
         attributes: { exclude: ['password', 'removed'] },
         where: { id, removed },
@@ -266,7 +266,8 @@ export async function removeUser(id) {
  * Retrieves Managers assigned to a specific userId, or Managed Users assigned to a specific managerId.
  * @param {number} userId - User ID (optional)
  * @param {number} managerId - Manager ID (optional)
- * @returns {Promise<UserManager[]|null>} Array of Managers assigned to the User or Users assigned to the Manager, or null if neither ID is provided.
+ * @returns {Promise<UserManager[]|null>} Array of Managers assigned to the User or Users assigned to the Manager,
+ * or null if neither ID is provided.
  */
 export async function getUserManagers({ userId, managerId }) {
     if (!userId && isNaN(userId) && !managerId && isNaN(managerId)) {
@@ -429,7 +430,7 @@ export async function authUser(login, password) {
 }
 
 /**
- * Checks if given User has Access to Manager View.
+ * Checks if a given User has Access to Manager View.
  * @param {number} id - ID of a User
  * @returns {boolean}
  */
@@ -443,7 +444,7 @@ export async function hasManagerAccess(id) {
 }
 
 /**
- * Checks if given User has Manager View enabled.
+ * Checks if a given User has Manager View enabled.
  * @param {number} id - ID of a User
  * @returns {boolean}
  */
@@ -483,7 +484,7 @@ export async function getRole({id, users=true} = {}) {
         ) || [];
     }
 
-    // Logic if ID is provided - fetch specific Role
+    // Logic if ID is provided - fetch a specific Role
     let role = await Role.findOne({ where: { id }, raw: true });
 
     if (!role)
