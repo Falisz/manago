@@ -35,14 +35,16 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
             attributes: { exclude: ['password', 'removed'] },
             where, 
             include,
-            order: [['id', 'ASC']],
-            raw: true
+            order: [['id', 'ASC']]
         });
 
         if (!users || users.length === 0)
             return [];
 
         return await Promise.all(users.map(async user => {
+            user = user.toJSON();
+
+            delete user.UserRoles;
 
             if (roles)
                 user.roles = await getUserRoles({userId: user.id});
