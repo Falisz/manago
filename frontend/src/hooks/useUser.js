@@ -13,7 +13,7 @@ const useUser = () => {
             setUsersLoading(loading);
             let url = '/users';
             if (type === 'employees' || type === 'managers')
-                url = url + '/' + type;
+                url = url + '?group=' + type;
             const res = await axios.get(url, { withCredentials: true });
             setUsers(res.data);
             return res.data;
@@ -61,17 +61,11 @@ const useUser = () => {
         }
         try {
             setLoading(true);
-            clearNotices();
-            const userData = {
-                ...(await axios.get(`/users/${userId}`, { withCredentials: true })).data,
-                managed_users: (await axios.get(
-                    `/users/managed-users/${userId}`,
-                    { withCredentials: true })
-                ).data,
-            }
-            setUser(userData);
-            userCacheRef.current[userId] = userData;
-            return userData;
+            clearNotices();            
+            const res = await axios.get(`/users/${userId}`, { withCredentials: true });
+            setUser(res.data);
+            userCacheRef.current[userId] = res.data;
+            return res.data;
         } catch (err) {
             if (err.status === 404) {
                 setError('User not found.');
@@ -107,10 +101,10 @@ const useUser = () => {
             }
 
             if (userId) {
-                await axios.put(`/roles/user/${userId}`, { roleIds: formData.roles.filter(role => role !== null) }, { withCredentials: true });
+                await axios.put(`/users/${userId}/roles`, { roleIds: formData.roles.filter(role => role !== null) }, { withCredentials: true });
 
                 if (formData.managers && formData.managers.length > 0 ) {
-                    await axios.put(`/users/managers/${userId}`, { managerIds: formData.managers.filter(role => role !== null) }, { withCredentials: true });
+                    await axios.put(`/users/${userId}/managers`, { managerIds: formData.managers.filter(role => role !== null) }, { withCredentials: true });
                 }
             }
 
