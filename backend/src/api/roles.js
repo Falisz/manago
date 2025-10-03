@@ -26,7 +26,7 @@ const fetchRolesHandler = async (req, res) => {
             users: !falsy.includes(req.query.users)
         });
 
-        if (req.params.roleId && !roles)
+        if (req.params.id && !roles)
             return res.status(404).json({ message: 'Role not found.' });
 
         res.json(roles);

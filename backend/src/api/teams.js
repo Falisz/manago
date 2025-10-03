@@ -25,7 +25,7 @@ const fetchTeamsHandler = async (req, res) => {
             all: req.query.all === 'true'
         });
         
-        if (req.params.teamId && !teams)
+        if (req.params.id && !teams)
             return res.status(404).json({ message: 'Team not found.' });
 
         res.json(teams);
