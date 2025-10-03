@@ -51,17 +51,17 @@ const createTeamHandler = async (req, res) => {
 
         if (manager_ids && manager_ids.length > 0) {
             const teamManagers = manager_ids.filter(id => id !== null);
-            await updateTeamUsers([result.team.id], teamManagers, 3);
+            await updateTeamUsers([result.team], teamManagers, 3);
         }
 
         if (leader_ids && leader_ids.length > 0) {
             const teamLeaders = leader_ids.filter(id => id !== null);
-            await updateTeamUsers([result.team.id], teamLeaders, 2);
+            await updateTeamUsers([result.team], teamLeaders, 2);
         }
 
         res.status(201).json({ message: result.message, team: result.team });
     } catch (err) {
-        console.error('Error creating a team:', err);
+        console.error('Error creating a Team:', err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -77,7 +77,7 @@ const updateTeamHandler = async (req, res) => {
     try {
         const {code_name, name, parent_team, leader_ids, manager_ids} = req.body;
 
-        const result = await updateTeam(parseInt(teamId), {
+        const result = await updateTeam(parseInt(id), {
             code_name,
             name,
             parent_team
@@ -95,7 +95,7 @@ const updateTeamHandler = async (req, res) => {
         res.json({ message: result.message, team: result.team });
 
     } catch (err) {
-        console.error('Error updating Team:', err);
+        console.error(`Error updating Team (ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({message: 'Server error.'});
 
     }
@@ -126,7 +126,7 @@ const updateTeamAssignmentsHandler = async(req, res) => {
         res.json({message: result.message});
 
     } catch (err) {
-        console.error('Error updating Team assignments:', err);
+        console.error('Error updating Team assignments:', err, 'Provided data: ', req.body);
         res.status(500).json({message: 'Server error.'});
     }
 };
@@ -147,7 +147,7 @@ const deleteTeamHandler = async (req, res) => {
 
         res.json({ message: 'Team deleted successfully!' });
     } catch (err) {
-        console.error('Error deleting team:', err);
+        console.error(`Error deleting Team (ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -166,7 +166,7 @@ const bulkDeleteTeamsHandler = async (req, res) => {
         res.status(400).json({ message: 'Bulk-delete not implemented yet!' });
 
     } catch (err) {
-        console.error('Error removing user:', err);
+        console.error(`Error removing Teams (${req.body.teamIds}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
