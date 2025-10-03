@@ -12,19 +12,17 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
  * @param {number|string} id - optional - User ID to fetch a specific User or User group type.
  * @param {boolean} managers - optional - Should managers be added to the output User
  * @param {boolean} roles - optional - Should roles be added to the output User
+ * @param {boolean} removed - optional - default false - Should be removed Users included 
  * @returns {Promise<Object|Object[]|null>} User, array of Users or null
  */
-export async function getUser({id, group, roles=true, managers=true, managed_users=true} = {}) {
+export async function getUser({id, group, roles=true, managers=true, managed_users=true, removed=false} = {}) {
 
     // Logic if no ID is provided - fetch all Users
     if (!id || isNaN(id)) {
-        const where = { removed: false };
+        const where = { removed };
         let include = [];
 
-        if (group === 'all') {
-            delete where.removed;
-            
-        } else if (group === 'employees') {
+        if (group === 'employees') {
             include = [ {model: UserRole, required: true, include: [ { model: Role, where: { name: ['Employee', 'Team Leader', 'Specialist'] } } ]} ];
 
         } else if (group === 'managers') {
@@ -62,7 +60,7 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
     // Logic if the ID is provided - fetch specific User
     const user = await User.findOne({
         attributes: { exclude: ['password', 'removed'] },
-        where: { id, removed: false },
+        where: { id, removed },
         raw: true
     });
 
@@ -448,7 +446,7 @@ export async function hasManagerView(id) {
  * @param {boolean} users - optional - whether to include users assigned to the Role(s)
  * @returns {Promise<Object|Object[]|null>} Single Role, array of Roles, or null
  */
-export async function getRole({id, users=false} = {}) {
+export async function getRole({id, users=true} = {}) {
 
     // Logic if no ID is provided - fetch all Roles
     if (!id || isNaN(id)) {
