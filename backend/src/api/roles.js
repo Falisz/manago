@@ -23,13 +23,14 @@ const fetchRolesHandler = async (req, res) => {
         const falsy = [0, '0', 'false', false, 'no', 'not'];
         const roles = await getRole({
             id,
-            users: falsy.includes(req.query.users) ? false : true
+            users: !falsy.includes(req.query.users)
         });
 
         if (req.params.roleId && !roles)
             return res.status(404).json({ message: 'Role not found.' });
 
         res.json(roles);
+
     } catch (err) {
         console.error(`Error fetching Role${id ? ' (ID: ' + id + ')' : 's'}:`, err);
         res.status(500).json({ message: 'Server error.' });
@@ -48,6 +49,7 @@ const fetchUsersWithRoleHandler = async (req, res) => {
         const users = await getUserRoles({ id });
 
         res.json(users);
+
     } catch (err) {
         console.error('Error fetching Users with Role:', err);
         res.status(500).json({ message: 'Server error.' });
@@ -71,8 +73,9 @@ const createRoleHandler = async (req, res) => {
             return res.status(400).json({ message: result.message });
 
         res.status(201).json({ message: result.message, role: result.role });
+
     } catch (err) {
-        console.error('Error creating Role:', err);
+        console.error('Error creating a Role:', err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -94,8 +97,9 @@ const updateRoleHandler = async (req, res) => {
             return res.status(400).json({ message: result.message });
 
         res.json({ message: result.message, role: result.role });
+
     } catch (err) {
-        console.error('Error updating Role:', err);
+        console.error(`Error updating Role (ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -116,8 +120,9 @@ const deleteRoleHandler = async (req, res) => {
         }
 
         res.json({ message: result.message });
+
     } catch (err) {
-        console.error('Error deleting Role:', err);
+        console.error(`Error deleting Role (ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 }
