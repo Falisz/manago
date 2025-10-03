@@ -10,24 +10,40 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.
  * @param {number|string} id - optional - User ID to fetch a specific User or User group type.
- * @param {boolean} managers - optional - Should managers be added to the output User
- * @param {boolean} roles - optional - Should roles be added to the output User
- * @param {boolean} removed - optional - default false - Should be removed Users included 
+ * @param {string} group - optional - Kind of group users to be fetched - currently available: employees, managers
+ * @param {boolean} roles - optional - Should Roles be added to the output User
+ * @param {boolean} managers - optional - Should Managers be added to the output User
+ * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
+ * @param {boolean} removed - optional - default false - Should be removed Users included
  * @returns {Promise<Object|Object[]|null>} User, array of Users or null
  */
-export async function getUser({id, group, roles=true, managers=true, managed_users=true, removed=false} = {}) {
+export async function getUser({id, group, roles=true, managers=true,
+                                  managed_users=true, removed=false} = {}) {
 
     // Logic if no ID is provided - fetch all Users
     if (!id || isNaN(id)) {
         const where = { removed };
         let include = [];
 
-        if (group === 'employees') {
-            include = [ {model: UserRole, required: true, include: [ { model: Role, where: { name: ['Employee', 'Team Leader', 'Specialist'] } } ]} ];
+        if (group === 'employees')
+            include = [{
+                model: UserRole,
+                required: true,
+                include: [{
+                    model: Role,
+                    where: { name: ['Employee', 'Team Leader', 'Specialist'] }
+                }]
+        }];
 
-        } else if (group === 'managers') {
-            include = [ { model: UserRole, required: true, include: [ { model: Role, where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] } } ]} ];
-        }
+        else if (group === 'managers')
+            include = [{
+                model: UserRole,
+                required: true,
+                include: [{
+                    model: Role,
+                    where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] }
+                }]
+        }];
 
         const users = await User.findAll({
             attributes: { exclude: ['password', 'removed'] },
@@ -42,7 +58,7 @@ export async function getUser({id, group, roles=true, managers=true, managed_use
         return await Promise.all(users.map(async user => {
             user = user.toJSON();
 
-            delete user.UserRoles;
+            delete user['UserRoles'];
 
             if (roles)
                 user.roles = await getUserRoles({userId: user.id});
@@ -138,7 +154,7 @@ export async function createUser(data) {
     return {
         success: true, 
         message: 'User created successfully.', 
-        user: user.toJSON()
+        user: user.id
     };
 }
 
@@ -165,14 +181,14 @@ export async function updateUser(id, data) {
         };
 
     if (data.login !== undefined && data.login !== user.login && 
-        await User.findOne({ where: { login: data.login, id: { [Op.ne]: userId } } }))
+        await User.findOne({ where: { login: data.login, id: { [Op.ne]: id } } }))
             return { 
                 success: false, 
                 message: 'Login must be unique.' 
             };
             
     if (data.email && data.email !== user.email && 
-        await User.findOne({ where: { email: data.email, id: { [Op.ne]: userId } } })) 
+        await User.findOne({ where: { email: data.email, id: { [Op.ne]: id } } }))
             return { 
                 success: false, 
                 message: 'Email must be unique.' 
@@ -242,7 +258,7 @@ export async function removeUser(id) {
         };
     } catch (error) {
         await transaction.rollback();
-        return { success: false, message: `Error removing User(s): ${error.message}` };
+        throw error;
     }
 }
 
@@ -360,9 +376,9 @@ export async function updateUserManagers(userIds, managerIds, mode = 'add') {
             };
         }
 
-    } catch (err) {
+    } catch (error) {
         await transaction.rollback();
-        return { success: false, message: `Failed to ${mode} managers: ${err.message}` };
+        throw error;
     }
 }
 
@@ -590,10 +606,7 @@ export async function deleteRole(id) {
 
     } catch (error) {
         await transaction.rollback();
-        return {
-            success: false,
-            message: `Failed to delete Role${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${error.message}`
-        };
+        throw error;
     }
 }
 
@@ -710,8 +723,8 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
             };
         }
 
-    } catch (err) {
+    } catch (error) {
         await transaction.rollback();
-        return { success: false, message: `Failed to ${mode} managers: ${err.message}` };
+        throw error;
     }
 }
