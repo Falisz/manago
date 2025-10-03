@@ -12,9 +12,10 @@ export async function getPost({id} = {}) {
 
     /**
      * Cleans up a Post object by merging associations and removing redundant fields.
-     * @param {RawPostData} post - Raw Post data from Sequelize query
-     * @params {User} post.Author - Associated author user
-     * @params {Channel} post.Channel - Associated channel
+     * @param {Object} post - Raw Post data from Sequelize query
+     * @param {User} post.Author - Associated author user
+     * @param {Channel} post.Channel - Associated channel
+     * @param {function} post.toJSON - function to convert a Sequelize object into simple one
      * @returns {Object | Promise<Object[]|null>} Cleaned Post object
      */
     function postCleanUp(post) {
@@ -40,7 +41,7 @@ export async function getPost({id} = {}) {
         return posts.map(post => (postCleanUp(post)));
     }
     
-    // Logic if ID is provided - fetch specific Post
+    // Logic if ID is provided - fetch a specific Post
     let post = await Post.findOne({ where: { id }, include });
 
     return postCleanUp(post);
