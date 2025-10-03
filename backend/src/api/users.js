@@ -7,19 +7,31 @@ import {
     updateUser,
     removeUser,
     getUserManagers,
-    updateUserManagers,
-    updateUserRoles
+    getUserRoles,
+    updateUserRoles,
+    updateUserManagers
 } from '../controllers/users.js';
 
 // API Handlers
 /**
- * Fetch all users.
- * @param {express.Request} _req
+ * Fetch Users or a User by their ID.
+ * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchUsersHandler = async (_req, res) => {
+const fetchUsersHandler = async (req, res) => {
     try {
-        const users = await getUser();
+        const falsy = [0, '0', 'false', false, 'no', 'not'];
+        const users = await getUser({ 
+            id: req.params.userId,
+            group: req.query.group,
+            roles: falsy.includes(req.query.roles) ? false : true,
+            managers: falsy.includes(req.query.managers) ? false : true,
+            managed_users: falsy.includes(req.query.managed_users) ? false : true 
+        });
+
+        if (req.params.userId && !users)
+            return res.status(404).json({ message: 'User not found.' });
+
         res.json(users);
     } catch (err) {
         console.error('Error fetching users:', err);
@@ -28,31 +40,25 @@ const fetchUsersHandler = async (_req, res) => {
 };
 
 /**
- * Fetch all managers.
- * @param {express.Request} _req
+ * Fetch Roles for a specific User ID.
+ * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchManagersHandler = async (_req, res) => {
+const fetchUserRolesHandler = async (req, res) => {
     try {
-        const managers = await getUser({group: 'managers', managed_users: true});
+        const { userId } = req.params;
+
+        if (!userId)
+            return res.status(400).json({ message: 'User ID is missing.' });
+
+        if (isNaN(userId))
+            return res.status(400).json({ message: 'Invalid user ID.' });
+
+        const managers = await getUserRoles({ userId });
+
         res.json(managers);
     } catch (err) {
         console.error('Error fetching managers:', err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Fetch all employees.
- * @param {express.Request} _req
- * @param {express.Response} res
- */
-const fetchEmployeesHandler = async (_req, res) => {
-    try {
-        const employees = await getUser({group: 'employees'});
-        res.json(employees);
-    } catch (err) {
-        console.error('Error fetching employees:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -66,9 +72,11 @@ const fetchUserManagersHandler = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        if (!userId || isNaN(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID.' });
-        }
+        if (!userId)
+            return res.status(400).json({ message: 'User ID is missing.' });
+
+        if (isNaN(userId))
+            return res.status(400).json({ message: 'Invalid User ID.' });
 
         const managers = await getUserManagers({ userId });
 
@@ -86,42 +94,19 @@ const fetchUserManagersHandler = async (req, res) => {
  */
 const fetchManagedUsersHandler = async (req, res) => {
     try {
-        const { managerId } = req.params;
+        const { userId } = req.params;
 
-        if (!managerId || isNaN(managerId)) {
-            return res.status(400).json({ message: 'Invalid manager ID.' });
-        }
+        if (!userId)
+            return res.status(400).json({ message: 'Manager ID is missing.' });
 
-        const managedUsers = await getUserManagers({ managerId });
+        if (isNaN(userId))
+            return res.status(400).json({ message: 'Invalid Manager ID.' });
+
+        const managedUsers = await getUserManagers({ managerId: userId });
+        
         res.json(managedUsers);
     } catch (err) {
         console.error('Error fetching managed users:', err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Fetch a specific user by ID.
- * @param {express.Request} req
- * @param {express.Response} res
- */
-const fetchUserByIdHandler = async (req, res) => {
-    try {
-        const { userId } = req.params;
-
-        if (!userId || isNaN(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID.' });
-        }
-
-        const user = await getUser({id: userId});
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found.' });
-        }
-
-        res.json(user);
-    } catch (err) {
-        console.error('Error fetching user:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -146,9 +131,8 @@ const createNewUserHandler = async (req, res) => {
             manager_view_access
         });
 
-        if (!result.success) {
+        if (!result.success)
             return res.status(400).json({ message: result.message });
-        }
 
         const user = await getUser({id: result.user.id});
         res.status(201).json({ message: result.message, user: user });
@@ -171,7 +155,7 @@ const checkUserIdHandler = async (req, res) => {
             return res.status(400).json({ message: 'Invalid user ID.' });
         }
 
-        const user = await getUser({id: userId});
+        const user = await getUser({id: userId, removed: true});
 
         const isAvailable = !user;
 
@@ -220,7 +204,7 @@ const updateAssignmentsHandler = async (req, res) => {
  */
 const updateUserHandler = async (req, res) => {
     try {
-        const { D } = req.params;
+        const { userId } = req.params;
 
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ message: 'Invalid user ID.' });
@@ -253,7 +237,36 @@ const updateUserHandler = async (req, res) => {
 };
 
 /**
- * Update managers for a specific user.
+ * Update Roles for a specific User.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateUserRolesHandler = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { roleIds } = req.body;
+
+        if (!userId)
+            return res.status(400).json({ message: 'User ID is missing.' });
+
+        if (isNaN(userId))
+            return res.status(400).json({ message: 'Invalid User ID.' });
+
+        const result = await updateUserRoles([parseInt(userId)], roleIds);
+
+        if (!result.success) {
+            return res.status(result.status || 400).json({ message: result.message });
+        }
+
+        res.json({ message: result.message });
+    } catch (err) {
+        console.error('Error updating user roles:', err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+/**
+ * Update Managers for a specific User.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -333,16 +346,16 @@ const bulkDeleteUsersHandler = async (req, res) => {
 export const router = express.Router();
 
 router.get('/', checkAuthHandler, fetchUsersHandler);
-router.get('/managers', checkAuthHandler, fetchManagersHandler);
-router.get('/employees', checkAuthHandler, fetchEmployeesHandler);
-router.get('/managers/:userId', checkAuthHandler, fetchUserManagersHandler);
-router.get('/managed-users/:managerId', checkAuthHandler, fetchManagedUsersHandler);
-router.get('/:userId', checkAuthHandler, fetchUserByIdHandler);
+router.get('/:userId', checkAuthHandler, fetchUsersHandler);
+router.get('/:userId/roles', checkAuthHandler, fetchUserRolesHandler);
+router.get('/:userId/managers', checkAuthHandler, fetchUserManagersHandler);
+router.get('/:userId/managed-users', checkAuthHandler, fetchManagedUsersHandler);
 router.get('/check-id/:userId', checkAuthHandler, checkUserIdHandler);
 router.post('/', checkAuthHandler, createNewUserHandler);
 router.post('/assignments', checkAuthHandler, updateAssignmentsHandler);
 router.put('/:userId', checkAuthHandler, updateUserHandler);
-router.put('/managers/:userId', checkAuthHandler, updateUserManagersHandler);
+router.put('/:userId/roles', checkAuthHandler, updateUserRolesHandler);
+router.put('/:userId/managers', checkAuthHandler, updateUserManagersHandler);
 router.delete('/:userId', checkAuthHandler, deleteUserHandler);
 router.delete('/', checkAuthHandler, bulkDeleteUsersHandler);
 
