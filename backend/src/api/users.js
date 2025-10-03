@@ -24,18 +24,20 @@ const fetchUsersHandler = async (req, res) => {
 
     try {
         const falsy = [0, '0', 'false', false, 'no', 'not'];
+
         const users = await getUser({ 
             id,
             group: req.query.group,
-            roles: falsy.includes(req.query.roles) ? false : true,
-            managers: falsy.includes(req.query.managers) ? false : true,
-            managed_users: falsy.includes(req.query.managed_users) ? false : true 
+            roles: !falsy.includes(req.query.roles),
+            managers: !falsy.includes(req.query.managers),
+            managed_users: !falsy.includes(req.query.managed_users)
         });
 
         if (req.params.userId && !users)
             return res.status(404).json({ message: 'User not found.' });
 
         res.json(users);
+
     } catch (err) {
         console.error(`Error fetching User${id ? ' (ID: ' + id + ')' : 's'}:`, err);
         res.status(500).json({ message: 'Server error.' });
@@ -43,7 +45,7 @@ const fetchUsersHandler = async (req, res) => {
 };
 
 /**
- * Fetch Roles for a specific User ID.
+ * Fetch Roles for a specific User.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -54,14 +56,15 @@ const fetchUserRolesHandler = async (req, res) => {
         const managers = await getUserRoles({ userId: id });
 
         res.json(managers);
+
     } catch (err) {
-        console.error('Error fetching User Roles:', err);
+        console.error(`Error fetching User Roles (User ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Fetch managers for a specific user.
+ * Fetch Managers for a specific User.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -72,8 +75,9 @@ const fetchUserManagersHandler = async (req, res) => {
         const managers = await getUserManagers({ userId: id });
 
         res.json(managers);
+
     } catch (err) {
-        console.error('Error fetching User Managers:', err);
+        console.error(`Error fetching User Managers (User ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -90,8 +94,9 @@ const fetchManagedUsersHandler = async (req, res) => {
         const managedUsers = await getUserManagers({ managerId: id });
         
         res.json(managedUsers);
+
     } catch (err) {
-        console.error('Error fetching Managed Users:', err);
+        console.error(`Error fetching Managed Users (Manager ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -119,10 +124,12 @@ const createUserHandler = async (req, res) => {
         if (!result.success)
             return res.status(400).json({ message: result.message });
 
-        const user = await getUser({id: result.user.id});
-        res.status(201).json({ message: result.message, user: user });
+        const user = await getUser({id: result.user});
+
+        res.status(201).json({ message: result.message, user });
+
     } catch (err) {
-        console.error('Error creating User:', err);
+        console.error('Error creating User:', err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -155,7 +162,8 @@ const updateUserHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { login, email, password, first_name, last_name, active, manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
+        const { login, email, password, first_name, last_name, active,
+            manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
 
         const result = await updateUser(parseInt(id), {
             login,
@@ -175,7 +183,7 @@ const updateUserHandler = async (req, res) => {
         res.json({ message: result.message, user: result.user });
 
     } catch (err) {
-        console.error('Error updating User:', err);
+        console.error(`Error updating User (ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -209,7 +217,7 @@ const updateAssignmentsHandler = async (req, res) => {
         res.json({message: result.message});
 
     } catch (err) {
-        console.error('Error updating User assignments:', err);
+        console.error('Error updating User assignments:', err, 'Provided data: ', req.body);
         res.status(500).json({message: 'Server error.'});
     }
 };
@@ -232,7 +240,7 @@ const updateUserRolesHandler = async (req, res) => {
 
         res.json({ message: result.message });
     } catch (err) {
-        console.error('Error updating User Roles:', err);
+        console.error(`Error updating User Roles (User ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -255,13 +263,13 @@ const updateUserManagersHandler = async (req, res) => {
 
         res.json({ message: result.message });
     } catch (err) {
-        console.error('Error updating User Managers:', err);
+        console.error(`Error updating User Managers (User ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Delete a specific user by ID.
+ * Delete a specific User by ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -277,13 +285,13 @@ const deleteUserHandler = async (req, res) => {
         res.json({ message: 'User removed successfully!' });
 
     } catch (err) {
-        console.error('Error removing User:', err);
+        console.error(`Error removing User (ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Bulk delete users by IDs.
+ * Bulk delete Users by IDs.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -302,7 +310,7 @@ const bulkDeleteUsersHandler = async (req, res) => {
         res.json({ message: 'User removed successfully!' });
 
     } catch (err) {
-        console.error('Error removing User:', err);
+        console.error(`Error removing Users (${req.body.userIds}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
