@@ -277,6 +277,7 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
         id: teamUser['User'].id,
         first_name: teamUser['User'].first_name,
         last_name: teamUser['User'].last_name,
+        role: teamUser.role,
         team: { id: teamUser['Team'].id, name: teamUser['Team'].name },
     }));
 

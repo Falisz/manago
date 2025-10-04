@@ -6,7 +6,8 @@ import {
     createTeam,
     updateTeam,
     deleteTeam,
-    updateTeamUsers
+    updateTeamUsers,
+    getTeamUsers
 } from '../controllers/teams.js';
 
 // API Handlers
@@ -30,6 +31,31 @@ const fetchTeamsHandler = async (req, res) => {
         res.json(teams);
     } catch (err) {
         console.error(`Error fetching Team${id ? ' (ID: ' + id + ')' : 's'}:`, err);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+/**
+ * Fetch Users for a specific team.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const fetchTeamUsersHandler = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const users = await getTeamUsers(
+            parseInt(id),
+            req.query.role != null ? parseInt(req.query.role) : null,
+            req.query.include_subteams === 'true',
+            req.query.include_parent_teams === 'true'
+        );
+
+
+        res.json(users);
+
+    } catch (err) {
+        console.error('Error fetching Team Users:', err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -188,6 +214,7 @@ export const router = express.Router();
 
 router.get('/', fetchTeamsHandler);
 router.get('/:id', fetchTeamsHandler);
+router.get('/:id/users', checkResourceIdHandler, fetchTeamUsersHandler);
 router.post('/', createTeamHandler);
 router.post('/assignments', updateAssignmentsHandler);
 router.put('/:id', checkResourceIdHandler, updateTeamHandler);
