@@ -49,7 +49,7 @@ const UsersIndexPage = ({content='users'}) => {
 
     const tableStructure = useMemo(() => ({
         pageHeader: {
-            title: content.charAt(0).toUpperCase() + content.slice(1) + ' of Zyrah',
+            title: content.charAt(0).toUpperCase() + content.slice(1),
             itemName: content.charAt(0).toUpperCase() + content.slice(1,-1),
             allElements: new Set(users?.map(team => users.id)),
             newItemModal: content === 'employees' ? 'employeeNew' :

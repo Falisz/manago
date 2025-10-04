@@ -68,7 +68,7 @@ const TeamsIndex = () => {
 
     const tableStructure = useMemo(() => ({
         pageHeader: {
-            title: 'Teams in Zyrah',
+            title: 'Teams',
             itemName: 'Team',
             allElements: new Set(teams?.map(team => team.id)),
             newItemModal: 'teamNew'
