@@ -29,7 +29,7 @@ export const UserRoleAssignment = ({user}) => {
             }
         },
         onSubmit: {
-            onSave: (data) => saveUserAssignment('role', data, [user.id]),
+            onSave: (data) => saveUserAssignment('role', data['roles'], [user.id]),
             refreshTriggers: [['users', true], ['user', user.id]]
         }
     }), [user, roles, saveUserAssignment]);
@@ -66,7 +66,7 @@ export const UserManagerAssignment = ({user}) => {
             }
         },
         onSubmit: {
-            onSave: (data) => saveUserAssignment('manager', data, [user.id]),
+            onSave: (data) => saveUserAssignment('manager', data['managers'], [user.id]),
             refreshTriggers: [['users', true], ['user', user.id]]
         }
     }), [user, managers, saveUserAssignment]);
