@@ -10,10 +10,7 @@ export const Schedule = sequelize.define('Schedule', {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: User, key: 'id' }
-    },
-    start_date: DataTypes.DATEONLY,
-    end_date: DataTypes.DATEONLY,
-    is_published: DataTypes.BOOLEAN
+    }
 }, {
     tableName: 'schedules',
     timestamps: false,
@@ -278,15 +275,20 @@ export const Disposition = sequelize.define('Disposition', {
 //
 //
 // User <-> Shift
-User.hasMany(Shift, { foreignKey: 'user', sourceKey: 'id', as: 'Shifts' });
-Shift.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+User.hasMany(Shift, { foreignKey: 'user', sourceKey: 'id' });
+Shift.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 //
 // JobPost <-> Shift
 JobPost.hasMany(Shift, { foreignKey: 'job_post', sourceKey: 'id' });
 Shift.belongsTo(JobPost, { foreignKey: 'job_post', targetKey: 'id' });
+//
+// JobPost <-> Shift
+Schedule.hasMany(Shift, { foreignKey: 'schedule', sourceKey: 'id' });
+Shift.belongsTo(Schedule, { foreignKey: 'schedule', targetKey: 'id' });
+//
 // LeavePool <-> LeavePool (self-referential parent-child)
-LeavePool.hasMany(LeavePool, { foreignKey: 'parent_pool', as: 'ChildPools' });
-LeavePool.belongsTo(LeavePool, { foreignKey: 'parent_pool', as: 'ParentPool' });
+LeavePool.hasMany(LeavePool, { foreignKey: 'parent_pool' });
+LeavePool.belongsTo(LeavePool, { foreignKey: 'parent_pool' });
 //
 // LeavePool <-> LeaveType
 LeavePool.hasMany(LeaveType, { foreignKey: 'leave_pool', sourceKey: 'id' });
@@ -297,8 +299,8 @@ LeaveType.hasMany(Leave, { foreignKey: 'type', sourceKey: 'id' });
 Leave.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
 //
 // User <-> Leave (user)
-User.hasMany(Leave, { foreignKey: 'user', sourceKey: 'id', as: 'LeavesRequested' });
-Leave.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'RequestingUser' });
+User.hasMany(Leave, { foreignKey: 'user', sourceKey: 'id' });
+Leave.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 //
 // User <-> Leave (approver)
 User.hasMany(Leave, { foreignKey: 'approver', sourceKey: 'id', as: 'LeavesApproved' });

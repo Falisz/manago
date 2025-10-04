@@ -183,26 +183,48 @@ export async function createShift(data) {
 
 // where fields start_time and end_time should have $gte and $lte operators respectively i.e.:
 // { start_time: { $gte: '2023-10-01T00:00:00Z' }, end_time: { $lte: '2023-10-31T23:59:59Z' }, job_post: 2, schedule: 5, user: 10 }
-export async function getShift(where) {
-    const validId = where.id !== null && ( (typeof where.id === 'number' && !isNaN(where.id)) ||
-    (Array.isArray(where.id) && where.id.every(x => typeof x === 'number' && !isNaN(x))) );
+export async function getShift({id, user, job_post, schedule, start_time, end_time} = {}) {
 
-    if (!validId) {
-        delete where.id;
-    }
+    const where = {};
 
-    const include = [];
-    
-    if (where.user)
-        include.push(User);
+    if (isNumberOrNumberArray(id))
+        where.id = id;
 
-    if (where.job_post)
-        include.push(JobPost);
+    if (isNumberOrNumberArray(user))
+        where.user = user;
 
-    if (where.schedule)
-        include.push(Schedule);
-        
-    return await Shift.findAll({ where, include }) || [];
+    if (isNumberOrNumberArray(job_post))
+        where.job_post = job_post;
+
+    if (isNumberOrNumberArray(schedule))
+        where.schedule = schedule;
+
+    if (start_time)
+        where.start_time = {[Op.gte]: start_time};
+
+    if (end_time)
+        where.end_time = {[Op.lte]: end_time};
+
+    const include = [{model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule];
+
+    const shifts = await Shift.findAll({ where, include });
+
+    if (!shifts || shifts.length === 0)
+        return [];
+
+    return await Promise.all(shifts.map(async shift => {
+        const rawData = shift.toJSON();
+
+        rawData.user = shift['User'].toJSON();
+        rawData.job_post = shift['JobPost']?.toJSON();
+        rawData.schedule = shift['Schedule']?.toJSON();
+
+        delete rawData['User'];
+        delete rawData['JobPost'];
+        delete rawData['Schedule'];
+
+        return rawData;
+    }));
 }
 
 export async function updateShift(id, data) {
