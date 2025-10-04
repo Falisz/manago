@@ -54,7 +54,7 @@ export async function getPost({id} = {}) {
  * @param {number} data.author_id - Author ID
  * @param {string|null} data.title - Post title
  * @param {string} data.content - Post content
- * @returns {Promise<Object|null>} Created Post or null if invalid
+ * @returns {Promise<{success: boolean, message: string, id?: number}>} Created Post or null if invalid
  */
 export async function createPost(data) {
     const channel = await Channel.findOne({ where: { id: data.channel_id } });
@@ -85,7 +85,7 @@ export async function createPost(data) {
     return {
         success: true,
         message: 'Post created successfully.',
-        post: post.id
+        id: post.id
     };
 }
 
@@ -95,29 +95,44 @@ export async function createPost(data) {
  * @param {Object} data - Post data to update
  * @param {string|null} data.title - Post title
  * @param {string} data.content - Post content
- * @returns {Promise<Object|null>} Updated Post or null if not found
+ * @returns {Promise<{success: boolean, message: string}>} Updated Post or null if not found
  */
 export async function updatePost(id, data) {
     const post = await Post.findOne({ where: { id } });
 
     if (!post) {
-        return null;
+        return {
+            success: false,
+            message: 'Post not found.'
+        };
     }
 
-    return await post.update(data);
+    await post.update(data);
+
+    return {
+        success: true,
+        message: 'Post updated successfully.'
+    }
 }
 
 /**
  * Deletes a Post.
  * @param {number} id - Post ID
- * @returns {Promise<{valid: boolean, status?: number, message?: string}|Object>} Success object or error
+ * @returns {Promise<{success: boolean, message: string}>} Success object or error
  */
 export async function deletePost(id) {
     const post = await Post.findOne({ where: { id } });
 
-    if (!post) {
-        return { valid: false, status: 404, message: 'Post not found.' };
-    }
+    if (!post)
+        return {
+            success: false,
+            message: 'Post not found.'
+        };
 
-    return await post.destroy();
+    await post.destroy();
+
+    return {
+        success: true,
+        message: 'Post deleted successfully.'
+    }
 }

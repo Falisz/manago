@@ -112,25 +112,14 @@ const fetchManagedUsersHandler = async (req, res) => {
  */
 const createUserHandler = async (req, res) => {
     try {
-        const { login, email, password, first_name, last_name, role, active, manager_view_access } = req.body;
+        const { success, message, id } = await createUser(req.body);
 
-        const result = await createUser({
-            login,
-            email,
-            password,
-            first_name,
-            last_name,
-            role,
-            active,
-            manager_view_access
-        });
+        if (!success)
+            return res.status(400).json({ message });
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        const user = await getUser({id});
 
-        const user = await getUser({id: result.user});
-
-        res.status(201).json({ message: result.message, user });
+        res.status(201).json({ message, user });
 
     } catch (err) {
         console.error('Error creating User:', err, 'Provided data: ', req.body);
@@ -166,25 +155,14 @@ const updateUserHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { login, email, password, first_name, last_name, active,
-            manager_view_access, manager_view_enabled, manager_nav_collapsed } = req.body;
+        const { success, message } = await updateUser(parseInt(id), req.body);
 
-        const result = await updateUser(parseInt(id), {
-            login,
-            email,
-            password,
-            first_name,
-            last_name,
-            active,
-            manager_view_access,
-            manager_view_enabled,
-            manager_nav_collapsed
-        });
+        if (!success)
+            return res.status(400).json({ message });
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        const user = await getUser({id});
 
-        res.json({ message: result.message, user: result.user });
+        res.json({ message, user });
 
     } catch (err) {
         console.error(`Error updating User (ID: ${id}):`, err, 'Provided data: ', req.body);
@@ -204,21 +182,21 @@ const updateAssignmentsHandler = async (req, res) => {
         if (!userIds || !userIds.length)
             return res.status(400).json({ message: 'User IDs are missing.' });
 
-        let result;
+        let success, message;
 
         if (resource === 'manager')
-            result = await updateUserManagers(userIds, resourceIds, mode);
+            ({ success, message } = await updateUserManagers(userIds, resourceIds, mode));
 
         else if (resource === 'role')
-            result = await updateUserRoles(userIds, resourceIds, mode);
+            ({ success, message } = await updateUserRoles(userIds, resourceIds, mode));
 
         else 
             return res.status(400).json({message: 'Unknown Resource type provided.'});
 
-        if (!result.success)
-            return res.status(result.status || 400).json({message: result.message});
+        if (!success)
+            return res.status(400).json({message});
 
-        res.json({message: result.message});
+        res.json({message});
 
     } catch (err) {
         console.error('Error updating User assignments:', err, 'Provided data: ', req.body);
@@ -237,12 +215,12 @@ const updateUserRolesHandler = async (req, res) => {
     try {
         const { roleIds } = req.body;
 
-        const result = await updateUserRoles([parseInt(id)], roleIds, 'set');
+        const { success, message} = await updateUserRoles([parseInt(id)], roleIds, 'set');
 
-        if (!result.success)
-            return res.status(result.status || 400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
-        res.json({ message: result.message });
+        res.json({ message });
     } catch (err) {
         console.error(`Error updating User Roles (User ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
@@ -260,12 +238,12 @@ const updateUserManagersHandler = async (req, res) => {
     try {
         const { managerIds } = req.body;
 
-        const result = await updateUserManagers([parseInt(id)], managerIds, 'set');
+        const { success, message } = await updateUserManagers([parseInt(id)], managerIds, 'set');
 
-        if (!result.success)
-            return res.status(result.status || 400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
-        res.json({ message: result.message });
+        res.json({ message });
     } catch (err) {
         console.error(`Error updating User Managers (User ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
@@ -281,12 +259,12 @@ const deleteUserHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const result = await removeUser(parseInt(id));
+        const { success, message, deletedCount } = await removeUser(parseInt(id));
 
-        if (!result.success)
-            return res.status( 400).json({ message: result.message });
+        if (!success)
+            return res.status( 400).json({ message });
 
-        res.json({ message: 'User removed successfully!' });
+        res.json({ message, deletedCount });
 
     } catch (err) {
         console.error(`Error removing User (ID: ${id}):`, err);
@@ -306,12 +284,12 @@ const bulkDeleteUsersHandler = async (req, res) => {
         if (!userIds || !userIds.length)
             return res.status(400).json({ message: 'User IDs are missing.' });
 
-        const result = await removeUser(userIds);
+        const { success, message, deletedCount } = await removeUser(userIds);
 
-        if (!result.success)
-            return res.status( 400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
-        res.json({ message: 'User removed successfully!' });
+        res.json({ message, deletedCount });
 
     } catch (err) {
         console.error(`Error removing Users (${req.body.userIds}):`, err);

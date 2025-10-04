@@ -151,7 +151,7 @@ export const Leave = sequelize.define('Leave', {
         allowNull: false,
     },
     days : {
-        typeof: DataTypes.INTEGER,
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
     status: {

@@ -42,14 +42,14 @@ const fetchHolidaysHandler = async (req, res) => {
  */
 const createHolidayHandler = async (req, res) => {
     try {
-        const result = await createHoliday(req.body);
+        const { success, message, id} = await createHoliday(req.body);
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
-        const holiday = await getHoliday({id: result.holiday});
+        const holiday = await getHoliday({id});
 
-        res.status(201).json({ message: result.message, holiday });
+        res.status(201).json({ message, holiday });
 
     } catch (err) {
         console.error('Error creating a Holiday:', err, 'Provided data: ', req.body);
@@ -68,14 +68,14 @@ const updateHolidayHandler = async (req, res) => {
     try {
         const { date, name, requestable_working } = req.body;
 
-        const result = await updateHoliday(parseInt(id), {date, name, requestable_working});
+        const { success, message } = await updateHoliday(parseInt(id), {date, name, requestable_working});
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
         const holiday = await getHoliday({id});
 
-        res.json({ message: result.message, holiday });
+        res.json({ message, holiday });
 
     } catch (err) {
         console.error(`Error updating Holiday (ID: ${id}):`, err, 'Provided data: ', req.body);
@@ -92,12 +92,12 @@ const deleteHolidayHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const result = await deleteHoliday(parseInt(id));
+        const { success, message, deletedCount} = await deleteHoliday(parseInt(id));
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
-        res.json({ message: result.message });
+        res.json({ message, deletedCount });
 
     } catch (err) {
         console.error(`Error deleting Holiday (ID: ${id}):`, err);

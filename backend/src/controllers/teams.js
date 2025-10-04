@@ -69,7 +69,7 @@ export async function getTeam({id, all=false, parent_team=null,
  * @param {string} data.code_name - Team code name
  * @param {string|null} data.name - optional - Team name
  * @param {string|null} data.parent_team - optional - Parent Team's ID
- * @returns {Promise<{success: boolean, message: string, team?: Team}>}
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createTeam(data) {
 
@@ -95,7 +95,7 @@ export async function createTeam(data) {
     return {
         success: true,
         message: 'Team created successfully.',
-        team: team.id
+        id: team.id
     };
 }
 
@@ -103,7 +103,7 @@ export async function createTeam(data) {
  * Updates an existing Team.
  * @param {number} id - Team ID
  * @param {Object} data - Team data to update
- * @returns {Promise<{success: boolean, message: string, team?: Object}>}
+ * @returns {Promise<{success: boolean, message: string}>}
  */
 export async function updateTeam(id, data) {
     if (!id)
@@ -127,12 +127,11 @@ export async function updateTeam(id, data) {
                 message: 'The team with this exact code name already exists.'
             };
         
-    const updatedTeam = await team.update(data);
+    await team.update(data);
 
     return {
         success: true,
         message: 'Team updated successfully.',
-        team: updatedTeam.toJSON()
     };
 }
 
@@ -140,7 +139,7 @@ export async function updateTeam(id, data) {
  * Deletes one or multiple Teams and their assignments.
  * @param {number|number[]} id - Team ID or array of Team IDs
  * @param {boolean} cascade - optional - Should Subteams be deleted too. If false, they get orphaned.
- * @returns {Promise<{success: boolean, message: string}>}
+ * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
 export async function deleteTeam(id, cascade=false) {
 
@@ -169,7 +168,9 @@ export async function deleteTeam(id, cascade=false) {
                     return result;
                 }
             }
-        }   
+        } else {
+            await Team.update({ parent_team: null }, { where: { parent_team: id } });
+        }
 
         const deletedTeams = await Team.destroy({ where: { id }, transaction });
         
@@ -198,101 +199,6 @@ export async function deleteTeam(id, cascade=false) {
 }
 
 /**
- * Updates Team Members assigned to a Team based on mode.
- * - 'add': Appends members to Teams if they don't exist yet
- * - 'set': Sets provided members to Teams and removes any other manager assignments
- * - 'del': Removes provided members from Teams if they have them
- * @param {Array<{number}>} teamIds - Array of Team IDs for whom Members would be updated
- * @param {Array<{number}>} userIds - Array of User IDs to be assigned/removed.
- * @param {number} roleId - A role to set for provided users in 'add' and 'set' modes.
- * @param {string} mode - Update mode
- * @returns {Promise<{success: boolean, message: string, status?: number}>}
- */
-export async function updateTeamUsers(teamIds, userIds, roleId=1, mode = 'add') {
-
-    if (!Array.isArray(teamIds) || !Array.isArray(userIds)) {
-        return { success: false, message: 'Invalid Team or User IDs provided.', status: 400 };
-    }
-    if (!['add', 'set', 'del'].includes(mode)) {
-        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".', status: 400 };
-    }
-
-    const transaction = await sequelize.transaction();
-
-    try {
-        if (mode === 'add') {
-            const currentAssignments = await TeamUser.findAll({
-                where: {
-                    team: teamIds,
-                    user: userIds
-                },
-                transaction
-            });
-
-            const existingPairs = new Set(currentAssignments.map(tu => `${tu.team}-${tu.user}`));
-            const newAssignments = [];
-
-            for (const teamId of teamIds) {
-                for (const userId of userIds) {
-                    if (!existingPairs.has(`${teamId}-${userId}`)) {
-                        newAssignments.push({ team: teamId, user: userId, role: roleId });
-                    }
-                }
-            }
-
-            if (newAssignments.length > 0) {
-                await TeamUser.bulkCreate(newAssignments, { transaction });
-            }
-
-            await transaction.commit();
-
-            return {
-                success: true,
-                message: `Team Members assigned successfully. ${newAssignments.length} new assignments created.`
-            };
-
-        } else if (mode === 'set') {
-            for (const teamId of teamIds) {
-                await TeamUser.destroy({
-                    where: { user: teamId },
-                    transaction
-                });
-
-                const newAssignments = userIds.map(userId => ({
-                    team: teamId,
-                    user: userId,
-                    role: roleId
-                }));
-
-                await TeamUser.bulkCreate(newAssignments, { transaction });
-            }
-
-            await transaction.commit();
-            
-            return {
-                success: true,
-                message: 'Team Members set successfully.'
-            };
-
-        } else if (mode === 'del') {
-            const deletedCount = await TeamUser.destroy({
-                where: { team: teamIds, user: userIds },
-                transaction
-            });
-
-            await transaction.commit();
-            return {
-                success: true,
-                message: `Team Members removed successfully. ${deletedCount} assignments removed.`
-            };
-        }
-    } catch (error) {
-        await transaction.rollback();
-        throw error;
-    }
-}
-
-/**
  * Retrieves members of a Team, optionally filtered by role and can include sub and sup Teams' members.
  * @param {number} teamId - Team ID
  * @param {number || null} [role] - Optional - Role filter (0: member, 1: leader, 2: manager)
@@ -300,7 +206,8 @@ export async function updateTeamUsers(teamIds, userIds, roleId=1, mode = 'add') 
  * @param include_parent_teams {boolean} - Optional - Should the result include parent Teams.
  * @returns {Promise<TeamUser[] || null>} Array of user objects
  */
-export async function getTeamUsers(teamId, role = null, include_subteams = false, include_parent_teams = false) {
+export async function getTeamUsers(teamId, role = null, include_subteams = false,
+                                   include_parent_teams = false) {
     if (!teamId) return [];
 
     async function getParentIds(teamId) {
@@ -337,18 +244,20 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
     }
 
     let teamIds = [teamId];
+
     if (include_subteams)
         teamIds = teamIds.concat(await getSubTeamIds(teamId));
+
     if (include_parent_teams)
         teamIds = teamIds.concat(await getParentIds(teamId));
 
     teamIds = [...new Set(teamIds)];
 
     const where = { team: teamIds };
-    if (role !== undefined && role !== null) {
+
+    if (role !== undefined && role !== null)
         where.role = role;
-    }
-    
+
     let teamMembers = await TeamUser.findAll({
         where,
         include: [
@@ -392,4 +301,98 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
     }
 
     return filteredMembers;
+}
+
+/**
+ * Updates Team Members assigned to a Team based on mode.
+ * - 'add': Appends members to Teams if they don't exist yet
+ * - 'set': Sets provided members to Teams and removes any other manager assignments
+ * - 'del': Removes provided members from Teams if they have them
+ * @param {Array<{number}>} teamIds - Array of Team IDs for whom Members would be updated
+ * @param {Array<{number}>} userIds - Array of User IDs to be assigned/removed.
+ * @param {number} roleId - A role to set for provided users in 'add' and 'set' modes.
+ * @param {string} mode - Update mode
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function updateTeamUsers(teamIds, userIds, roleId=1, mode = 'add') {
+
+    if (!Array.isArray(teamIds) || !Array.isArray(userIds))
+        return { success: false, message: 'Invalid Team or User IDs provided.', status: 400 };
+
+    if (!['add', 'set', 'del'].includes(mode))
+        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".', status: 400 };
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        if (mode === 'add') {
+            const currentAssignments = await TeamUser.findAll({
+                where: {
+                    team: teamIds,
+                    user: userIds
+                },
+                transaction
+            });
+
+            const existingPairs = new Set(currentAssignments.map(tu => `${tu.team}-${tu.user}`));
+            const newAssignments = [];
+
+            for (const teamId of teamIds) {
+                for (const userId of userIds) {
+                    if (!existingPairs.has(`${teamId}-${userId}`)) {
+                        newAssignments.push({ team: teamId, user: userId, role: roleId });
+                    }
+                }
+            }
+
+            if (newAssignments.length > 0)
+                await TeamUser.bulkCreate(newAssignments, { transaction });
+
+            await transaction.commit();
+
+            return {
+                success: true,
+                message: `Team Members assigned successfully. ${newAssignments.length} new assignments created.`
+            };
+
+        } else if (mode === 'set') {
+            await TeamUser.destroy({
+                where: { team: teamIds },
+                transaction
+            });
+
+            for (const teamId of teamIds) {
+                const newAssignments = userIds.map(userId => ({
+                    team: teamId,
+                    user: userId,
+                    role: roleId
+                }));
+
+                await TeamUser.bulkCreate(newAssignments, { transaction });
+            }
+
+            await transaction.commit();
+            
+            return {
+                success: true,
+                message: 'Team Members set successfully.'
+            };
+
+        } else if (mode === 'del') {
+            const deletedCount = await TeamUser.destroy({
+                where: { team: teamIds, user: userIds },
+                transaction
+            });
+
+            await transaction.commit();
+
+            return {
+                success: true,
+                message: `Team Members removed successfully. ${deletedCount} assignments removed.`
+            };
+        }
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
 }

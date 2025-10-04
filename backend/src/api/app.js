@@ -161,7 +161,7 @@ const updateModuleHandler = async (req, res) => {
          if (typeof enabled !== 'boolean') {
              return res.status(400).json({ message: 'Invalid enabled value.' });
          }
-         const [hasAccess] = await Promise.all([hasManagerAccess(req.session.user)]);
+         const hasAccess = await hasManagerAccess(req.session.user);
 
          if (!hasAccess) {
              return res.status(403).json({ message: 'Access denied.' });
@@ -193,7 +193,7 @@ const fetchPagesHandler = async (req, res) => {
                 return res.json([]);
             return res.status(401).json({ message: 'Unauthorized. Please log in.' });
         }
-        const [managerView] = await Promise.all([hasManagerView(req.session.user)]);
+        const managerView = await hasManagerView(req.session.user);
 
         res.json(await getPages(managerView ? 1 : 0));
     } catch (err) {
@@ -219,7 +219,8 @@ const toggleManagerViewHandler = async (req, res) => {
                 manager_view: false
             });
         }
-        const [hasAccess] = await Promise.all([hasManagerAccess(req.session.user)]);
+
+        const hasAccess = await hasManagerAccess(req.session.user);
 
         if (!hasAccess)
             return res.status(403).json({

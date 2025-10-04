@@ -24,8 +24,10 @@ export async function getUser({id, group, roles=true, managers=true,
                                   include_configs=false} = {}) {
 
     let exclude = ['password', 'removed'];
+
     if (!include_ppi)
         exclude.push('login', 'email', 'address', 'city', 'postal_code', 'phone', 'country');
+
     if (!include_configs)
         exclude.push('locale', 'theme_mode', 'manager_view_access', 'manager_view_enabled', 'manager_nav_collapsed');
 
@@ -52,7 +54,7 @@ export async function getUser({id, group, roles=true, managers=true,
                     model: Role,
                     where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] }
                 }]
-        }];
+            }];
 
         const users = await User.findAll({
             attributes: { exclude },
@@ -79,7 +81,7 @@ export async function getUser({id, group, roles=true, managers=true,
                 user.managed_users = await getUserManagers({managerId: user.id});
             
             return user;
-        })) || [];
+        }));
     }
 
     // Logic if the ID is provided - fetch a specific User
@@ -114,7 +116,7 @@ export async function getUser({id, group, roles=true, managers=true,
  * @param {string} data.first_name - First name
  * @param {string} data.last_name - Last name
  * @param {boolean} [data.manager_view_access=false] - Manager view access
- * @returns {Promise<{success: boolean, message: string, user?: Object}>}
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createUser(data) {
 
@@ -144,8 +146,6 @@ export async function createUser(data) {
             message: 'Email must be unique.'
         };
 
-    data.id = randomId(User);
-
     const user = await User.create({
         id: await randomId(User),
         login: data.login || null,
@@ -163,7 +163,7 @@ export async function createUser(data) {
     return {
         success: true, 
         message: 'User created successfully.', 
-        user: user.id
+        id: user.id
     };
 }
 
@@ -171,7 +171,7 @@ export async function createUser(data) {
  * Updates an existing User.
  * @param {number} id - User ID
  * @param {Object} data - User data to update
- * @returns {Promise<{success: boolean, message: string, user?: Object}>}
+ * @returns {Promise<{success: boolean, message: string}>}
  */
 export async function updateUser(id, data) {
 
@@ -206,12 +206,9 @@ export async function updateUser(id, data) {
     if (data.password) 
         data.password = await bcrypt.hash(data.password, 10);
 
-    const updatedUser = await user.update(data);
-
     return {
         success: true,
-        message: 'User updated successfully.',
-        user: updatedUser.toJSON()
+        message: 'User updated successfully.'
     };
 }
 
@@ -227,7 +224,6 @@ export async function removeUser(id) {
             success: false, 
             message: `Invalid User ID${Array.isArray(id) ? 's' : ''} provided.` 
         };
-
 
     const transaction = await sequelize.transaction();
 
@@ -265,6 +261,7 @@ export async function removeUser(id) {
             message: `${removedUsers} User${removedUsers > 1 ? 's' : ''} removed successfully.`,
             deletedCount: removedUsers 
         };
+
     } catch (error) {
         await transaction.rollback();
         throw error;
@@ -279,9 +276,8 @@ export async function removeUser(id) {
  * or null if neither ID is provided.
  */
 export async function getUserManagers({ userId, managerId }) {
-    if (!userId && isNaN(userId) && !managerId && isNaN(managerId)) {
+    if (!userId && isNaN(userId) && !managerId && isNaN(managerId))
         return null;
-    }
 
     let result = await UserManager.findAll({
         where: managerId ? { manager: managerId } : { user: userId },
@@ -308,16 +304,14 @@ export async function getUserManagers({ userId, managerId }) {
 * @param {Array<{number}>} userIds - Array of User IDs for whom Managers would be updated
 * @param {Array<{number}>} managerIds - Array of Manager IDs to be assigned/removed.
 * @param {string} mode - Update mode
-* @returns {Promise<{success: boolean, message: string, status?: number}>}
+* @returns {Promise<{success: boolean, message: string}>}
 */
 export async function updateUserManagers(userIds, managerIds, mode = 'add') {
-    if (!Array.isArray(userIds) || !Array.isArray(managerIds)) {
-        return { success: false, message: 'Invalid user or manager IDs provided.', status: 400 };
-    }
+    if (!Array.isArray(userIds) || !Array.isArray(managerIds))
+        return { success: false, message: 'Invalid user or manager IDs provided.' };
 
-    if (!['add', 'set', 'del'].includes(mode)) {
-        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".', status: 400 };
-    }
+    if (!['add', 'set', 'del'].includes(mode))
+        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".' };
 
     const transaction = await sequelize.transaction();
 
@@ -342,23 +336,23 @@ export async function updateUserManagers(userIds, managerIds, mode = 'add') {
                 }
             }
 
-            if (newAssignments.length > 0) {
+            if (newAssignments.length > 0)
                 await UserManager.bulkCreate(newAssignments, { transaction });
-            }
 
             await transaction.commit();
+
             return {
                 success: true,
                 message: `Managers assigned successfully. ${newAssignments.length} new assignments created.`
             };
 
         } else if (mode === 'set') {
-            for (const userId of userIds) {
-                await UserManager.destroy({
-                    where: { user: userId },
-                    transaction
-                });
+            await UserManager.destroy({
+                where: { user: userIds },
+                transaction
+            });
 
+            for (const userId of userIds) {
                 const newAssignments = managerIds.map(managerId => ({
                     user: userId,
                     manager: managerId
@@ -368,6 +362,7 @@ export async function updateUserManagers(userIds, managerIds, mode = 'add') {
             }
 
             await transaction.commit();
+
             return {
                 success: true,
                 message: 'Managers set successfully.'
@@ -380,6 +375,7 @@ export async function updateUserManagers(userIds, managerIds, mode = 'add') {
             });
 
             await transaction.commit();
+
             return {
                 success: true,
                 message: `Managers removed successfully. ${deletedCount} assignments removed.`
@@ -396,10 +392,12 @@ export async function updateUserManagers(userIds, managerIds, mode = 'add') {
  * Authenticates a User by login (ID, email, or login) and password.
  * @param {string|number} login - User ID, email, or login name
  * @param {string} password - User password
- * @returns {Promise<{ valid: boolean, status?: number, message?: string, user?: Object }>}
+ * @returns {Promise<{ success: boolean, status?: number, message?: string, id?: number }>}
  */
 export async function authUser(login, password) {
+
     const isInteger = Number.isInteger(Number(login));
+
     const isEmailFormat = typeof login === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login);
 
     let user = await User.findOne({
@@ -407,41 +405,41 @@ export async function authUser(login, password) {
     });
 
     if (!user)
-        return { 
-            valid: false,
+        return {
+            success: false,
             status: 401, 
             message: 'Invalid credentials, user not found!' 
         };
 
     if (!user.active || user.removed)
-        return { 
-            valid: false, 
-            status: 403, 
-            user: {id: user.id}, message: 'User inactive.' 
+        return {
+            success: false,
+            status: 403,
+            message: 'User inactive.',
+            id: user.id
         };
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid)
-        return { 
-            valid: false, 
-            status: 401, 
-            user: {id: user.id}, 
-            message: 'Invalid credentials!' 
+        return {
+            success: false,
+            status: 401,
+            message: 'Invalid credentials!',
+            id: user.id
         };
 
-    user = await getUser({id: user.id});
-
-    return { 
-        valid: true, 
-        user 
+    return {
+        success: true,
+        message: 'Login successful!',
+        id: user.id
     };
 }
 
 /**
  * Checks if a given User has Access to Manager View.
  * @param {number} id - ID of a User
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
 export async function hasManagerAccess(id) {
     if (!id)
@@ -455,7 +453,7 @@ export async function hasManagerAccess(id) {
 /**
  * Checks if a given User has Manager View enabled.
  * @param {number} id - ID of a User
- * @returns {boolean}
+ * @returns {Promise<boolean>}
  */
 export async function hasManagerView(id) {
     if (!id)
@@ -490,7 +488,7 @@ export async function getRole({id, users=true} = {}) {
 
                 return role;
             })
-        ) || [];
+        );
     }
 
     // Logic if ID is provided - fetch a specific Role
@@ -510,7 +508,7 @@ export async function getRole({id, users=true} = {}) {
  * @param {Object} data - Role data
  * @param {string} data.name - Role name
  * @param {string} data.description - optional - Role description
- * @returns {Promise<{success: boolean, message: string, role?: Object}>}
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createRole(data) {
 
@@ -536,7 +534,7 @@ export async function createRole(data) {
     return {
         success: true, 
         message: 'Role created successfully.', 
-        role: role.id
+        id: role.id
     };
 }
 
@@ -544,7 +542,7 @@ export async function createRole(data) {
  * Updates an existing Role.
  * @param {number} id - Role ID
  * @param {Object} data - Role data to update
- * @returns {Promise<{success: boolean, message: string, role?: Object}>}
+ * @returns {Promise<{success: boolean, message: string}>}
  */
 export async function updateRole(id, data) {
 
@@ -568,12 +566,11 @@ export async function updateRole(id, data) {
             message: 'The other Role with this exact name already exists.'
         };
 
-    const updatedRole = await role.update(data);
+    await role.update(data);
 
     return {
         success: true, 
-        message: 'Role updated successfully.', 
-        role: updatedRole.toJSON()
+        message: 'Role updated successfully.'
     };
 }
 
@@ -627,9 +624,8 @@ export async function deleteRole(id) {
  * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of Roles/Users or error
  */
 export async function getUserRoles({userId, roleId}) {
-    if (!userId && isNaN(userId) && !roleId && isNaN(roleId)) {
+    if (!userId && isNaN(userId) && !roleId && isNaN(roleId))
         return null;
-    }
 
     let result = await UserRole.findAll({
         where: roleId ? { role: roleId } : {user: userId },
@@ -655,16 +651,14 @@ export async function getUserRoles({userId, roleId}) {
  * @param {Array<{number}>} userIds - Array of User IDs for whom Roles would be updated
  * @param {Array<{number}>} roleIds - Array of Role IDs to be assigned/removed.
  * @param {string} mode - Update mode
- * @returns {Promise<{success: boolean, message: string, status?: number}>}
+ * @returns {Promise<{success: boolean, message: string}>}
  */
 export async function updateUserRoles(userIds, roleIds, mode = 'add') {
-    if (!Array.isArray(userIds) || !Array.isArray(roleIds)) {
-        return { success: false, message: 'Invalid user or role IDs provided.', status: 400 };
-    }
+    if (!Array.isArray(userIds) || !Array.isArray(roleIds))
+        return { success: false, message: 'Invalid user or role IDs provided.' };
 
-    if (!['add', 'set', 'del'].includes(mode)) {
-        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".', status: 400 };
-    }
+    if (!['add', 'set', 'del'].includes(mode))
+        return { success: false, message: 'Invalid mode. Must be "add", "set", or "del".' };
 
     const transaction = await sequelize.transaction();
 
@@ -700,12 +694,12 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
             };
 
         } else if (mode === 'set') {
-            for (const userId of userIds) {
-                await UserRole.destroy({
-                    where: { user: userId },
-                    transaction
-                });
+            await UserRole.destroy({
+                where: { user: userIds },
+                transaction
+            });
 
+            for (const userId of userIds) {
                 const newAssignments = roleIds.map(roleId => ({
                     user: userId,
                     role: roleId

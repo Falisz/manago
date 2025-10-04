@@ -41,12 +41,14 @@ const createPostHandler = async (req, res) => {
         if (!channel || !content)
             return res.status(400).json({ message: 'Channel ID and Content are required.' });
 
-        const post = await createPost({
+        const {id} = await createPost({
             channel_id: parseInt(channel),
             author_id: req.session.user,
             title: title || null,
             content
         });
+
+        const post = await getPost({id});
 
         res.status(201).json({ message: 'Post created successfully!', post });
     } catch (err) {
@@ -112,7 +114,7 @@ const deletePostHandler = async (req, res) => {
         if (!post)
             return res.status(404).json({ message: 'Post not found.' });
 
-        const managerAccess = hasManagerAccess(user.id);
+        const managerAccess = await hasManagerAccess(user.id);
 
         if (post['Author'].id !== user.id && managerAccess)
             return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });

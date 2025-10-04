@@ -68,23 +68,21 @@ const loginHandler = async (req, res) => {
             return res.status(400).json({ message: 'Both credentials are required!' });
         }
 
-        const userAuth = await authUser(username, password);
+        const { success, status, message, id} = await authUser(username, password);
 
-        if (!userAuth.valid) {
-            if (userAuth.user?.id) {
-                await securityLog(userAuth.user.id, `${ip} ${host}`, 'Login', `Failure: ${userAuth.message}`);
+        if (!success) {
+            if (id) {
+                await securityLog(id, `${ip} ${host}`, 'Login', `Failure: ${message}`);
             }
-            return res.status(userAuth.status).json({ message: userAuth.message });
+            return res.status(status).json({ message });
         }
 
-        const user = userAuth.user;
-        req.session.user = user.id;
+        req.session.user = id;
 
-        await securityLog(user.id, `${ip} ${host}`, 'Login', 'Success');
-        return res.json({
-            message: 'User authorization successful!',
-            user
-        });
+        await securityLog(id, `${ip} ${host}`, 'Login', 'Success');
+
+        return res.json({message});
+
     } catch (err) {
         console.error('Login error:', err);
         await securityLog(null, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`, 'Login', `Failure: ${err.message}`);

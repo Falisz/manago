@@ -1,5 +1,4 @@
 // BACKEND/utils/checkAuth.js
-
 import {hasManagerAccess} from "../controllers/users.js";
 
 /**
@@ -17,10 +16,10 @@ const checkAuthHandler = async (req, res, next) => {
         return res.status(401).json({ message: 'Unauthorized. Please log in.' });
 
     // Further lines are prototype implementation.
-    const [hasManager] = await Promise.all([hasManagerAccess(req.session.user)]);
+    const hasAccess = await hasManagerAccess(req.session.user);
 
-    req.include_ppi = hasManager;
-    req.include_configs = hasManager;
+    req.include_ppi = hasAccess;
+    req.include_configs = hasAccess;
 
     next();
 };

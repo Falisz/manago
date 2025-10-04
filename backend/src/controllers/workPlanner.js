@@ -39,7 +39,7 @@ export async function getHoliday({id, start_date, end_date} = {}) {
  * @param {string} data.name - Holiday name
  * @param {string} data.date - Holiday date
  * @param {string} data.requestable_working - optional
- * @returns {Promise<{success: boolean, message: string, holiday?: Object}>}
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createHoliday(data) {
     if (!data.name)
@@ -70,7 +70,7 @@ export async function createHoliday(data) {
     return {
         success: true,
         message: 'Holiday created successfully.',
-        holiday: holiday.id
+        id: holiday.id
     };
 }
 
@@ -78,7 +78,7 @@ export async function createHoliday(data) {
  * Updates an existing Holiday.
  * @param {number} id - Holiday ID
  * @param {Object} data - Holiday data to update
- * @returns {Promise<{success: boolean, message: string, holiday?: Object}>}
+ * @returns {Promise<{success: boolean, message: string}>}
  */
 export async function updateHoliday(id, data) {
     if (!id)
@@ -147,7 +147,6 @@ export async function deleteHoliday(id) {
     } catch (error) {
         await transaction.rollback();
         throw error;
-
     }
 }
 

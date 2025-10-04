@@ -42,24 +42,26 @@ const fetchTeamsHandler = async (req, res) => {
  */
 const createTeamHandler = async (req, res) => {
     try {
-        const { code_name, name, parent_team, leader_ids, manager_ids } = req.body;
+        const { success, message, id} = await createTeam(req.body);
 
-        const result = await createTeam({ code_name, name, parent_team });
+        if (!success)
+            return res.status(400).json({ message });
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        const team = await getTeam({id});
+
+        const { leader_ids, manager_ids } = req.body;
 
         if (manager_ids && manager_ids.length > 0) {
             const teamManagers = manager_ids.filter(id => id !== null);
-            await updateTeamUsers([result.team], teamManagers, 3);
+            await updateTeamUsers([id], teamManagers, 3);
         }
 
         if (leader_ids && leader_ids.length > 0) {
             const teamLeaders = leader_ids.filter(id => id !== null);
-            await updateTeamUsers([result.team], teamLeaders, 2);
+            await updateTeamUsers([id], teamLeaders, 2);
         }
 
-        res.status(201).json({ message: result.message, team: result.team });
+        res.status(201).json({ message, team });
     } catch (err) {
         console.error('Error creating a Team:', err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
@@ -77,14 +79,16 @@ const updateTeamHandler = async (req, res) => {
     try {
         const {code_name, name, parent_team, leader_ids, manager_ids} = req.body;
 
-        const result = await updateTeam(parseInt(id), {
+        const { success, message } = await updateTeam(parseInt(id), {
             code_name,
             name,
             parent_team
         });
 
-        if (!result.success) 
-            return res.status(400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
+
+        const team = getTeam({id});
 
         if (manager_ids && manager_ids.length > 0)
             await updateTeamUsers(id, manager_ids.filter(id => id !== null), 2, 'set');
@@ -92,7 +96,7 @@ const updateTeamHandler = async (req, res) => {
         if (leader_ids && leader_ids.length > 0)
             await updateTeamUsers(id, leader_ids.filter(id => id !== null), 1, 'set');
 
-        res.json({ message: result.message, team: result.team });
+        res.json({ success, team });
 
     } catch (err) {
         console.error(`Error updating Team (ID: ${id}):`, err, 'Provided data: ', req.body);
@@ -106,24 +110,24 @@ const updateTeamHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const updateTeamAssignmentsHandler = async(req, res) => {
+const updateAssignmentsHandler = async(req, res) => {
     try {
         const {resource, resourceIds, teamIds, role, mode} = req.body;
     
         if (!teamIds || !teamIds.length)
             return res.status(400).json({ message: 'Team IDs are missing.' });
 
-        let result;
+        let success, message;
 
         if (resource === 'user')
-            result = await updateTeamUsers(teamIds, resourceIds, role, mode);
+            ({success, message} = await updateTeamUsers(teamIds, resourceIds, role, mode));
         else
-            return res.status(400).json({message: 'Unknown resource.'});
+            return res.status(400).json({message: 'Unknown Resource type provided.'});
 
-        if (!result.success)
-            return res.status(result.status || 400).json({message: result.message});
+        if (!success)
+            return res.status(400).json({message});
 
-        res.json({message: result.message});
+        res.json({message});
 
     } catch (err) {
         console.error('Error updating Team assignments:', err, 'Provided data: ', req.body);
@@ -140,12 +144,12 @@ const deleteTeamHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const result = await deleteTeam(parseInt(id), req.query.cascade === 'true');
+        const { success, message, deletedCount } = await deleteTeam(parseInt(id), req.query.cascade === 'true');
 
-        if (!result.success)
-            return res.status( 400).json({ message: result.message });
+        if (!success)
+            return res.status( 400).json({ message });
 
-        res.json({ message: 'Team deleted successfully!' });
+        res.json({ message, deletedCount });
     } catch (err) {
         console.error(`Error deleting Team (ID: ${id}):`, err);
         res.status(500).json({ message: 'Server error.' });
@@ -161,9 +165,15 @@ const bulkDeleteTeamsHandler = async (req, res) => {
     try {
         const { teamIds } = req.body;
 
-        console.log('Request for bulk-delete of Teams: ', teamIds);
+        if (!teamIds || !teamIds.length)
+            return res.status(400).json({ message: 'Team IDs are missing.' });
 
-        res.status(400).json({ message: 'Bulk-delete not implemented yet!' });
+        const { success, message, deletedCount } = await deleteTeam(teamIds, req.query.cascade === 'true');
+
+        if (!success)
+            return res.status(400).json({ message });
+
+        res.json({ message, deletedCount });
 
     } catch (err) {
         console.error(`Error removing Teams (${req.body.teamIds}):`, err);
@@ -177,7 +187,7 @@ export const router = express.Router();
 router.get('/', checkAuthHandler, fetchTeamsHandler);
 router.get('/:id', checkAuthHandler, fetchTeamsHandler);
 router.post('/', checkAuthHandler, createTeamHandler);
-router.post('/assignments', checkAuthHandler, updateTeamAssignmentsHandler);
+router.post('/assignments', checkAuthHandler, updateAssignmentsHandler);
 router.put('/:id', checkAuthHandler, checkResourceIdHandler, updateTeamHandler);
 router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deleteTeamHandler);
 router.delete('/', checkAuthHandler, bulkDeleteTeamsHandler);

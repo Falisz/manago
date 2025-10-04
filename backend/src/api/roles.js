@@ -63,16 +63,14 @@ const fetchUsersWithRoleHandler = async (req, res) => {
  */
 const createRoleHandler = async (req, res) => {
     try {
-        const { name, description } = req.body;
-        const result = await createRole({
-            name,
-            description
-        });
+        const { success, message, id } = await createRole(req.body);
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        if (!success)
+            return res.status(400).json({ message });
 
-        res.status(201).json({ message: result.message, role: result.role });
+        const role = await getRole({id});
+
+        res.status(201).json({ message, role });
 
     } catch (err) {
         console.error('Error creating a Role:', err, 'Provided data: ', req.body);
@@ -81,7 +79,7 @@ const createRoleHandler = async (req, res) => {
 };
 
 /**
- * Update a specific role by ID.
+ * Update a specific Role by ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -89,14 +87,14 @@ const updateRoleHandler = async (req, res) => {
     const { id } = req.params;
     
     try {
-        const { name, description, icon } = req.body;
+        const { success, message } = await updateRole(parseInt(id), req.body);
 
-        const result = await updateRole(parseInt(id), {name, description, icon});
+        if (!success)
+            return res.status(400).json({ message });
 
-        if (!result.success)
-            return res.status(400).json({ message: result.message });
+        const role = await getRole({id});
 
-        res.json({ message: result.message, role: result.role });
+        res.json({ message, role });
 
     } catch (err) {
         console.error(`Error updating Role (ID: ${id}):`, err, 'Provided data: ', req.body);
@@ -105,7 +103,7 @@ const updateRoleHandler = async (req, res) => {
 };
 
 /**
- * Delete a specific role by ID.
+ * Delete a specific Role by ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -113,13 +111,12 @@ const deleteRoleHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const result = await deleteRole(parseInt(id));
+        const { success, message, deletedCount } = await deleteRole(parseInt(id));
 
-        if (!result.success) {
-            return res.status(400).json({ message: result.message });
-        }
+        if (!success)
+            return res.status(400).json({ message });
 
-        res.json({ message: result.message });
+        res.json({ message, deletedCount });
 
     } catch (err) {
         console.error(`Error deleting Role (ID: ${id}):`, err);
