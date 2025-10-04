@@ -206,6 +206,8 @@ export async function updateUser(id, data) {
     if (data.password) 
         data.password = await bcrypt.hash(data.password, 10);
 
+    await user.update(data);
+
     return {
         success: true,
         message: 'User updated successfully.'
