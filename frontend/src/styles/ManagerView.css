@@ -212,14 +212,10 @@
 .app.manager.fluent .app-sub-nav.no-subpages {
     width: fit-content;
     align-self: flex-end;
-    position: absolute;
     z-index: 500;
 }
 .app.manager.fluent .app-sub-nav.no-subpages .user-link {
     margin-left: 15px;
-}
-.app.manager.fluent .app-sub-nav.no-subpages+main {
-    margin-top: 10px;
 }
 
 .app.manager .app-sub-nav .subpage-link:hover .app-sub-menu,
