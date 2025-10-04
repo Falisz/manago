@@ -223,18 +223,18 @@ const toggleManagerViewHandler = async (req, res) => {
                 manager_view: false
             });
 
-        const updated = await updateUser(req.session.user, {manager_view_enabled: manager_view});
+        const { success, message } = await updateUser(req.session.user, {manager_view_enabled: manager_view});
 
-        if (updated) {
+        if (success) {
             return res.json({
-                success: true,
+                success,
                 message: 'Manager view updated successfully.',
                 manager_view: manager_view
             });
         } else {
             return res.status(400).json({
-                success: false,
-                message: 'Failed to update manager view.'
+                success,
+                message
             });
         }
     } catch (err) {
@@ -261,12 +261,12 @@ const toggleManagerNavHandler = async (req, res) => {
 
         const { nav_collapsed } = req.body;
 
-        const updated = await updateUser(req.session.user, {manager_nav_collapsed: nav_collapsed});
+        const { success, message } = await updateUser(req.session.user, {manager_nav_collapsed: nav_collapsed});
 
-        if (updated) {
-            res.json({ success: true, navCollapse: nav_collapsed });
+        if (success) {
+            res.json({ success, navCollapse: nav_collapsed });
         } else {
-            res.status(400).json({ success: false, message: 'Failed to update.' });
+            res.status(400).json({ success, message });
         }
     } catch (err) {
         console.error('Error while toggling Manager View main-nav:', err);
@@ -288,13 +288,13 @@ const updateUserThemeHandler = async (req, res) => {
         const { userId } = req.params;
         const { theme_mode } = req.body;
 
-        const updated = await updateUser(userId, { theme_mode });
+        const { success, message } = await updateUser(userId, { theme_mode });
 
-        if (!updated) {
-            return res.status(400).json({ success: false, message: 'Failed to update.' });
+        if (!success) {
+            return res.status(400).json({ success, message });
         }
 
-        res.json({ success: true, theme_mode });
+        res.json({ success, theme_mode });
     } catch (err) {
         console.error('Error while toggling User theme:', err);
         res.status(500).json({ message: 'API Error.' });
