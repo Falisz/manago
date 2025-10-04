@@ -1,6 +1,5 @@
 // BACKEND/api/teams.js
 import express from 'express';
-import checkAuthHandler from '../utils/checkAuth.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     getTeam,
@@ -184,12 +183,12 @@ const bulkDeleteTeamsHandler = async (req, res) => {
 // Router definitions
 export const router = express.Router();
 
-router.get('/', checkAuthHandler, fetchTeamsHandler);
-router.get('/:id', checkAuthHandler, fetchTeamsHandler);
-router.post('/', checkAuthHandler, createTeamHandler);
-router.post('/assignments', checkAuthHandler, updateAssignmentsHandler);
-router.put('/:id', checkAuthHandler, checkResourceIdHandler, updateTeamHandler);
-router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deleteTeamHandler);
-router.delete('/', checkAuthHandler, bulkDeleteTeamsHandler);
+router.get('/', fetchTeamsHandler);
+router.get('/:id', fetchTeamsHandler);
+router.post('/', createTeamHandler);
+router.post('/assignments', updateAssignmentsHandler);
+router.put('/:id', checkResourceIdHandler, updateTeamHandler);
+router.delete('/:id', checkResourceIdHandler, deleteTeamHandler);
+router.delete('/', bulkDeleteTeamsHandler);
 
 export default router;

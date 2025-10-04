@@ -13,7 +13,7 @@ import {hasManagerAccess} from "../controllers/users.js";
 const checkAuthHandler = async (req, res, next) => {
 
     if (!req.session.user)
-        return res.status(401).json({ message: 'Unauthorized. Please log in.' });
+        return res.status(401).json('Unauthorized. Please log in.');
 
     // Further lines are prototype implementation.
     const hasAccess = await hasManagerAccess(req.session.user);

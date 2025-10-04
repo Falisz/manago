@@ -1,6 +1,5 @@
 // BACKEND/api/holidays.js
 import express from 'express';
-import checkAuthHandler from '../utils/checkAuth.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     getHoliday,
@@ -108,10 +107,10 @@ const deleteHolidayHandler = async (req, res) => {
 // Router definitions
 export const router = express.Router();
 
-router.get('/', checkAuthHandler, fetchHolidaysHandler);
-router.get('/:id', checkAuthHandler, fetchHolidaysHandler);
-router.post('/', checkAuthHandler, createHolidayHandler);
-router.put('/:id', checkAuthHandler, checkResourceIdHandler, updateHolidayHandler);
-router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deleteHolidayHandler);
+router.get('/', fetchHolidaysHandler);
+router.get('/:id', fetchHolidaysHandler);
+router.post('/', createHolidayHandler);
+router.put('/:id', checkResourceIdHandler, updateHolidayHandler);
+router.delete('/:id', checkResourceIdHandler, deleteHolidayHandler);
 
 export default router;

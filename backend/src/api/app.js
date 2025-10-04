@@ -1,6 +1,5 @@
 // BACKEND/api/app.js
 import express from 'express';
-import checkAuthHandler from '../utils/checkAuth.js';
 import {
     getModules,
     setModule,
@@ -133,11 +132,8 @@ const updateConfigHandler = async (req, res) => {
  */
 const fetchModulesHandler = async (req, res) => {
     try {
-        if (!req.session || !req.session.user) {
-            if (req.query['psthr'] === 'true')
-                return res.json([]);
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
+        if (!req.session.user)
+            return res.json([]);
 
         return res.json(await getModules());
 
@@ -188,11 +184,9 @@ const updateModuleHandler = async (req, res) => {
  */
 const fetchPagesHandler = async (req, res) => {
     try {
-        if (!req.session || !req.session.user) {
-            if (req.query['psthr'] === 'true')
-                return res.json([]);
-            return res.status(401).json({ message: 'Unauthorized. Please log in.' });
-        }
+        if (!req.session.user)
+            return res.json([]);
+
         const managerView = await hasManagerView(req.session.user);
 
         res.json(await getPages(managerView ? 1 : 0));
@@ -309,15 +303,15 @@ const updateUserThemeHandler = async (req, res) => {
 // Router definitions
 export const router = express.Router();
 
-router.get('/', checkAuthHandler, apiEndpointHandler)
+router.get('/', apiEndpointHandler)
 router.get('/config', fetchConfigHandler);
 router.get('/config-options', fetchConfigOptionsHandler);
-router.put('/config', checkAuthHandler, updateConfigHandler);
+router.put('/config', updateConfigHandler);
 router.get('/modules', fetchModulesHandler);
-router.put('/modules/:id', checkAuthHandler, updateModuleHandler);
+router.put('/modules/:id', updateModuleHandler);
 router.get('/pages', fetchPagesHandler);
-router.post('/manager-view', checkAuthHandler, toggleManagerViewHandler);
-router.post('/toggle-nav', checkAuthHandler, toggleManagerNavHandler);
-router.put('/user-theme/:userId', checkAuthHandler, updateUserThemeHandler);
+router.post('/manager-view', toggleManagerViewHandler);
+router.post('/toggle-nav', toggleManagerNavHandler);
+router.put('/user-theme/:userId', updateUserThemeHandler);
 
 export default router;

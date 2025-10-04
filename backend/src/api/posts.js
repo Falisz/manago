@@ -1,7 +1,6 @@
 // BACKEND/api/posts.js
 import express from 'express';
 import { createPost, deletePost, getPost, updatePost } from '../controllers/posts.js';
-import checkAuthHandler from '../utils/checkAuth.js';
 import checkResourceIdHandler from "../utils/checkResourceId.js";
 import {hasManagerAccess} from "../controllers/users.js";
 
@@ -133,10 +132,10 @@ const deletePostHandler = async (req, res) => {
 // Router definitions
 export const router = express.Router();
 
-router.get('/', checkAuthHandler, fetchPostsHandler);
-router.get('/:id', checkAuthHandler, checkResourceIdHandler, fetchPostsHandler);
-router.post('/new', checkAuthHandler, createPostHandler);
-router.put('/:id', checkAuthHandler, checkResourceIdHandler, updatePostHandler);
-router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deletePostHandler);
+router.get('/', fetchPostsHandler);
+router.get('/:id', fetchPostsHandler);
+router.post('/new', createPostHandler);
+router.put('/:id', checkResourceIdHandler, updatePostHandler);
+router.delete('/:id', checkResourceIdHandler, deletePostHandler);
 
 export default router;

@@ -1,6 +1,5 @@
 // BACKEND/api/roles.js
 import express from 'express';
-import checkAuthHandler from '../utils/checkAuth.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     createRole,
@@ -127,11 +126,11 @@ const deleteRoleHandler = async (req, res) => {
 // Router definitions
 export const router = express.Router();
 
-router.get('/', checkAuthHandler, fetchRolesHandler);
-router.get('/:id', checkAuthHandler, fetchRolesHandler);
-router.get('/:id/users', checkAuthHandler, checkResourceIdHandler, fetchUsersWithRoleHandler);
-router.post('/', checkAuthHandler, createRoleHandler);
-router.put('/:id', checkAuthHandler, checkResourceIdHandler, updateRoleHandler);
-router.delete('/:id', checkAuthHandler, checkResourceIdHandler, deleteRoleHandler);
+router.get('/', fetchRolesHandler);
+router.get('/:id', fetchRolesHandler);
+router.get('/:id/users', checkResourceIdHandler, fetchUsersWithRoleHandler);
+router.post('/', createRoleHandler);
+router.put('/:id', checkResourceIdHandler, updateRoleHandler);
+router.delete('/:id', checkResourceIdHandler, deleteRoleHandler);
 
 export default router;

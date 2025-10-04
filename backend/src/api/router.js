@@ -7,8 +7,18 @@ import rolesRoutes from './roles.js';
 import teamsRoutes from './teams.js';
 import holidaysRoutes from './holidays.js';
 import postsRoutes from './posts.js';
+import checkAuthHandler from '../utils/checkAuth.js';
 
 const router = express.Router();
+
+const publicPaths = ['/', '/config', '/config-options', '/modules', '/pages', '/auth', '/logout'];
+
+router.use((req, res, next) => {
+    if (publicPaths.includes(req.path))
+        return next();
+
+    return checkAuthHandler(req, res, next);
+});
 
 // Base routes (authentication, app info, etc.)
 router.use('/', appRoutes);
