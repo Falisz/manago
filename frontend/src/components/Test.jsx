@@ -1,5 +1,6 @@
 // FRONTEND/components/Test.jsx
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import axios from "axios";
 
 function listDatesInRange(start, end) {
 
@@ -81,34 +82,58 @@ const Leave = ({ days, type }) => (
 );
 
 const Test = () => {
-    const users = ['User 1', 'User 2', 'User 3', 'User 4', 'User 5'];
+    const [users, setUsers] = useState([]);
+
+    const getTeamUsers = useCallback(async (team) => {
+        try {
+            const res = await axios.get('/teams/' + team + '/users?include_subteams=true', { withCredentials: true });
+            setUsers(res.data);
+        } catch (err) {
+            console.error('Error fetching users:', err);
+            return [];
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!users || users.length === 0)
+            getTeamUsers(1).then();
+    }, []);
+
+    console.log(users);
 
     const dates = listDatesInRange('2025-10-01', '2025-10-07');
 
     const initialShifts = useMemo(() => ([
         {
-            user: 'User 1',
+            user: 100017,
             date: new Date('2025-10-02'),
             startTime: '08:00',
             endTime: '12:00',
             role: 'Cashier',
         },
         {
-            user: 'User 1',
+            user: 100007,
             date: new Date('2025-10-02'),
             startTime: '13:00',
             endTime: '16:00',
-            role: 'Stock',
+            role: 'Team Leader',
         },
         {
-            user: 'User 2',
+            user: 100008,
+            date: new Date('2025-10-03'),
+            startTime: '08:00',
+            endTime: '16:00',
+            role: 'Team Leader',
+        },
+        {
+            user: 100004,
             date: new Date('2025-10-03'),
             startTime: '08:00',
             endTime: '16:00',
             role: 'Manager',
         },
         {
-            user: 'User 3',
+            user: 100004,
             date: new Date('2025-10-03'),
             startTime: '15:00',
             endTime: '22:00',
@@ -120,7 +145,7 @@ const Test = () => {
 
     const leaves = [
         {
-            user: 'User 2',
+            user: 100004,
             startDate: new Date('2025-10-05'),
             endDate: new Date('2025-10-09'),
             type: 'Annual Leave'
@@ -287,7 +312,7 @@ const Test = () => {
                     </thead>
                     <tbody>
                     {users.map((u) => (
-                        <tr key={u}>
+                        <tr key={u.id}>
                             <td
                                 style={{
                                     padding: '10px 12px',
@@ -295,17 +320,17 @@ const Test = () => {
                                     fontWeight: 600,
                                 }}
                             >
-                                {u}
+                                {u.first_name} {u.last_name}
                             </td>
                             {dates.map((dateStr, di) => {
                                 const d = toUTCDate(dateStr);
 
                                 const shift = shifts.filter(s =>
-                                    s.user === u && sameDay(s.date, d)
+                                    s.user === u.id && sameDay(s.date, d)
                                 );
 
                                 const leave = leaves.find(l =>
-                                    l.user === u && d >= l.startDate && d <= l.endDate
+                                    l.user === u.id && d >= l.startDate && d <= l.endDate
                                 );
 
                                 const isLeaveStart = leave ? sameDay(d, leave.startDate) : false;
@@ -339,8 +364,8 @@ const Test = () => {
                                         key={key}
                                         style={cellStyle}
                                         colSpan={colSpan}
-                                        onDragOver={handleCellDragOver(u, dateStr)}
-                                        onDrop={handleCellDrop(u, dateStr)}
+                                        onDragOver={handleCellDragOver(u.id, dateStr)}
+                                        onDrop={handleCellDrop(u.id, dateStr)}
                                     >
                                         {shift.length > 0 ?
                                             shift.map((s, si) => <Shift
