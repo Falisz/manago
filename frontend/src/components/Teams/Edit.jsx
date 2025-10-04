@@ -55,7 +55,12 @@ export const TeamUserAssignment = ({team}) => {
             }
         },
         onSubmit: {
-            onSave: (data) => saveTeamAssignment('user', data, [team.id]),
+            onSave: (data) => {
+                saveTeamAssignment('user', data['members'], [team.id], 1).then();
+                saveTeamAssignment('user', data['leaders'], [team.id], 2).then();
+                saveTeamAssignment('user', data['managers'], [team.id], 3).then();
+                return true;
+            },
             refreshTriggers: [['teams', true], ['team', team.id]]
         }
     }), [team, users, managers, saveTeamAssignment]);
