@@ -6,6 +6,7 @@ import usersRoutes from './users.js';
 import rolesRoutes from './roles.js';
 import teamsRoutes from './teams.js';
 import holidaysRoutes from './holidays.js';
+import shiftRoutes from './shifts.js';
 import postsRoutes from './posts.js';
 import checkAuthHandler from '../utils/checkAuth.js';
 
@@ -28,6 +29,7 @@ router.use('/', authRoutes);
 router.use('/users', usersRoutes);
 router.use('/roles', rolesRoutes);
 router.use('/teams', teamsRoutes);
+router.use('/shifts', shiftRoutes);
 router.use('/holidays', holidaysRoutes);
 router.use('/posts', postsRoutes);
 
