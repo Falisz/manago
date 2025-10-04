@@ -94,6 +94,13 @@ const Test = () => {
             role: 'Cashier',
         },
         {
+            user: 'User 1',
+            date: new Date('2025-10-02'),
+            startTime: '13:00',
+            endTime: '16:00',
+            role: 'Stock',
+        },
+        {
             user: 'User 2',
             date: new Date('2025-10-03'),
             startTime: '08:00',
@@ -187,9 +194,6 @@ const Test = () => {
         };
 
         setShifts((prev) => {
-            const hasShiftOnTargetDay = prev.some(
-                (s) => s.user === targetUser && sameDay(s.date, targetDate)
-            );
 
             const hasLeaveOnTargetDay = leaves.some(
                 (l) =>
@@ -198,18 +202,16 @@ const Test = () => {
                     targetDate <= new Date(Date.UTC(l.endDate.getUTCFullYear(), l.endDate.getUTCMonth(), l.endDate.getUTCDate()))
             );
 
-            const invalidTarget = hasShiftOnTargetDay || hasLeaveOnTargetDay;
-
             const sourceDate = new Date(parsed.sourceDate);
             const isSameCellAsSource =
                 parsed.sourceUser === targetUser && sameDay(sourceDate, targetDate);
 
             if (isCopy) {
-                if (invalidTarget) return prev;
+                if (hasLeaveOnTargetDay) return prev;
                 return [...prev, newShift];
             } else {
                 if (isSameCellAsSource) return prev;
-                if (invalidTarget) return prev;
+                if (hasLeaveOnTargetDay) return prev;
 
                 const withoutSource = prev.filter(
                     (s) =>
@@ -230,10 +232,6 @@ const Test = () => {
         e.preventDefault();
         const targetDate = toUTCDate(dateStr);
 
-        const hasShiftOnTargetDay = shifts.some(
-            (s) => s.user === user && sameDay(s.date, targetDate)
-        );
-
         const hasLeaveOnTargetDay = leaves.some(
             (l) =>
                 l.user === user &&
@@ -241,7 +239,7 @@ const Test = () => {
                 targetDate <= new Date(Date.UTC(l.endDate.getUTCFullYear(), l.endDate.getUTCMonth(), l.endDate.getUTCDate()))
         );
 
-        if (hasShiftOnTargetDay || hasLeaveOnTargetDay) {
+        if (hasLeaveOnTargetDay) {
             e.dataTransfer.dropEffect = 'none';
         } else {
             e.dataTransfer.dropEffect = (e.ctrlKey || e.metaKey) ? 'copy' : 'move';
@@ -280,7 +278,7 @@ const Test = () => {
                                     }}
                                 >
                                     <div>{dateStr}</div>
-                                    <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>{shortDay}</div>
+                                    <div style={{ fontSize: 12, color: 'var(--text-color-3)', marginBottom: 2 }}>{shortDay}</div>
                                 </th>
                             );
                         })}
@@ -302,7 +300,7 @@ const Test = () => {
                             {dates.map((dateStr, di) => {
                                 const d = toUTCDate(dateStr);
 
-                                const shift = shifts.find(s =>
+                                const shift = shifts.filter(s =>
                                     s.user === u && sameDay(s.date, d)
                                 );
 
@@ -316,10 +314,11 @@ const Test = () => {
                                     return null;
                                 }
 
+                                let totalDays;
                                 let colSpan = 1;
                                 if (isLeaveStart) {
                                     const dayDiff = (a, b) => Math.round((b - a) / (1000 * 60 * 60 * 24));
-                                    const totalDays = dayDiff(
+                                    totalDays = dayDiff(
                                         new Date(Date.UTC(leave.startDate.getUTCFullYear(), leave.startDate.getUTCMonth(), leave.startDate.getUTCDate())),
                                         new Date(Date.UTC(leave.endDate.getUTCFullYear(), leave.endDate.getUTCMonth(), leave.endDate.getUTCDate()))
                                     ) + 1;
@@ -343,14 +342,15 @@ const Test = () => {
                                         onDragOver={handleCellDragOver(u, dateStr)}
                                         onDrop={handleCellDrop(u, dateStr)}
                                     >
-                                        {shift ? (
-                                            <Shift
-                                                time={`${shift.startTime} - ${shift.endTime}`}
-                                                role={shift.role}
-                                                draggableProps={makeShiftDragHandlers(shift)}
-                                            />
-                                        ) : isLeaveStart ? (
-                                            <Leave type={leave.type} />
+                                        {shift.length > 0 ?
+                                            shift.map((s, si) => <Shift
+                                                key={si}
+                                                time={`${s.startTime} - ${s.endTime}`}
+                                                role={s.role}
+                                                draggableProps={makeShiftDragHandlers(s)}
+                                            />)
+                                        : isLeaveStart ? (
+                                            <Leave days={totalDays} type={leave.type} />
                                         ) : null}
                                     </td>
                                 );
