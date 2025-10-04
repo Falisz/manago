@@ -76,7 +76,7 @@ const updateTeamHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const {code_name, name, parent_team, leader_ids, manager_ids} = req.body;
+        const {code_name, name, parent_team, members, leaders, managers} = req.body;
 
         const { success, message } = await updateTeam(parseInt(id), {
             code_name,
@@ -89,11 +89,14 @@ const updateTeamHandler = async (req, res) => {
 
         const team = getTeam({id});
 
-        if (manager_ids && manager_ids.length > 0)
-            await updateTeamUsers(id, manager_ids.filter(id => id !== null), 2, 'set');
+        if (managers != null)
+            await updateTeamUsers([id], managers.filter(id => id !== null), 3, 'set');
 
-        if (leader_ids && leader_ids.length > 0)
-            await updateTeamUsers(id, leader_ids.filter(id => id !== null), 1, 'set');
+        if (leaders != null)
+            await updateTeamUsers([id], leaders.filter(id => id !== null), 2, 'set');
+
+        if (members != null)
+            await updateTeamUsers([id], members.filter(id => id !== null), 1, 'set');
 
         res.json({ success, team });
 

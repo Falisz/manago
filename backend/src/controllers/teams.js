@@ -357,7 +357,7 @@ export async function updateTeamUsers(teamIds, userIds, roleId=1, mode = 'add') 
 
         } else if (mode === 'set') {
             await TeamUser.destroy({
-                where: { team: teamIds },
+                where: { [Op.or]: [{team: teamIds, role: roleId}, {team: teamIds, user: userIds}] },
                 transaction
             });
 
