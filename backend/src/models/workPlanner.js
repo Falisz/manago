@@ -126,7 +126,6 @@ export const LeaveType = sequelize.define('LeaveType', {
     },
     leave_pool: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         references: { model: LeavePool, key: 'id' }
     },
     color: DataTypes.STRING

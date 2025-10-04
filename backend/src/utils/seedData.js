@@ -4,6 +4,7 @@ import sequelize from '../utils/database.js';
 import {AppConfig, AppModule, AppPage} from '../models/app.js';
 import {User, UserManager, Role, UserRole} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
+import {Schedule, JobPost, Shift, Holiday, RequestStatus, LeavePool, LeaveType, Leave} from '../models/workPlanner.js';
 import {Post, Channel} from '../models/posts.js';
 
 // Data to seed
@@ -578,7 +579,7 @@ const userManagers = [
     // Leaders 5 and 6 (Parent3) to low3
     {user: 100011, manager: 100006},
     {user: 100012, manager: 100006},
-    // Low-managers report to mid-managers
+    // Low managers report to mid-managers
     // Low1 and Low2 to Mid1
     {user: 100004, manager: 100002},
     {user: 100005, manager: 100002},
@@ -587,6 +588,136 @@ const userManagers = [
     // Mid-managers report to CEO
     {user: 100002, manager: 100001},
     {user: 100003, manager: 100001},
+];
+
+const schedules = [
+    {
+        id: 1,
+        name: 'General',
+        description: 'General schedule for October 2025',
+        author: 100001, // CEO
+        start_date: '2025-10-01',
+        end_date: '2025-10-14',
+        is_published: true
+    },
+    {
+        id: 2,
+        name: 'WIP #1',
+        description: 'Work in progress schedule 1 for October 2025',
+        author: 100002, // Mid1
+        start_date: '2025-10-01',
+        end_date: '2025-10-07',
+        is_published: false
+    },
+    {
+        id: 3,
+        name: 'WIP #2',
+        description: 'Work in progress schedule 2 for October 2025',
+        author: 100003, // Mid2
+        start_date: '2025-10-08',
+        end_date: '2025-10-14',
+        is_published: false
+    }
+];
+
+const jobPosts = [
+    { id: 1, name: 'Office', color: '#4CAF50' },
+    { id: 2, name: 'WFH', color: '#2196F3' },
+    { id: 3, name: 'Client\'s Office', color: '#FF9800' },
+    { id: 4, name: 'Field', color: '#F44336' }
+];
+
+const shifts = [
+    // Team 1 (Parent team) and its subteams (Los Angeles, Washington)
+    // Users in Los Angeles (team 4): 100007 (leader), 100013-100017
+    // Users in Washington (team 5): 100008 (leader), 100018-100022
+    // Manager (team 1): 100004
+    // October 1-14, 2025, standard 8-hour shifts (9:00-17:00)
+    // Assigning shifts to Los Angeles team members
+    ...Array.from({ length: 14 }, (_, i) => {
+        const date = `2025-10-${String(i + 1).padStart(2, '0')}`;
+        return [
+            { user: 100007, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
+            { user: 100013, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
+            { user: 100014, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2, schedule: 1 },
+            { user: 100015, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 3, schedule: 1 },
+            { user: 100016, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 4, schedule: 1 },
+            { user: 100017, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
+            // Washington team members
+            { user: 100008, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
+            { user: 100018, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2, schedule: 1 },
+            { user: 100019, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 3, schedule: 1 },
+            { user: 100020, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 4, schedule: 1 },
+            { user: 100021, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
+            { user: 100022, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2, schedule: 1 },
+            // Manager
+            { user: 100004, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 }
+        ];
+    }).flat()
+];
+
+const holidays = [
+    { id: 1, date: '2025-10-03', name: 'Test Holiday 1', requestable_working: true },
+    { id: 2, date: '2025-10-07', name: 'Test Holiday 2', requestable_working: true }
+];
+
+const requestStatuses = [
+    { id: 0, name: 'Pending' },
+    { id: 1, name: 'Approved' },
+    { id: 2, name: 'Rejected' },
+    { id: 3, name: 'Cancelled' }
+];
+
+const leavePools = [
+    { id: 1, name: 'Leaves Balance 2025', amount: 24, parent_pool: null, start_date: '2025-01-01', end_date: '2025-12-31', comp_holiday: false, comp_weekend: false },
+    { id: 2, name: 'LOD Balance 2025', amount: 4, parent_pool: 1, start_date: '2025-01-01', end_date: '2025-12-31', comp_holiday: false, comp_weekend: false },
+    { id: 3, name: 'CompOffs 2025', amount: 0, parent_pool: null, start_date: '2025-01-01', end_date: '2025-12-31', comp_holiday: true, comp_weekend: true }
+];
+
+const leaveTypes = [
+    { id: 1, name: 'AL', leave_pool: 1, color: '#4CAF50' },
+    { id: 2, name: 'LOD', leave_pool: 2, color: '#FF9800' },
+    { id: 3, name: 'SL', leave_pool: null, color: '#F44336' },
+    { id: 4, name: 'CompOffs', leave_pool: 3, color: '#2196F3' },
+    { id: 5, name: 'Personal Leave', leave_pool: 1, color: '#9C27B0' },
+    { id: 6, name: 'Maternity Leave', leave_pool: 1, color: '#E91E63' },
+    { id: 7, name: 'Paternity Leave', leave_pool: 1, color: '#3F51B5' }
+];
+
+const leaves = [
+    {
+        type: 1, // AL
+        start_date: '2025-10-06',
+        end_date: '2025-10-08',
+        days: 3,
+        status: 1, // Approved
+        user: 100013, // Employee One
+        approver: 100007, // Leader1
+        user_note: 'Taking a short vacation',
+        approver_note: 'Approved for rest and relaxation'
+    },
+    {
+        type: 3, // SL
+        start_date: '2025-10-10',
+        end_date: '2025-10-13',
+        days: 4,
+        status: 1, // Approved
+        user: 100014, // Employee Two
+        approver: 100007, // Leader1
+        user_note: 'Medical leave for recovery',
+        approver_note: 'Approved, wishing a speedy recovery'
+    },
+    {
+        type: 2, // LOD
+        start_date: '2025-10-09',
+        end_date: '2025-10-09',
+        days: 1,
+        status: 0, // Pending
+        user: 100015, // Employee Three
+        approver: 100007, // Leader1
+        user_note: 'Need a day off for personal reasons',
+        approver_note: null
+    }
 ];
 
 const channels = [
@@ -632,12 +763,20 @@ const seedStructure = [
     { model: TeamRole, tableName: 'team_roles', data: teamRoles, itemsName: 'team roles' },
     { model: TeamUser, tableName: 'team_users', data: teamUsers, itemsName: 'team user assignments' },
     { model: UserManager, tableName: 'user_managers', data: userManagers, itemsName: 'user manager assignments' },
+    { model: Schedule, tableName: 'schedules', data: schedules, itemsName: 'schedules' },
+    { model: JobPost, tableName: 'job_posts', data: jobPosts, itemsName: 'job posts' },
+    { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
+    { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
+    { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
+    { model: LeavePool, tableName: 'leave_pools', data: leavePools, itemsName: 'leave pools' },
+    { model: LeaveType, tableName: 'leave_types', data: leaveTypes, itemsName: 'leave types' },
+    { model: Leave, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },
     { model: Post, tableName: 'posts', data: posts, itemsName: 'posts' },
 ];
 
 /**
- * Seeds data to a models if the given tables are empty or it is forced with the param.
+ * Seeds data to a model if the given tables are empty, or it is forced with the param.
  * @param {boolean} force - If true, existing data will be deleted and reseeded
  * @returns {Promise<void>}
  */
