@@ -637,21 +637,21 @@ const shifts = [
     ...Array.from({ length: 14 }, (_, i) => {
         const date = `2025-10-${String(i + 1).padStart(2, '0')}`;
         return [
-            { user: 100007, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
-            { user: 100013, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
-            { user: 100014, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2, schedule: 1 },
-            { user: 100015, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 3, schedule: 1 },
-            { user: 100016, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 4, schedule: 1 },
-            { user: 100017, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
+            { user: 100007, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1 },
+            { user: 100013, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1 },
+            { user: 100014, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2 },
+            { user: 100015, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 3 },
+            { user: 100016, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 4 },
+            { user: 100017, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1 },
             // Washington team members
-            { user: 100008, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
-            { user: 100018, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2, schedule: 1 },
-            { user: 100019, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 3, schedule: 1 },
-            { user: 100020, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 4, schedule: 1 },
-            { user: 100021, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 },
-            { user: 100022, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2, schedule: 1 },
+            { user: 100008, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1 },
+            { user: 100018, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2 },
+            { user: 100019, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 3 },
+            { user: 100020, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 4 },
+            { user: 100021, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1 },
+            { user: 100022, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 2 },
             // Manager
-            { user: 100004, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1, schedule: 1 }
+            { user: 100004, start_time: `${date}T09:00:00`, end_time: `${date}T17:00:00`, job_post: 1 }
         ];
     }).flat()
 ];
