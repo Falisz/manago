@@ -1,0 +1,60 @@
+.app-schedule {
+    padding: 20px;
+    width: calc(100% - 40px);
+    height: calc(100% - 40px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.app-schedule-header {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+.app-schedule-header h1 {
+    font-size: 2em;
+    margin: 0;
+    font-weight: 400;
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+.app-schedule-content {
+    overflow: auto;
+}
+.app-schedule-table {
+    min-width: 100%;
+}
+.app-schedule-table .user-header,
+.app-schedule-table .day-header {
+    padding: 8px 12px;
+    width: fit-content;
+    white-space: nowrap;
+}
+.app-schedule-table .day-header {
+    background: var(--seethrough-background);
+    border-radius: var(--big-border-radius);
+}
+.app-schedule-table .day-header.weekend {
+    background: none
+}
+.app-schedule-table .day-header.weekend .short-day {
+    color: var(--color);
+    font-weight: 500;
+}
+.app-schedule-table .user-header,
+.app-schedule-table .user-cell {
+    width: max(100px, fit-content);
+    text-align: left;
+}
+.app-schedule-table .day-header .short-day {
+    font-size: 0.8em;
+    font-weight: 300;
+    color: var(--text-color-3);
+}
+.app-schedule-table .user-cell {
+    padding: 8px 12px;
+    white-space: nowrap;
+}
