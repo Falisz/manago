@@ -141,7 +141,7 @@ const appPages = [
                         },
                         {
                             "path": "roles",
-                            "title": "Security Roles",
+                            "title": "Roles",
                             "icon": "",
                             "component": "RolesIndex"
                         }
