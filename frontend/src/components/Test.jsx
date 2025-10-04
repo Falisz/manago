@@ -1,5 +1,5 @@
 // FRONTEND/components/Test.jsx
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import axios from "axios";
 
 function listDatesInRange(start, end) {
@@ -83,6 +83,7 @@ const Leave = ({ days, type }) => (
 
 const Test = () => {
     const [users, setUsers] = useState([]);
+    const [shifts, setShifts] = useState([]);
 
     const getTeamUsers = useCallback(async (team) => {
         try {
@@ -94,53 +95,26 @@ const Test = () => {
         }
     }, []);
 
+    const getShifts = useCallback(async () => {
+        try {
+            const res = await axios.get('/shifts', { withCredentials: true });
+            setShifts(res.data);
+        } catch (err) {
+            console.error('Error fetching shifts:', err);
+        }
+    }, [])
+
     useEffect(() => {
         if (!users || users.length === 0)
             getTeamUsers(1).then();
-    }, []);
+        if (!shifts || shifts.length === 0)
+            getShifts(1).then();
+    }, [users, getTeamUsers, shifts, getShifts]);
 
-    console.log(users);
+    console.log(users, shifts);
 
     const dates = listDatesInRange('2025-10-01', '2025-10-07');
 
-    const initialShifts = useMemo(() => ([
-        {
-            user: 100017,
-            date: new Date('2025-10-02'),
-            startTime: '08:00',
-            endTime: '12:00',
-            role: 'Cashier',
-        },
-        {
-            user: 100007,
-            date: new Date('2025-10-02'),
-            startTime: '13:00',
-            endTime: '16:00',
-            role: 'Team Leader',
-        },
-        {
-            user: 100008,
-            date: new Date('2025-10-03'),
-            startTime: '08:00',
-            endTime: '16:00',
-            role: 'Team Leader',
-        },
-        {
-            user: 100004,
-            date: new Date('2025-10-03'),
-            startTime: '08:00',
-            endTime: '16:00',
-            role: 'Manager',
-        },
-        {
-            user: 100004,
-            date: new Date('2025-10-03'),
-            startTime: '15:00',
-            endTime: '22:00',
-            role: 'Manager',
-        }
-    ]), []);
-    const [shifts, setShifts] = useState(initialShifts);
     const dragPreviewRef = useRef(null);
 
     const leaves = [
@@ -272,9 +246,10 @@ const Test = () => {
     };
 
     return (
-        <div className={'seethrough'} style={{ padding: 16 }}>
-            <h2 style={{ marginBottom: 12 }}>Weekly Test Schedule</h2>
-            <div style={{ overflowX: 'auto' }}>
+        <div className={'seethrough'} style={{ padding: 16, width: '100%', height: '100%',
+            overflow: 'hidden', borderRadius: 'var(--def-border-radius)' }}>
+            <h2 style={{ margin: 0 }}>Weekly Test Schedule</h2>
+            <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
                 <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 720 }}>
                     <thead>
                     <tr>
@@ -326,7 +301,7 @@ const Test = () => {
                                 const d = toUTCDate(dateStr);
 
                                 const shift = shifts.filter(s =>
-                                    s.user === u.id && sameDay(s.date, d)
+                                    s.user.id === u.id && sameDay(new Date(s.start_time), d)
                                 );
 
                                 const leave = leaves.find(l =>
@@ -353,6 +328,7 @@ const Test = () => {
                                 }
 
                                 const key = `${u}-${dateStr}`;
+
                                 const cellStyle = {
                                     padding: '10px 12px',
                                     borderBottom: '1px solid #f3f4f6',
@@ -370,8 +346,14 @@ const Test = () => {
                                         {shift.length > 0 ?
                                             shift.map((s, si) => <Shift
                                                 key={si}
-                                                time={`${s.startTime} - ${s.endTime}`}
-                                                role={s.role}
+                                                time={`${new Date(s.start_time).toLocaleTimeString('pl-PL', {hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })} - ${new Date(s.end_time).toLocaleTimeString('pl-PL', {hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })}`}
+                                                role={s.job_post.name}
                                                 draggableProps={makeShiftDragHandlers(s)}
                                             />)
                                         : isLeaveStart ? (
