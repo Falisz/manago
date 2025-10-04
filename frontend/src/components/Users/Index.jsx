@@ -51,7 +51,7 @@ const UsersIndexPage = ({content='users'}) => {
         pageHeader: {
             title: content.charAt(0).toUpperCase() + content.slice(1),
             itemName: content.charAt(0).toUpperCase() + content.slice(1,-1),
-            allElements: new Set(users?.map(team => users.id)),
+            allElements: new Set(users?.map(user => user.id)),
             newItemModal: content === 'employees' ? 'employeeNew' :
                             content === 'managers' ? 'managerNew' : 'userNew'
         },
