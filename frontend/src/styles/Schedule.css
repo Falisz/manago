@@ -32,17 +32,7 @@
     padding: 8px 12px;
     width: fit-content;
     white-space: nowrap;
-}
-.app-schedule-table .day-header {
-    background: var(--seethrough-background);
-    border-radius: var(--big-border-radius);
-}
-.app-schedule-table .day-header.weekend {
-    background: none
-}
-.app-schedule-table .day-header.weekend .short-day {
-    color: var(--color);
-    font-weight: 500;
+    text-align: center;
 }
 .app-schedule-table .user-header,
 .app-schedule-table .user-cell {
@@ -50,11 +40,41 @@
     text-align: left;
 }
 .app-schedule-table .day-header .short-day {
+    width: fit-content;
     font-size: 0.8em;
     font-weight: 300;
+    padding: 4px;
+    border-radius: var(--def-border-radius);
     color: var(--text-color-3);
+}
+.app-schedule-table .day-header.weekend .short-day {
+    background: var(--color);
+    color: white;
+    font-weight: 500;
 }
 .app-schedule-table .user-cell {
     padding: 8px 12px;
     white-space: nowrap;
+}
+
+.app-schedule-table .shift-item,
+.app-schedule-table .leave-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    border-radius: var(--big-border-radius);
+    background: var(--seethrough-background);
+    transition: 0.3s ease-in-out;
+    font-size: 0.9em;
+    color: var(--text-color-3);
+    white-space: nowrap;
+}
+
+.app-schedule-table .shift-item .subtitle,
+.app-schedule-table .leave-item .subtitle {
+    align-self: flex-end;
+    font-style: italic;
+    font-size: 0.8em;
+    font-weight: 500;
 }
