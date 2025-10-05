@@ -13,7 +13,7 @@
     justify-content: space-between;
     padding: 0 15px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--def-border-radius);
     background: var(--text-color-3);
     color: var(--background-color-3);
     cursor: pointer;
@@ -22,20 +22,24 @@
 .app.fluent .app-combo-box .combo-box-selected {
     color: var(--text-color);
     background: var(--seethrough-background-2);
+    border-radius: var(--big-border-radius);
 }
 
 .app-combo-box .combo-box-search-input {
     color: inherit;
     padding: 10px 0;
     font-size: 0.9rem;
+    font-family: var(--font-family), sans-serif;
     width: calc(100% + 24px);
     border: none;
     outline: none;
     background: none;
 }
 .app-combo-box .combo-box-selected-text {
-    padding: 8px 0;
+    color: inherit;
+    padding: 10px 0;
     font-size: 0.9rem;
+    font-family: var(--font-family), sans-serif;
     border: none;
     outline: none;
     background: none;

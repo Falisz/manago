@@ -64,9 +64,10 @@
 }
 .app-form .form-input,
 .app-form .form-textarea {
-    font-size: 0.9rem;
-    border-radius: var(--def-border-radius);
     padding: 10px 15px;
+    font-size: 0.9rem;
+    font-family: var(--font-family), sans-serif;
+    border-radius: var(--def-border-radius);
     box-sizing: border-box;
     margin: 0 5px;
     outline: none;
@@ -76,6 +77,14 @@
     transition: 0.3s ease-in-out;
     width: fit-content;
     min-width: max(170px, 33%);
+}
+
+.app-form .form-input::-webkit-calendar-picker-indicator {
+    filter: invert(0.8);
+    font-size: 0.9rem;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
 .app.fluent .app-form .form-input,
