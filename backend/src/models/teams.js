@@ -13,15 +13,15 @@ export const Team = sequelize.define('Team', {
     },
     parent_team: {
         type: DataTypes.INTEGER,
-        references: { model: 'Team', key: 'id' }
+        references: { model: 'teams', key: 'id' }
     },
     branch: {
         type: DataTypes.INTEGER,
-        references: { model: 'Branch', key: 'id' }
+        references: { model: Branch, key: 'id' }
     },
     project: {
         type: DataTypes.INTEGER,
-        references: { model: 'Project', key: 'id' }
+        references: { model: Project, key: 'id' }
     },
     ms_teams: DataTypes.TEXT
 }, {
