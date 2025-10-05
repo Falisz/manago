@@ -1,5 +1,5 @@
 // BACKEND/controller/teams.js
-import { Team, TeamUser } from '../models/teams.js';
+import {Team, TeamRole, TeamUser} from '../models/teams.js';
 import { User } from '../models/users.js';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
@@ -269,6 +269,10 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
                 model: User,
                 attributes: ['id', 'first_name', 'last_name']
             },
+            {
+                model: TeamRole,
+                attributes: ['id', 'name'],
+            }
         ],
     });
 
@@ -277,7 +281,7 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
         id: teamUser['User'].id,
         first_name: teamUser['User'].first_name,
         last_name: teamUser['User'].last_name,
-        role: teamUser.role,
+        role: { id: teamUser['TeamRole'].id, name: teamUser['TeamRole'].name },
         team: { id: teamUser['Team'].id, name: teamUser['Team'].name },
     }));
 

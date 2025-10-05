@@ -16,14 +16,19 @@ const fetchShiftsHandler = async (req, res) => {
     try {
         const shifts = await getShift({
             id: id != null ? parseInt(id) : undefined,
-            user: req.query.user != null ? parseInt(req.query.user) : undefined,
-            job_post: req.query.job_post != null ? parseInt(req.query.job_post) : undefined,
-            schedule: req.query.schedule != null ? parseInt(req.query.schedule) : undefined,
-            start_time: req.query.start_date ? new Date(req.query.start_date) : undefined,
-            end_time: req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
+            user: req.body.user ? req.body.user :
+                req.query.user != null ? parseInt(req.query.user) : undefined,
+            job_post: req.body.job_post ? req.body.job_post :
+                req.query.job_post != null ? parseInt(req.query.job_post) : undefined,
+            schedule: req.body.schedule ? req.body.schedule :
+                req.query.schedule != null ? parseInt(req.query.schedule) : undefined,
+            start_time: req.body.start_date ? new Date(req.body.start_date) :
+                req.query.start_date ? new Date(req.query.start_date) : undefined,
+            end_time: req.body.end_date ? new Date(req.body.end_date) :
+                req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
         });
 
-        if (req.params.id && !shifts)
+        if (id && !shifts)
             return res.status(404).json({ message: 'Shift not found.' });
 
         res.json(shifts);
@@ -39,5 +44,6 @@ export const router = express.Router();
 
 router.get('/', fetchShiftsHandler);
 router.get('/:id', fetchShiftsHandler);
+router.post('/bulk', fetchShiftsHandler);
 
 export default router;
