@@ -17,7 +17,8 @@ export const Project = sequelize.define('Project', {
         type: DataTypes.DATE,
         allowNull: false
     },
-    endDate: DataTypes.DATE
+    endDate: DataTypes.DATE,
+    data: DataTypes.JSON,
 }, {
     tableName: 'projects',
     timestamps: false

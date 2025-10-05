@@ -2,6 +2,8 @@
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import {User} from './users.js';
+import {Branch} from "./branches.js";
+import {Project} from "./projects.js";
 
 export const Team = sequelize.define('Team', {
     name: DataTypes.STRING,
@@ -9,7 +11,18 @@ export const Team = sequelize.define('Team', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    parent_team: DataTypes.INTEGER,
+    parent_team: {
+        type: DataTypes.INTEGER,
+        references: { model: 'Team', key: 'id' }
+    },
+    branch: {
+        type: DataTypes.INTEGER,
+        references: { model: 'Branch', key: 'id' }
+    },
+    project: {
+        type: DataTypes.INTEGER,
+        references: { model: 'Project', key: 'id' }
+    },
     ms_teams: DataTypes.TEXT
 }, {
     tableName: 'teams',
@@ -52,9 +65,17 @@ export const TeamUser = sequelize.define('TeamUser', {
 //
 // Model Associations for teams.js
 //
-// Team <-> Team (self-referential parent-child)
+// Team <-> Team (optional, self-referential parent-child)
 Team.hasMany(Team, { foreignKey: 'parent_team', as: 'ChildTeams' });
 Team.belongsTo(Team, { foreignKey: 'parent_team', as: 'ParentTeam' });
+//
+// Team <-> Project (optional)
+Project.hasMany(Team, { foreignKey: 'project', sourceKey: 'id' });
+Team.belongsTo(Project, { foreignKey: 'project', targetKey: 'id' });
+//
+// Team <-> Branch (optional)
+Branch.hasMany(Team, { foreignKey: 'branch', sourceKey: 'id' });
+Team.belongsTo(Branch, { foreignKey: 'branch', targetKey: 'id' });
 //
 // Team <-> TeamUser
 Team.hasMany(TeamUser, { foreignKey: 'team', sourceKey: 'id' });
