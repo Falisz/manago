@@ -6,6 +6,7 @@ import axios from "axios";
 import useAppState from "../../contexts/AppStateContext";
 import useTeam from "../../hooks/useTeam";
 import useUser from "../../hooks/useUser";
+import {useModals} from "../../contexts/ModalContext";
 
 const generateDateList = (fromDate, toDate) => {
     const dates = [];
@@ -37,9 +38,9 @@ const sameDay = (date1, date2) => {
 };
 
 const Shift = ({ time, role, color }) => (
-    <div className={'shift-item'} >
+    <div className={'shift-item'} style={{background: color+'90'}}>
         <span>{time}</span>
-        <span className={'subtitle'} style={{color}}>{role}</span>
+        <span className={'subtitle'}>{role}</span>
     </div>
 );
 
@@ -175,12 +176,40 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
     );
 };
 
-const Schedule = ({dates, users, loading}) => {
+const Schedule = ({dates, users, placeholder, loading}) => {
+    const { openModal } = useModals();
+
+    const handleMouseEnter = (e) => {
+        const cellIndex = e.currentTarget.cellIndex;
+        if (cellIndex >= 0) {
+            document.querySelectorAll(`td:nth-child(${cellIndex + 1}), th:nth-child(${cellIndex + 1})`)
+                .forEach(cell => cell.classList.add('column-highlight'));
+        }
+    };
+
+    const handleMouseLeave = (e) => {
+        const cellIndex = e.currentTarget.cellIndex;
+        if (cellIndex >= 0) {
+            document.querySelectorAll(`td:nth-child(${cellIndex + 1}), th:nth-child(${cellIndex + 1})`)
+                .forEach(cell => cell.classList.remove('column-highlight'));
+        }
+    };
+
+    const holidays = [
+        {
+            date: new Date('2025-10-31'),
+            name: 'Holiday #2'
+        },
+        {
+            date: new Date('2025-10-16'),
+            name: 'Holiday #1'
+        }
+    ]
 
     if (loading)
         return <Loader/>;
 
-    return <div className={'app-schedule-content'}>
+    return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table'}>
             <thead>
             <tr>
@@ -193,100 +222,119 @@ const Schedule = ({dates, users, loading}) => {
                     const shortDay = dayNames[dayIdx];
                     const formattedDate = formatDate(date);
 
+                    const isDate = holidays.find(holiday => sameDay(holiday.date, date));
+
                     return (
                         <th
                             key={formattedDate}
-                            className={'day-header' + (dayIdx === 0 || dayIdx === 6 ? ' weekend' : '')}
+                            className={'day-header' + (dayIdx === 0 || dayIdx === 6 ? ' weekend' :
+                                isDate ? ' holiday' : '')}
+                            onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
                         >
                             <div className='date'>{formattedDate}</div>
-                            <div className='short-day'>{shortDay}</div>
+                            <div className='short-day' title={dayIdx === 0 || dayIdx === 6 ? 'Weekend' :
+                                isDate ? isDate.name : ''}>{shortDay}</div>
                         </th>
                     );
                 })}
             </tr>
             </thead>
             <tbody>
+            {placeholder && <tr>
+            <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{placeholder}</td>
+            </tr>}
             {users?.map((user) => {
                 return <tr key={user.id}>
-                    <td className={'user-cell'}>
-                        {user.first_name} {user.last_name}
-                        {user.team && <><br/><small>{user.team.name}: {user.role.name}</small></>}
-                    </td>
-                    {dates?.map((date, dateIndex) => {
-                        const formattedDate = formatDate(date);
+                        <td className={'user-cell'}>
+                            <span
+                                className={'app-clickable'}
+                                style={{fontWeight: 'bold'}}
+                                onClick={() =>  openModal({content: 'userDetails', contentId: user.id}) }
+                            >
+                                {user.first_name} {user.last_name}
+                            </span>
+                            {user.team && <><br/><small>{user.team.name}: {user.role.name}</small></>}
+                        </td>
+                        {dates?.map((date, dateIndex) => {
+                            const formattedDate = formatDate(date);
 
-                        const shift = user.shifts?.filter((s) =>
-                            sameDay(new Date(s.start_time), date)
-                        ) || [];
+                            const shift = user.shifts?.filter((s) =>
+                                sameDay(new Date(s.start_time), date)
+                            ) || [];
 
-                        const leave = user.leaves?.find(
-                            (l) =>
-                                l.user === user.id &&
-                                date >= new Date(l.startDate) &&
-                                date <= new Date(l.endDate)
-                        );
-                        const isLeaveStart = leave ? sameDay(date, new Date(leave.startDate)) : false;
+                            const leave = user.leaves?.find(
+                                (l) =>
+                                    l.user === user.id &&
+                                    date >= new Date(l.startDate) &&
+                                    date <= new Date(l.endDate)
+                            );
+                            const isLeaveStart = leave ? sameDay(date, new Date(leave.startDate)) : false;
 
-                        if (leave && !isLeaveStart) {
-                            return null;
-                        }
+                            if (leave && !isLeaveStart) {
+                                return null;
+                            }
 
-                        let totalDays;
+                            let totalDays;
 
-                        let colSpan = 1;
-                        if (isLeaveStart) {
-                            const dayDiff = (a, b) =>
-                                Math.round((b - a) / (1000 * 60 * 60 * 24));
+                            let colSpan = 1;
+                            if (isLeaveStart) {
+                                const dayDiff = (a, b) =>
+                                    Math.round((b - a) / (1000 * 60 * 60 * 24));
 
-                            totalDays =
-                                dayDiff(
-                                    new Date(
-                                        Date.UTC(
-                                            leave.startDate.getUTCFullYear(),
-                                            leave.startDate.getUTCMonth(),
-                                            leave.startDate.getUTCDate()
+                                totalDays =
+                                    dayDiff(
+                                        new Date(
+                                            Date.UTC(
+                                                leave.startDate.getUTCFullYear(),
+                                                leave.startDate.getUTCMonth(),
+                                                leave.startDate.getUTCDate()
+                                            )
+                                        ),
+                                        new Date(
+                                            Date.UTC(
+                                                leave.endDate.getUTCFullYear(),
+                                                leave.endDate.getUTCMonth(),
+                                                leave.endDate.getUTCDate()
+                                            )
                                         )
-                                    ),
-                                    new Date(
-                                        Date.UTC(
-                                            leave.endDate.getUTCFullYear(),
-                                            leave.endDate.getUTCMonth(),
-                                            leave.endDate.getUTCDate()
-                                        )
-                                    )
-                                ) + 1;
-                            const remainingColumns = dates.length - dateIndex;
-                            colSpan = Math.max(1, Math.min(totalDays, remainingColumns));
-                        }
+                                    ) + 1;
+                                const remainingColumns = dates.length - dateIndex;
+                                colSpan = Math.max(1, Math.min(totalDays, remainingColumns));
+                            }
 
-                        const key = `${user.id}-${formattedDate}`;
+                            const key = `${user.id}-${formattedDate}`;
 
-                        return (
-                            <td key={key} colSpan={colSpan}>
-                                {shift.length > 0 ? (
-                                    shift.map((s, si) => (
-                                        <Shift
-                                            key={si}
-                                            time={`${new Date(s.start_time).toLocaleTimeString('pl-PL', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                hour12: false,
-                                            })} - ${new Date(s.end_time).toLocaleTimeString('pl-PL', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                hour12: false,
-                                            })}`}
-                                            role={s.job_post.name}
-                                            color={s.job_post.color}
-                                        />
-                                    ))
-                                ) : isLeaveStart ? (
-                                    <Leave days={totalDays} type={leave.type} />
-                                ) : null}
-                            </td>
-                        );
-                    })}
-                </tr>
+                            return (
+                                <td
+                                    key={key}
+                                    colSpan={colSpan}
+                                    onMouseEnter={handleMouseEnter}
+                                    onMouseLeave={handleMouseLeave}
+                                >
+                                    {shift.length > 0 ? (
+                                        shift.map((s, si) => (
+                                            <Shift
+                                                key={si}
+                                                time={`${new Date(s.start_time).toLocaleTimeString('pl-PL', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false,
+                                                })} - ${new Date(s.end_time).toLocaleTimeString('pl-PL', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false,
+                                                })}`}
+                                                role={s.job_post.name}
+                                                color={s.job_post.color}
+                                            />
+                                        ))
+                                    ) : isLeaveStart ? (
+                                        <Leave days={totalDays} type={leave.type} />
+                                    ) : null}
+                                </td>
+                            );
+                        })}
+                    </tr>;
             })}
             </tbody>
         </table>
@@ -296,6 +344,7 @@ const Schedule = ({dates, users, loading}) => {
 const ScheduleIndex = () => {
     const { user } = useAppState();
     const [loading, setLoading] = useState(true);
+    const [placeholder, setPlaceholder] = useState(null)
 
     const today = new Date();
     const yesterday = new Date(today);
@@ -318,6 +367,16 @@ const ScheduleIndex = () => {
         if (!id && group !== 'all') {
             setUsers([]);
             setLoading(false);
+            if (group === 'team')
+                setPlaceholder('Select a Team.');
+            else if (group === 'branch')
+                setPlaceholder('Select a Branch.');
+            else if (group === 'project')
+                setPlaceholder('Select a Project.');
+            else if (['user', 'employee', 'manager'].includes(group))
+                setPlaceholder('Select a User.');
+            else
+                setPlaceholder('Select a Group.');
             return [];
         }
 
@@ -360,15 +419,19 @@ const ScheduleIndex = () => {
                     leaves: []
                 }))
                 .sort((a, b) => {
-                    if (a.team.id !== b.team.id) {
-                        return a.team.id < b.team.id ? -1 : 1;
+                    if (a.hasOwnProperty('team') && b.hasOwnProperty('team')) {
+                        if (a.team.id !== b.team.id) {
+                            return a.team.id < b.team.id ? -1 : 1;
+                        }
+                        return a.role.id > b.role.id ? -1 : 1;
+
+                    } else {
+                        return (a.last_name + ' ' + a.first_name).localeCompare(b.last_name + ' ' + b.first_name);
                     }
-                    return a.role.id > b.role.id ? -1 : 1;
                 });
 
-            console.log(users);
-
             setUsers(users);
+            setPlaceholder(null);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching users:', err);
@@ -390,6 +453,7 @@ const ScheduleIndex = () => {
         <Schedule
             dates={dates}
             users={users}
+            placeholder={placeholder}
             loading={loading}
         />
     </div>

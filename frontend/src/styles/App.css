@@ -288,6 +288,7 @@ button .material-symbols-rounded {
 
 .app-scroll::-webkit-scrollbar {
     width: 20px;
+    height: 20px;
 }
 
 .app-scroll::-webkit-scrollbar-track {
@@ -304,10 +305,10 @@ button .material-symbols-rounded {
 .app.fluent .app-scroll::-webkit-scrollbar-thumb {
     background-color: var(--seethrough-background-2);
 }
-.app-scroll::-webkit-scrollbar-button {
+.app-scroll::-webkit-scrollbar-button,
+.app-scroll::-webkit-scrollbar-corner {
     display: none;
 }
-
 
 .app-sub-menu {
     display: flex;

@@ -26,6 +26,24 @@
 }
 .app-schedule-table {
     min-width: 100%;
+    border-collapse: collapse;
+}
+
+.app-schedule-table tr th:nth-child(2) {
+    border-radius: var(--big-border-radius) 0 0 0;
+}
+.app-schedule-table tr th:last-child {
+    border-radius: 0 var(--big-border-radius) 0 0;
+}
+.app-schedule-table tr:last-child td:nth-child(2) {
+    border-radius: 0 0 0 var(--big-border-radius);
+}
+.app-schedule-table tr:last-child td:last-child {
+    border-radius: 0 0 var(--big-border-radius) 0;
+}
+
+.app-schedule-table tr:not(:last-child) td {
+    border-bottom: 1px solid var(--text-color-3);
 }
 .app-schedule-table .user-header,
 .app-schedule-table .day-header {
@@ -33,48 +51,84 @@
     width: fit-content;
     white-space: nowrap;
     text-align: center;
+    border: 0;
 }
 .app-schedule-table .user-header,
 .app-schedule-table .user-cell {
     width: max(100px, fit-content);
     text-align: left;
 }
+.app-schedule-table .day-header {
+    font-weight: 300;
+}
+.app-schedule-table .day-header .date {
+    padding: 5px 0;
+}
+.app-schedule-table .day-header.weekend .date {
+    color: var(--color);
+}
+.app-schedule-table .day-header.holiday .date {
+    color: #ff0000;
+}
 .app-schedule-table .day-header .short-day {
+    display: inline-block;
     width: fit-content;
     font-size: 0.8em;
-    font-weight: 300;
-    padding: 4px;
+    font-weight: 700;
+    padding: 3px 12px;
     border-radius: var(--def-border-radius);
     color: var(--text-color-3);
 }
-.app-schedule-table .day-header.weekend .short-day {
-    background: var(--color);
+.app-schedule-table .day-header.weekend .short-day,
+.app-schedule-table .day-header.holiday .short-day {
     color: white;
     font-weight: 500;
+    cursor: help;
 }
+.app-schedule-table .day-header.weekend .short-day {
+    background: var(--color);
+}
+.app-schedule-table .day-header.holiday .short-day {
+    background: #770000;
+}
+
 .app-schedule-table .user-cell {
     padding: 8px 12px;
     white-space: nowrap;
+    transition: .1s ease-in-out;
 }
-
+.app-schedule-table .column-highlight {
+    background: var(--background-color-3);
+    transition: .1s ease-in-out;
+}
+.app-schedule-table tr td {
+    padding: 0;
+}
+.app-schedule-table .section-header {
+    font-weight: bold;
+    font-family: var(--font-family-condensed), sans-serif;
+    font-size: 1.2em;
+    padding: 10px;
+    text-align: center;
+}
 .app-schedule-table .shift-item,
 .app-schedule-table .leave-item {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    padding: 10px;
-    border-radius: var(--big-border-radius);
-    background: var(--seethrough-background);
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    height: 2.5rem;
     transition: 0.3s ease-in-out;
+    border: 0;
+    border-radius: 0;
     font-size: 0.9em;
     color: var(--text-color-3);
     white-space: nowrap;
 }
-
 .app-schedule-table .shift-item .subtitle,
 .app-schedule-table .leave-item .subtitle {
-    align-self: flex-end;
     font-style: italic;
     font-size: 0.8em;
-    font-weight: 500;
+    font-weight: 600;
 }
