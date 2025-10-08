@@ -12,11 +12,12 @@ import sequelize from "../utils/database.js";
  * Retrieves one Working Schedule by its ID or all Schedules if an ID is not provided.
  * @param {number|null} id - optional - Schedule ID to fetch a specific Schedule
  * @param {number|null} author - optional - User ID(s) to fetch Schedules authored by that User(s)
- * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Shift? False by default.
+ * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Schedule(s)? False by default.
  * @returns {Promise<Object|Object[]|null>} Single Schedule, array of Schedules, or null
  */
 export async function getSchedule({id, author=null, include_shifts=false} = {}) {
         
+    // Logic if no ID is provided - fetch all Schedules
     if (!id || isNaN(id)) {
         
         const where = {};
@@ -41,7 +42,8 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
 
     }
 
-    const schedule = await Schedule.findOne({where: {id}, raw: true});
+    // Logic if the ID is provided - fetch a specific Schedule
+    const schedule = await Schedule.findOne({where: { id }, raw: true});
 
     if (!schedule)
         return null;
@@ -170,6 +172,281 @@ export async function deleteSchedule({id, delete_shifts=true}) {
     }
 }
 
+// JobPosts
+/**
+ * Retrieves one Job Post by its ID or all Job Posts if an ID is not provided.
+ * @param {number|null} id - optional - Job Post ID to fetch a specific Job Post
+ * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Job Post? False by default.
+ * @returns {Promise<Object|Object[]|null>} Single Job Post, array of Job Posts, or null
+ */
+export async function getJobPost({id, include_shifts=false} = {}) {
+        
+    // Logic if no ID is provided - fetch all Job Posts
+    if (!id || isNaN(id)) {
+        const jobPosts = await JobPost.findAll({ raw: true });
+
+        if (!jobPosts || jobPosts.length === 0)
+            return [];
+
+        return await Promise.all(jobPosts.map(async jobPost => {
+            if (include_shifts)
+                jobPost.shifts = await getShift({job_post: jobPost.id});
+
+            return jobPost;
+        }))
+
+    }
+
+    // Logic if the ID is provided - fetch a specific Job Post
+    const jobPost = await JobPost.findOne({where: {id}, raw: true});
+
+    if (!jobPost)
+        return null;
+
+    if (include_shifts)
+        jobPost.shifts = await getShift({job_post: jobPost.id});
+        
+    return jobPost;
+}
+
+/**
+ * Creates a new Job Post.
+ * @param {Object} data - Job Post data
+ * @param {string} data.name -  Job Post name
+ * @param {string} data.color - optional - Job Post color
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
+export async function createJobPost(data) {
+    if (!data.name)
+        return {
+            success: false,
+            message: 'Job Post name is required.'
+        }
+
+    if (await JobPost.findOne({ where: { name: data.name } }))
+        return {
+            success: false,
+            message: 'There already is a Job Post with provided name. Use different one.'
+        }
+
+    const jobPost = JobPost.create({
+        id: await randomId(JobPost),
+        name: data.name || null,
+        color: data.color || null
+    });
+
+    return {
+        success: true,
+        message: 'Job Post created succesffully.',
+        id: jobPost.id
+    };
+}
+
+/**
+ * Updates an existing Job Post.
+ * @param {number} id - Job Post ID
+ * @param {Object} data - Job Post data to update
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function updateJobPost(id, data) {
+    if (!id)
+        return {
+            success: false, 
+            message: 'Job Post ID not provided.'
+        };
+    
+    const jobPost = await JobPost.findOne({ where: { id } });
+
+    if (!jobPost)
+        return {
+            success: false, 
+            message: 'Job Post not found.'
+        };
+
+    if (data.name && await JobPost.findOne({ where: { name: data.name } }))
+        return {
+            success: false,
+            message: 'There already is a Job Post with provided name. Use different one.'
+        }
+
+    await jobPost.update(data);
+    
+    return {
+        success: true,
+        message: 'Job Post updated succesffully.'
+    }
+}
+
+/**
+ * Deletes one or multiple Job Post and shifts included - if specified likewise.
+ * @param {number|number[]} id - Single Job Post ID or array of Job Post IDs
+ * @param {boolean} delete_shifts - optional - Should shifts within this Schedule be deleted. False by default.
+ * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
+ */
+export async function deleteJobPost({id, delete_shifts=false}) {
+    if (!isNumberOrNumberArray(id))
+        return { 
+            success: false, 
+            message: `Invalid Job Post ID${Array.isArray(id) ? 's' : ''} provided.` 
+        };
+
+    const transaction = await sequelize.transaction();
+    
+    try {
+        const deletedJobPosts = await JobPost.destroy({ where: { id }, transaction });
+
+        if (!deletedJobPosts) {
+            await transaction.rollback();
+            return { 
+                success: false, 
+                message: `No Job Posts found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
+                 ${Array.isArray(id) ? id.join(', ') : id}` 
+            };
+        }
+
+        if (delete_shifts)
+            await Shift.destroy({ where: { job_post: id }, transaction });
+        
+        else
+            await Shift.update({ job_post: null }, { where: { job_post: id } });
+
+        await transaction.commit();
+
+        return { 
+            success: true, 
+            message: `${deletedJobPosts} Job Post${deletedJobPosts > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount: deletedJobPosts 
+        };
+    
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+
+    }
+}
+
+// Shifts
+// where fields start_time and end_time should have $gte and $lte operators respectively i.e.:
+// { start_time: { $gte: '2023-10-01T00:00:00Z' }, end_time: { $lte: '2023-10-31T23:59:59Z' }, job_post: 2, schedule: 5, user: 10 }
+/**
+ * Retrieves one Shift by its ID or all Shifts if an ID is not provided.
+ * @param {number|null} id - optional - Shift ID to fetch a specific Shift
+ * @returns {Promise<Object|Object[]|null>} Single Shift, array of Shifts, or null
+ */
+export async function getShift({id, user, job_post, schedule, start_time, end_time} = {}) {
+
+    const where = {};
+
+    if (isNumberOrNumberArray(id))
+        where.id = id;
+
+    if (isNumberOrNumberArray(user))
+        where.user = user;
+
+    if (isNumberOrNumberArray(job_post))
+        where.job_post = job_post;
+
+    if (isNumberOrNumberArray(schedule))
+        where.schedule = schedule;
+
+    if (start_time)
+        where.start_time = {[Op.gte]: start_time};
+
+    if (end_time)
+        where.end_time = {[Op.lte]: end_time};
+
+    const include = [{model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule];
+
+    const shifts = await Shift.findAll({ where, include });
+
+    if (!shifts || shifts.length === 0)
+        return [];
+
+    return await Promise.all(shifts.map(async shift => {
+        const rawData = shift.toJSON();
+
+        rawData.user = shift['User'].toJSON();
+        rawData.job_post = shift['JobPost']?.toJSON();
+        rawData.schedule = shift['Schedule']?.toJSON();
+
+        delete rawData['User'];
+        delete rawData['JobPost'];
+        delete rawData['Schedule'];
+
+        return rawData;
+    }));
+}
+
+/**
+ * Creates a new Shift.
+ * @param {Object} data - Shift data
+ * @param {number} data.user -  Shift User ID
+ * @param {string} data.start_time -  Shift start time
+ * @param {string} data.end_time - Shift end time
+ * @param {number} data.job_post - optional - Shift Job Post ID
+ * @param {number} data.schedule - optional - Shift Schedule ID
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
+export async function createShift(data) {
+    if (!data.user)
+        return {
+            success: false,
+            message: 'User is required to create a new shift.'
+        }
+
+    if (!(await getUser(data.author)))
+        return {
+            success: false,
+            message: 'Specified Shift User not found.'
+        }
+
+    if (!data.start_time)
+        return {
+            success: false,
+            message: 'Start time is required to create a new shift.'
+        }
+        
+    if (!data.end_time)
+        return {
+            success: false,
+            message: 'Start time is required to create a new shift.'
+        }
+
+    if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
+        return {
+            success: false,
+            message: 'Job Post with provided ID not found.'
+        }
+        
+    if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
+        return {
+            success: false,
+            message: 'Schedule with provided ID not found.'
+        }
+
+    const shift = Shift.create({
+        id: await randomId(Shift),
+        user: data.user,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        job_post: data.job_post || null,
+        schedule: data.schedule || null
+    });
+
+    return {
+        success: true,
+        message: 'Shift created succesffully.',
+        id: shift.id
+    };
+}
+
+export async function updateShift(id, data) {
+    return await Shift.update(data, { where: { id } });
+}
+
+export async function deleteShifts(id) {
+    return await Shift.destroy({ where: { id } });
+}
 
 // Holidays
 /**
@@ -312,65 +589,6 @@ export async function deleteHoliday(id) {
         await transaction.rollback();
         throw error;
     }
-}
-
-// Shifts
-export async function createShift(data) {
-    return Shift.create(data);
-}
-
-// where fields start_time and end_time should have $gte and $lte operators respectively i.e.:
-// { start_time: { $gte: '2023-10-01T00:00:00Z' }, end_time: { $lte: '2023-10-31T23:59:59Z' }, job_post: 2, schedule: 5, user: 10 }
-export async function getShift({id, user, job_post, schedule, start_time, end_time} = {}) {
-
-    const where = {};
-
-    if (isNumberOrNumberArray(id))
-        where.id = id;
-
-    if (isNumberOrNumberArray(user))
-        where.user = user;
-
-    if (isNumberOrNumberArray(job_post))
-        where.job_post = job_post;
-
-    if (isNumberOrNumberArray(schedule))
-        where.schedule = schedule;
-
-    if (start_time)
-        where.start_time = {[Op.gte]: start_time};
-
-    if (end_time)
-        where.end_time = {[Op.lte]: end_time};
-
-    const include = [{model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule];
-
-    const shifts = await Shift.findAll({ where, include });
-
-    if (!shifts || shifts.length === 0)
-        return [];
-
-    return await Promise.all(shifts.map(async shift => {
-        const rawData = shift.toJSON();
-
-        rawData.user = shift['User'].toJSON();
-        rawData.job_post = shift['JobPost']?.toJSON();
-        rawData.schedule = shift['Schedule']?.toJSON();
-
-        delete rawData['User'];
-        delete rawData['JobPost'];
-        delete rawData['Schedule'];
-
-        return rawData;
-    }));
-}
-
-export async function updateShift(id, data) {
-    return await Shift.update(data, { where: { id } });
-}
-
-export async function deleteShifts(id) {
-    return await Shift.destroy({ where: { id } });
 }
 
 // Job Posts
