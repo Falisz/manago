@@ -13,6 +13,8 @@ import {
     hasManagerAccess,
     hasManagerView,
 } from '../controllers/users.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 // API Handlers
 /**
@@ -22,48 +24,14 @@ import {
  */
 const apiEndpointHandler = (_req, res) => {
     try {
-        res.setHeader('Content-Type', 'text/html');
-        return res.send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Manago API</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        display: flex;
-                        justify-content: center;
-                        align-items: flex-start;
-                        height: 100vh;
-                        margin: 0;
-                        background-color: #222;
-                    }
-                    .message {
-                        text-align: center;
-                        margin-top: 50px;
-                        padding: 40px;
-                        color: #eee;
-                        background-color: #111;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                    }
-                    .message a {
-                        color: #007bff;
-                        text-decoration: none;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="message">
-                    <h1>Manago API</h1>
-                    <p>This is the API for the Manago service. 
-                    To make requests, please use the <a href="http://localhost:3000">Manago app</a>.</p>
-                </div>
-            </body>
-            </html>
-        `);
+        return res.sendFile(
+            path.join(
+                path.dirname(
+                    fileURLToPath(import.meta.url)
+                ), 
+                '../public/index.html'
+            )
+        );
 
     } catch (err) {
         console.error('API endpoint error:', err);
