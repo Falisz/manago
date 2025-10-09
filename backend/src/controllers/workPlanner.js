@@ -1,5 +1,18 @@
 // BACKEND/controller/workPlanner.js
-import { Shift, JobPost, Schedule, Holiday } from '../models/workPlanner.js';
+import { 
+    Shift, 
+    JobPost, 
+    Schedule, 
+    Holiday, 
+    LeavePool,
+    LeaveType, 
+    Leave, 
+    RequestStatus, 
+    HolidayWorking,  
+    WeekendWorking,
+    Disposition,
+    DispositionPreset
+} from '../models/workPlanner.js';
 import { User } from '../models/users.js';
 import { getUser } from './users.js';
 import { Op } from 'sequelize';
@@ -22,34 +35,27 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
         
         const where = {};
 
-        if (author)
+        if (author) 
             where.author = author;
 
-        const schedules = await Schedule.findAll({
-            where,
-            raw: true    
-        });
+        const schedules = await Schedule.findAll({ where, raw: true });
 
-        if (!schedules || schedules.length === 0)
+        if (!schedules || schedules.length === 0) 
             return [];
 
         return await Promise.all(schedules.map(async schedule => {
-            if (include_shifts)
-                schedule.shifts = await getShift({schedule: schedule.id});
-
+            if (include_shifts) schedule.shifts = await getShift({schedule: schedule.id});
             return schedule;
-        }))
-
+        }));
     }
 
     // Logic if the ID is provided - fetch a specific Schedule
     const schedule = await Schedule.findOne({where: { id }, raw: true});
 
-    if (!schedule)
+    if (!schedule) 
         return null;
 
-    if (include_shifts)
-        schedule.shifts = await getShift({schedule: schedule.id});
+    if (include_shifts) schedule.shifts = await getShift({schedule: schedule.id});
         
     return schedule;
 }
@@ -63,17 +69,11 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createSchedule(data) {
-    if (!data.author)
-        return {
-            success: false,
-            message: 'Schedule Author not provided.'
-        }
+    if (!data.author) 
+        return { success: false, message: 'Schedule Author not provided.' }
 
-    if (!(await getUser(data.author)))
-        return {
-            success: false,
-            message: 'Specified Author User not found.'
-        }
+    if (!(await getUser(data.author))) 
+        return { success: false, message: 'Specified Author User not found.' }
 
     const schedule = Schedule.create({
         id: await randomId(Schedule),
@@ -82,11 +82,7 @@ export async function createSchedule(data) {
         author: data.author
     });
 
-    return {
-        success: true,
-        message: 'Schedule created succesffully.',
-        id: schedule.id
-    };
+    return { success: true, message: 'Schedule created succesffully.', id: schedule.id };
 }
 
 /**
@@ -97,31 +93,19 @@ export async function createSchedule(data) {
  */
 export async function updateSchedule(id, data) {
     if (!id)
-        return {
-            success: false, 
-            message: 'Schedule ID not provided.'
-        };
+        return { success: false, message: 'Schedule ID not provided.' };
     
     const schedule = await Schedule.findOne({ where: { id } });
 
     if (!schedule)
-        return {
-            success: false, 
-            message: 'Schedule not found.'
-        };
+        return { success: false, message: 'Schedule not found.' };
 
     if (data.author && !(await getUser(data.author)))
-        return {
-            success: false,
-            message: 'Specified Author User not found.'
-        }
+        return { success: false, message: 'Specified Author User not found.' }
 
     await schedule.update(data);
     
-    return {
-        success: true,
-        message: 'Schedule updated succesffully.'
-    }
+    return { success: true, message: 'Schedule updated succesffully.' }
 }
 
 /**
@@ -132,17 +116,14 @@ export async function updateSchedule(id, data) {
  */
 export async function deleteSchedule({id, delete_shifts=true} = {}) {
     if (!isNumberOrNumberArray(id))
-        return { 
-            success: false, 
-            message: `Invalid Schedule ID${Array.isArray(id) ? 's' : ''} provided.` 
-        };
+        return { success: false, message: `Invalid Schedule ID${Array.isArray(id) ? 's' : ''} provided.` };
 
     const transaction = await sequelize.transaction();
     
     try {
-        const deletedSchedules = await Schedule.destroy({ where: { id }, transaction });
+        const deleted = await Schedule.destroy({ where: { id }, transaction });
 
-        if (!deletedSchedules) {
+        if (!deleted) {
             await transaction.rollback();
             return { 
                 success: false, 
@@ -161,8 +142,8 @@ export async function deleteSchedule({id, delete_shifts=true} = {}) {
 
         return { 
             success: true, 
-            message: `${deletedSchedules} Schedule${deletedSchedules > 1 ? 's' : ''} deleted successfully.`,
-            deletedCount: deletedSchedules 
+            message: `${deleted} Schedule${deleted > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount: deleted 
         };
     
     } catch (error) {
@@ -708,4 +689,496 @@ export async function deleteHoliday(id) {
         await transaction.rollback();
         throw error;
     }
+}
+
+// Leave Pools
+export async function getLeavePool({id} = {}) {
+    if (!id || isNaN(id)) {
+        const pools = await LeavePool.findAll({ raw: true });
+
+        if (!pools || pools.length === 0)
+            return [];
+
+        return pools;
+    }
+
+    return await LeavePool.findByPk(id) || null;
+}
+
+export async function createLeavePool(data) {
+    if (!data.name || !data.amount || !data.start_date || !data.end_date) 
+        return { success: false, message: 'Mandatory data not provided.' };
+
+    if (data.parent_pool && !(await LeavePool.findByPk(data.parent_pool)))
+        return { success: false, message: 'Parent pool not found.' };
+
+    const pool = await LeavePool.create({
+        id: await randomId(LeavePool),
+        name: data.name,
+        amount: data.amount,
+        parent_pool: data.parent_pool || null,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        comp_holiday: data.comp_holiday || false,
+        comp_weekend: data.comp_weekend || false
+    });
+
+    return { success: true, message: 'LeavePool created successfully.', id: pool.id };
+}
+
+export async function updateLeavePool(id, data) {
+    if (!id) 
+        return { success: false, message: 'Leave Pool ID not provided.' };
+
+    if (data.parent_pool && !(await LeavePool.findByPk(data.parent_pool)))
+        return { success: false, message: 'Parent Pool not found.' };
+
+    const pool = await LeavePool.findOne({ where: { id } });
+
+    if (!pool) 
+        return { success: false, message: 'LeavePool not found.' };
+
+    await pool.update(data);
+
+    return { success: true, message: 'LeavePool updated successfully.' };
+}
+
+export async function deleteLeavePool(id) {
+    if (!isNumberOrNumberArray(id)) 
+        return { success: false, message: 'Invalid LeavePool ID(s) provided.' };
+    
+    const deleted = await LeavePool.destroy({ where: { id } });
+    
+    if (!deleted)
+        return { success: false, message: 'No LeavePools found to delete.' };
+    
+    return { 
+        success: true,
+        message: `${deleted} LeavePool${deleted > 1 ? 's' : ''} deleted successfully.`,
+        deletedCount: deleted 
+    };
+}
+
+// Leave Types
+export async function getLeaveType({id} = {}) {
+    if (!id || isNaN(id)) {
+        const types = await LeaveType.findAll({ raw: true });
+        
+        if (!types || types.length === 0) 
+            return [];
+        
+        return types;
+    }
+
+    return await LeaveType.findByPk(id) || null;
+}
+
+export async function createLeaveType(data) {
+    if (!data.name || !data.leave_pool)
+        return { success: false, message: 'Mandatory data not provided.' };
+    
+    if (!(await LeavePool.findOne({ where: { id: data.leave_pool } }))) 
+        return { success: false, message: 'LeavePool not found.' };
+    
+    const type = await LeaveType.create({
+        id: await randomId(LeaveType),
+        name: data.name,
+        leave_pool: data.leave_pool,
+        color: data.color || null
+    });
+
+    return { success: true, message: 'LeaveType created successfully.', id: type.id };
+}
+
+export async function updateLeaveType(id, data) {
+    if (!id) 
+        return { success: false, message: 'LeaveType ID not provided.' };
+    
+    const type = await LeaveType.findOne({ where: { id } });
+    
+    if (!type)
+        return { success: false, message: 'LeaveType not found.' };
+    
+    if (data.leave_pool && !(await LeavePool.findOne({ where: { id: data.leave_pool } })))
+        return { success: false, message: 'LeavePool not found.' };
+    
+    await type.update(data);
+
+    return { success: true, message: 'LeaveType updated successfully.' };
+}
+
+export async function deleteLeaveType(id) {
+    if (!isNumberOrNumberArray(id)) 
+        return { success: false, message: 'Invalid LeaveType ID(s) provided.' };
+    
+    const deleted = await LeaveType.destroy({ where: { id } });
+    
+    if (!deleted) 
+        return { success: false, message: 'No LeaveTypes found to delete.' };
+    
+    return { 
+        success: true, 
+        message: `${deleted} LeaveType${deleted > 1 ? 's' : ''} deleted successfully.`, 
+        deletedCount: deleted 
+    };
+}
+
+// Leaves
+export async function getLeave({id} = {}) {
+    if (!id || isNaN(id)) {
+        const leaves = await Leave.findAll({ raw: true });
+        if (!leaves || leaves.length === 0) return [];
+        return leaves;
+    }
+    return await Leave.findByPk(id) || null;
+}
+
+export async function createLeave(data) {
+    if (!data.type || !data.start_date || !data.end_date || !data.days || !data.status || !data.user) {
+        return { success: false, message: 'Mandatory data not provided.' };
+    }
+    if (!(await LeaveType.findOne({ where: { id: data.type } }))) {
+        return { success: false, message: 'LeaveType not found.' };
+    }
+    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
+        return { success: false, message: 'RequestStatus not found.' };
+    }
+    if (!(await User.findOne({ where: { id: data.user } }))) {
+        return { success: false, message: 'User not found.' };
+    }
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+        return { success: false, message: 'Approver not found.' };
+    }
+    const leave = await Leave.create({
+        id: await randomId(Leave),
+        type: data.type,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        days: data.days,
+        status: data.status,
+        user: data.user,
+        approver: data.approver || null,
+        user_note: data.user_note || null,
+        approver_note: data.approver_note || null
+    });
+    return { success: true, message: 'Leave created successfully.', id: leave.id };
+}
+
+export async function updateLeave(id, data) {
+    if (!id) return { success: false, message: 'Leave ID not provided.' };
+    const leave = await Leave.findOne({ where: { id } });
+    if (!leave) return { success: false, message: 'Leave not found.' };
+    if (data.type && !(await LeaveType.findOne({ where: { id: data.type } }))) {
+        return { success: false, message: 'LeaveType not found.' };
+    }
+    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) {
+        return { success: false, message: 'RequestStatus not found.' };
+    }
+    if (data.user && !(await User.findOne({ where: { id: data.user } }))) {
+        return { success: false, message: 'User not found.' };
+    }
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+        return { success: false, message: 'Approver not found.' };
+    }
+    await leave.update(data);
+    return { success: true, message: 'Leave updated successfully.' };
+}
+
+export async function deleteLeave(id) {
+    if (!isNumberOrNumberArray(id)) return { success: false, message: 'Invalid Leave ID(s) provided.' };
+    const deleted = await Leave.destroy({ where: { id } });
+    if (!deleted) return { success: false, message: 'No Leaves found to delete.' };
+    return { success: true, message: `${deleted} Leave${deleted > 1 ? 's' : ''} deleted successfully.`, deletedCount: deleted };
+}
+
+// Request Statuses
+export async function getRequestStatus({id} = {}) {
+    if (!id || isNaN(id)) {
+        const statuses = await RequestStatus.findAll({ raw: true });
+        if (!statuses || statuses.length === 0) return [];
+        return statuses;
+    }
+    return await RequestStatus.findByPk(id) || null;
+}
+
+export async function createRequestStatus(data) {
+    if (!data.name) {
+        return { success: false, message: 'Mandatory data not provided.' };
+    }
+    const status = await RequestStatus.create({
+        id: await randomId(RequestStatus),
+        name: data.name
+    });
+    return { success: true, message: 'RequestStatus created successfully.', id: status.id };
+}
+
+export async function updateRequestStatus(id, data) {
+    if (!id) return { success: false, message: 'RequestStatus ID not provided.' };
+    const status = await RequestStatus.findOne({ where: { id } });
+    if (!status) return { success: false, message: 'RequestStatus not found.' };
+    await status.update(data);
+    return { success: true, message: 'RequestStatus updated successfully.' };
+}
+
+export async function deleteRequestStatus(id) {
+    if (!isNumberOrNumberArray(id)) return { success: false, message: 'Invalid RequestStatus ID(s) provided.' };
+    const deleted = await RequestStatus.destroy({ where: { id } });
+    if (!deleted) return { success: false, message: 'No RequestStatuses found to delete.' };
+    return { success: true, message: `${deleted} RequestStatus${deleted > 1 ? 'es' : ''} deleted successfully.`, deletedCount: deleted };
+}
+
+// Holiday Working
+export async function getHolidayWorking({id} = {}) {
+    if (!id || isNaN(id)) {
+        const workings = await HolidayWorking.findAll({ raw: true });
+        if (!workings || workings.length === 0) return [];
+        return workings;
+    }
+    return await HolidayWorking.findByPk(id) || null;
+}
+
+export async function createHolidayWorking(data) {
+    if (!data.holiday || !data.status || !data.user) {
+        return { success: false, message: 'Mandatory data not provided.' };
+    }
+    if (!(await Holiday.findOne({ where: { id: data.holiday } }))) {
+        return { success: false, message: 'Holiday not found.' };
+    }
+    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
+        return { success: false, message: 'RequestStatus not found.' };
+    }
+    if (!(await User.findOne({ where: { id: data.user } }))) {
+        return { success: false, message: 'User not found.' };
+    }
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+        return { success: false, message: 'Approver not found.' };
+    }
+    const working = await HolidayWorking.create({
+        id: await randomId(HolidayWorking),
+        holiday: data.holiday,
+        status: data.status,
+        user: data.user,
+        approver: data.approver || null,
+        user_note: data.user_note || null,
+        approver_note: data.approver_note || null
+    });
+    return { success: true, message: 'HolidayWorking created successfully.', id: working.id };
+}
+
+export async function updateHolidayWorking(id, data) {
+    if (!id) return { success: false, message: 'HolidayWorking ID not provided.' };
+    const working = await HolidayWorking.findOne({ where: { id } });
+    if (!working) return { success: false, message: 'HolidayWorking not found.' };
+    if (data.holiday && !(await Holiday.findOne({ where: { id: data.holiday } }))) {
+        return { success: false, message: 'Holiday not found.' };
+    }
+    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) {
+        return { success: false, message: 'RequestStatus not found.' };
+    }
+    if (data.user && !(await User.findOne({ where: { id: data.user } }))) {
+        return { success: false, message: 'User not found.' };
+    }
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+        return { success: false, message: 'Approver not found.' };
+    }
+    await working.update(data);
+    return { success: true, message: 'HolidayWorking updated successfully.' };
+}
+
+export async function deleteHolidayWorking(id) {
+    if (!isNumberOrNumberArray(id)) return { success: false, message: 'Invalid HolidayWorking ID(s) provided.' };
+    const deleted = await HolidayWorking.destroy({ where: { id } });
+    if (!deleted) return { success: false, message: 'No HolidayWorkings found to delete.' };
+    return { success: true, message: `${deleted} HolidayWorking${deleted > 1 ? 's' : ''} deleted successfully.`, deletedCount: deleted };
+}
+
+// Weekend Working
+export async function getWeekendWorking({id} = {}) {
+    if (!id || isNaN(id)) {
+        const workings = await WeekendWorking.findAll({ raw: true });
+        if (!workings || workings.length === 0) return [];
+        return workings;
+    }
+    return await WeekendWorking.findByPk(id) || null;
+}
+
+export async function createWeekendWorking(data) {
+    if (!data.date || !data.status || !data.user) {
+        return { success: false, message: 'Mandatory data not provided.' };
+    }
+    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
+        return { success: false, message: 'RequestStatus not found.' };
+    }
+    if (!(await User.findOne({ where: { id: data.user } }))) {
+        return { success: false, message: 'User not found.' };
+    }
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+        return { success: false, message: 'Approver not found.' };
+    }
+    const working = await WeekendWorking.create({
+        id: await randomId(WeekendWorking),
+        date: data.date,
+        status: data.status,
+        user: data.user,
+        approver: data.approver || null,
+        user_note: data.user_note || null,
+        approver_note: data.approver_note || null
+    });
+    return { success: true, message: 'WeekendWorking created successfully.', id: working.id };
+}
+
+export async function updateWeekendWorking(id, data) {
+    if (!id) return { success: false, message: 'WeekendWorking ID not provided.' };
+    const working = await WeekendWorking.findOne({ where: { id } });
+    if (!working) return { success: false, message: 'WeekendWorking not found.' };
+    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) {
+        return { success: false, message: 'RequestStatus not found.' };
+    }
+    if (data.user && !(await User.findOne({ where: { id: data.user } }))) {
+        return { success: false, message: 'User not found.' };
+    }
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+        return { success: false, message: 'Approver not found.' };
+    }
+    await working.update(data);
+    return { success: true, message: 'WeekendWorking updated successfully.' };
+}
+
+export async function deleteWeekendWorking(id) {
+    if (!isNumberOrNumberArray(id)) return { success: false, message: 'Invalid WeekendWorking ID(s) provided.' };
+    const deleted = await WeekendWorking.destroy({ where: { id } });
+    if (!deleted) return { success: false, message: 'No WeekendWorkings found to delete.' };
+    return { success: true, message: `${deleted} WeekendWorking${deleted > 1 ? 's' : ''} deleted successfully.`, deletedCount: deleted };
+}
+
+// Disposition Presets
+export async function getDispositionPreset({id} = {}) {
+    if (!id || isNaN(id))
+        return await DispositionPreset.findAll({ raw: true });
+
+    return await DispositionPreset.findByPk(id) || null;
+}
+
+export async function createDispositionPreset(data) {
+    if (!data.name || !data.start_time || !data.end_time)
+        return { success: false, message: 'Mandatory data not provided.' };
+
+    const preset = await DispositionPreset.create({
+        id: await randomId(DispositionPreset),
+        name: data.name,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        color: data.color || null
+    });
+
+    return { success: true, message: 'Disposition Preset created successfully.', id: preset.id };
+}
+
+export async function updateDispositionPreset(id, data) {
+    if (!id) 
+        return { success: false, message: 'Disposition Preset ID not provided.' };
+
+    const preset = await DispositionPreset.findOne({ where: { id } });
+
+    if (!preset) 
+        return { success: false, message: 'Disposition Preset not found.' };
+
+    await preset.update(data);
+
+    return { success: true, message: 'Disposition Preset updated successfully.' };
+}
+
+export async function deleteDispositionPreset(id) {
+    if (!isNumberOrNumberArray(id)) 
+        return { success: false, message: 'Invalid Disposition Preset ID(s) provided.' };
+
+    const deleted = await DispositionPreset.destroy({ where: { id } });
+
+    if (!deleted) 
+        return { success: false, message: 'No Disposition Presets found to delete.' };
+
+    return { 
+        success: true, 
+        message: `${deleted} Disposition Preset${deleted > 1 ? 's' : ''} deleted successfully.`, 
+        deletedCount: deleted 
+    };
+}
+
+// Dispositions
+export async function getDisposition({id, user, date} = {}) {
+    if (!id || isNaN(id)) {
+        const where = {};
+
+        if (user)
+            where.user = user;
+
+        if (date) {
+            const startOfDay = `${date} 00:00:00`;
+            const endOfDay = `${date} 23:59:59`;
+            where.start_time = { [Op.gte]: startOfDay };
+            where.end_time = { [Op.lte]: endOfDay };
+        }
+
+        return await Disposition.findAll({ raw: true, where });
+    }
+
+    return await Disposition.findByPk(id) || null;
+}
+
+export async function createDisposition(data) {
+    if (!data.user || !data.start_time || !data.end_time)
+        return { success: false, message: 'Mandatory data not provided.' };
+    
+    if (!(await User.findOne({ where: { id: data.user } }))) 
+        return { success: false, message: 'User not found.' };
+    
+    if (data.preset && !(await DispositionPreset.findOne({ where: { id: data.preset } }))) 
+        return { success: false, message: 'Disposition Preset not recognised.' };
+    
+    const disposition = await Disposition.create({
+        id: await randomId(Disposition),
+        user: data.user,
+        start_time: data.start_time,
+        end_time: data.end_time,
+        preset: data.preset || null,
+        notes: data.notes || null
+    });
+    
+    return { success: true, message: 'Disposition created successfully.', id: disposition.id };
+}
+
+export async function updateDisposition(id, data) {
+    if (!id) 
+        return { success: false, message: 'Disposition ID not provided.' };
+
+    const disposition = await Disposition.findOne({ where: { id } });
+
+    if (!disposition) 
+        return { success: false, message: 'Disposition not found.' };
+
+    if (data.user && !(await User.findOne({ where: { id: data.user } })))
+        return { success: false, message: 'User not found.' };
+    
+    if (data.preset && !(await DispositionPreset.findOne({ where: { id: data.preset } }))) 
+        return { success: false, message: 'Disposition Preset not found.' };
+    
+    await disposition.update(data);
+
+    return { success: true, message: 'Disposition updated successfully.' };
+}
+
+export async function deleteDisposition(id) {
+    if (!isNumberOrNumberArray(id)) 
+        return { success: false, message: 'Invalid Disposition ID(s) provided.' };
+
+    const deleted = await Disposition.destroy({ where: { id } });
+
+    if (!deleted) 
+        return { success: false, message: 'No Dispositions found to delete.' };
+    
+    return { 
+        success: true, 
+        message: `${deleted} Disposition${deleted > 1 ? 's' : ''} deleted successfully.`, 
+        deletedCount: deleted 
+    };
 }
