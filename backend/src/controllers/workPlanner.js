@@ -130,7 +130,7 @@ export async function updateSchedule(id, data) {
  * @param {boolean} delete_shifts - optional - Should shifts within this Schedule be deleted. True by default.
  * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
-export async function deleteSchedule({id, delete_shifts=true}) {
+export async function deleteSchedule({id, delete_shifts=true} = {}) {
     if (!isNumberOrNumberArray(id))
         return { 
             success: false, 
@@ -283,7 +283,7 @@ export async function updateJobPost(id, data) {
  * @param {boolean} delete_shifts - optional - Should shifts within this Schedule be deleted. False by default.
  * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
-export async function deleteJobPost({id, delete_shifts=false}) {
+export async function deleteJobPost({id, delete_shifts=false} = {}) {
     if (!isNumberOrNumberArray(id))
         return { 
             success: false, 
@@ -403,13 +403,35 @@ export async function createShift(data) {
     if (!data.start_time)
         return {
             success: false,
-            message: 'Start time is required to create a new shift.'
+            message: 'Start time must be provided.'
+        }
+
+    data.start_time = new Date(data.start_time);
+
+    if (!(data.start_time instanceof Date && isNaN(data.start_time)))
+        return {
+            success: false,
+            message: 'Invalid start time of the shift provided.'
         }
         
     if (!data.end_time)
         return {
             success: false,
-            message: 'Start time is required to create a new shift.'
+            message: 'End time must be provided.'
+        }
+
+    data.end_time = new Date(data.end_time);
+
+    if (!(data.end_time instanceof Date && isNaN(data.end_time)))
+        return {
+            success: false,
+            message: 'Invalid end time of the shift provided.'
+        }
+
+    if (data.start_time > data.end_time)
+        return {
+            success: false,
+            message: 'Start time cannot be greater than an end time.'
         }
 
     if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
@@ -440,12 +462,109 @@ export async function createShift(data) {
     };
 }
 
+/**
+ * Updates an existing Shift.
+ * @param {number} id - Shift ID
+ * @param {Object} data - Shift data to update
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
 export async function updateShift(id, data) {
-    return await Shift.update(data, { where: { id } });
+    if (!id)
+        return {
+            success: false, 
+            message: 'Shift ID not provided.'
+        };
+    
+    const shift = await Shift.findOne({ where: { id } });
+
+    if (!shift)
+        return {
+            success: false, 
+            message: 'Shift not found.'
+        };
+
+    await shift.update(data);
+
+    if (data.user && !(await User.findOne({ where: { id: data.user } })))
+        return {
+            success: false,
+            message: 'Provided User not found.'
+        }
+
+    if (data.start_time)
+        data.start_time = new Date(data.start_time);
+    else
+        data.start_time = new Date(shift.start_time);
+
+
+    if (!(data.start_time instanceof Date && isNaN(data.start_time)))
+        return {
+            success: false,
+            message: 'Invalid start time of the shift provided.'
+        }
+        
+    if (data.end_time)
+        data.end_time = new Date(data.end_time);
+    else
+        data.end_time = new Date(shift.end_time);
+
+
+    if (!(data.end_time instanceof Date && isNaN(data.end_time)))
+        return {
+            success: false,
+            message: 'Invalid end time of the shift provided.'
+        }
+
+    if (data.start_time > data.end_time)
+        return {
+            success: false,
+            message: 'Start time cannot be greater than an end time.'
+        }
+
+    if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
+        return {
+            success: false,
+            message: 'Provided Job Post not found.'
+        }
+
+    if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
+        return {
+            success: false,
+            message: 'Provided Schedule not found.'
+        }
+
+    return {
+        success: true,
+        message: 'Shift updated succesffully.'
+    }
 }
 
-export async function deleteShifts(id) {
-    return await Shift.destroy({ where: { id } });
+/**
+ * Deletes one or multiple Shifts.
+ * @param {number|number[]} id - Single Shift ID or array of Shift IDs
+ * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
+ */
+export async function deleteShift({id} = {}) {
+    if (!isNumberOrNumberArray(id))
+        return { 
+            success: false, 
+            message: `Invalid Shift ID${Array.isArray(id) ? 's' : ''} provided.` 
+        };
+    
+    const deletedShifts = await Shift.destroy({ where: { id } });
+
+    if (!deletedShifts)
+        return { 
+            success: false, 
+            message: `No Shifts found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
+                ${Array.isArray(id) ? id.join(', ') : id}` 
+        };
+
+    return { 
+        success: true, 
+        message: `${deletedShifts} Shift${deletedShifts > 1 ? 's' : ''} deleted successfully.`,
+        deletedCount: deletedShifts 
+    };
 }
 
 // Holidays
@@ -589,24 +708,4 @@ export async function deleteHoliday(id) {
         await transaction.rollback();
         throw error;
     }
-}
-
-// Job Posts
-export async function createJobPost(data) {
-    if (!data.name) {
-        throw new Error('Job Post name is required');
-    }
-    return JobPost.create(data);
-}
-
-export async function getJobPost(where) {
-    return await JobPost.findAll(where) || [];
-}
-
-export async function updateJobPost(id, data) {
-    return await JobPost.update(data, { where: { id } });
-}
-
-export async function deleteJobPost(id) {
-    return await JobPost.destroy({ where: { id } });
 }
