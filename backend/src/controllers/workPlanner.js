@@ -55,7 +55,8 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
     if (!schedule) 
         return null;
 
-    if (include_shifts) schedule.shifts = await getShift({schedule: schedule.id});
+    if (include_shifts) 
+        schedule.shifts = await getShift({schedule: schedule.id});
         
     return schedule;
 }
@@ -70,10 +71,10 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
  */
 export async function createSchedule(data) {
     if (!data.author) 
-        return { success: false, message: 'Schedule Author not provided.' }
+        return { success: false, message: 'Schedule Author not provided.' };
 
     if (!(await getUser(data.author))) 
-        return { success: false, message: 'Specified Author User not found.' }
+        return { success: false, message: 'Specified Author User not found.' };
 
     const schedule = Schedule.create({
         id: await randomId(Schedule),
@@ -101,11 +102,11 @@ export async function updateSchedule(id, data) {
         return { success: false, message: 'Schedule not found.' };
 
     if (data.author && !(await getUser(data.author)))
-        return { success: false, message: 'Specified Author User not found.' }
+        return { success: false, message: 'Specified Author User not found.' };
 
     await schedule.update(data);
     
-    return { success: true, message: 'Schedule updated succesffully.' }
+    return { success: true, message: 'Schedule updated succesffully.' };
 }
 
 /**
@@ -121,9 +122,9 @@ export async function deleteSchedule({id, delete_shifts=true} = {}) {
     const transaction = await sequelize.transaction();
     
     try {
-        const deleted = await Schedule.destroy({ where: { id }, transaction });
+        const deletedCount = await Schedule.destroy({ where: { id }, transaction });
 
-        if (!deleted) {
+        if (!deletedCount) {
             await transaction.rollback();
             return { 
                 success: false, 
@@ -142,14 +143,13 @@ export async function deleteSchedule({id, delete_shifts=true} = {}) {
 
         return { 
             success: true, 
-            message: `${deleted} Schedule${deleted > 1 ? 's' : ''} deleted successfully.`,
-            deletedCount: deleted 
+            message: `${deletedCount} Schedule${deletedCount > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount 
         };
     
     } catch (error) {
         await transaction.rollback();
         throw error;
-
     }
 }
 
@@ -199,16 +199,10 @@ export async function getJobPost({id, include_shifts=false} = {}) {
  */
 export async function createJobPost(data) {
     if (!data.name)
-        return {
-            success: false,
-            message: 'Job Post name is required.'
-        }
+        return { success: false, message: 'Job Post name is required.' };
 
     if (await JobPost.findOne({ where: { name: data.name } }))
-        return {
-            success: false,
-            message: 'There already is a Job Post with provided name. Use different one.'
-        }
+        return { success: false, message: 'There already is a Job Post with provided name. Use different one.' }
 
     const jobPost = JobPost.create({
         id: await randomId(JobPost),
@@ -216,11 +210,7 @@ export async function createJobPost(data) {
         color: data.color || null
     });
 
-    return {
-        success: true,
-        message: 'Job Post created succesffully.',
-        id: jobPost.id
-    };
+    return { success: true, message: 'Job Post created succesffully.', id: jobPost.id };
 }
 
 /**
@@ -231,31 +221,19 @@ export async function createJobPost(data) {
  */
 export async function updateJobPost(id, data) {
     if (!id)
-        return {
-            success: false, 
-            message: 'Job Post ID not provided.'
-        };
+        return { success: false, message: 'Job Post ID not provided.' };
     
     const jobPost = await JobPost.findOne({ where: { id } });
 
     if (!jobPost)
-        return {
-            success: false, 
-            message: 'Job Post not found.'
-        };
+        return { success: false, message: 'Job Post not found.' };
 
     if (data.name && await JobPost.findOne({ where: { name: data.name } }))
-        return {
-            success: false,
-            message: 'There already is a Job Post with provided name. Use different one.'
-        }
+        return { success: false, message: 'There already is a Job Post with provided name. Use different one.' };
 
     await jobPost.update(data);
     
-    return {
-        success: true,
-        message: 'Job Post updated succesffully.'
-    }
+    return { success: true, message: 'Job Post updated succesffully.' };
 }
 
 /**
@@ -266,17 +244,14 @@ export async function updateJobPost(id, data) {
  */
 export async function deleteJobPost({id, delete_shifts=false} = {}) {
     if (!isNumberOrNumberArray(id))
-        return { 
-            success: false, 
-            message: `Invalid Job Post ID${Array.isArray(id) ? 's' : ''} provided.` 
-        };
+        return { success: false, message: `Invalid Job Post ID${Array.isArray(id) ? 's' : ''} provided.` };
 
     const transaction = await sequelize.transaction();
     
     try {
-        const deletedJobPosts = await JobPost.destroy({ where: { id }, transaction });
+        const deletedCount = await JobPost.destroy({ where: { id }, transaction });
 
-        if (!deletedJobPosts) {
+        if (!deletedCount) {
             await transaction.rollback();
             return { 
                 success: false, 
@@ -295,8 +270,8 @@ export async function deleteJobPost({id, delete_shifts=false} = {}) {
 
         return { 
             success: true, 
-            message: `${deletedJobPosts} Job Post${deletedJobPosts > 1 ? 's' : ''} deleted successfully.`,
-            deletedCount: deletedJobPosts 
+            message: `${deletedCount} Job Post${deletedCount > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount 
         };
     
     } catch (error) {
@@ -330,13 +305,21 @@ export async function getShift({id, user, job_post, schedule, start_time, end_ti
     if (isNumberOrNumberArray(schedule))
         where.schedule = schedule;
 
-    if (start_time)
-        where.start_time = {[Op.gte]: start_time};
+    if (date) {
+        const startOfDay = `${date} 00:00:00`;
+        const endOfDay = `${date} 23:59:59`;
+        
+        where.start_time = { [Op.gte]: startOfDay };
+        where.end_time = { [Op.lte]: endOfDay };
+    } else {
+        if (start_time)
+            where.start_time = {[Op.gte]: start_time};
 
-    if (end_time)
-        where.end_time = {[Op.lte]: end_time};
+        if (end_time)
+            where.end_time = {[Op.lte]: end_time};
+    }
 
-    const include = [{model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule];
+    const include = [{ model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule ];
 
     const shifts = await Shift.findAll({ where, include });
 
@@ -370,62 +353,35 @@ export async function getShift({id, user, job_post, schedule, start_time, end_ti
  */
 export async function createShift(data) {
     if (!data.user)
-        return {
-            success: false,
-            message: 'User is required to create a new shift.'
-        }
+        return { success: false, message: 'User is required to create a new shift.' };
 
     if (!(await getUser(data.author)))
-        return {
-            success: false,
-            message: 'Specified Shift User not found.'
-        }
+        return { success: false, message: 'Specified Shift User not found.' };
 
     if (!data.start_time)
-        return {
-            success: false,
-            message: 'Start time must be provided.'
-        }
+        return { success: false, message: 'Start time must be provided.' };
 
     data.start_time = new Date(data.start_time);
 
     if (!(data.start_time instanceof Date && isNaN(data.start_time)))
-        return {
-            success: false,
-            message: 'Invalid start time of the shift provided.'
-        }
+        return { success: false, message: 'Invalid start time of the shift provided.' };
         
     if (!data.end_time)
-        return {
-            success: false,
-            message: 'End time must be provided.'
-        }
+        return { success: false, message: 'End time must be provided.' };
 
     data.end_time = new Date(data.end_time);
 
     if (!(data.end_time instanceof Date && isNaN(data.end_time)))
-        return {
-            success: false,
-            message: 'Invalid end time of the shift provided.'
-        }
+        return { success: false, message: 'Invalid end time of the shift provided.' };
 
     if (data.start_time > data.end_time)
-        return {
-            success: false,
-            message: 'Start time cannot be greater than an end time.'
-        }
+        return { success: false, message: 'Start time cannot be greater than an end time.' };
 
     if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
-        return {
-            success: false,
-            message: 'Job Post with provided ID not found.'
-        }
+        return { success: false, message: 'Job Post with provided ID not found.' };
         
     if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
-        return {
-            success: false,
-            message: 'Schedule with provided ID not found.'
-        }
+        return { success: false, message: 'Schedule with provided ID not found.' };
 
     const shift = Shift.create({
         id: await randomId(Shift),
@@ -436,11 +392,7 @@ export async function createShift(data) {
         schedule: data.schedule || null
     });
 
-    return {
-        success: true,
-        message: 'Shift created succesffully.',
-        id: shift.id
-    };
+    return { success: true, message: 'Shift created succesffully.', id: shift.id };
 }
 
 /**
@@ -451,26 +403,17 @@ export async function createShift(data) {
  */
 export async function updateShift(id, data) {
     if (!id)
-        return {
-            success: false, 
-            message: 'Shift ID not provided.'
-        };
+        return { success: false, message: 'Shift ID not provided.' };
     
     const shift = await Shift.findOne({ where: { id } });
 
     if (!shift)
-        return {
-            success: false, 
-            message: 'Shift not found.'
-        };
+        return { success: false, message: 'Shift not found.' };
 
     await shift.update(data);
 
     if (data.user && !(await User.findOne({ where: { id: data.user } })))
-        return {
-            success: false,
-            message: 'Provided User not found.'
-        }
+        return { success: false, message: 'Provided User not found.' };
 
     if (data.start_time)
         data.start_time = new Date(data.start_time);
@@ -479,10 +422,7 @@ export async function updateShift(id, data) {
 
 
     if (!(data.start_time instanceof Date && isNaN(data.start_time)))
-        return {
-            success: false,
-            message: 'Invalid start time of the shift provided.'
-        }
+        return { success: false, message: 'Invalid start time of the shift provided.' };
         
     if (data.end_time)
         data.end_time = new Date(data.end_time);
@@ -491,33 +431,18 @@ export async function updateShift(id, data) {
 
 
     if (!(data.end_time instanceof Date && isNaN(data.end_time)))
-        return {
-            success: false,
-            message: 'Invalid end time of the shift provided.'
-        }
+        return { success: false, message: 'Invalid end time of the shift provided.' };
 
     if (data.start_time > data.end_time)
-        return {
-            success: false,
-            message: 'Start time cannot be greater than an end time.'
-        }
+        return { success: false, message: 'Start time cannot be greater than an end time.' };
 
     if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
-        return {
-            success: false,
-            message: 'Provided Job Post not found.'
-        }
+        return { success: false, message: 'Provided Job Post not found.' };
 
     if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
-        return {
-            success: false,
-            message: 'Provided Schedule not found.'
-        }
+        return { success: false, message: 'Provided Schedule not found.' };
 
-    return {
-        success: true,
-        message: 'Shift updated succesffully.'
-    }
+    return { success: true, message: 'Shift updated succesffully.' };
 }
 
 /**
@@ -527,14 +452,11 @@ export async function updateShift(id, data) {
  */
 export async function deleteShift({id} = {}) {
     if (!isNumberOrNumberArray(id))
-        return { 
-            success: false, 
-            message: `Invalid Shift ID${Array.isArray(id) ? 's' : ''} provided.` 
-        };
+        return { success: false, message: `Invalid Shift ID${Array.isArray(id) ? 's' : ''} provided.` };
     
-    const deletedShifts = await Shift.destroy({ where: { id } });
+    const deletedCount = await Shift.destroy({ where: { id } });
 
-    if (!deletedShifts)
+    if (!deletedCount)
         return { 
             success: false, 
             message: `No Shifts found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
@@ -543,8 +465,8 @@ export async function deleteShift({id} = {}) {
 
     return { 
         success: true, 
-        message: `${deletedShifts} Shift${deletedShifts > 1 ? 's' : ''} deleted successfully.`,
-        deletedCount: deletedShifts 
+        message: `${deletedCount} Shift${deletedCount > 1 ? 's' : ''} deleted successfully.`,
+        deletedCount 
     };
 }
 
@@ -556,20 +478,9 @@ export async function deleteShift({id} = {}) {
  * @param {string} end_date - optional -
  * @returns {Promise<Object|Object[]|null>} Single Holiday, array of Holidays, or null
  */
-export async function getHoliday({id, start_date, end_date} = {}) {
-
-    if (!id) {    
-        const where = {};
-
-        if (start_date && end_date)
-            where.date = {[Op.between]: [start_date, end_date]}
-        else if (start_date)
-            where.date = {[Op.gte]: start_date}
-        else if (end_date)
-            where.date = {[Op.lte]: end_date}
-        
-        return await Holiday.findAll({ where }) || {};
-    }
+export async function getHoliday({id, date} = {}) {
+    if (!id)         
+        return await Holiday.findAll({ where: { date } }) || {};
 
     return await Holiday.findByPk(id) || null;
 }
@@ -584,22 +495,13 @@ export async function getHoliday({id, start_date, end_date} = {}) {
  */
 export async function createHoliday(data) {
     if (!data.name)
-        return {
-            success: false,
-            message: 'Name is required to create a new Holiday!'
-        };
+        return { success: false, message: 'Name is required to create a new Holiday!' };
 
     if (!data.date)
-        return {
-            success: false,
-            message: 'Date is required to create a new Holiday!'
-        };
+        return { success: false, message: 'Date is required to create a new Holiday!' };
 
     if (await Holiday.findOne({ where: { date: data.date }}))
-        return {
-            success: false,
-            message: 'There currently is Holiday marked for the specified date.'
-        };
+        return { success: false, message: 'There currently is Holiday marked for the specified date.' };
 
     const holiday = await Holiday.create({
         id: await randomId(Holiday),
@@ -608,11 +510,7 @@ export async function createHoliday(data) {
         requestable_working: data.requestable_working || true,
     });
 
-    return {
-        success: true,
-        message: 'Holiday created successfully.',
-        id: holiday.id
-    };
+    return { success: true, message: 'Holiday created successfully.', id: holiday.id };
 }
 
 /**
@@ -623,31 +521,19 @@ export async function createHoliday(data) {
  */
 export async function updateHoliday(id, data) {
     if (!id)
-        return {
-            success: false,
-            message: 'Holiday ID not provided.'
-        };
+        return { success: false, message: 'Holiday ID not provided.' };
 
     const holiday = await Holiday.findOne({ where: { id } });
 
     if (!holiday)
-        return {
-            success: false,
-            message: 'Role not found.'
-        };
+        return { success: false, message: 'Role not found.' };
 
     if (data.holiday && await Holiday.findOne({ where: { date: data.date }}))
-        return {
-            success: false,
-            message: 'There currently is other Holiday marked for the specified date.'
-        };
+        return { success: false, message: 'There currently is other Holiday marked for the specified date.' };
 
     await holiday.update(data);
 
-    return {
-        success: true,
-        message: 'Holiday updated successfully.'
-    };
+    return { success: true, message: 'Holiday updated successfully.' };
 }
 
 /**
@@ -658,10 +544,7 @@ export async function updateHoliday(id, data) {
 export async function deleteHoliday(id) {
 
     if (!isNumberOrNumberArray(id))
-        return {
-            success: false,
-            message: `Invalid Holiday ID${Array.isArray(id) ? 's' : ''} provided.`
-        };
+        return { success: false, message: `Invalid Holiday ID${Array.isArray(id) ? 's' : ''} provided.` };
 
     const transaction = await sequelize.transaction();
 
@@ -693,14 +576,8 @@ export async function deleteHoliday(id) {
 
 // Leave Pools
 export async function getLeavePool({id} = {}) {
-    if (!id || isNaN(id)) {
-        const pools = await LeavePool.findAll({ raw: true });
-
-        if (!pools || pools.length === 0)
-            return [];
-
-        return pools;
-    }
+    if (!id || isNaN(id))
+        return pools = await LeavePool.findAll({ raw: true });
 
     return await LeavePool.findByPk(id) || null;
 }
