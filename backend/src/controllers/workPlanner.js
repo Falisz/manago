@@ -289,7 +289,7 @@ export async function deleteJobPost({id, delete_shifts=false} = {}) {
  * @param {number|null} id - optional - Shift ID to fetch a specific Shift
  * @returns {Promise<Object|Object[]|null>} Single Shift, array of Shifts, or null
  */
-export async function getShift({id, user, job_post, schedule, start_time, end_time} = {}) {
+export async function getShift({id, user, job_post, schedule, date, start_time, end_time} = {}) {
 
     const where = {};
 
@@ -668,24 +668,73 @@ export async function deleteLeaveType(id) {
 }
 
 // Leaves
-export async function getLeave({id} = {}) {
-    if (!id || isNaN(id)) {
-        const leaves = await Leave.findAll({ raw: true });
-        if (!leaves || leaves.length === 0) return [];
-        return leaves;
+/**
+ * Retrieves one Leave by its ID or all Leaves if an ID is not provided.
+ * @param {number|null} id - optional - Shift ID to fetch a specific Shift
+ * @returns {Promise<Object|Object[]|null>} Single Shift, array of Shifts, or null
+ */
+export async function getLeave({id, user, approver, date, start_date, end_date} = {}) {
+
+    const where = {};
+
+    if (isNumberOrNumberArray(id))
+        where.id = id;
+
+    if (isNumberOrNumberArray(user))
+        where.user = user;
+
+    if (isNumberOrNumberArray(approver))
+        where.approver = approver;
+
+    if (date) {        
+        where.start_date = { [Op.gte]: date };
+        where.end_date = { [Op.lte]: date };
+
+    } else {
+        if (start_date)
+            where.start_date = {[Op.gte]: start_date};
+
+        if (end_date)
+            where.end_time = {[Op.lte]: end_date};
     }
-    return await Leave.findByPk(id) || null;
+
+    const include = [
+        { model: User, attributes: ['id', 'first_name', 'last_name']}, 
+        { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver'}
+    ];
+
+    const leaves = await Leave.findAll({ where, include });
+
+    if (!leaves || leaves.length === 0)
+        return [];
+
+    return await Promise.all(leaves.map(async leave => {
+        const rawData = leave.toJSON();
+
+        rawData.user = leave['User'].toJSON();
+        rawData.approveer = leave['Approver']?.toJSON();
+
+        delete rawData['User'];
+        delete rawData['Approver'];
+
+        return rawData;
+    }));
 }
 
+/**
+ * Creates a new Leave.
+ * @param {Object} data - Leave data
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
 export async function createLeave(data) {
-    if (!data.type || !data.start_date || !data.end_date || !data.days || !data.status || !data.user) {
+    if (!data.type || !data.start_date || !data.end_date || !data.days || !data.status || !data.user)
         return { success: false, message: 'Mandatory data not provided.' };
-    }
+    
     if (!(await LeaveType.findOne({ where: { id: data.type } }))) {
-        return { success: false, message: 'LeaveType not found.' };
+        return { success: false, message: 'Leave Type not found.' };
     }
     if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
-        return { success: false, message: 'RequestStatus not found.' };
+        return { success: false, message: 'Request Status not found.' };
     }
     if (!(await User.findOne({ where: { id: data.user } }))) {
         return { success: false, message: 'User not found.' };
