@@ -574,128 +574,95 @@ export async function deleteHoliday(id) {
     }
 }
 
-// Leave Pools
-export async function getLeavePool({id} = {}) {
-    if (!id || isNaN(id))
-        return pools = await LeavePool.findAll({ raw: true });
-
-    return await LeavePool.findByPk(id) || null;
-}
-
-export async function createLeavePool(data) {
-    if (!data.name || !data.amount || !data.start_date || !data.end_date) 
-        return { success: false, message: 'Mandatory data not provided.' };
-
-    if (data.parent_pool && !(await LeavePool.findByPk(data.parent_pool)))
-        return { success: false, message: 'Parent pool not found.' };
-
-    const pool = await LeavePool.create({
-        id: await randomId(LeavePool),
-        name: data.name,
-        amount: data.amount,
-        parent_pool: data.parent_pool || null,
-        start_date: data.start_date,
-        end_date: data.end_date,
-        comp_holiday: data.comp_holiday || false,
-        comp_weekend: data.comp_weekend || false
-    });
-
-    return { success: true, message: 'LeavePool created successfully.', id: pool.id };
-}
-
-export async function updateLeavePool(id, data) {
-    if (!id) 
-        return { success: false, message: 'Leave Pool ID not provided.' };
-
-    if (data.parent_pool && !(await LeavePool.findByPk(data.parent_pool)))
-        return { success: false, message: 'Parent Pool not found.' };
-
-    const pool = await LeavePool.findOne({ where: { id } });
-
-    if (!pool) 
-        return { success: false, message: 'LeavePool not found.' };
-
-    await pool.update(data);
-
-    return { success: true, message: 'LeavePool updated successfully.' };
-}
-
-export async function deleteLeavePool(id) {
-    if (!isNumberOrNumberArray(id)) 
-        return { success: false, message: 'Invalid LeavePool ID(s) provided.' };
-    
-    const deleted = await LeavePool.destroy({ where: { id } });
-    
-    if (!deleted)
-        return { success: false, message: 'No LeavePools found to delete.' };
-    
-    return { 
-        success: true,
-        message: `${deleted} LeavePool${deleted > 1 ? 's' : ''} deleted successfully.`,
-        deletedCount: deleted 
-    };
-}
-
 // Leave Types
+/**
+ * Retrieves one Leave Type by its ID or all Leave Types if an ID is not provided.
+ * @param {number|null} id - optional - Leave Type ID to fetch a specific Leave Type
+ * @returns {Promise<Object|Object[]|null>} Single Leave Type, array of Leave Types, or null
+ */
 export async function getLeaveType({id} = {}) {
-    if (!id || isNaN(id)) {
-        const types = await LeaveType.findAll({ raw: true });
-        
-        if (!types || types.length === 0) 
-            return [];
-        
-        return types;
-    }
+    if (!id || isNaN(id)) 
+        return await LeaveType.findAll({ raw: true });
 
-    return await LeaveType.findByPk(id) || null;
+    return await LeaveType.findOne({ where: {id}, raw: true });
 }
 
+/**
+ * Creates a new Leave Type.
+ * @param {Object} data - Leave Type data
+ * @param {string} data.name - Leave Type name
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
 export async function createLeaveType(data) {
-    if (!data.name || !data.leave_pool)
-        return { success: false, message: 'Mandatory data not provided.' };
+    if (!data.name)
+        return { success: false, message: 'Leave Type name is required.' };
     
-    if (!(await LeavePool.findOne({ where: { id: data.leave_pool } }))) 
-        return { success: false, message: 'LeavePool not found.' };
+    if (await LeaveType.findOne({ where: { name: data.name } }))
+        return { success: false, message: 'Leave Type name is currently used.' };
+
+    if (data.parent_type && !(await LeaveType.findOne({ where: { id: data.parent_type}})))
+        return { success: false, message: 'Parent Leave Type not found.'};
+
+    if (data.amount && isNaN(data.amount))
+        return { success: false, message: 'Leave amount must be a number.'};
     
     const type = await LeaveType.create({
         id: await randomId(LeaveType),
         name: data.name,
-        leave_pool: data.leave_pool,
+        parent_type: data.parent_type || null,
+        amount: data.amount || null,
         color: data.color || null
     });
 
     return { success: true, message: 'LeaveType created successfully.', id: type.id };
 }
 
+/**
+ * Updates an existing Leave Type.
+ * @param {number} id - Leave Type ID
+ * @param {Object} data - Leave Type data to update
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
 export async function updateLeaveType(id, data) {
     if (!id) 
         return { success: false, message: 'LeaveType ID not provided.' };
     
-    const type = await LeaveType.findOne({ where: { id } });
+    const leaveType = await LeaveType.findOne({ where: { id } });
     
-    if (!type)
+    if (!leaveType)
         return { success: false, message: 'LeaveType not found.' };
     
-    if (data.leave_pool && !(await LeavePool.findOne({ where: { id: data.leave_pool } })))
-        return { success: false, message: 'LeavePool not found.' };
-    
-    await type.update(data);
+    if (data.name && await LeaveType.findOne({ where: { name: data.name } }))
+        return { success: false, message: 'Name provided is currently used by other Leave Type.' };
 
-    return { success: true, message: 'LeaveType updated successfully.' };
+    if (data.parent_type && !(await LeaveType.findOne({ where: { id: data.parent_type}})))
+        return { success: false, message: 'Provided parent Leave Type not found.'};
+
+    if (data.amount && isNaN(data.amount))
+        return { success: false, message: 'Leave amount must be a number.'};
+    
+    await leaveType.update(data);
+
+    return { success: true, message: 'Leave Type updated successfully.' };
 }
 
+/**
+ * Deletes one or multiple Leave Types and their assignments.
+ * @param {number|number[]} id - Single Leave Type ID or array of Leave Type IDs
+ * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
+ */
 export async function deleteLeaveType(id) {
     if (!isNumberOrNumberArray(id)) 
-        return { success: false, message: 'Invalid LeaveType ID(s) provided.' };
+        return { success: false, message: 'Invalid Leave Type ID(s) provided.' };
     
     const deleted = await LeaveType.destroy({ where: { id } });
     
     if (!deleted) 
-        return { success: false, message: 'No LeaveTypes found to delete.' };
+        return { success: false, message: 'No Leave Types found to delete.' };
     
     return { 
         success: true, 
-        message: `${deleted} LeaveType${deleted > 1 ? 's' : ''} deleted successfully.`, 
+        message: `${deleted} Leave Type${deleted > 1 ? 's' : ''} deleted successfully.`, 
         deletedCount: deleted 
     };
 }

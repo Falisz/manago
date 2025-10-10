@@ -83,48 +83,16 @@ export const RequestStatus = sequelize.define('RequestStatus', {
 });
 // 0: pending, 1: approved, 2: rejected, 3: cancelled
 
-export const LeavePool = sequelize.define('LeavePool', {
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    amount: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-    }, 
-    parent_pool: DataTypes.INTEGER,
-    start_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-    },
-    end_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,   
-    },
-    comp_holiday: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-    },
-    comp_weekend: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-    }
-}, { 
-    tableName: 'leave_pools',
-    timestamps: false
-});
-
 export const LeaveType = sequelize.define('LeaveType', {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    leave_pool: {
+    parent_type: {
         type: DataTypes.INTEGER,
-        references: { model: LeavePool, key: 'id' }
+        references: { model: 'leave_types', key: 'id' }
     },
+    amount: DataTypes.INTEGER,
     color: DataTypes.STRING
 }, { 
     tableName: 'leave_types',
@@ -286,13 +254,9 @@ Shift.belongsTo(JobPost, { foreignKey: 'job_post', targetKey: 'id' });
 Schedule.hasMany(Shift, { foreignKey: 'schedule', sourceKey: 'id' });
 Shift.belongsTo(Schedule, { foreignKey: 'schedule', targetKey: 'id' });
 //
-// LeavePool <-> LeavePool (self-referential parent-child)
-LeavePool.hasMany(LeavePool, { foreignKey: 'parent_pool' });
-LeavePool.belongsTo(LeavePool, { foreignKey: 'parent_pool' });
-//
 // LeavePool <-> LeaveType
-LeavePool.hasMany(LeaveType, { foreignKey: 'leave_pool', sourceKey: 'id' });
-LeaveType.belongsTo(LeavePool, { foreignKey: 'leave_pool', targetKey: 'id' });
+LeaveType.hasMany(LeaveType, { foreignKey: 'parent_type', sourceKey: 'id', as: 'SubType' });
+LeaveType.belongsTo(LeaveType, { foreignKey: 'parent_type', targetKey: 'id', as: 'ParentType' });
 //
 // LeaveType <-> Leave
 LeaveType.hasMany(Leave, { foreignKey: 'type', sourceKey: 'id' });
