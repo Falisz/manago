@@ -1,6 +1,6 @@
 // FRONTEND/contexts/ModalContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import Modal from '../components/Modal';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {
@@ -216,8 +216,9 @@ export const ModalProvider = ({ children }) => {
         // eslint-disable-next-line
     }, []);
 
+    const { search } = useLocation();
     useEffect(() => {
-        const newParams = new URLSearchParams();
+        const newParams = new URLSearchParams(search);
         modalStack.forEach((modal) => {
             if (modal.content === 'userNew') newParams.set('new', 'user');
             if (modal.content === 'managerNew') newParams.set('new', 'manager');
@@ -234,7 +235,7 @@ export const ModalProvider = ({ children }) => {
             if (modal.content === 'postDetails') newParams.set('post', modal.contentId);
         });
         setSearchParams(newParams, { replace: true });
-    }, [modalStack, setSearchParams]);
+    }, [modalStack, setSearchParams, search]);
 
     return (
         <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal, refreshData, refreshTriggers }}>

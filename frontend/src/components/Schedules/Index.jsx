@@ -1,6 +1,6 @@
 // FRONTEND/Components/Schedules/Index.jsx
 import React, {useCallback, useEffect, useState} from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import ComboBox from "../ComboBox";
 import Loader from "../Loader";
 import axios from "axios";
@@ -350,8 +350,8 @@ const Schedule = ({dates, users, placeholder, loading}) => {
 const ScheduleIndex = () => {
     const { user } = useAppState();
     const [loading, setLoading] = useState(true);
-    const [placeholder, setPlaceholder] = useState(null)
-
+    const [placeholder, setPlaceholder] = useState(null);
+    const [searchParams, setSearchParams] = useSearchParams();
     const { search } = useLocation();
     const params = new URLSearchParams(search);
 
@@ -369,6 +369,15 @@ const ScheduleIndex = () => {
     });
 
     const [users, setUsers] = useState([]);
+
+    useEffect(() => {
+        const newParams = new URLSearchParams(search);
+        newParams.set('from', formatDate(scheduleConfig.fromDate));
+        newParams.set('to', formatDate(scheduleConfig.toDate));
+        newParams.set('group', scheduleConfig.group);
+        newParams.set('gid', scheduleConfig.groupId);
+        setSearchParams(newParams, { replace: true });
+    }, [search, setSearchParams, scheduleConfig])
 
     const getUsers = useCallback(async (group, id) => {
         setLoading(true);
