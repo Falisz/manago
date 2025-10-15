@@ -669,8 +669,10 @@ export async function deleteLeaveType(id) {
 // Leaves
 /**
  * Retrieves one Leave by its ID or all Leaves if an ID is not provided.
- * @param {number|null} id - optional - Shift ID to fetch a specific Shift
- * @returns {Promise<Object|Object[]|null>} Single Shift, array of Shifts, or null
+ * @param {number|null} id - optional - Leave ID to fetch a specific Leave
+ * @param {number|number[]|null} user - optional - User ID or array of User IDs for which Leaves should be fetched  
+ * @param {number|number[]|null} approver - optional - Approver User ID or array of Approver User IDs for which Leaves should be fetched  
+ * @returns {Promise<Object|Object[]|null>} Single Leave, array of Leaves, or null
  */
 export async function getLeave({id, user, approver, date, start_date, end_date} = {}) {
 
@@ -726,61 +728,98 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createLeave(data) {
-    if (!data.type || !data.start_date || !data.end_date || !data.days || !data.status || !data.user)
-        return { success: false, message: 'Mandatory data not provided.' };
+    if (!data.type)
+        return { success: false, message: 'Leave Type not provided.'};
+
+    if (!data.user)
+        return { success: false, message: 'User requesting a Leave not provided.'};
+
+    if (!data.start_date || !data.end_date || !data.days)
+        return { 
+            success: false,
+            message: `Leaves time range not provided. 
+            (start_date: ${data.start_date}, end_date: ${data.end_date}, days: ${data.days})` 
+        };
     
-    if (!(await LeaveType.findOne({ where: { id: data.type } }))) {
+    if (!(await LeaveType.findOne({ where: { id: data.type } })))
         return { success: false, message: 'Leave Type not found.' };
-    }
-    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
+    
+    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) 
         return { success: false, message: 'Request Status not found.' };
-    }
-    if (!(await User.findOne({ where: { id: data.user } }))) {
+    
+    if (!(await User.findOne({ where: { id: data.user } }))) 
         return { success: false, message: 'User not found.' };
-    }
-    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+    
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) 
         return { success: false, message: 'Approver not found.' };
-    }
+    
+
     const leave = await Leave.create({
         id: await randomId(Leave),
         type: data.type,
         start_date: data.start_date,
         end_date: data.end_date,
         days: data.days,
-        status: data.status,
+        status: data.status || 0,
         user: data.user,
         approver: data.approver || null,
         user_note: data.user_note || null,
         approver_note: data.approver_note || null
     });
+
     return { success: true, message: 'Leave created successfully.', id: leave.id };
 }
 
+/**
+ * Updates an existing Leave.
+ * @param {Object} data - Leave data
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
 export async function updateLeave(id, data) {
-    if (!id) return { success: false, message: 'Leave ID not provided.' };
+    if (!id)
+        return { success: false, message: 'Leave ID not provided.' };
+    
     const leave = await Leave.findOne({ where: { id } });
-    if (!leave) return { success: false, message: 'Leave not found.' };
-    if (data.type && !(await LeaveType.findOne({ where: { id: data.type } }))) {
-        return { success: false, message: 'LeaveType not found.' };
-    }
-    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) {
-        return { success: false, message: 'RequestStatus not found.' };
-    }
-    if (data.user && !(await User.findOne({ where: { id: data.user } }))) {
+    
+    if (!leave)
+        return { success: false, message: 'Leave not found.' };
+
+    if (data.type && !(await LeaveType.findOne({ where: { id: data.type } })))
+        return { success: false, message: 'Leave Type not found.' };
+
+    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) 
+        return { success: false, message: 'Request Status not found.' };
+    
+    if (data.user && !(await User.findOne({ where: { id: data.user } }))) 
         return { success: false, message: 'User not found.' };
-    }
-    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
+    
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) 
         return { success: false, message: 'Approver not found.' };
-    }
+    
     await leave.update(data);
+
     return { success: true, message: 'Leave updated successfully.' };
 }
 
+/**
+ * Deletes a Leave.
+ * @param {number|number[]} id - Single Shift ID or array of Shift IDs
+ * @returns {Promise<{success: boolean, message: string, deletedCount: number}>}
+ */
 export async function deleteLeave(id) {
-    if (!isNumberOrNumberArray(id)) return { success: false, message: 'Invalid Leave ID(s) provided.' };
+    if (!isNumberOrNumberArray(id)) 
+        return { success: false, message: 'Invalid Leave ID(s) provided.' };
+    
     const deleted = await Leave.destroy({ where: { id } });
-    if (!deleted) return { success: false, message: 'No Leaves found to delete.' };
-    return { success: true, message: `${deleted} Leave${deleted > 1 ? 's' : ''} deleted successfully.`, deletedCount: deleted };
+    
+    if (!deleted)
+        return { success: false, message: 'No Leaves found to delete.' };
+    
+    return { 
+        success: true, 
+        message: `${deleted} Leave${deleted > 1 ? 's' : ''} deleted successfully.`,
+        deletedCount: deleted
+    };
 }
 
 // Request Statuses
