@@ -1,5 +1,6 @@
 // FRONTEND/Components/Schedules/Index.jsx
 import React, {useCallback, useEffect, useState} from 'react';
+import { useLocation } from 'react-router-dom';
 import ComboBox from "../ComboBox";
 import Loader from "../Loader";
 import axios from "axios";
@@ -45,9 +46,9 @@ const Shift = ({ time, role, color }) => (
 );
 
 const Leave = ({ days, type, color }) => (
-    <div className={'leave-item'} >
+    <div className={'leave-item'} style={{background: color+'90'}}>
         <span>{days || 1}-day{days > 1 ? 's' : ''} Leave</span>
-        <span className={'subtitle'} style={{color}}>{type}</span>
+        <span className={'subtitle'}>{type}</span>
     </div>
 );
 
@@ -59,7 +60,8 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
     const [groupOptions, setGroupOptions] = useState([
         { id: 'all', name: 'All User' },
         { id: 'you', name: 'Yours' },
-    ]);const [groupIdOptions, setGroupIdOptions] = useState([]);
+    ]);
+    const [groupIdOptions, setGroupIdOptions] = useState([]);
 
     useEffect(() => {
         const newGroupOptions = [
@@ -76,8 +78,7 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
         if (appState.modules.find((m) => m.title === 'Projects' && m.enabled)) {
             newGroupOptions.push({ id: 'project', name: 'Project' });
         }
-        newGroupOptions.push({ id: 'employee', name: 'Employee' });
-        newGroupOptions.push({ id: 'manager', name: 'Manager' });
+        newGroupOptions.push({ id: 'manager', name: 'Users by Manager' });
         newGroupOptions.push({ id: 'user', name: 'User' });
 
         setGroupOptions(newGroupOptions);
@@ -91,8 +92,8 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
                     setGroupIdOptions(teamOptions);
                 }
             );
-        } else if (['user', 'employee', 'manager'].includes(scheduleConfig.group)) {
-            fetchUsers(scheduleConfig.group === 'user' ? null : scheduleConfig.group).then(
+        } else if (['user', 'manager'].includes(scheduleConfig.group)) {
+            fetchUsers(scheduleConfig.group === 'manager' ? 'managers' : null).then(
                 (result) => {
                     const userOptions = result.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}));
                     setGroupIdOptions(userOptions);
@@ -101,10 +102,10 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
         } else {
             setGroupIdOptions([]);
         }
-    }, [scheduleConfig.group, fetchTeams]);
+    }, [scheduleConfig.group, fetchTeams, fetchUsers]);
 
     function handleChange (e) {
-        function isValidDate(d: Date): boolean {
+        function isValidDate(d) {
             return d instanceof Date && !Number.isNaN(d.getTime());
         }
 
@@ -180,17 +181,35 @@ const Schedule = ({dates, users, placeholder, loading}) => {
     const { openModal } = useModals();
 
     const handleMouseEnter = (e) => {
-        const cellIndex = e.currentTarget.cellIndex;
-        if (cellIndex >= 0) {
-            document.querySelectorAll(`td:nth-child(${cellIndex + 1}), th:nth-child(${cellIndex + 1})`)
+        const user = e.currentTarget.getAttribute('data-user');
+        const date = e.currentTarget.getAttribute('data-date');
+        let selector = '';
+        if (user && date) {
+            selector = `td[data-user='${user}'], td[data-date='${date}'], th[data-user='${user}'], th[data-date='${date}']`;
+        } else if (user) {
+            selector = `td[data-user='${user}'], th[data-user='${user}']`;
+        } else if (date) {
+            selector = `td[data-date='${date}'], th[data-date='${date}']`;
+        }
+        if (selector) {
+            document.querySelectorAll(selector)
                 .forEach(cell => cell.classList.add('column-highlight'));
         }
     };
 
     const handleMouseLeave = (e) => {
-        const cellIndex = e.currentTarget.cellIndex;
-        if (cellIndex >= 0) {
-            document.querySelectorAll(`td:nth-child(${cellIndex + 1}), th:nth-child(${cellIndex + 1})`)
+        const user = e.currentTarget.getAttribute('data-user');
+        const date = e.currentTarget.getAttribute('data-date');
+        let selector = '';
+        if (user && date) {
+            selector = `td[data-user='${user}'], td[data-date='${date}'], th[data-user='${user}'], th[data-date='${date}']`;
+        } else if (user) {
+            selector = `td[data-user='${user}'], th[data-user='${user}']`;
+        } else if (date) {
+            selector = `td[data-date='${date}'], th[data-date='${date}']`;
+        }
+        if (selector) {
+            document.querySelectorAll(selector)
                 .forEach(cell => cell.classList.remove('column-highlight'));
         }
     };
@@ -227,6 +246,7 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                     return (
                         <th
                             key={formattedDate}
+                            data-date={formattedDate}
                             className={'day-header' + (dayIdx === 0 || dayIdx === 6 ? ' weekend' :
                                 isDate ? ' holiday' : '')}
                             onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
@@ -245,7 +265,12 @@ const Schedule = ({dates, users, placeholder, loading}) => {
             </tr>}
             {users?.map((user) => {
                 return <tr key={user.id}>
-                        <td className={'user-cell'}>
+                        <td 
+                            className={'user-cell'} 
+                            data-user={user.id} 
+                            onMouseEnter={handleMouseEnter} 
+                            onMouseLeave={handleMouseLeave}
+                        >
                             <span
                                 className={'app-clickable'}
                                 style={{fontWeight: 'bold'}}
@@ -258,21 +283,22 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                         {dates?.map((date, dateIndex) => {
                             const formattedDate = formatDate(date);
 
-                            const shift = user.shifts?.filter((s) =>
-                                sameDay(new Date(s.start_time), date)
-                            ) || [];
-
-                            const leave = user.leaves?.find(
-                                (l) =>
-                                    l.user === user.id &&
-                                    date >= new Date(l.startDate) &&
-                                    date <= new Date(l.endDate)
+                            const leave = user.leaves?.find((l) =>
+                                    date >= new Date(l.start_date) &&
+                                    date <= new Date(l.end_date)
                             );
-                            const isLeaveStart = leave ? sameDay(date, new Date(leave.startDate)) : false;
+                            const isLeaveStart = leave ? sameDay(date, new Date(leave.start_date)) : false;
 
                             if (leave && !isLeaveStart) {
                                 return null;
                             }
+
+                            if (leave)
+                                console.log(leave);
+
+                            const shift = user.shifts?.filter((s) =>
+                                sameDay(new Date(s.start_time), date)
+                            ) || [];
 
                             let totalDays;
 
@@ -281,20 +307,23 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                                 const dayDiff = (a, b) =>
                                     Math.round((b - a) / (1000 * 60 * 60 * 24));
 
+                                const startDate = new Date(leave.start_date);
+                                const endDate = new Date(leave.end_date);
+
                                 totalDays =
                                     dayDiff(
                                         new Date(
                                             Date.UTC(
-                                                leave.startDate.getUTCFullYear(),
-                                                leave.startDate.getUTCMonth(),
-                                                leave.startDate.getUTCDate()
+                                                startDate.getUTCFullYear(),
+                                                startDate.getUTCMonth(),
+                                                startDate.getUTCDate()
                                             )
                                         ),
                                         new Date(
                                             Date.UTC(
-                                                leave.endDate.getUTCFullYear(),
-                                                leave.endDate.getUTCMonth(),
-                                                leave.endDate.getUTCDate()
+                                                endDate.getUTCFullYear(),
+                                                endDate.getUTCMonth(),
+                                                endDate.getUTCDate()
                                             )
                                         )
                                     ) + 1;
@@ -307,11 +336,15 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                             return (
                                 <td
                                     key={key}
+                                    data-user={user.id}
+                                    data-date={formattedDate}
                                     colSpan={colSpan}
                                     onMouseEnter={handleMouseEnter}
                                     onMouseLeave={handleMouseLeave}
                                 >
-                                    {shift.length > 0 ? (
+                                    {isLeaveStart ? (
+                                        <Leave days={leave.days} type={leave.type} />
+                                    ) : shift.length > 0 ? (
                                         shift.map((s, si) => (
                                             <Shift
                                                 key={si}
@@ -328,9 +361,7 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                                                 color={s.job_post.color}
                                             />
                                         ))
-                                    ) : isLeaveStart ? (
-                                        <Leave days={totalDays} type={leave.type} />
-                                    ) : null}
+                                    ) :  null}
                                 </td>
                             );
                         })}
@@ -346,17 +377,20 @@ const ScheduleIndex = () => {
     const [loading, setLoading] = useState(true);
     const [placeholder, setPlaceholder] = useState(null)
 
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const inSixDays = new Date(today);
-    inSixDays.setDate(today.getDate() + 6);
+    const { search } = useLocation();
+    const params = new URLSearchParams(search);
+
+    const from = params.get('from');
+    const fromDate = from ? new Date(from) : new Date(Date.now() - 86400000);
+    
+    const to = params.get('to');
+    const toDate = to ? new Date(to) : new Date(fromDate.getTime() + 6 * 86400000);
 
     const [scheduleConfig, setScheduleConfig] = useState({
-        fromDate: yesterday,
-        toDate: inSixDays,
-        group: 'you',
-        groupId: user.id
+        fromDate,
+        toDate,
+        group: params.get('group') || 'you',
+        groupId: params.get('gid') || user.id
     });
 
     const [users, setUsers] = useState([]);
@@ -373,7 +407,7 @@ const ScheduleIndex = () => {
                 setPlaceholder('Select a Branch.');
             else if (group === 'project')
                 setPlaceholder('Select a Project.');
-            else if (['user', 'employee', 'manager'].includes(group))
+            else if (['user', 'manager'].includes(group))
                 setPlaceholder('Select a User.');
             else
                 setPlaceholder('Select a Group.');
@@ -388,8 +422,10 @@ const ScheduleIndex = () => {
             url = `/branches/${id}/users`;
         } else if (group === 'project') {
             url = `/projects/${id}/users`;
-        } else if (['user', 'employee', 'manager', 'you'].includes(group)) {
+        } else if (group === 'user') {
             url = `/users/${id}`;
+        } else if (group === 'manager') {
+            url = `/users/${id}/managed-users`;
         } else if (group === 'all') {
             url = '/users';
         } else {
@@ -412,11 +448,17 @@ const ScheduleIndex = () => {
                 {withCredentials: true}
             )).data;
 
+            const leaves = (await axios.post(
+                '/leaves/bulk',
+                {user: users.map(u => u.id)},
+                {withCredentials: true}
+            )).data;
+
             users = users
                 .map(user => ({
                     ...user,
                     shifts: shifts.filter(shift => shift.user.id === user.id),
-                    leaves: []
+                    leaves: leaves.filter(leave => leave.user.id === user.id)
                 }))
                 .sort((a, b) => {
                     if (a.hasOwnProperty('team') && b.hasOwnProperty('team')) {
