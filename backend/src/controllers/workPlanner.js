@@ -700,8 +700,9 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
     }
 
     const include = [
-        { model: User, attributes: ['id', 'first_name', 'last_name']}, 
-        { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver'}
+        { model: User, attributes: ['id', 'first_name', 'last_name'] }, 
+        { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver' },
+        { model: LeaveType, attributes: ['name', 'color'] }
     ];
 
     const leaves = await Leave.findAll({ where, include });
@@ -714,9 +715,12 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
 
         rawData.user = leave['User'].toJSON();
         rawData.approveer = leave['Approver']?.toJSON();
+        rawData.type = leave['LeaveType']?.name;
+        rawData.color = leave['LeaveType']?.color;
 
         delete rawData['User'];
         delete rawData['Approver'];
+        delete rawData['LeaveType'];
 
         return rawData;
     }));
