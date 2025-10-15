@@ -298,9 +298,7 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                             if (leave)
                                 console.log(leave);
 
-                            const shift = user.shifts?.filter((s) =>
-                                sameDay(new Date(s.start_time), date)
-                            ) || [];
+                            const shift = user.shifts?.filter((s) => sameDay(new Date(s.start_time), date)) || [];
 
                             let totalDays;
 
@@ -457,7 +455,7 @@ const ScheduleIndex = () => {
             console.error('Error fetching users:', err);
             return [];
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         getUsers(scheduleConfig.group, scheduleConfig.groupId).then();
