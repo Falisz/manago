@@ -1,4 +1,4 @@
-// BACKEND/api/roles.js
+// BACKEND/api/shifts.js
 import express from 'express';
 import {
     getShift
@@ -24,7 +24,7 @@ const fetchShiftsHandler = async (req, res) => {
                 req.query.schedule != null ? parseInt(req.query.schedule) : undefined,
             start_time: req.body.start_date ? new Date(req.body.start_date) :
                 req.query.start_date ? new Date(req.query.start_date) : undefined,
-            end_time: req.body.end_date ? new Date(req.body.end_date) :
+            end_time: req.body.end_date ? new Date(req.body.end_date+'T23:59') :
                 req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
         });
 
