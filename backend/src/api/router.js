@@ -8,6 +8,7 @@ import teamsRoutes from './teams.js';
 import projectsRoutes from './projects.js';
 import branchesRoutes from './branches.js';
 import shiftRoutes from './shifts.js';
+import leaveRoutes from './leaves.js';
 import holidaysRoutes from './holidays.js';
 import postsRoutes from './posts.js';
 import checkAuthHandler from '../utils/checkAuth.js';
@@ -34,6 +35,7 @@ router.use('/teams', teamsRoutes);
 router.use('/projects', projectsRoutes);
 router.use('/branches', branchesRoutes);
 router.use('/shifts', shiftRoutes);
+router.use('/leaves', leaveRoutes);
 router.use('/holidays', holidaysRoutes);
 router.use('/posts', postsRoutes);
 
