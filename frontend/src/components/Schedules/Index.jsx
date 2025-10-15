@@ -289,9 +289,8 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                             );
                             const isLeaveStart = leave ? sameDay(date, new Date(leave.start_date)) : false;
 
-                            if (leave && !isLeaveStart) {
+                            if (leave && !isLeaveStart)
                                 return null;
-                            }
 
                             if (leave)
                                 console.log(leave);
@@ -343,7 +342,7 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                                     onMouseLeave={handleMouseLeave}
                                 >
                                     {isLeaveStart ? (
-                                        <Leave days={leave.days} type={leave.type} />
+                                        <Leave days={leave.days} type={leave.type} color={leave.color} />
                                     ) : shift.length > 0 ? (
                                         shift.map((s, si) => (
                                             <Shift
