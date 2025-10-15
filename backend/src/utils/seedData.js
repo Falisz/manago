@@ -4,7 +4,7 @@ import sequelize from '../utils/database.js';
 import {AppConfig, AppModule, AppPage} from '../models/app.js';
 import {User, UserManager, Role, UserRole} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
-import {Schedule, JobPost, Shift, Holiday, RequestStatus, LeavePool, LeaveType, Leave} from '../models/workPlanner.js';
+import {Schedule, JobPost, Shift, Holiday, RequestStatus, LeaveType, Leave} from '../models/workPlanner.js';
 import {Post, Channel} from '../models/posts.js';
 
 // Data to seed
@@ -685,20 +685,14 @@ const requestStatuses = [
     { id: 3, name: 'Cancelled' }
 ];
 
-const leavePools = [
-    { id: 1, name: 'Leaves Balance 2025', amount: 24, parent_pool: null, start_date: '2025-01-01', end_date: '2025-12-31', comp_holiday: false, comp_weekend: false },
-    { id: 2, name: 'LOD Balance 2025', amount: 4, parent_pool: 1, start_date: '2025-01-01', end_date: '2025-12-31', comp_holiday: false, comp_weekend: false },
-    { id: 3, name: 'CompOffs 2025', amount: 0, parent_pool: null, start_date: '2025-01-01', end_date: '2025-12-31', comp_holiday: true, comp_weekend: true }
-];
-
 const leaveTypes = [
-    { id: 1, name: 'AL', leave_pool: 1, color: '#4CAF50' },
-    { id: 2, name: 'LOD', leave_pool: 2, color: '#FF9800' },
-    { id: 3, name: 'SL', leave_pool: null, color: '#F44336' },
-    { id: 4, name: 'CompOffs', leave_pool: 3, color: '#2196F3' },
-    { id: 5, name: 'Personal Leave', leave_pool: 1, color: '#9C27B0' },
-    { id: 6, name: 'Maternity Leave', leave_pool: 1, color: '#E91E63' },
-    { id: 7, name: 'Paternity Leave', leave_pool: 1, color: '#3F51B5' }
+    { id: 1, name: 'AL', amount: 26, color: '#4CAF50' },
+    { id: 2, name: 'LOD', parent_type: 1, amount: 4, color: '#FF9800' },
+    { id: 3, name: 'SL', color: '#F44336' },
+    { id: 4, name: 'CompOffs', color: '#2196F3' },
+    { id: 5, name: 'Personal Leave', parent_type: 1, amount: 2, color: '#9C27B0' },
+    { id: 6, name: 'Maternity Leave', parent_type: 1, color: '#E91E63' },
+    { id: 7, name: 'Paternity Leave', parent_type: 1, color: '#3F51B5' }
 ];
 
 const leaves = [
@@ -785,7 +779,6 @@ const seedStructure = [
     { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
-    { model: LeavePool, tableName: 'leave_pools', data: leavePools, itemsName: 'leave pools' },
     { model: LeaveType, tableName: 'leave_types', data: leaveTypes, itemsName: 'leave types' },
     { model: Leave, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },

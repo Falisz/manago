@@ -254,7 +254,7 @@ Shift.belongsTo(JobPost, { foreignKey: 'job_post', targetKey: 'id' });
 Schedule.hasMany(Shift, { foreignKey: 'schedule', sourceKey: 'id' });
 Shift.belongsTo(Schedule, { foreignKey: 'schedule', targetKey: 'id' });
 //
-// LeavePool <-> LeaveType
+// LeaveType <-> LeaveType
 LeaveType.hasMany(LeaveType, { foreignKey: 'parent_type', sourceKey: 'id', as: 'SubType' });
 LeaveType.belongsTo(LeaveType, { foreignKey: 'parent_type', targetKey: 'id', as: 'ParentType' });
 //
