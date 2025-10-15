@@ -30,6 +30,11 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
+const formatTime = (date) => new Date(date).toLocaleTimeString(
+    'pl-PL', 
+    { hour: '2-digit', minute: '2-digit', hour12: false,}
+);
+
 const sameDay = (date1, date2) => {
     return (
         date1.getUTCFullYear() === date2.getUTCFullYear() &&
@@ -283,10 +288,8 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                         {dates?.map((date, dateIndex) => {
                             const formattedDate = formatDate(date);
 
-                            const leave = user.leaves?.find((l) =>
-                                    date >= new Date(l.start_date) &&
-                                    date <= new Date(l.end_date)
-                            );
+                            const leave = user.leaves?.find((l) => date >= new Date(l.start_date) && date <= new Date(l.end_date));
+
                             const isLeaveStart = leave ? sameDay(date, new Date(leave.start_date)) : false;
 
                             if (leave && !isLeaveStart)
@@ -302,31 +305,18 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                             let totalDays;
 
                             let colSpan = 1;
+
                             if (isLeaveStart) {
                                 const dayDiff = (a, b) =>
-                                    Math.round((b - a) / (1000 * 60 * 60 * 24));
+                                    Math.round((b.setHours(0,0,0,0) - a.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
 
                                 const startDate = new Date(leave.start_date);
                                 const endDate = new Date(leave.end_date);
 
-                                totalDays =
-                                    dayDiff(
-                                        new Date(
-                                            Date.UTC(
-                                                startDate.getUTCFullYear(),
-                                                startDate.getUTCMonth(),
-                                                startDate.getUTCDate()
-                                            )
-                                        ),
-                                        new Date(
-                                            Date.UTC(
-                                                endDate.getUTCFullYear(),
-                                                endDate.getUTCMonth(),
-                                                endDate.getUTCDate()
-                                            )
-                                        )
-                                    ) + 1;
+                                totalDays = dayDiff(startDate, endDate) + 1;
+
                                 const remainingColumns = dates.length - dateIndex;
+                                
                                 colSpan = Math.max(1, Math.min(totalDays, remainingColumns));
                             }
 
@@ -341,26 +331,14 @@ const Schedule = ({dates, users, placeholder, loading}) => {
                                     onMouseEnter={handleMouseEnter}
                                     onMouseLeave={handleMouseLeave}
                                 >
-                                    {isLeaveStart ? (
-                                        <Leave days={leave.days} type={leave.type} color={leave.color} />
-                                    ) : shift.length > 0 ? (
-                                        shift.map((s, si) => (
-                                            <Shift
-                                                key={si}
-                                                time={`${new Date(s.start_time).toLocaleTimeString('pl-PL', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                    hour12: false,
-                                                })} - ${new Date(s.end_time).toLocaleTimeString('pl-PL', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                    hour12: false,
-                                                })}`}
-                                                role={s.job_post.name}
-                                                color={s.job_post.color}
-                                            />
-                                        ))
-                                    ) :  null}
+                                    {isLeaveStart ? <Leave days={leave.days} type={leave.type} color={leave.color} /> : 
+                                        shift.length > 0 ? 
+                                            shift.map((s, si) => <Shift
+                                                    key={si}
+                                                    time={`${formatTime(s.start_time)} - ${formatTime(s.end_time)}`}
+                                                    role={s.job_post.name}
+                                                    color={s.job_post.color}
+                                                /> ) : null }
                                 </td>
                             );
                         })}
@@ -423,6 +401,8 @@ const ScheduleIndex = () => {
             url = `/projects/${id}/users`;
         } else if (group === 'user') {
             url = `/users/${id}`;
+        } else if (group === 'you') {
+            url = `/users/${user.id}`;
         } else if (group === 'manager') {
             url = `/users/${id}/managed-users`;
         } else if (group === 'all') {
@@ -438,7 +418,6 @@ const ScheduleIndex = () => {
                 url,
                 { withCredentials: true }
             )).data;
-
             users = Array.isArray(users) ? users : [users];
 
             const shifts = (await axios.post(
