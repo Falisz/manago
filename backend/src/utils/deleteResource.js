@@ -26,6 +26,8 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     if (ids.length === 0)
         return res.status(400).json({ message: `No valid ${resourceName} IDs provided.` });
 
+    // const hasAccess = hasAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+
     try {
         const { success, message, deletedCount } = await deleteFunction(ids, ...args);
 

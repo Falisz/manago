@@ -184,6 +184,8 @@ const updateAssignmentsHandler = async (req, res) => {
 
         let success, message;
 
+        // const hasAccess = hasAccess(req.session.user, 'assign', 'user', userIds, resouce, resourceIds);
+
         if (resource === 'manager')
             ({ success, message } = await updateUserManagers(userIds, resourceIds, mode));
 
@@ -214,6 +216,8 @@ const updateUserRolesHandler = async (req, res) => {
 
     try {
         const { roleIds } = req.body;
+
+        // const hasAccess = hasAccess(req.session.user, 'assign', 'user', [id], 'role', roleIds);
 
         const { success, message} = await updateUserRoles([parseInt(id)], roleIds, 'set');
 
