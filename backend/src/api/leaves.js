@@ -1,6 +1,7 @@
 // BACKEND/api/leaves.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 import {
     getLeave,
     createLeave,
@@ -116,39 +117,7 @@ const updateLeaveHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteLeaveHandler = async (req, res) => {
-    const { id = null } = req.params;
-    const { ids = null } = req.body;
-    try {
-        if (id) {
-            const { success, message, deletedCount } = await deleteLeave(parseInt(id));
-
-            if (!success)
-                return res.status( 400).json({ message });
-
-            res.json({ message, deletedCount });
-
-        } else if (ids && ids.length > 0) {
-            const { success, message, deletedCount } = await deleteLeave(ids);
-
-            if (!success)
-                return res.status(400).json({ message });
-
-            res.json({ message, deletedCount });
-
-        } else {
-            return res.status(400).json({ message: 'Leave IDs are missing.' });
-        }
-
-    } catch (err) {
-        if (id)
-            console.error(`Error deleting Leave (ID: ${id}:`, err);
-        else if (ids)
-            console.error(`Error deleting Leaves (${ids}):`, err);
-
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
+const deleteLeaveHandler = async (req, res) => deleteResource(req, res, 'Leave', deleteLeave);
 
 // Router definitions
 export const router = express.Router();
@@ -160,6 +129,6 @@ router.post('/', createLeaveHandler);
 router.put('/', updateLeaveHandler);
 router.put('/:id', checkResourceIdHandler, updateLeaveHandler);
 router.delete('/', deleteLeaveHandler);
-router.delete('/:id', checkResourceIdHandler, deleteLeaveHandler);
+router.delete('/:id', deleteLeaveHandler);
 
 export default router;

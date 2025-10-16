@@ -1,6 +1,7 @@
 // BACKEND/api/shifts.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 import {
     getShift,
     createShift,
@@ -137,40 +138,7 @@ const updateShiftHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteShiftHandler = async (req, res) => {
-    const { id = null } = req.params;
-    const { ids = null } = req.body;
-
-    try {
-        if (id) {
-            const { success, message, deletedCount } = await deleteShift(parseInt(id));
-
-            if (!success)
-                return res.status( 400).json({ message });
-
-            res.json({ message, deletedCount });
-
-        } else if (ids && ids.length > 0) {
-            const { success, message, deletedCount } = await deleteShift(ids);
-
-            if (!success)
-                return res.status(400).json({ message });
-
-            res.json({ message, deletedCount });
-
-        } else {
-            return res.status(400).json({ message: 'Shift IDs are missing.' });
-        }
-
-    } catch (err) {
-        if (id)
-            console.error(`Error deleting Shift (ID: ${id}:`, err);
-        else if (ids)
-            console.error(`Error deleting Shifts (${ids}):`, err);
-
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
+const deleteShiftHandler = async (req, res) => deleteResource(req, res, 'Shift', deleteShift);
 
 // Router definitions
 export const router = express.Router();
@@ -182,6 +150,6 @@ router.post('/', createShiftHandler);
 router.put('/', updateShiftHandler);
 router.put('/:id', checkResourceIdHandler, updateShiftHandler);
 router.delete('/', deleteShiftHandler);
-router.delete('/:id', checkResourceIdHandler, deleteShiftHandler);
+router.delete('/:id', deleteShiftHandler);
 
 export default router;

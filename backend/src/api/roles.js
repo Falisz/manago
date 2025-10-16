@@ -8,6 +8,7 @@ import {
     getRole,
     getUserRoles,
 } from '../controllers/users.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -106,22 +107,7 @@ const updateRoleHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteRoleHandler = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const { success, message, deletedCount } = await deleteRole(parseInt(id));
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-
-    } catch (err) {
-        console.error(`Error deleting Role (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-}
+const deleteRoleHandler = async (req, res) => deleteResource(req, res, 'Role', deleteRole);
 
 // Router definitions
 export const router = express.Router();
@@ -131,6 +117,7 @@ router.get('/:id', fetchRolesHandler);
 router.get('/:id/users', checkResourceIdHandler, fetchUsersWithRoleHandler);
 router.post('/', createRoleHandler);
 router.put('/:id', checkResourceIdHandler, updateRoleHandler);
-router.delete('/:id', checkResourceIdHandler, deleteRoleHandler);
+router.delete('/', deleteRoleHandler);
+router.delete('/:id', deleteRoleHandler);
 
 export default router;

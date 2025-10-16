@@ -9,6 +9,7 @@ import {
     updateProjectUsers,
     getProjectUsers
 } from '../controllers/projects.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -153,45 +154,7 @@ const updateAssignmentsHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteProjectHandler = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const { success, message, deletedCount } = await deleteProject(parseInt(id));
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-    } catch (err) {
-        console.error(`Error deleting Project (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Bulk delete projects by IDs.
- * @param {express.Request} req
- * @param {express.Response} res
- */
-const bulkDeleteProjectsHandler = async (req, res) => {
-    try {
-        const { projectIds } = req.body;
-
-        if (!projectIds || !projectIds.length)
-            return res.status(400).json({ message: 'Project IDs are missing.' });
-
-        const { success, message, deletedCount } = await deleteProject(projectIds);
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-    } catch (err) {
-        console.error(`Error removing Projects (${req.body['projectIds']}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
+const deleteProjectHandler = async (req, res) => deleteResource(req, res, 'Project', deleteProject);
 
 // Router definitions
 export const router = express.Router();
@@ -202,7 +165,7 @@ router.get('/:id/users', checkResourceIdHandler, fetchProjectUsersHandler);
 router.post('/', createProjectHandler);
 router.post('/assignments', updateAssignmentsHandler);
 router.put('/:id', checkResourceIdHandler, updateProjectHandler);
-router.delete('/:id', checkResourceIdHandler, deleteProjectHandler);
-router.delete('/', bulkDeleteProjectsHandler);
+router.delete('/', deleteProjectHandler);
+router.delete('/:id', deleteProjectHandler);
 
 export default router;

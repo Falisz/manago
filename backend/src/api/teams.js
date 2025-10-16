@@ -1,6 +1,7 @@
 // BACKEND/api/teams.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 import {
     getTeam,
     createTeam,
@@ -168,47 +169,8 @@ const updateAssignmentsHandler = async(req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteTeamHandler = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const { success, message, deletedCount } = await deleteTeam(parseInt(id), req.query.cascade === 'true');
-
-        if (!success)
-            return res.status( 400).json({ message });
-
-        res.json({ message, deletedCount });
-    } catch (err) {
-        console.error(`Error deleting Team (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Bulk delete teams by IDs.
- * @param {express.Request} req
- * @param {express.Response} res
- */
-const bulkDeleteTeamsHandler = async (req, res) => {
-    try {
-        const { teamIds } = req.body;
-
-        if (!teamIds || !teamIds.length)
-            return res.status(400).json({ message: 'Team IDs are missing.' });
-
-        const { success, message, deletedCount } = await deleteTeam(teamIds, req.query.cascade === 'true');
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-
-    } catch (err) {
-        console.error(`Error removing Teams (${req.body.teamIds}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
+const deleteTeamHandler = async (req, res) => deleteResource(req, res, 'Team', deleteTeam, req.query.cascade === 'true');
+    
 // Router definitions
 export const router = express.Router();
 
@@ -218,7 +180,7 @@ router.get('/:id/users', checkResourceIdHandler, fetchTeamUsersHandler);
 router.post('/', createTeamHandler);
 router.post('/assignments', updateAssignmentsHandler);
 router.put('/:id', checkResourceIdHandler, updateTeamHandler);
-router.delete('/:id', checkResourceIdHandler, deleteTeamHandler);
-router.delete('/', bulkDeleteTeamsHandler);
+router.delete('/', deleteTeamHandler);
+router.delete('/:id', deleteTeamHandler);
 
 export default router;

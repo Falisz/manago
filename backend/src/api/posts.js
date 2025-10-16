@@ -3,6 +3,7 @@ import express from 'express';
 import { createPost, deletePost, getPost, updatePost } from '../controllers/posts.js';
 import checkResourceIdHandler from "../utils/checkResourceId.js";
 import {hasManagerAccess} from "../controllers/users.js";
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -99,35 +100,7 @@ const updatePostHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const deletePostHandler = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        if (!id || isNaN(id))
-            return res.status(400).json({ message: 'Invalid post ID.' });
-
-
-        const user = req.session.user;
-        const post = await getPost(parseInt(id));
-
-        if (!post)
-            return res.status(404).json({ message: 'Post not found.' });
-
-        const managerAccess = await hasManagerAccess(user.id);
-
-        if (post['Author'].id !== user.id && managerAccess)
-            return res.status(403).json({ message: 'Forbidden: You are not authorized to delete this post.' });
-
-        await deletePost(parseInt(id));
-
-        res.json({ message: 'Post deleted successfully!' });
-
-    } catch (err) {
-        console.error('Error deleting post:', err);
-        res.status(500).json({ message: 'Server error.' });
-
-    }
-};
+const deletePostHandler = async (req, res) => deleteResource(req, res, 'Post', deletePost);
 
 // Router definitions
 export const router = express.Router();
@@ -136,6 +109,7 @@ router.get('/', fetchPostsHandler);
 router.get('/:id', fetchPostsHandler);
 router.post('/new', createPostHandler);
 router.put('/:id', checkResourceIdHandler, updatePostHandler);
-router.delete('/:id', checkResourceIdHandler, deletePostHandler);
+router.delete('/', deletePostHandler);
+router.delete('/:id', deletePostHandler);
 
 export default router;

@@ -1,6 +1,7 @@
 // BACKEND/api/users.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 import {
     getUser,
     createUser,
@@ -254,36 +255,7 @@ const updateUserManagersHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteUserHandler = async (req, res) => {
-    const { id = null } = req.params;
-    const { ids = null } = req.body;
-
-    try {
-        if (id) {
-            const { success, message, deletedCount } = await removeUser(parseInt(id));
-
-            if (!success)
-                return res.status( 400).json({ message });
-
-            res.json({ message, deletedCount });
-
-        } else if (ids && ids.length > 0) {
-            const { success, message, deletedCount } = await removeUser(userIds);
-
-            if (!success)
-                return res.status(400).json({ message });
-
-            res.json({ message, deletedCount });
-            
-        } else {
-            return res.status(400).json({ message: 'User IDs are missing.' });
-        }
-
-    } catch (err) {
-        console.error(`Error removing User (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
+const deleteUserHandler = async (req, res) => deleteResource(req, res, 'User', removeUser);
 
 // Router definitions
 export const router = express.Router();
@@ -300,6 +272,6 @@ router.put('/:id', checkResourceIdHandler, updateUserHandler);
 router.put('/:id/roles', checkResourceIdHandler, updateUserRolesHandler);
 router.put('/:id/managers', checkResourceIdHandler, updateUserManagersHandler);
 router.delete('/', deleteUserHandler);
-router.delete('/:id', checkResourceIdHandler,  deleteUserHandler);
+router.delete('/:id', deleteUserHandler);
 
 export default router;

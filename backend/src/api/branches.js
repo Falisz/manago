@@ -1,6 +1,7 @@
 // BACKEND/api/branches.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 import {
     getBranch,
     createBranch,

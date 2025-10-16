@@ -1,6 +1,7 @@
 // BACKEND/api/holidays.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 import {
     getHoliday,
     createHoliday,
@@ -87,22 +88,7 @@ const updateHolidayHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteHolidayHandler = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const { success, message, deletedCount} = await deleteHoliday(parseInt(id));
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-
-    } catch (err) {
-        console.error(`Error deleting Holiday (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
+const deleteHolidayHandler = async (req, res) => deleteResource(req, res, 'Holiday', deleteHoliday);
 
 // Router definitions
 export const router = express.Router();
@@ -111,6 +97,7 @@ router.get('/', fetchHolidaysHandler);
 router.get('/:id', fetchHolidaysHandler);
 router.post('/', createHolidayHandler);
 router.put('/:id', checkResourceIdHandler, updateHolidayHandler);
-router.delete('/:id', checkResourceIdHandler, deleteHolidayHandler);
+router.delete('/', deleteHolidayHandler);
+router.delete('/:id', deleteHolidayHandler);
 
 export default router;
