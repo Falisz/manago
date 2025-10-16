@@ -449,7 +449,7 @@ export async function updateShift(id, data) {
  * @param {number|number[]} id - Single Shift ID or array of Shift IDs
  * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
-export async function deleteShift({id} = {}) {
+export async function deleteShift(id) {
     if (!isNumberOrNumberArray(id))
         return { success: false, message: `Invalid Shift ID${Array.isArray(id) ? 's' : ''} provided.` };
     

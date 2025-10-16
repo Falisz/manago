@@ -1,12 +1,16 @@
 // BACKEND/api/leaves.js
 import express from 'express';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
-    getLeave
+    getLeave,
+    createLeave,
+    updateLeave,
+    deleteLeave
 } from "../controllers/workPlanner.js";
 
 // API Handlers
 /**
- * Fetch Leaves.
+ * Fetch a Leave or multiple Leaves.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -37,13 +41,125 @@ const fetchLeavesHandler = async (req, res) => {
         console.error(`Error fetching Leave${id ? ' (ID: ' + id + ')' : 's'}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
-}
+};
+
+/**
+ * Create a Leave or multiple Leaves.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const createLeaveHandler = async (req, res) => {
+    try {
+        let { leave } = req.body;
+    
+        const { success, message, id } = await createLeave(leave);
+
+        if (!success)
+            return res.status(400).json({ message });
+
+        leave = await getShift({id});
+
+        res.status(201).json({ message, leave });
+
+    } catch (err) {
+        console.error('Error creating a Leave:', err, 'Provided data: ', req.body);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+/**
+ * Update a specific Shift or multiple Shifts.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const updateLeaveHandler = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        if (!id) {
+            const { leaves } = req.body;
+            
+            const updatedLeaves = [];
+            const errorMessages = [];
+
+            Object.fromEntries(leaves).forEach(async (id, leave) => {
+                const { success, message } = await updateLeave(parseInt(id), leave);
+
+                if (success)
+                    updatedLeaves.push(await getLeave({id}));
+                else
+                    errorMessages.push(message);
+            });
+
+            res.status(201).json({ message: `Updated ${updatedLeaves.length()} Leaves.`, updatedLeaves, errors})
+
+        } else {
+            let { leave } = req.body;
+
+            const { success, message } = await updateLeave(parseInt(id), leave);
+            
+            if (!success)
+                return res.status(400).json({ message });
+    
+            leave = await getLeave({id});
+    
+            res.json({ message, leave });
+        }
+    } catch (err) {
+        console.error('Error updating a Shift:', err, 'Provided data: ', req.body);
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
+
+/**
+ * Delete a specific Shift or multiple Shifts.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const deleteLeaveHandler = async (req, res) => {
+    const { id = null } = req.params;
+    const { ids = null } = req.body;
+    try {
+        if (id) {
+            const { success, message, deletedCount } = await deleteLeave(parseInt(id));
+
+            if (!success)
+                return res.status( 400).json({ message });
+
+            res.json({ message, deletedCount });
+
+        } else if (ids && ids.length > 0) {
+            const { success, message, deletedCount } = await deleteLeave(ids);
+
+            if (!success)
+                return res.status(400).json({ message });
+
+            res.json({ message, deletedCount });
+
+        } else {
+            return res.status(400).json({ message: 'Leave IDs are missing.' });
+        }
+
+    } catch (err) {
+        if (id)
+            console.error(`Error deleting Leave (ID: ${id}:`, err);
+        else if (ids)
+            console.error(`Error deleting Leaves (${ids}):`, err);
+
+        res.status(500).json({ message: 'Server error.' });
+    }
+};
 
 // Router definitions
 export const router = express.Router();
 
 router.get('/', fetchLeavesHandler);
 router.get('/:id', fetchLeavesHandler);
-router.post('/bulk', fetchLeavesHandler);
+router.post('/batch', fetchLeavesHandler);
+router.post('/', createLeaveHandler);
+router.put('/', updateLeaveHandler);
+router.put('/:id', checkResourceIdHandler, updateLeaveHandler);
+router.delete('/', deleteLeaveHandler);
+router.delete('/:id', checkResourceIdHandler, deleteLeaveHandler);
 
 export default router;

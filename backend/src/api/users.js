@@ -255,43 +255,32 @@ const updateUserManagersHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const deleteUserHandler = async (req, res) => {
-    const { id } = req.params;
+    const { id = null } = req.params;
+    const { ids = null } = req.body;
 
     try {
-        const { success, message, deletedCount } = await removeUser(parseInt(id));
+        if (id) {
+            const { success, message, deletedCount } = await removeUser(parseInt(id));
 
-        if (!success)
-            return res.status( 400).json({ message });
+            if (!success)
+                return res.status( 400).json({ message });
 
-        res.json({ message, deletedCount });
+            res.json({ message, deletedCount });
+
+        } else if (ids && ids.length > 0) {
+            const { success, message, deletedCount } = await removeUser(userIds);
+
+            if (!success)
+                return res.status(400).json({ message });
+
+            res.json({ message, deletedCount });
+            
+        } else {
+            return res.status(400).json({ message: 'User IDs are missing.' });
+        }
 
     } catch (err) {
         console.error(`Error removing User (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Bulk delete Users by IDs.
- * @param {express.Request} req
- * @param {express.Response} res
- */
-const bulkDeleteUsersHandler = async (req, res) => {
-    try {
-        const { userIds } = req.body;
-
-        if (!userIds || !userIds.length)
-            return res.status(400).json({ message: 'User IDs are missing.' });
-
-        const { success, message, deletedCount } = await removeUser(userIds);
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-
-    } catch (err) {
-        console.error(`Error removing Users (${req.body.userIds}):`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
@@ -310,7 +299,7 @@ router.post('/assignments', updateAssignmentsHandler);
 router.put('/:id', checkResourceIdHandler, updateUserHandler);
 router.put('/:id/roles', checkResourceIdHandler, updateUserRolesHandler);
 router.put('/:id/managers', checkResourceIdHandler, updateUserManagersHandler);
+router.delete('/', deleteUserHandler);
 router.delete('/:id', checkResourceIdHandler,  deleteUserHandler);
-router.delete('/', bulkDeleteUsersHandler);
 
 export default router;
