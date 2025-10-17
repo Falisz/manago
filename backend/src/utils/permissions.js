@@ -4,6 +4,8 @@ import { getUserPermissions, getRolePermissions, getUserRoles, getUserManagers }
 
 resources = ['user', 'role', 'team', 'project', 'branch', 'schedule', 'shift', 'leave'];
 
+assignments = ['user-manager', 'user-role', 'user-permission', 'role-permission', 'team-user', 'team-project']
+
 // Permissions like the ones above will be assigned per user or per role.
 permissions = [
     { name: '*', desc: 'All permissions.'},
