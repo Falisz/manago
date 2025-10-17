@@ -6,15 +6,15 @@ resources = ['user', 'role', 'team', 'project', 'branch', 'schedule', 'shift', '
 
 // Permissions like the ones above will be assigned per user or per role.
 permissions = [
-    { name: '*', desc: ' '},
+    { name: '*', desc: 'All permissions.'},
     // Resource: User
-    { name: 'create-any-user', desc: '' }, 
-    { name: 'read-any-user', desc: '' }, // All users
-    { name: 'update-any-user', desc: '' },
-    { name: 'delete-any-user', desc: '' },
-    { name: 'read-managed-user', desc: '' }, // Only managed users
-    { name: 'update-managed-user', desc: '' },
-    { name: 'delete-managed-user', desc: '' },
+    { name: 'create-any-user', desc: 'Create a new User.' }, 
+    { name: 'read-any-user', desc: 'Read any User details.' }, // All users
+    { name: 'update-any-user', desc: 'Update any User.' },
+    { name: 'delete-any-user', desc: 'Delete any User.' },
+    { name: 'read-managed-user', desc: 'Read only Managed User details.' }, // Only managed users
+    { name: 'update-managed-user', desc: 'Update only Managed User details.' },
+    { name: 'delete-managed-user', desc: 'Delete only Managed User details.' },
     { name: 'read-self', desc: '' }, // Only yourself
     { name: 'update-self', desc: '' },
     { name: 'delete-self', desc: '' },
@@ -50,11 +50,11 @@ permissions = [
     { name: 'assign-self-role', desc: ''},
 ]
 
-async function managedUsers(managers, visited = new Set()) {
-     if (!managers || (Array.isArray(managers) && managers.length === 0))
+async function managedUsers(user, visited = new Set()) {
+     if (!user || (Array.isArray(user) && user.length === 0))
         return new Set();
 
-    const managerIds = Array.isArray(managers) ? managers.slice() : [managers];
+    const managerIds = Array.isArray(user) ? user.slice() : [user];
 
     const toQuery = managerIds.filter(id => id != null && !visited.has(id));
 
@@ -91,6 +91,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     resource = resource.toString().toLowerCase();
     action = action.toString().toLowerCase();
     
+    // Load permissions
     const userPermissions = (await getUserPermissions({ user })).map(p => p.name);
     const userRoles = (await getUserRoles({userId: user})).map(r => r.id);
     const rolePermissions = (await (getRolePermissions({role: userRoles}))).map(p => p.name);
@@ -100,7 +101,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     if (permissions.has('*'))
         return true;
 
-
+    // Helper functions
     function hasPermission(resource=resource, resource2=resource2) {
         const permission = action.toLowerCase() + '-' + resource.toLowerCase() +
         (action === 'assign' && resource2 ? '-' + resource2.toLowerCase() : '');
@@ -112,7 +113,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         if (!resource)
             return false;
 
-        if (!ids instanceof Set)
+        if (!(ids instanceof Set))
             ids = new Set(ids);
 
         let allowedIds = new Set();
@@ -126,7 +127,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         else if (resource === 'team')
             allowedIds = await managedTeams(user);
         
-        if (!allowedIds instanceof Set)
+        if (!(allowedIds instanceof Set))
             allowedIds = new Set(allowedIds);
 
         return ids.isSubsetOf(allowedIds);
@@ -147,13 +148,13 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         if (hasPermission(`managed-${resource}`))
             return resourceAccess(resource, Array.from(id));
     else
-        if (hasPermission('assign', `any-${resource}`, `any-${resource2}`))
+        if (hasPermission(`any-${resource}`, `any-${resource2}`))
             return true;
-        else if (hasPermission('assign', `managed-${resource}`, `any-${resource2}`))
+        else if (hasPermission(`managed-${resource}`, `any-${resource2}`))
             return resourceAccess(resource, Array.from(id));
-        else if (hasPermission('assign', `any-${resource}`, `managed-${resource2}`))
+        else if (hasPermission(`any-${resource}`, `managed-${resource2}`))
             return resourceAccess(resource2, Array.from(id2));
-        else if (hasPermission('assign', `managed-${resource}`, `managed-${resource2}`))
+        else if (hasPermission(`managed-${resource}`, `managed-${resource2}`))
             return resourceAccess(resource, Array.from(id)) && resourceAccess(resource2, Array.from(id2));
 
     return false;
