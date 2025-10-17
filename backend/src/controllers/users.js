@@ -279,7 +279,7 @@ export async function removeUser(id) {
  */
 export async function getUserManagers({ userId, managerId }) {
     if (!userId && isNaN(userId) && !managerId && isNaN(managerId))
-        return null;
+        return [];
 
     let result = await UserManager.findAll({
         where: managerId ? { manager: managerId } : { user: userId },
@@ -295,7 +295,7 @@ export async function getUserManagers({ userId, managerId }) {
         };
         delete item[managerId ? 'User' : 'Manager'];
         return item;
-    }) || null;
+    }) || [];
 }
 
 /**

@@ -532,62 +532,56 @@ const teamUsers = [
 ];
 
 const userManagers = [
-    // Employees report to their team leaders
-    // Sub 1.1 employees to leader1
-    {user: 100013, manager: 100007},
-    {user: 100014, manager: 100007},
-    {user: 100015, manager: 100007},
-    {user: 100016, manager: 100007},
-    {user: 100017, manager: 100007},
-    // Sub 1.2 to leader2
-    {user: 100018, manager: 100008},
-    {user: 100019, manager: 100008},
-    {user: 100020, manager: 100008},
-    {user: 100021, manager: 100008},
-    {user: 100022, manager: 100008},
-    // Sub 2.1 to leader3
-    {user: 100023, manager: 100009},
-    {user: 100024, manager: 100009},
-    {user: 100025, manager: 100009},
-    {user: 100026, manager: 100009},
-    {user: 100027, manager: 100009},
-    // Sub 2.2 to leader4
-    {user: 100028, manager: 100010},
-    {user: 100029, manager: 100010},
-    {user: 100030, manager: 100010},
-    {user: 100031, manager: 100010},
-    {user: 100032, manager: 100010},
-    // Sub 3.1 to leader5
-    {user: 100033, manager: 100011},
-    {user: 100034, manager: 100011},
-    {user: 100035, manager: 100011},
-    {user: 100036, manager: 100011},
-    {user: 100037, manager: 100011},
-    // Sub 3.2 to leader6
-    {user: 100038, manager: 100012},
-    {user: 100039, manager: 100012},
-    {user: 100040, manager: 100012},
-    {user: 100041, manager: 100012},
-    {user: 100042, manager: 100012},
-    // Team leaders report to low-managers
-    // Leaders 1 and 2 (Parent1) to low1
-    {user: 100007, manager: 100004},
-    {user: 100008, manager: 100004},
-    // Leaders 3 and 4 (Parent2) to low2
-    {user: 100009, manager: 100005},
-    {user: 100010, manager: 100005},
-    // Leaders 5 and 6 (Parent3) to low3
-    {user: 100011, manager: 100006},
-    {user: 100012, manager: 100006},
-    // Low managers report to mid-managers
-    // Low1 and Low2 to Mid1
-    {user: 100004, manager: 100002},
-    {user: 100005, manager: 100002},
-    // Low3 to Mid2
-    {user: 100006, manager: 100003},
     // Mid-managers report to CEO
     {user: 100002, manager: 100001},
     {user: 100003, manager: 100001},
+    // low1 and low2 to mid1
+    {user: 100004, manager: 100002},
+    {user: 100005, manager: 100002},
+    // low3 to mid2
+    {user: 100006, manager: 100003},
+    // leaders of low1
+    {user: 100007, manager: 100004},
+    {user: 100008, manager: 100004},
+    // employees of low1
+    {user: 100013, manager: 100004},
+    {user: 100014, manager: 100004},
+    {user: 100015, manager: 100004},
+    {user: 100016, manager: 100004},
+    {user: 100017, manager: 100004},
+    {user: 100018, manager: 100004},
+    {user: 100019, manager: 100004},
+    {user: 100020, manager: 100004},
+    {user: 100021, manager: 100004},
+    {user: 100022, manager: 100004},
+    // leaders 3 of low2
+    {user: 100009, manager: 100005},
+    {user: 100010, manager: 100005},
+    // employees of low2
+    {user: 100023, manager: 100005},
+    {user: 100024, manager: 100005},
+    {user: 100025, manager: 100005},
+    {user: 100026, manager: 100005},
+    {user: 100027, manager: 100005},
+    {user: 100028, manager: 100005},
+    {user: 100029, manager: 100005},
+    {user: 100030, manager: 100005},
+    {user: 100031, manager: 100005},
+    {user: 100032, manager: 100005},
+    // leaders of low3
+    {user: 100011, manager: 100006},
+    {user: 100012, manager: 100006},
+    // employees of leader5
+    {user: 100033, manager: 100006},
+    {user: 100034, manager: 100006},
+    {user: 100035, manager: 100006},
+    {user: 100036, manager: 100006},
+    {user: 100037, manager: 100006},
+    {user: 100038, manager: 100006},
+    {user: 100039, manager: 100006},
+    {user: 100040, manager: 100006},
+    {user: 100041, manager: 100006},
+    {user: 100042, manager: 100006},
 ];
 
 const schedules = [
