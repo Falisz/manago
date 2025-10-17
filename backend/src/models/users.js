@@ -119,6 +119,54 @@ export const UserRole = sequelize.define('UserRole', {
     noPrimaryKey: true
 });
 
+export const Permission = sequelize.define('Permission', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true
+    },
+    desc: DataTypes.STRING
+}, {
+    tableName: 'permissions',
+    timestamps: false
+});
+
+export const UserPermission = sequelize.define('UserPermission', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: User, key: 'id' }
+    },
+    permission: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Permission, key: 'id' }
+    }
+}, {
+    tableName: 'user_permissions',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['user', 'permission'] }],
+    noPrimaryKey: true
+});
+
+export const RolePermission = sequelize.define('RolePermission', {
+    role: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Role, key: 'id' }
+    },
+    permission: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: Permission, key: 'id' }
+    }
+}, {
+    tableName: 'role_permissions',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['role', 'permission'] }],
+    noPrimaryKey: true
+});
+
 //
 // Model Associations for users.js
 //
@@ -137,3 +185,19 @@ UserRole.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 // Role <-> UserRole
 Role.hasMany(UserRole, { foreignKey: 'role', sourceKey: 'id' });
 UserRole.belongsTo(Role, { foreignKey: 'role', targetKey: 'id' });
+//
+// User <-> UserPermission
+User.hasMany(UserPermission, { foreignKey: 'user', sourceKey: 'id' });
+UserPermission.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+//
+// Permission <-> UserPermission
+Permission.hasMany(UserPermission, { foreignKey: 'permission', sourceKey: 'id' });
+UserPermission.belongsTo(Permission, { foreignKey: 'permission', targetKey: 'id' });
+//
+// Role <-> RolePermission
+Role.hasMany(RolePermission, { foreignKey: 'role', sourceKey: 'id' });
+RolePermission.belongsTo(Role, { foreignKey: 'role', targetKey: 'id' });
+//
+// Permission <-> RolePermission
+Permission.hasMany(RolePermission, { foreignKey: 'permission', sourceKey: 'id' });
+RolePermission.belongsTo(Permission, { foreignKey: 'permission', targetKey: 'id' });
