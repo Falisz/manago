@@ -589,28 +589,25 @@ const schedules = [
         id: 1,
         name: 'General',
         description: 'General schedule for October 2025',
-        author: 100001, // CEO
+        author: 100004,
         start_date: '2025-10-01',
         end_date: '2025-10-14',
-        is_published: true
     },
     {
         id: 2,
         name: 'WIP #1',
         description: 'Work in progress schedule 1 for October 2025',
-        author: 100002, // Mid1
+        author: 100005,
         start_date: '2025-10-01',
-        end_date: '2025-10-07',
-        is_published: false
+        end_date: '2025-10-07'
     },
     {
         id: 3,
         name: 'WIP #2',
         description: 'Work in progress schedule 2 for October 2025',
-        author: 100003, // Mid2
+        author: 100006,
         start_date: '2025-10-08',
-        end_date: '2025-10-14',
-        is_published: false
+        end_date: '2025-10-14'
     }
 ];
 
