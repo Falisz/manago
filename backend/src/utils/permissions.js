@@ -1,39 +1,54 @@
 // BACKEND/utils/permissions.js
 import { getUserPermissions, getRolePermissions, getUserRoles, getUserManagers } from '../controllers/users.js';
 
+
+resources = ['user', 'role', 'team', 'project', 'branch', 'schedule', 'shift', 'leave'];
+
 // Permissions like the ones above will be assigned per user or per role.
 permissions = [
     { name: '*', desc: ' '},
-    { name: 'read-self', desc: '' },
+    // Resource: User
+    { name: 'create-any-user', desc: '' }, 
+    { name: 'read-any-user', desc: '' }, // All users
+    { name: 'update-any-user', desc: '' },
+    { name: 'delete-any-user', desc: '' },
+    { name: 'read-managed-user', desc: '' }, // Only managed users
+    { name: 'update-managed-user', desc: '' },
+    { name: 'delete-managed-user', desc: '' },
+    { name: 'read-self', desc: '' }, // Only yourself
     { name: 'update-self', desc: '' },
     { name: 'delete-self', desc: '' },
-    { name: 'assign-self-role', desc: ' '},
-    { name: 'create-user', desc: '' },
-    { name: 'read-user', desc: '' },
-    { name: 'read-managed-user', desc: '' },
-    { name: 'update-user', desc: '' },
-    { name: 'update-managed-user', desc: '' },
-    { name: 'delete-user', desc: '' },
-    { name: 'delete-managed-user', desc: '' },
-    { name: 'assign-user-role', desc: ' '},
-    { name: 'assign-managed-user-role', desc: ' '},
-    { name: 'read-user-role', desc: ' '},
+    // Resource: Role
+    { name: 'create-any-role', desc: ''},
+    { name: 'read-any-role', desc: ''}, // All roles
+    { name: 'update-any-role', desc: ''},
+    { name: 'delete-any-role', desc: ''},
+    { name: 'read-lower-role', desc: ''}, // Lower roles
+    { name: 'update-lower-role', desc: ''},
+    { name: 'delete-lower-role', desc: ''},
+    // Assignment: UserManager
+    { name: 'assign-any-user-any-manager', desc: ''},
+    { name: 'read-any-user-any-manager', desc: ''},
+    { name: 'assign-managed-user-any-manager', desc: ''},
+    { name: 'read-managed-user-any-manager', desc: ''},
+    { name: 'assign-any-user-managed-manager', desc: ''},
+    { name: 'read-any-user-managed-manager', desc: ''},
+    { name: 'assign-managed-user-managed-manager', desc: ''},
+    { name: 'read-managed-user-managed-manager', desc: ''},
+    // Assignment: SelfManager
+    { name: 'assign-self-manager', desc: ''},
+    // Assignment: UserRole
+    { name: 'assign-any-user-any-role', desc: ''},
+    { name: 'read-any-user-any-role', desc: ''},
+    { name: 'assign-managed-user-any-role', desc: ''},
+    { name: 'read-managed-user-any-role', desc: ''},
+    { name: 'assign-any-user-managed-role', desc: ''},
+    { name: 'read-any-user-managed-role', desc: ''},
+    { name: 'assign-managed-user-managed-role', desc: ''},
+    { name: 'read-managed-user-managed-role', desc: ''},
+    // Assignment: SelfRole
+    { name: 'assign-self-role', desc: ''},
 ]
-
-async function hasPermission(user, action, resource, resource2) {
-    const userPermissions = await getUserPermissions({ user });
-    
-    const userRoles = (await getUserRoles({userId: user})).map(r => r.id);
-
-    const rolePermissions = getRolePermissions({role: userRoles});
-
-    const permissions = new Set(userPermissions, rolePermissions);
-
-    const permission = action.toLowerCase() + '-' + resource.toLowerCase() +
-     (resource2 ? '-' + resource2.toLowerCase() : '');
-
-    return permissions.has(permission);
-}
 
 async function managedUsers(managers, visited = new Set()) {
      if (!managers || (Array.isArray(managers) && managers.length === 0))
@@ -60,34 +75,89 @@ async function managedUsers(managers, visited = new Set()) {
     return result;
 }
 
-function canDo(user, action, resource, id, resource2, id2) {
-    let access = false;
+async function lowerRoles(user) {
+    return new Set();
+}
 
-    if (action === 'assign')
-        access = hasPermission(user, action, resource, resource2);
+async function managedTeams(user) {
+    return new Set();
+}
+
+async function checkAccess(user, action, resource, id, resource2, id2) {
+
+    if (!user || !action || !resource) 
+        return false;
+
+    resource = resource.toString().toLowerCase();
+    action = action.toString().toLowerCase();
     
-    if (resource === 'User' && user === id)
-        access = hasPermission(user, action, 'Self');
+    const userPermissions = (await getUserPermissions({ user })).map(p => p.name);
+    const userRoles = (await getUserRoles({userId: user})).map(r => r.id);
+    const rolePermissions = (await (getRolePermissions({role: userRoles}))).map(p => p.name);
+    const permissions = new Set([...userPermissions, ...rolePermissions]);
 
-    if (access)
-        return access;
+    // Wild-card permission
+    if (permissions.has('*'))
+        return true;
 
-    if (resource === 'User')
-        access = hasPermission(user, action, resource);
 
-    if (!access) {
-        access = hasPermission(user, action, 'Managed'+resource);
+    function hasPermission(resource=resource, resource2=resource2) {
+        const permission = action.toLowerCase() + '-' + resource.toLowerCase() +
+        (action === 'assign' && resource2 ? '-' + resource2.toLowerCase() : '');
 
-        if (access) {
-            const allowedIds = managedUsers([user]);
-            const ids = new Set(id);
-            access = ids.isSubsetOf(allowedIds);
-        }
-
+        return permissions.has(permission);
     }
 
-    return access;
+    async function resourceAccess(resource, ids) {
+        if (!resource)
+            return false;
+
+        if (!ids instanceof Set)
+            ids = new Set(ids);
+
+        let allowedIds = new Set();
+
+        if (resource === 'user' || resource === 'manager')
+            allowedIds = await managedUsers(user);
+
+        else if (resource === 'role')
+            allowedIds = await lowerRoles(user);
+
+        else if (resource === 'team')
+            allowedIds = await managedTeams(user);
+        
+        if (!allowedIds instanceof Set)
+            allowedIds = new Set(allowedIds);
+
+        return ids.isSubsetOf(allowedIds);
+    }
+    
+    // Self permission
+    if (resource === 'user' && id === user && hasPermission('self')) 
+        return true;
+
+
+    // Any-resource permission
+    if (hasPermission('any-' + resource, action === 'assign' ?? 'any-' + resource2))
+        return true;
+
+    // Managed-resource permissions 
+    // permission name format: <action>-managed-<resource> (e.g. read-managed-user)
+    if (action !== 'assign')
+        if (hasPermission(`managed-${resource}`))
+            return resourceAccess(resource, Array.from(id));
+    else
+        if (hasPermission('assign', `any-${resource}`, `any-${resource2}`))
+            return true;
+        else if (hasPermission('assign', `managed-${resource}`, `any-${resource2}`))
+            return resourceAccess(resource, Array.from(id));
+        else if (hasPermission('assign', `any-${resource}`, `managed-${resource2}`))
+            return resourceAccess(resource2, Array.from(id2));
+        else if (hasPermission('assign', `managed-${resource}`, `managed-${resource2}`))
+            return resourceAccess(resource, Array.from(id)) && resourceAccess(resource2, Array.from(id2));
+
+    return false;
     
 }
 
-export default canDo;
+export default checkAccess;
