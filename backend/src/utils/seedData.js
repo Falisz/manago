@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
 import {AppConfig, AppModule, AppPage} from '../models/app.js';
-import {User, UserManager, Role, UserRole} from '../models/users.js';
+import {User, UserManager, Role, UserRole, Permission} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
 import {Schedule, JobPost, Shift, Holiday, RequestStatus, LeaveType, Leave} from '../models/workPlanner.js';
 import {Post, Channel} from '../models/posts.js';
@@ -243,6 +243,50 @@ const appPages = [
             ]
     }
 ];
+
+const permissions = [
+    { name: '*', desc: ' '},
+    // Resource: User
+    { name: 'create-any-user', desc: '' },
+    { name: 'read-any-user', desc: '' }, // All users
+    { name: 'update-any-user', desc: '' },
+    { name: 'delete-any-user', desc: '' },
+    { name: 'read-managed-user', desc: '' }, // Only managed users
+    { name: 'update-managed-user', desc: '' },
+    { name: 'delete-managed-user', desc: '' },
+    { name: 'read-self', desc: '' }, // Only yourself
+    { name: 'update-self', desc: '' },
+    { name: 'delete-self', desc: '' },
+    // Resource: Role
+    { name: 'create-any-role', desc: ''},
+    { name: 'read-any-role', desc: ''}, // All roles
+    { name: 'update-any-role', desc: ''},
+    { name: 'delete-any-role', desc: ''},
+    // Assignment: UserManager
+    { name: 'assign-any-user-any-manager', desc: ''},
+    { name: 'read-any-user-any-manager', desc: ''},
+    { name: 'assign-managed-user-any-manager', desc: ''},
+    { name: 'read-managed-user-any-manager', desc: ''},
+    { name: 'assign-any-user-managed-manager', desc: ''},
+    { name: 'read-any-user-managed-manager', desc: ''},
+    { name: 'assign-managed-user-managed-manager', desc: ''},
+    { name: 'read-managed-user-managed-manager', desc: ''},
+    // Assignment: SelfManager
+    { name: 'assign-self-manager', desc: ''},
+    // Assignment: UserRole
+    { name: 'assign-any-user-any-role', desc: ''},
+    { name: 'read-any-user-any-role', desc: ''},
+    { name: 'assign-managed-user-any-role', desc: ''},
+    { name: 'read-managed-user-any-role', desc: ''},
+    { name: 'assign-any-user-managed-role', desc: ''},
+    { name: 'read-any-user-managed-role', desc: ''},
+    { name: 'assign-managed-user-managed-role', desc: ''},
+    { name: 'read-managed-user-managed-role', desc: ''},
+    // Assignment: SelfRole
+    { name: 'assign-self-role', desc: ''},
+    { name: 'assign-self-managed-role', desc: ''},
+    // 'user', 'role', 'team', 'project', 'branch', 'schedule', 'shift', 'leave'
+]
 
 const roles = [
     { id: 1, name: 'Employee', system_default: true, icon: 'account_circle',
@@ -758,6 +802,7 @@ const seedStructure = [
     { model: AppModule, tableName: 'app_modules', data: appModules, itemsName: 'modules' },
     { model: AppConfig, tableName: 'app_configs', data: appConfigs, itemsName: 'configs' },
     { model: AppPage, tableName: 'app_pages', data: appPages, itemsName: 'pages' },
+    { model: Permission, tableName: 'permissions', data: permissions, itemsName: 'permissions' },
     { model: Role, tableName: 'roles', data: roles, itemsName: 'roles' },
     { model: User, tableName: 'users', data: users, itemsName: 'users' },
     { model: UserRole, tableName: 'user_roles', data: userRoles, itemsName: 'user roles assignments' },
