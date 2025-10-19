@@ -1,8 +1,10 @@
 // BACKEND/utils/deleteResource.js
+import checkAccess from './checkAccess.js';
 
 /**
  * Middleware to delete the resource provided as a parameter.
  * @param {Request} req
+ * @param {object} req.session
  * @param {number} req.body.id
  * @param {Response} res
  * @param resourceName
@@ -27,7 +29,10 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     if (ids.length === 0)
         return res.status(400).json({ message: `No valid ${resourceName} IDs provided.` });
 
-    // const hasAccess = hasAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+    const hasAccess = checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+
+    if (!hasAccess)
+        return res.status(501).json({ message: 'No access.' });
 
     try {
         const { success, message, deletedCount } = await deleteFunction(ids, ...args);
