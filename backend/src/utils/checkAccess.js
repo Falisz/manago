@@ -1,46 +1,13 @@
-// BACKEND/utils/permissions.js
+// BACKEND/utils/checkAccess.js
 import {
     getUserPermissions,
     getRolePermissions,
     getUserRoles,
     getUserManagers
 } from '../controllers/users.js';
-import {getTeamUsers} from "../controllers/teams.js";
-
-async function managedUsers(managers, visited = new Set()) {
-     if (!managers || (Array.isArray(managers) && managers.length === 0))
-        return new Set();
-
-    const managerIds = Array.isArray(managers) ? managers.slice() : [managers];
-
-    const toQuery = managerIds.filter(id => id != null && !visited.has(id));
-
-    if (toQuery.length === 0) 
-        return new Set();
-
-    toQuery.forEach(id => visited.add(id));
-    
-    const direct = (await getUserManagers({ managerId: toQuery })).map(u => u.id).filter(id => id != null);
-
-    const result = new Set(direct);
-    
-    direct.forEach(id => visited.add(id));
-    
-    if (direct.length > 0)
-        (await managedUsers(direct, visited)).forEach(id => result.add(id));
-
-    return result;
-}
-
-async function assignedRoles(user) {
-    const roleIds = (await getUserRoles({userId: user})).map(r => r.id);
-    return new Set(roleIds);
-}
-
-async function managedTeams(user) {
-    const teamIds = (await getTeamUsers({user, role: 3, include_subteams: true})).map(t => t.teamId);
-    return new Set(teamIds);
-}
+import {
+    getTeamUsers
+} from '../controllers/teams.js';
 
 async function checkAccess(user, action, resource, id, resource2, id2) {
     if (!user || !action || !resource) 
@@ -58,14 +25,14 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     if (permissions.has('*'))
         return true;
 
-    const hasPermission = (resource=resource, resource2=resource2) =>
+    const hasPermission = (resource = resource, resource2 = resource2) =>
         permissions.has(
             action.toLowerCase() +
             '-' + resource.toLowerCase() +
             (action === 'assign' && resource2 ? '-' + resource2.toLowerCase() : '')
         );
 
-    async function resourceAccess(resource, ids) {
+    const resourceAccess = async (resource, ids) => {
         if (!resource)
             return false;
 
@@ -75,13 +42,20 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         let allowedIds = new Set();
 
         if (resource === 'user' || resource === 'manager')
-            allowedIds = await managedUsers(user);
+            allowedIds = new Set((await getUserManagers({manager: user, include_all_users: true })).map(u => u.id));
 
-        else if (resource === 'role')
-            allowedIds = await assignedRoles(user);
+        else if (resource === 'role') {
+            allowedIds = new Set((await getUserRoles({user})).map(r => r.id));
+
+            if (allowedIds.has(11))
+                [1, 2, 3].forEach(r => allowedIds.add(r));
+
+            if (allowedIds.has(12) || allowedIds.has(13))
+                [1, 2, 3, 11].forEach(r => allowedIds.add(r));
+        }
 
         else if (resource === 'team')
-            allowedIds = await managedTeams(user);
+            allowedIds = new Set((await getTeamUsers({user, role: 3, include_subteams: true})).map(t => t.id));
         
         if (!allowedIds instanceof Set)
             allowedIds = new Set(allowedIds);
@@ -92,7 +66,6 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     // Self permission
     if (resource === 'user' && id === user && hasPermission('self')) 
         return true;
-
 
     // Any-resource permission
     if (hasPermission('any-' + resource, action === 'assign' ?? 'any-' + resource2))
@@ -106,11 +79,11 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     else
         if (hasPermission('assign', `any-${resource}`, `any-${resource2}`))
             return true;
-        else if (hasPermission('assign', `managed-${resource}`, `any-${resource2}`))
+        else if (hasPermission(`managed-${resource}`, `any-${resource2}`))
             return await resourceAccess(resource, Array.from(id));
-        else if (hasPermission('assign', `any-${resource}`, `managed-${resource2}`))
+        else if (hasPermission(`any-${resource}`, `managed-${resource2}`))
             return await resourceAccess(resource2, Array.from(id2));
-        else if (hasPermission('assign', `managed-${resource}`, `managed-${resource2}`))
+        else if (hasPermission(`managed-${resource}`, `managed-${resource2}`))
             return await resourceAccess(resource, Array.from(id)) && resourceAccess(resource2, Array.from(id2));
 
     return false;

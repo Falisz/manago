@@ -246,6 +246,10 @@ const appPages = [
 
 const permissions = [
     { name: '*', desc: ' '},
+    // Resource: Self
+    { name: 'read-self', desc: '' },
+    { name: 'update-self', desc: '' },
+    { name: 'delete-self', desc: '' },
     // Resource: User
     { name: 'create-any-user', desc: '' },
     { name: 'read-any-user', desc: '' }, // All users
@@ -254,9 +258,6 @@ const permissions = [
     { name: 'read-managed-user', desc: '' }, // Only managed users
     { name: 'update-managed-user', desc: '' },
     { name: 'delete-managed-user', desc: '' },
-    { name: 'read-self', desc: '' }, // Only yourself
-    { name: 'update-self', desc: '' },
-    { name: 'delete-self', desc: '' },
     // Resource: Role
     { name: 'create-any-role', desc: ''},
     { name: 'read-any-role', desc: ''}, // All roles
@@ -309,7 +310,7 @@ const roles = [
         description: "Role for administrators with full access to the system." },
 ];
 
-const defaultPassword = await bcrypt.hash('1234', 10);
+const defaultPassword = await bcrypt.hash('@$^P4sSw0rD!#%', 10);
 const users = [
     {id: 137500, first_name: 'Staff', last_name: 'Joe', login: 'staff', 
         email: 'staff.joe@com.com', password: defaultPassword, active: true,
