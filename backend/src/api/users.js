@@ -57,7 +57,7 @@ const fetchUserRolesHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const managers = await getUserRoles({ userId: id });
+        const managers = await getUserRoles({user: id});
 
         res.json(managers);
 
@@ -76,7 +76,7 @@ const fetchUserManagersHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const managers = await getUserManagers({ userId: id });
+        const managers = await getUserManagers({ user: id });
 
         res.json(managers);
 
@@ -95,7 +95,7 @@ const fetchManagedUsersHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const managedUsers = await getUserManagers({ managerId: id });
+        const managedUsers = await getUserManagers({ manager: id });
         
         res.json(managedUsers);
 
@@ -184,7 +184,7 @@ const updateAssignmentsHandler = async (req, res) => {
 
         let success, message;
 
-        // const hasAccess = hasAccess(req.session.user, 'assign', 'user', userIds, resouce, resourceIds);
+        // const hasAccess = hasAccess(req.session.user, 'assign', 'user', userIds, resource, resourceIds);
 
         if (resource === 'manager')
             ({ success, message } = await updateUserManagers(userIds, resourceIds, mode));

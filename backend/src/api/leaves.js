@@ -6,8 +6,9 @@ import {
     getLeave,
     createLeave,
     updateLeave,
-    deleteLeave
-} from "../controllers/workPlanner.js";
+    deleteLeave,
+    getShift
+} from '../controllers/workPlanner.js';
 
 // API Handlers
 /**
@@ -83,16 +84,16 @@ const updateLeaveHandler = async (req, res) => {
             const updatedLeaves = [];
             const errorMessages = [];
 
-            Object.fromEntries(leaves).forEach(async (id, leave) => {
+            for (const [id, leave] of Object.entries(leaves)) {
                 const { success, message } = await updateLeave(parseInt(id), leave);
 
                 if (success)
-                    updatedLeaves.push(await getLeave({id}));
+                    updatedLeaves.push(await getLeave({ id }));
                 else
                     errorMessages.push(message);
-            });
+            }
 
-            res.status(201).json({ message: `Updated ${updatedLeaves.length()} Leaves.`, updatedLeaves, errors})
+            res.status(201).json({ message: `Updated ${updatedLeaves.length()} Leaves.`, updatedLeaves, errorMessages})
 
         } else {
             let { leave } = req.body;

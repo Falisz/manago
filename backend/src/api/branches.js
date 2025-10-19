@@ -166,45 +166,7 @@ const updateAssignmentsHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteBranchHandler = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const { success, message, deletedCount } = await deleteBranch(parseInt(id));
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-    } catch (err) {
-        console.error(`Error deleting Branch (ID: ${id}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Bulk delete branches by IDs.
- * @param {express.Request} req
- * @param {express.Response} res
- */
-const bulkDeleteBranchesHandler = async (req, res) => {
-    try {
-        const { branchIds } = req.body;
-
-        if (!branchIds || !branchIds.length)
-            return res.status(400).json({ message: 'Branch IDs are missing.' });
-
-        const { success, message, deletedCount } = await deleteBranch(branchIds);
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message, deletedCount });
-    } catch (err) {
-        console.error(`Error removing Branches (${req.body['branchIds']}):`, err);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
+const deleteBranchHandler = async (req, res) => deleteResource(req, res, 'Branch', deleteBranch);
 
 // Router definitions
 export const router = express.Router();
@@ -216,6 +178,7 @@ router.post('/', createBranchHandler);
 router.post('/assignments', updateAssignmentsHandler);
 router.put('/:id', checkResourceIdHandler, updateBranchHandler);
 router.delete('/:id', checkResourceIdHandler, deleteBranchHandler);
-router.delete('/', bulkDeleteBranchesHandler);
+router.delete('/', deleteBranchHandler);
+router.delete('/:id', deleteBranchHandler);
 
 export default router;

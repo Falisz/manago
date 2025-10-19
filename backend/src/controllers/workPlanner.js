@@ -82,7 +82,7 @@ export async function createSchedule(data) {
         author: data.author
     });
 
-    return { success: true, message: 'Schedule created succesffully.', id: schedule.id };
+    return { success: true, message: 'Schedule created successfully.', id: schedule.id };
 }
 
 /**
@@ -105,7 +105,7 @@ export async function updateSchedule(id, data) {
 
     await schedule.update(data);
     
-    return { success: true, message: 'Schedule updated succesffully.' };
+    return { success: true, message: 'Schedule updated successfully.' };
 }
 
 /**
@@ -136,7 +136,7 @@ export async function deleteSchedule({id, delete_shifts=true} = {}) {
             await Shift.destroy({ where: { schedule: id }, transaction });
         
         else
-            await Shift.update({ schedule: null }, { where: { scheudle: id } });
+            await Shift.update({ schedule: null }, { where: { schedule: id } });
 
         await transaction.commit();
 
@@ -192,7 +192,7 @@ export async function getJobPost({id, include_shifts=false} = {}) {
 /**
  * Creates a new Job Post.
  * @param {Object} data - Job Post data
- * @param {string} data.name -  Job Post name
+ * @param {string} data.name - Job Post name
  * @param {string} data.color - optional - Job Post color
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
@@ -209,7 +209,7 @@ export async function createJobPost(data) {
         color: data.color || null
     });
 
-    return { success: true, message: 'Job Post created succesffully.', id: jobPost.id };
+    return { success: true, message: 'Job Post created successfully.', id: jobPost.id };
 }
 
 /**
@@ -232,7 +232,7 @@ export async function updateJobPost(id, data) {
 
     await jobPost.update(data);
     
-    return { success: true, message: 'Job Post updated succesffully.' };
+    return { success: true, message: 'Job Post updated successfully.' };
 }
 
 /**
@@ -286,6 +286,12 @@ export async function deleteJobPost({id, delete_shifts=false} = {}) {
 /**
  * Retrieves one Shift by its ID or all Shifts if an ID is not provided.
  * @param {number|null} id - optional - Shift ID to fetch a specific Shift
+ * @param user
+ * @param job_post
+ * @param schedule
+ * @param date
+ * @param start_time
+ * @param end_time
  * @returns {Promise<Object|Object[]|null>} Single Shift, array of Shifts, or null
  */
 export async function getShift({id, user, job_post, schedule, date, start_time, end_time} = {}) {
@@ -343,8 +349,8 @@ export async function getShift({id, user, job_post, schedule, date, start_time, 
 /**
  * Creates a new Shift.
  * @param {Object} data - Shift data
- * @param {number} data.user -  Shift User ID
- * @param {string} data.start_time -  Shift start time
+ * @param {number} data.user - Shift User ID
+ * @param {string} data.start_time - Shift start time
  * @param {string} data.end_time - Shift end time
  * @param {number} data.job_post - optional - Shift Job Post ID
  * @param {number} data.schedule - optional - Shift Schedule ID
@@ -354,7 +360,7 @@ export async function createShift(data) {
     if (!data.user)
         return { success: false, message: 'User is required to create a new shift.' };
 
-    if (!(await getUser(data.author)))
+    if (!(await getUser(data.user)))
         return { success: false, message: 'Specified Shift User not found.' };
 
     if (!data.start_time)
@@ -391,7 +397,7 @@ export async function createShift(data) {
         schedule: data.schedule || null
     });
 
-    return { success: true, message: 'Shift created succesffully.', id: shift.id };
+    return { success: true, message: 'Shift created successfully.', id: shift.id };
 }
 
 /**
@@ -441,7 +447,7 @@ export async function updateShift(id, data) {
     if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
         return { success: false, message: 'Provided Schedule not found.' };
 
-    return { success: true, message: 'Shift updated succesffully.' };
+    return { success: true, message: 'Shift updated successfully.' };
 }
 
 /**
@@ -473,8 +479,7 @@ export async function deleteShift(id) {
 /**
  * Retrieves one Holiday by its ID or all Holidays if an ID is not provided.
  * @param {number|null} id - optional - Holiday ID to fetch a specific Holiday
- * @param {string} start_date - optional -
- * @param {string} end_date - optional -
+ * @param {string} date - optional -
  * @returns {Promise<Object|Object[]|null>} Single Holiday, array of Holidays, or null
  */
 export async function getHoliday({id, date} = {}) {
@@ -590,6 +595,9 @@ export async function getLeaveType({id} = {}) {
  * Creates a new Leave Type.
  * @param {Object} data - Leave Type data
  * @param {string} data.name - Leave Type name
+ * @param {string} data.parent_type -
+ * @param {string} data.amount -
+ * @param {string} data.color -
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createLeaveType(data) {
@@ -670,8 +678,11 @@ export async function deleteLeaveType(id) {
 /**
  * Retrieves one Leave by its ID or all Leaves if an ID is not provided.
  * @param {number|null} id - optional - Leave ID to fetch a specific Leave
- * @param {number|number[]|null} user - optional - User ID or array of User IDs for which Leaves should be fetched  
- * @param {number|number[]|null} approver - optional - Approver User ID or array of Approver User IDs for which Leaves should be fetched  
+ * @param {number|number[]|null} user - optional - User ID or array of User IDs for which Leaves should be fetched
+ * @param {number|number[]|null} approver - optional - Approver User ID or array of Approver User IDs for which Leaves should be fetched
+ * @param date
+ * @param start_date
+ * @param end_date
  * @returns {Promise<Object|Object[]|null>} Single Leave, array of Leaves, or null
  */
 export async function getLeave({id, user, approver, date, start_date, end_date} = {}) {
@@ -776,6 +787,7 @@ export async function createLeave(data) {
 
 /**
  * Updates an existing Leave.
+ * @param id
  * @param {Object} data - Leave data
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
@@ -873,21 +885,18 @@ export async function getHolidayWorking({id} = {}) {
 }
 
 export async function createHolidayWorking(data) {
-    if (!data.holiday || !data.status || !data.user) {
+    if (!data.holiday || !data.status || !data.user)
         return { success: false, message: 'Mandatory data not provided.' };
-    }
-    if (!(await Holiday.findOne({ where: { id: data.holiday } }))) {
+
+    if (!(await Holiday.findOne({ where: { id: data.holiday } })))
         return { success: false, message: 'Holiday not found.' };
-    }
-    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
-        return { success: false, message: 'RequestStatus not found.' };
-    }
-    if (!(await User.findOne({ where: { id: data.user } }))) {
-        return { success: false, message: 'User not found.' };
-    }
-    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
-        return { success: false, message: 'Approver not found.' };
-    }
+
+    if (!(await RequestStatus.findOne({ where: { id: data.status } })))
+        return { success: false, message: 'Request Status for Holiday Working not found.' };
+
+    if (!(await User.findOne({ where: { id: data.user } })))
+        return { success: false, message: 'User for Holiday Working not found.' };
+
     const working = await HolidayWorking.create({
         id: await randomId(HolidayWorking),
         holiday: data.holiday,
@@ -938,18 +947,15 @@ export async function getWeekendWorking({id} = {}) {
 }
 
 export async function createWeekendWorking(data) {
-    if (!data.date || !data.status || !data.user) {
+    if (!data.date || !data.status || !data.user)
         return { success: false, message: 'Mandatory data not provided.' };
-    }
-    if (!(await RequestStatus.findOne({ where: { id: data.status } }))) {
-        return { success: false, message: 'RequestStatus not found.' };
-    }
-    if (!(await User.findOne({ where: { id: data.user } }))) {
-        return { success: false, message: 'User not found.' };
-    }
-    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
-        return { success: false, message: 'Approver not found.' };
-    }
+
+    if (!(await RequestStatus.findOne({ where: { id: data.status } })))
+        return { success: false, message: 'Request Status for Weekend Working not found.' };
+
+    if (!(await User.findOne({ where: { id: data.user } })))
+        return { success: false, message: 'User for Weekend Working not found.' };
+
     const working = await WeekendWorking.create({
         id: await randomId(WeekendWorking),
         date: data.date,
@@ -959,23 +965,29 @@ export async function createWeekendWorking(data) {
         user_note: data.user_note || null,
         approver_note: data.approver_note || null
     });
-    return { success: true, message: 'WeekendWorking created successfully.', id: working.id };
+    return { success: true, message: 'Weekend Working created successfully.', id: working.id };
 }
 
 export async function updateWeekendWorking(id, data) {
-    if (!id) return { success: false, message: 'WeekendWorking ID not provided.' };
+    if (!id)
+        return { success: false, message: 'WeekendWorking ID not provided.' };
+
     const working = await WeekendWorking.findOne({ where: { id } });
-    if (!working) return { success: false, message: 'WeekendWorking not found.' };
-    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) {
-        return { success: false, message: 'RequestStatus not found.' };
-    }
-    if (data.user && !(await User.findOne({ where: { id: data.user } }))) {
-        return { success: false, message: 'User not found.' };
-    }
-    if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) {
-        return { success: false, message: 'Approver not found.' };
-    }
+
+    if (!working)
+        return { success: false, message: 'WeekendWorking not found.' };
+
+    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } })))
+        return { success: false, message: 'Request Status for Weekend Working not found.' };
+
+    if (data.user && !(await User.findOne({ where: { id: data.user } })))
+        return { success: false, message: 'User for Weekend Working not found.' };
+
+    if (data.approver && !(await User.findOne({ where: { id: data.approver } })))
+        return { success: false, message: 'Approver for Weekend Working not found.' };
+
     await working.update(data);
+
     return { success: true, message: 'WeekendWorking updated successfully.' };
 }
 

@@ -59,16 +59,16 @@ const createShiftHandler = async (req, res) => {
             const newShifts = [];
             const errorMessages = [];
 
-            shifts.forEach(async shift => {
+            for (const shift of shifts) {
                 const { success, message, id } = await createShift(shift);
 
                 if (success)
                     newShifts.push(await getShift({id}));
                 else
                     errorMessages.push(message);
-            });
+            }
 
-            res.status(201).json({ message: `Created ${newShifts.length()} new shifts.`, newShifts, errors})
+            res.status(201).json({ message: `Created ${newShifts.length()} new shifts.`, newShifts, errorMessages})
 
         } else {
             let { shift } = req.body;
@@ -100,20 +100,20 @@ const updateShiftHandler = async (req, res) => {
     try {
         if (!id) {
             const { shifts } = req.body;
-            
+
             const updatedShifts = [];
             const errorMessages = [];
 
-            Object.fromEntries(shifts).forEach(async (id, shift) => {
+            for (const [id, shift] of Object.entries(shifts)) {
                 const { success, message } = await updateShift(parseInt(id), shift);
 
                 if (success)
-                    updatedShifts.push(await getShift({id}));
+                    updatedShifts.push(await getShift({ id }));
                 else
                     errorMessages.push(message);
-            });
+            }
 
-            res.status(201).json({ message: `Updated ${updatedShifts.length()} shifts.`, updatedShifts, errors})
+            res.status(201).json({ message: `Updated ${updatedShifts.length} shifts.`, updatedShifts, errorMessages})
 
         } else {
             let { shift } = req.body;

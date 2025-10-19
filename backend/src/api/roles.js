@@ -46,7 +46,7 @@ const fetchUsersWithRoleHandler = async (req, res) => {
     const { id } = req.params;
     
     try {
-        const users = await getUserRoles({ id });
+        const users = await getUserRoles({ role: id });
 
         res.json(users);
 

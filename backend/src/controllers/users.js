@@ -72,13 +72,13 @@ export async function getUser({id, group, roles=true, managers=true,
             delete user['UserRoles'];
 
             if (roles)
-                user.roles = await getUserRoles({userId: user.id});
+                user.roles = await getUserRoles({user: user.id});
 
             if (managers)
-                user.managers = await getUserManagers({userId: user.id});
+                user.managers = await getUserManagers({user: user.id});
 
             if (managed_users)
-                user.managed_users = await getUserManagers({managerId: user.id});
+                user.managed_users = await getUserManagers({manager: user.id});
             
             return user;
         }));
@@ -95,13 +95,13 @@ export async function getUser({id, group, roles=true, managers=true,
         return null;
 
     if (roles)
-        user.roles = await getUserRoles({userId: id});
+        user.roles = await getUserRoles({user: id});
 
     if (managers)
-        user.managers = await getUserManagers({userId: id});
+        user.managers = await getUserManagers({user: id});
 
     if (managed_users)
-        user.managed_users = await getUserManagers({managerId: id});
+        user.managed_users = await getUserManagers({manager: id});
 
     return user;
 }
@@ -272,30 +272,66 @@ export async function removeUser(id) {
 
 /**
  * Retrieves Managers assigned to a specific userId, or Managed Users assigned to a specific managerId.
- * @param {number} userId - User ID (optional)
+ * @param {number} user - User ID (optional)
  * @param {number} managerId - Manager ID (optional)
  * @returns {Promise<UserManager[]|null>} Array of Managers assigned to the User or Users assigned to the Manager,
  * or null if neither ID is provided.
  */
-export async function getUserManagers({ userId, managerId }) {
-    if (!userId && isNaN(userId) && !managerId && isNaN(managerId))
+export async function getUserManagers({
+                                          user,
+                                          manager,
+                                          include_all_users = false,
+                                          include_all_managers = false,
+                                          visited = new Set(),
+                                      } = {}) {
+    if (!user && !manager)
         return [];
 
-    let result = await UserManager.findAll({
-        where: managerId ? { manager: managerId } : { user: userId },
+    const userIds = user == null ?
+        [] : (Array.isArray(user) ? user : [user]).map(Number).filter(Number.isFinite);
+
+    const managerIds = manager == null ?
+        [] : (Array.isArray(manager) ? manager : [manager]).map(Number).filter(Number.isFinite);
+
+    const queryingByManager = managerIds.length > 0;
+
+    const seeds = (queryingByManager ? managerIds : userIds).filter(id => !visited.has(id));
+
+    if (seeds.length === 0)
+        return [];
+
+    const rows = await UserManager.findAll({
+        where: queryingByManager ? { manager: seeds } : { user: seeds },
         include: [{
-            model: User, as: (managerId ? 'User' : 'Manager' ),
-            attributes: ['id', 'first_name', 'last_name']
-        }]
+            model: User,
+            as: (queryingByManager ? 'User' : 'Manager'),
+            attributes: ['id', 'first_name', 'last_name'],
+        }],
     });
 
-    return result.map(item => {
-        item = {
-            ...item[managerId ? 'User' : 'Manager'].toJSON(),
-        };
-        delete item[managerId ? 'User' : 'Manager'];
-        return item;
-    }) || [];
+    const directPeople = rows.map(r => r[queryingByManager ? 'User' : 'Manager'].toJSON());
+
+    const uniqueDirectById = new Map(directPeople.map(u => [u.id, u]));
+
+    let recursiveResults = [];
+
+    if (queryingByManager && include_all_users) {
+        const nextManagers = rows.map(r => r.user).filter(id => id != null && !visited.has(id));
+
+        if (nextManagers.length > 0)
+            recursiveResults = await getUserManagers({ manager: nextManagers, include_all_users, visited });
+
+    } else if (!queryingByManager && include_all_managers) {
+        const nextUsers = rows.map(r => r.manager).filter(id => id != null && !visited.has(id));
+
+        if (nextUsers.length > 0)
+            recursiveResults = await getUserManagers({ user: nextUsers, include_all_managers, visited });
+    }
+
+    for (const u of recursiveResults)
+        uniqueDirectById.set(u.id, u);
+
+    return Array.from(uniqueDirectById.values());
 }
 
 /**
@@ -486,7 +522,7 @@ export async function getRole({id, users=true} = {}) {
 
         return await Promise.all(roles.map(async role => {
                 if (users)
-                    role.users = await getUserRoles({ roleId: role.id });
+                    role.users = await getUserRoles({role: role.id});
 
                 return role;
             })
@@ -500,7 +536,7 @@ export async function getRole({id, users=true} = {}) {
         return null;
 
     if (users) 
-        role.users = await getUserRoles({ roleId: id });
+        role.users = await getUserRoles({role: id});
 
     return role;
 }
@@ -621,28 +657,23 @@ export async function deleteRole(id) {
 
 /**
  * Retrieves Roles assigned to a specific userId or all users assigned to a specific roleId.
- * @param {number|null} userId - optional - User ID
- * @param {number|null} roleId - optional - Role ID
+ * @param {number|null} user - optional - User ID
+ * @param {number|null} role - optional - Role ID
+ * @param {boolean} include_lower_roles - optional - whether to include lower-level Roles
  * @returns {Promise<Object[]|{success: boolean, message: string}>} Array of Roles/Users or error
  */
-export async function getUserRoles({userId, roleId}) {
-    if (!userId && isNaN(userId) && !roleId && isNaN(roleId))
+export async function getUserRoles({user, role} = {}) {
+    if (!user && !role)
         return null;
 
     let result = await UserRole.findAll({
-        where: roleId ? { role: roleId } : {user: userId },
-        include: roleId ?  
+        where: role ? { role } : { user },
+        include: role ?
             [ { model: User, attributes: ['id', 'first_name', 'last_name'] }] :
             [ { model: Role, attributes: ['id', 'name'] } ]
     });
 
-    return result.map(item => {
-        item = {
-            ...item[roleId ? 'User' : 'Role' ].toJSON(),
-        };
-        delete item[roleId ? 'User' : 'Role' ];
-        return item;
-    }) || null;
+    return result.map(item => item[role ? 'User' : 'Role' ].toJSON()) || null;
 }
 
 /**

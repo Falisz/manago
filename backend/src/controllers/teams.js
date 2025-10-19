@@ -24,9 +24,15 @@ export async function getTeam({id, all=false, parent_team=null,
         }
 
         if (get_members) {
-            team.members = await getTeamUsers(team.id, 1, true);
-            team.leaders = await getTeamUsers(team.id, 2, true);
-            team.managers = await getTeamUsers(team.id, 3, true, true);
+            team.members = await getTeamUsers({
+                team: team.id, role: 1, include_subteams: true
+            });
+            team.leaders = await getTeamUsers({
+                team: team.id, role: 2, include_subteams: true
+            });
+            team.managers = await getTeamUsers({
+                team: team.id, role: 3, include_subteams: true, include_parent_teams: true
+            });
         }
 
         return team;
@@ -200,37 +206,55 @@ export async function deleteTeam(id, cascade=false) {
 
 /**
  * Retrieves members of a Team, optionally filtered by role and can include sub and sup Teams' members.
- * @param {number} teamId - Team ID
+ * @param {number} team - Team ID
+ * @param {number} user - User ID
  * @param {number || null} [role] - Optional - Role filter (0: member, 1: leader, 2: manager)
  * @param include_subteams {boolean} - Optional - Should the result include Subteams.
  * @param include_parent_teams {boolean} - Optional - Should the result include parent Teams.
  * @returns {Promise<TeamUser[] || null>} Array of user objects
  */
-export async function getTeamUsers(teamId, role = null, include_subteams = false,
-                                   include_parent_teams = false) {
-    if (!teamId) return [];
+export async function getTeamUsers({team, user, role, include_subteams = false, include_parent_teams = false}) {
 
-    async function getParentIds(teamId) {
-        const parentIds = [];
+    let teamIds;
 
-        const thisTeam = await Team.findOne({
-            where: { id: teamId },
-            attributes: ['parent_team']
+    if (team)
+        teamIds = [team];
+    else if (user)
+        teamIds = (await TeamUser.findAll({where: {user, role}})).map(tu => tu['team']);
+    else return [];
+
+    async function getParentIds(teamIds) {
+
+        if (!teamIds || teamIds.length === 0)
+            return [];
+
+        const currentTeams = await Team.findAll({
+            where: { id: teamIds },
+            attributes: ['parent_team'],
+            raw: true
         });
 
-        if (thisTeam && thisTeam.parent_team) {
-            parentIds.push(thisTeam.parent_team);
-            const ancestors = await getParentIds(thisTeam.parent_team);
-            return parentIds.concat(ancestors);
+        if (currentTeams.length > 0) {
+            const parentIds = [];
+
+            const parentTeams = currentTeams.map(t => t.parent_team).filter(t => t != null);
+            parentIds.concat(parentTeams);
+
+            if (parentTeams.length > 0) {
+                const ancestors = await getParentIds(parentTeams);
+                parentIds.concat(ancestors);
+            }
+
+            return parentIds;
         }
 
-        return parentIds;
+        return [];
     }
 
-    async function getSubTeamIds(teamId) {
+    async function getSubTeamIds(teamIds) {
         let subTeamIds = [];
         const subTeams = await Team.findAll({
-            where: { parent_team: teamId },
+            where: { parent_team: teamIds },
             attributes: ['id']
         });
         for (const team of subTeams) {
@@ -243,23 +267,16 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
         return subTeamIds;
     }
 
-    let teamIds = [teamId];
-
     if (include_subteams)
-        teamIds = teamIds.concat(await getSubTeamIds(teamId));
+        teamIds = teamIds.concat(await getSubTeamIds(teamIds));
 
     if (include_parent_teams)
-        teamIds = teamIds.concat(await getParentIds(teamId));
+        teamIds = teamIds.concat(await getParentIds(teamIds));
 
     teamIds = [...new Set(teamIds)];
 
-    const where = { team: teamIds };
-
-    if (role !== undefined && role !== null)
-        where.role = role;
-
-    let teamMembers = await TeamUser.findAll({
-        where,
+    const teamUsers = await TeamUser.findAll({
+        where: { team: teamIds, role },
         include: [
             {
                 model: Team,
@@ -276,36 +293,42 @@ export async function getTeamUsers(teamId, role = null, include_subteams = false
         ],
     });
 
+    if (teamUsers.length === 0)
+        return [];
 
-    let members = teamMembers.map(teamUser => ({
-        id: teamUser['User'].id,
-        first_name: teamUser['User'].first_name,
-        last_name: teamUser['User'].last_name,
-        role: { id: teamUser['TeamRole'].id, name: teamUser['TeamRole'].name },
-        team: { id: teamUser['Team'].id, name: teamUser['Team'].name },
-    }));
+    if (team) {
+        let members = teamUsers.map(teamUser => ({
+            id: teamUser['User'].id,
+            first_name: teamUser['User'].first_name,
+            last_name: teamUser['User'].last_name,
+            role: { id: teamUser['TeamRole'].id, name: teamUser['TeamRole'].name },
+            team: { id: teamUser['Team'].id, name: teamUser['Team'].name },
+        }));
 
-    const seenUsers = new Map();
-    const filteredMembers = [];
+        const seenUsers = new Set();
+        const filteredMembers = [];
 
-    for (const member of members) {
-        const userId = member.id;
+        for (const member of members) {
+            const userId = member.id;
 
-        if (!seenUsers.has(userId)) {
-            seenUsers.set(userId, member.team.id);
-            filteredMembers.push(member);
-        } else if (member.team.id === teamId) {
-            const prevTeamId = seenUsers.get(userId);
-            filteredMembers.splice(
-                filteredMembers.findIndex(m => m.id === userId && m.team.id === prevTeamId),
-                1,
-                member
-            );
-            seenUsers.set(userId, teamId);
+            if (!seenUsers.has(userId)) {
+                seenUsers.add(userId);
+                filteredMembers.push(member);
+            }
         }
-    }
 
-    return filteredMembers;
+        return filteredMembers;
+
+    } else if (user) {
+        return teamUsers.map(teamUser => ({
+            id: teamUser['team'],
+            name: teamUser['Team']['name'],
+            role: teamUser['TeamRole']['name'],
+        }));
+
+    } else
+        return [];
+
 }
 
 /**
