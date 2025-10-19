@@ -2,7 +2,6 @@
 import express from 'express';
 import { createPost, deletePost, getPost, updatePost } from '../controllers/posts.js';
 import checkResourceIdHandler from "../utils/checkResourceId.js";
-import {hasManagerAccess} from "../controllers/users.js";
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers

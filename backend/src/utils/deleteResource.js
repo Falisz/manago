@@ -3,10 +3,11 @@
 /**
  * Middleware to delete the resource provided as a parameter.
  * @param {Request} req
- * @param {Object} req.params
+ * @param {number} req.body.id
  * @param {Response} res
- * @param {number} res.status
- * @param {function} res.json
+ * @param resourceName
+ * @param deleteFunction
+ * @param args
  */
 const deleteResource = async (req, res, resourceName, deleteFunction, ...args) => {
     let ids;
@@ -34,7 +35,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
         if (!success)
             return res.status(400).json({ message });
 
-        res.json({ message, deletedCount });
+        return res.json({ message, deletedCount });
         
     } catch (err) {
         if (ids.length > 1) 
@@ -42,7 +43,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
         else
             console.error(`Error deleting ${resourceName} (ID: ${ids[0]}):`, err);
 
-        res.status(500).json({ message: 'Server error.' });
+        return res.status(500).json({ message: 'Server error.' });
     }
 };
 export default deleteResource;
