@@ -245,8 +245,10 @@ const appPages = [
 ];
 
 const permissions = [
-    { id: 999, name: '*', desc: ' '},
     { id: 990, name: 'access-manager-view', desc: ' '},
+    { id: 997, name: 'access-user-configs', desc: ' '},
+    { id: 998, name: 'access-user-ppi', desc: ' '},
+    { id: 999, name: '*', desc: ' '},
     // Resource: Self
     { name: 'read-self', desc: '' },
     { name: 'update-self', desc: '' },
@@ -315,6 +317,12 @@ const rolePermissions = [
     { role: 11, permission: 990 },
     { role: 12, permission: 990 },
     { role: 13, permission: 990 },
+    { role: 11, permission: 997 },
+    { role: 12, permission: 997 },
+    { role: 13, permission: 997 },
+    { role: 11, permission: 998 },
+    { role: 12, permission: 998 },
+    { role: 13, permission: 998 },
     { role: 25, permission: 999 },
     { role: 50, permission: 999 },
     { role: 99, permission: 999 }

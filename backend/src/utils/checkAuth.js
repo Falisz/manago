@@ -1,5 +1,5 @@
 // BACKEND/utils/checkAuth.js
-import {hasManagerAccess} from "../controllers/users.js";
+import checkAccess from './checkAccess.js';
 
 /**
  * Middleware to check if a User is authenticated.
@@ -16,10 +16,9 @@ const checkAuthHandler = async (req, res, next) => {
         return res.status(401).json('Unauthorized. Please log in.');
 
     // Further lines are prototype implementation.
-    const hasAccess = await hasManagerAccess(req.session.user);
 
-    req.include_ppi = hasAccess;
-    req.include_configs = hasAccess;
+    req.include_ppi = await checkAccess(req.session.user, 'access', 'user-ppi');
+    req.include_configs = await checkAccess(req.session.user, 'access', 'user-configs');
 
     next();
 };
