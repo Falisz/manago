@@ -50,11 +50,6 @@ export const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: 'dark'
     },
-    manager_view_access: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-    },
     manager_view_enabled: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

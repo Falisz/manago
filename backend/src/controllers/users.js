@@ -19,7 +19,7 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
  * @param {boolean} include_configs - optional - Should User configurations be included
  * @returns {Promise<Object|Object[]|null>} User, array of Users, or null
  */
-export async function getUser({id, group, roles=true, managers=true,
+export async function getUser({id, group, roles=true, managers=true, permissions=false,
                                   managed_users=true, removed=false, include_ppi=false,
                                   include_configs=false} = {}) {
 
@@ -29,7 +29,7 @@ export async function getUser({id, group, roles=true, managers=true,
         exclude.push('login', 'email', 'address', 'city', 'postal_code', 'phone', 'country');
 
     if (!include_configs)
-        exclude.push('locale', 'theme_mode', 'manager_view_access', 'manager_view_enabled', 'manager_nav_collapsed');
+        exclude.push('locale', 'theme_mode', 'manager_view_enabled', 'manager_nav_collapsed');
 
     // Logic if no ID is provided - fetch all Users
     if (!id || isNaN(id)) {
@@ -74,6 +74,20 @@ export async function getUser({id, group, roles=true, managers=true,
             if (roles)
                 user.roles = await getUserRoles({user: user.id});
 
+            if (permissions) {
+                let roleIds;
+
+                if (user.roles)
+                    roleIds = user.roles.map(r => r.id);
+                else 
+                    roleIds = (await getUserRoles({user: user.id})).map(r => r.id);
+
+                const rolePermissions = (await getRolePermissions({role: roleIds})).map(p => p.name);
+                const userPermissions = (await getUserPermissions({user: user.id})).map(p => p.name);
+
+                user.permissions = [...rolePermissions, ...userPermissions];
+            }
+
             if (managers)
                 user.managers = await getUserManagers({user: user.id});
 
@@ -115,7 +129,6 @@ export async function getUser({id, group, roles=true, managers=true,
  * @param {string} data.password - User password
  * @param {string} data.first_name - First name
  * @param {string} data.last_name - Last name
- * @param {boolean} [data.manager_view_access=false] - Manager view access
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createUser(data) {
@@ -155,7 +168,6 @@ export async function createUser(data) {
         removed: false,
         first_name: data.first_name,
         last_name: data.last_name,
-        manager_view_access: data.manager_view_access || false,
         manager_view_enabled: false,
         manager_nav_collapsed: false
     });
@@ -472,20 +484,6 @@ export async function authUser(login, password) {
         message: 'Login successful!',
         id: user.id
     };
-}
-
-/**
- * Checks if a given User has Access to Manager View.
- * @param {number} id - ID of a User
- * @returns {Promise<boolean>}
- */
-export async function hasManagerAccess(id) {
-    if (!id)
-        return false;
-
-    const user = await User.findByPk(id);
-
-    return user && user.manager_view_access;
 }
 
 /**

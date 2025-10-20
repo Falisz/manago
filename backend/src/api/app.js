@@ -1,5 +1,6 @@
 // BACKEND/api/app.js
 import express from 'express';
+import checkAccess from '../utils/checkAccess.js';
 import {
     getModules,
     setModule,
@@ -10,12 +11,10 @@ import {
 } from '../controllers/app.js';
 import {
     updateUser,
-    hasManagerAccess,
     hasManagerView,
 } from '../controllers/users.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import checkAccess from '../utils/checkAccess.js';
 
 // API Handlers
 /**
@@ -37,7 +36,6 @@ const apiEndpointHandler = (_req, res) => {
     } catch (err) {
         console.error('API endpoint error:', err);
         res.status(500).json({ message: 'API Error.' });
-
     }
 };
 
@@ -138,11 +136,6 @@ const updateModuleHandler = async (req, res) => {
         if (typeof enabled !== 'boolean') {
             return res.status(400).json({ message: 'Invalid enabled value.' });
         }
-        const hasAccess = await hasManagerAccess(req.session.user);
-
-        if (!hasAccess) {
-            return res.status(403).json({ message: 'Access denied.' });
-        }
 
         const updated = await setModule(parseInt(id), enabled);
 
@@ -187,15 +180,14 @@ const toggleManagerViewHandler = async (req, res) => {
     try {
         const { manager_view } = req.body;
 
-        if (typeof manager_view === 'undefined') {
+        if (manager_view == null)
             return res.status(400).json({
                 success: false,
                 message: 'No toggle value provided.',
                 manager_view: false
             });
-        }
 
-        const hasAccess = await hasManagerAccess(req.session.user);
+        const hasAccess = await checkAccess(req.session.user, 'accesss', 'manager-view');
 
         if (!hasAccess)
             return res.status(403).json({
@@ -262,18 +254,16 @@ const toggleManagerNavHandler = async (req, res) => {
  */
 const updateUserThemeHandler = async (req, res) => {
     try {
-        if (!req.body || typeof req.body.theme_mode !== 'string') {
+        if (!req.body || typeof req.body.theme_mode !== 'string')
             return res.status(400).json({ message: 'Invalid or missing theme_mode value.' });
-        }
 
         const { userId } = req.params;
         const { theme_mode } = req.body;
 
         const { success, message } = await updateUser(userId, { theme_mode });
 
-        if (!success) {
+        if (!success)
             return res.status(400).json({ success, message });
-        }
 
         res.json({ success, theme_mode });
     } catch (err) {
@@ -281,6 +271,7 @@ const updateUserThemeHandler = async (req, res) => {
         res.status(500).json({ message: 'API Error.' });
     }
 };
+
 // Router definitions
 export const router = express.Router();
 
