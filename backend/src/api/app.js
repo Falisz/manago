@@ -15,6 +15,7 @@ import {
 } from '../controllers/users.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import checkAccess from '../utils/checkAccess.js';
 
 // API Handlers
 /**
@@ -81,6 +82,12 @@ const fetchConfigOptionsHandler = async (_req, res) => {
  * @param {express.Response} res
  */
 const updateConfigHandler = async (req, res) => {
+
+    const { hasAccess } = checkAccess(req.session.user, 'update', 'app-config');
+
+    if (!hasAccess)
+        res.status(501).json({message: 'You do not have access to change App configs.'});
+
     try {
         await setConfig(req.body);
 
@@ -118,30 +125,36 @@ const fetchModulesHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const updateModuleHandler = async (req, res) => {
-     try {
-         const { id } = req.params;
-         const { enabled } = req.body;
 
-         if (typeof enabled !== 'boolean') {
-             return res.status(400).json({ message: 'Invalid enabled value.' });
-         }
-         const hasAccess = await hasManagerAccess(req.session.user);
+    const { hasAccess } = checkAccess(req.session.user, 'update', 'app-modules');
 
-         if (!hasAccess) {
-             return res.status(403).json({ message: 'Access denied.' });
-         }
+    if (!hasAccess)
+        res.status(501).json({message: 'You do not have access to change App modules.'});
 
-         const updated = await setModule(parseInt(id), enabled);
+    try {
+        const { id } = req.params;
+        const { enabled } = req.body;
 
-         if (updated[0] > 0) {
-             return res.json({ success: true });
-         } else {
-             return res.status(404).json({ message: 'Module not found.' });
-         }
-     } catch (err) {
-         console.error('Error updating module:', err);
-         return res.status(500).json({ message: 'API Error.' });
-     }
+        if (typeof enabled !== 'boolean') {
+            return res.status(400).json({ message: 'Invalid enabled value.' });
+        }
+        const hasAccess = await hasManagerAccess(req.session.user);
+
+        if (!hasAccess) {
+            return res.status(403).json({ message: 'Access denied.' });
+        }
+
+        const updated = await setModule(parseInt(id), enabled);
+
+        if (updated[0] > 0) {
+            return res.json({ success: true });
+        } else {
+            return res.status(404).json({ message: 'Module not found.' });
+        }
+    } catch (err) {
+        console.error('Error updating module:', err);
+        return res.status(500).json({ message: 'API Error.' });
+    }
  };
 
 /**

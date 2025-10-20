@@ -12,17 +12,18 @@ import isNumberOrNumberArray from "../utils/isNumberOrNumberArray.js";
  * @param {boolean} get_members - optional - Should members be fetched for the found Projects?
  * @returns {Promise<Object|Array|null>} Single Project, array of Projects, or null
  */
-export async function getProject({ id, get_members = true } = {}) {
+export async function getProject({ id, manager, get_members = true } = {}) {
     async function expandProject(project) {
-        if (get_members) {
+        if (get_members) 
             project.members = await getProjectUsers(project.id);
-        }
+
         return project;
     }
 
     // Logic if no ID is provided - fetch all Projects
     if (!id || isNaN(id)) {
         const projects = await Project.findAll({
+            where: { manager },
             order: [['id', 'ASC']],
             raw: true
         });

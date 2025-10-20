@@ -20,6 +20,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     else if (req.body.id)
         if (Array.isArray(req.body.id))
             ids = req.body.id.filter(id => id != null && !isNaN(id)).map(id => parseInt(id));
+        
         else
             ids = [parseInt(req.body.id)];
     
@@ -29,10 +30,17 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     if (ids.length === 0)
         return res.status(400).json({ message: `No valid ${resourceName} IDs provided.` });
 
-    const hasAccess = checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+    const { hasAccess, forbiddenIds } = checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
 
     if (!hasAccess)
-        return res.status(501).json({ message: 'No access.' });
+        if (forbiddenIds.length > 1 && forbiddenIds.length != ids.length) 
+            return res.status(501).json({ message: `You cannot delete ${resourceName}s (IDs: ${forbiddenIds.join(', ')}).` });
+
+        else if (forbiddenIds.length)
+            return res.status(501).json({ message: `You cannot delete ${resourceName} (ID: ${forbiddenIds[0]}).` });
+        
+        else 
+            return res.status(501).json({ message: `You cannot delete ${resourceName}.` });
 
     try {
         const { success, message, deletedCount } = await deleteFunction(ids, ...args);

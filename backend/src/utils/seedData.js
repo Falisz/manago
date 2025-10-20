@@ -251,36 +251,36 @@ const permissions = [
     { name: 'update-self', desc: '' },
     { name: 'delete-self', desc: '' },
     // Resource: User
-    { name: 'create-any-user', desc: '' },
-    { name: 'read-any-user', desc: '' }, // All users
-    { name: 'update-any-user', desc: '' },
-    { name: 'delete-any-user', desc: '' },
+    { name: 'create-user', desc: '' },
+    { name: 'read-user', desc: '' }, // All users
+    { name: 'update-user', desc: '' },
+    { name: 'delete-user', desc: '' },
     { name: 'read-managed-user', desc: '' }, // Only managed users
     { name: 'update-managed-user', desc: '' },
     { name: 'delete-managed-user', desc: '' },
     // Resource: Role
-    { name: 'create-any-role', desc: ''},
-    { name: 'read-any-role', desc: ''}, // All roles
-    { name: 'update-any-role', desc: ''},
-    { name: 'delete-any-role', desc: ''},
+    { name: 'create-role', desc: ''},
+    { name: 'read-role', desc: ''}, // All roles
+    { name: 'update-role', desc: ''},
+    { name: 'delete-role', desc: ''},
     // Assignment: UserManager
-    { name: 'assign-any-user-any-manager', desc: ''},
-    { name: 'read-any-user-any-manager', desc: ''},
-    { name: 'assign-managed-user-any-manager', desc: ''},
-    { name: 'read-managed-user-any-manager', desc: ''},
-    { name: 'assign-any-user-managed-manager', desc: ''},
-    { name: 'read-any-user-managed-manager', desc: ''},
+    { name: 'assign-user-manager', desc: ''},
+    { name: 'read-user-manager', desc: ''},
+    { name: 'assign-managed-user-manager', desc: ''},
+    { name: 'read-managed-user-manager', desc: ''},
+    { name: 'assign-user-managed-manager', desc: ''},
+    { name: 'read-user-managed-manager', desc: ''},
     { name: 'assign-managed-user-managed-manager', desc: ''},
     { name: 'read-managed-user-managed-manager', desc: ''},
     // Assignment: SelfManager
     { name: 'assign-self-manager', desc: ''},
     // Assignment: UserRole
-    { name: 'assign-any-user-any-role', desc: ''},
-    { name: 'read-any-user-any-role', desc: ''},
-    { name: 'assign-managed-user-any-role', desc: ''},
-    { name: 'read-managed-user-any-role', desc: ''},
-    { name: 'assign-any-user-managed-role', desc: ''},
-    { name: 'read-any-user-managed-role', desc: ''},
+    { name: 'assign-user-role', desc: ''},
+    { name: 'read-user-role', desc: ''},
+    { name: 'assign-managed-user-role', desc: ''},
+    { name: 'read-managed-user-role', desc: ''},
+    { name: 'assign-user-managed-role', desc: ''},
+    { name: 'read-user-managed-role', desc: ''},
     { name: 'assign-managed-user-managed-role', desc: ''},
     { name: 'read-managed-user-managed-role', desc: ''},
     // Assignment: SelfRole
