@@ -111,6 +111,20 @@ export async function getUser({id, group, roles=true, managers=true, permissions
     if (roles)
         user.roles = await getUserRoles({user: id});
 
+    if (permissions) {
+        let roleIds;
+
+        if (user.roles)
+            roleIds = user.roles.map(r => r.id);
+        else 
+            roleIds = (await getUserRoles({user: user.id})).map(r => r.id);
+
+        const rolePermissions = (await getRolePermissions({role: roleIds})).map(p => p.name);
+        const userPermissions = (await getUserPermissions({user: user.id})).map(p => p.name);
+
+        user.permissions = [...rolePermissions, ...userPermissions];
+    }
+
     if (managers)
         user.managers = await getUserManagers({user: id});
 

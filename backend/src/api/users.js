@@ -33,6 +33,7 @@ const fetchUsersHandler = async (req, res) => {
             roles: !falsy.includes(req.query.roles),
             managers: !falsy.includes(req.query.managers),
             managed_users: !falsy.includes(req.query.managed_users),
+            permissions: !falsy.includes(req.query.permissions),
             include_ppi: req.include_ppi,
             include_configs: req.include_configs
         });
