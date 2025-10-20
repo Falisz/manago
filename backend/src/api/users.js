@@ -1,6 +1,7 @@
 // BACKEND/api/users.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import checkAccess from '../utils/checkAccess.js';
 import deleteResource from '../utils/deleteResource.js';
 import {
     getUser,
@@ -23,6 +24,11 @@ import {
  */
 const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'user', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const falsy = [0, '0', 'false', false, 'no', 'not'];
@@ -57,6 +63,11 @@ const fetchUsersHandler = async (req, res) => {
 const fetchUserRolesHandler = async (req, res) => {
     const { id } = req.params;
 
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'user', id, 'role');
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const managers = await getUserRoles({user: id});
 
@@ -75,6 +86,11 @@ const fetchUserRolesHandler = async (req, res) => {
  */
 const fetchUserManagersHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'user', id, 'manager');
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const managers = await getUserManagers({ user: id });
@@ -95,6 +111,11 @@ const fetchUserManagersHandler = async (req, res) => {
 const fetchManagedUsersHandler = async (req, res) => {
     const { id } = req.params;
 
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'manager', id, 'user');
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const managedUsers = await getUserManagers({ manager: id });
         
@@ -112,6 +133,12 @@ const fetchManagedUsersHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createUserHandler = async (req, res) => {
+
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'user');
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const { success, message, id } = await createUser(req.body);
 
@@ -155,6 +182,11 @@ const checkUserIdHandler = async (req, res) => {
 const updateUserHandler = async (req, res) => {
     const { id } = req.params;
 
+    const { hasAccess } = await checkAccess(req.session.user, 'update', 'user', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const { success, message } = await updateUser(parseInt(id), req.body);
 
@@ -183,9 +215,12 @@ const updateAssignmentsHandler = async (req, res) => {
         if (!userIds || !userIds.length)
             return res.status(400).json({ message: 'User IDs are missing.' });
 
-        let success, message;
+        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'user', userIds, resource, resourceIds);
 
-        // const hasAccess = hasAccess(req.session.user, 'assign', 'user', userIds, resource, resourceIds);
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
+
+        let success, message;
 
         if (resource === 'manager')
             ({ success, message } = await updateUserManagers(userIds, resourceIds, mode));
@@ -218,7 +253,10 @@ const updateUserRolesHandler = async (req, res) => {
     try {
         const { roleIds } = req.body;
 
-        // const hasAccess = hasAccess(req.session.user, 'assign', 'user', [id], 'role', roleIds);
+        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'user', id, 'role', roleIds);
+
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
 
         const { success, message} = await updateUserRoles([parseInt(id)], roleIds, 'set');
 
@@ -242,6 +280,11 @@ const updateUserManagersHandler = async (req, res) => {
     
     try {
         const { managerIds } = req.body;
+
+        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'user', id, 'manager', managerIds);
+
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
 
         const { success, message } = await updateUserManagers([parseInt(id)], managerIds, 'set');
 

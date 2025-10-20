@@ -30,7 +30,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     if (ids.length === 0)
         return res.status(400).json({ message: `No valid ${resourceName} IDs provided.` });
 
-    const { hasAccess, forbiddenIds } = checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+    const { hasAccess, forbiddenIds } = await checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
 
     if (!hasAccess)
         if (forbiddenIds.length > 1 && forbiddenIds.length != ids.length) 
