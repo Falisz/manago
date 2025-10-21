@@ -150,7 +150,7 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
                 onChange={handleChange}
                 style={{minWidth: 'unset'}}
                 selectedStyle={{background: 'none'}}
-                selectedTextStyle={{fontFamily: 'Roboto Condensed, sans-serif', fontSize: '2rem', margin: 0, padding: 0}}
+                selectedTextStyle={{fontFamily: 'Roboto Condensed, sans-serif', color: 'var(--text-color)', fontSize: '2rem', margin: 0, padding: 0}}
             />
             <ComboBox
                 placeholder={'Pick a group'}
