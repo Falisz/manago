@@ -37,7 +37,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         if (!resource)
             return false;
 
-        if (!ids instanceof Set)
+        if (!(ids instanceof Set))
             ids = new Set(ids);
 
         let allowedIds;
@@ -72,13 +72,11 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         else if (resource === 'schedule')
             allowedIds = new Set((await getSchedule({author: user})).map(s => s.id));
 
-        const hasAccess = ids.isSubsetOf(allowedIds);
-        let forbiddenIds;
-        
-        if (!hasAccess) 
-            forbiddenIds = ids.difference(allowedIds);
-
-        return { hasAccess, forbiddenIds };
+        return { 
+            hasAccess: ids.isSubsetOf(allowedIds), 
+            allowedIds: ids.intersection(allowedIds),
+            forbiddenIds: ids.difference(allowedIds) 
+        };
     }
     
     // Self permission
