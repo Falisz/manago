@@ -18,7 +18,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     action = action.toString().toLowerCase();
     
     const userPermissions = (await getUserPermissions({ user })).map(p => p.name);
-    const userRoles = (await getUserRoles({ userId: user })).map(r => r.id);
+    const userRoles = (await getUserRoles({ user })).map(r => r.id);
     const rolePermissions = (await getRolePermissions({ role: userRoles })).map(p => p.name);
     const permissions = new Set([...userPermissions, ...rolePermissions]);
 
@@ -112,7 +112,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
             const { hasAccess, forbiddenIds } = await resourceAccess(resource, Array.from(id));
             const { hasAccess2, forbiddenIds2 } = await resourceAccess(resource2, Array.from(id2));
             
-            return { hasAccess: hasAccess && hasAccess2, forbiddenIds, forbiddenIds2 }
+            return { hasAccess: hasAccess && hasAccess2, forbiddenIds, forbiddenIds2 };
         }
 
     return { hasAccess: false };
