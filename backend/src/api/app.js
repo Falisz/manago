@@ -81,10 +81,10 @@ const fetchConfigOptionsHandler = async (_req, res) => {
  */
 const updateConfigHandler = async (req, res) => {
 
-    const { hasAccess } = checkAccess(req.session.user, 'update', 'app-config');
+    const { hasAccess } = await checkAccess(req.session.user, 'update', 'app-config');
 
     if (!hasAccess)
-        res.status(403).json({message: 'You do not have access to change App configs.'});
+        return res.status(403).json({message: 'You do not have access to change App configs.'});
 
     try {
         await setConfig(req.body);

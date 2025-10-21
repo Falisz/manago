@@ -1,5 +1,6 @@
 // BACKEND/api/roles.js
 import express from 'express';
+import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     createRole,
