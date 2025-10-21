@@ -19,6 +19,11 @@ import deleteResource from '../utils/deleteResource.js';
 const fetchRolesHandler = async (req, res) => {
     const { id } = req.params;
 
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'role', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const falsy = [0, '0', 'false', false, 'no', 'not'];
         const roles = await getRole({
@@ -44,6 +49,11 @@ const fetchRolesHandler = async (req, res) => {
  */
 const fetchUsersWithRoleHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'role', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
     
     try {
         const users = await getUserRoles({ role: id });
@@ -62,6 +72,12 @@ const fetchUsersWithRoleHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createRoleHandler = async (req, res) => {
+
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'role', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const { success, message, id } = await createRole(req.body);
 
@@ -84,6 +100,13 @@ const createRoleHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const updateRoleHandler = async (req, res) => {
+    
+
+    const { hasAccess } = await checkAccess(req.session.user, 'update', 'role', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     const { id } = req.params;
     
     try {

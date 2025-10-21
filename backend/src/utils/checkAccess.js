@@ -5,14 +5,10 @@ import {
     getUserRoles,
     getUserManagers
 } from '../controllers/users.js';
-import {
-    getTeamUsers
-} from '../controllers/teams.js';
+import { getTeamUsers } from '../controllers/teams.js';
 import { getProject } from '../controllers/projects.js';
 import { getBranch } from '../controllers/branches.js';
-import {
-    getSchedule
-} from '../controllers/workPlanner.js';
+import { getSchedule } from '../controllers/workPlanner.js';
 
 async function checkAccess(user, action, resource, id, resource2, id2) {
     if (!user || !action || !resource) 
@@ -98,15 +94,23 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     if (action !== 'assign')
         if (hasPermission(`managed-${resource}`))
             return await resourceAccess(resource, Array.from(id));
+    
     else
         if (hasPermission('assign', resource, resource2))
             return { hasAccess: true };
+        
         else if (hasPermission(`managed-${resource}`, resource2))
             return await resourceAccess(resource, Array.from(id));
+        
         else if (hasPermission(resource, `managed-${resource2}`))
             return await resourceAccess(resource2, Array.from(id2));
-        else if (hasPermission(`managed-${resource}`, `managed-${resource2}`))
-            return await resourceAccess(resource, Array.from(id)) && resourceAccess(resource2, Array.from(id2));
+        
+        else if (hasPermission(`managed-${resource}`, `managed-${resource2}`)) {
+            const { hasAccess, forbiddenIds } = await resourceAccess(resource, Array.from(id));
+            const { hasAccess2, forbiddenIds2 } = await resourceAccess(resource2, Array.from(id2));
+            
+            return { hasAccess: hasAccess && hasAccess2, forbiddenIds, forbiddenIds2 }
+        }
 
     return { hasAccess: false };
     
