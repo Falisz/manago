@@ -21,7 +21,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     const userRoles = (await getUserRoles({ user })).map(r => r.id);
     const rolePermissions = (await getRolePermissions({ role: userRoles })).map(p => p.name);
     const permissions = new Set([...userPermissions, ...rolePermissions]);
-
+    
     // Wild-card permission
     if (permissions.has('*'))
         return { hasAccess: true };

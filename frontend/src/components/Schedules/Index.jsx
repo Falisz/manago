@@ -7,6 +7,7 @@ import axios from "axios";
 import useAppState from "../../contexts/AppStateContext";
 import useTeam from "../../hooks/useTeam";
 import useUser from "../../hooks/useUser";
+import Button from '../Button';
 import {useModals} from "../../contexts/ModalContext";
 
 const generateDateList = (fromDate, toDate) => {
@@ -190,6 +191,11 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
                 onChange={handleChange}
                 type={'date'}
                 style={{minWidth: '100px'}}
+            />
+            <Button
+                label='Edit Schedule'
+                icon='edit'
+                style={{marginLeft: 'auto'}}
             />
         </div>
     );

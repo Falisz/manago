@@ -30,7 +30,8 @@ const Button = ({
     title,
     name,
     icon=null,
-    transparent=false
+    transparent=false,
+    style
 }) =>
     <button
         id={id}
@@ -40,6 +41,7 @@ const Button = ({
         name={name}
         onClick={onClick}
         disabled={disabled}
+        style={style}
     >
         {icon && <Icon i={icon}/>}
         {children || label}

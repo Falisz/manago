@@ -124,29 +124,27 @@ const fetchModulesHandler = async (req, res) => {
  */
 const updateModuleHandler = async (req, res) => {
 
-    const { hasAccess } = checkAccess(req.session.user, 'update', 'app-modules');
+    const { hasAccess } = await checkAccess(req.session.user, 'update', 'app-modules');
 
     if (!hasAccess)
-        res.status(403).json({message: 'You do not have access to change App modules.'});
+        return res.status(403).json({message: 'You do not have access to change App modules.'});
 
     try {
         const { id } = req.params;
         const { enabled } = req.body;
 
-        if (typeof enabled !== 'boolean') {
+        if (typeof enabled !== 'boolean')
             return res.status(400).json({ message: 'Invalid enabled value.' });
-        }
 
         const updated = await setModule(parseInt(id), enabled);
 
-        if (updated[0] > 0) {
+        if (updated[0] > 0) 
             return res.json({ success: true });
-        } else {
-            return res.status(404).json({ message: 'Module not found.' });
-        }
+        
+        res.status(404).json({ message: 'Module not found.' });
     } catch (err) {
         console.error('Error updating module:', err);
-        return res.status(500).json({ message: 'API Error.' });
+        res.status(500).json({ message: 'API Error.' });
     }
  };
 
