@@ -275,8 +275,13 @@ export async function getTeamUsers({team, user, role, include_subteams = false, 
 
     teamIds = [...new Set(teamIds)];
 
+    const where = { team: teamIds };
+
+    if (role)
+        where.role = role;
+
     const teamUsers = await TeamUser.findAll({
-        where: { team: teamIds, role },
+        where,
         include: [
             {
                 model: Team,

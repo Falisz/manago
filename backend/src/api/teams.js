@@ -58,7 +58,7 @@ const fetchTeamUsersHandler = async (req, res) => {
     try {
         const users = await getTeamUsers({
             team: parseInt(id),
-            role: req.query.role != null ? parseInt(req.query.role) : null,
+            role: req.query.role != null ? parseInt(req.query.role) : undefined,
             include_subteams: req.query.include_subteams === 'true',
             include_parent_teams: req.query.include_parent_teams === 'true'
         });

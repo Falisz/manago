@@ -12,13 +12,13 @@ import checkAccess from './checkAccess.js';
  */
 const checkAuthHandler = async (req, res, next) => {
 
-    if (!req.session.user)
-        return res.status(401).json('Unauthorized. Please log in.');
+    // if (!req.session.user)
+    //     return res.status(401).json('Unauthorized. Please log in.');
 
     // Further lines are prototype implementation.
 
-    req.include_ppi = await checkAccess(req.session.user, 'access', 'user-ppi');
-    req.include_configs = await checkAccess(req.session.user, 'access', 'user-configs');
+    // req.include_ppi = await checkAccess(req.session.user, 'access', 'user-ppi');
+    // req.include_configs = await checkAccess(req.session.user, 'access', 'user-configs');
 
     next();
 };

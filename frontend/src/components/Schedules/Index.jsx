@@ -428,13 +428,13 @@ const ScheduleIndex = () => {
             users = Array.isArray(users) ? users : [users];
 
             const shifts = (await axios.post(
-                '/shifts/bulk',
+                '/shifts/batch',
                 {user: users.map(u => u.id)},
                 {withCredentials: true}
             )).data;
 
             const leaves = (await axios.post(
-                '/leaves/bulk',
+                '/leaves/batch',
                 {user: users.map(u => u.id)},
                 {withCredentials: true}
             )).data;
