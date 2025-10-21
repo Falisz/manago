@@ -137,6 +137,8 @@ export const Leave = sequelize.define('Leave', {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
+    include_weekends: DataTypes.BOOLEAN,
+    include_holidays: DataTypes.BOOLEAN, 
     status: {
         type: DataTypes.INTEGER,
         allowNull: false,
