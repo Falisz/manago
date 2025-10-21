@@ -1,5 +1,6 @@
 // BACKEND/api/shifts.js
 import express from 'express';
+import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 import {
@@ -17,6 +18,11 @@ import {
  */
 const fetchShiftsHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'shift', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const shifts = await getShift({
@@ -52,6 +58,12 @@ const fetchShiftsHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createShiftHandler = async (req, res) => {
+
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'shift');
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const { shifts } = req.body;
 

@@ -89,6 +89,9 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     if (hasPermission(resource, action === 'assign' ?? resource2))
         return { hasAccess: true };
 
+    if (action === 'create')
+        return { hasAccess: false };
+
     // Managed-resource permissions 
     // permission name format: <action>-managed-<resource> (e.g. read-managed-user)
     if (action !== 'assign')

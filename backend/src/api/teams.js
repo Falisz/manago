@@ -1,5 +1,6 @@
 // BACKEND/api/teams.js
 import express from 'express';
+import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 import {
@@ -19,6 +20,11 @@ import {
  */
 const fetchTeamsHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'team', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const teams = await getTeam({
@@ -44,6 +50,11 @@ const fetchTeamsHandler = async (req, res) => {
 const fetchTeamUsersHandler = async (req, res) => {
     const { id } = req.params;
 
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'team', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         const users = await getTeamUsers({
             team: parseInt(id),
@@ -67,6 +78,12 @@ const fetchTeamUsersHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createTeamHandler = async (req, res) => {
+
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'team', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+    
     try {
         const { success, message, id} = await createTeam(req.body);
 
@@ -101,6 +118,11 @@ const createTeamHandler = async (req, res) => {
  */
 const updateTeamHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'update', 'team', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const {code_name, name, parent_team, members, leaders, managers} = req.body;
@@ -140,11 +162,17 @@ const updateTeamHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const updateAssignmentsHandler = async(req, res) => {
+
     try {
         const {resource, resourceIds, teamIds, role, mode} = req.body;
     
         if (!teamIds || !teamIds.length)
             return res.status(400).json({ message: 'Team IDs are missing.' });
+
+        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'team', teamIds, resource, resourceIds);
+
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
 
         let success, message;
 
