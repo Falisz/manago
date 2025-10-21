@@ -13,7 +13,10 @@ const ComboBox = ({
                       noneAllowed = false,
                       upperCaseNames = false,
                       searchable = true,
-                      style = null
+                      style = null,
+                      selectedStyle = null,
+                      selectedTextStyle = null,
+                      optionsStyle = null
                   }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -88,6 +91,7 @@ const ComboBox = ({
                         setIsOpen(!isOpen);
                     }
                 }}
+                style={selectedStyle}
             >
                 { searchable ? <input
                     className='combo-box-search-input'
@@ -103,10 +107,10 @@ const ComboBox = ({
                         else
                             setIsOpen(true)
                     }}
-                /> : <span className={'combo-box-selected-text'}>{getDisplayText()}</span> }
+                /> : <span className={'combo-box-selected-text'} style={selectedTextStyle}>{getDisplayText()}</span> }
                 <Icon s={true} i={isOpen ? 'arrow_drop_up' : 'arrow_drop_down'} clickable={true}/>
             </div>
-            <ul className={`combo-box-options app-scroll ${isOpen ? '' : 'hidden'}`}>
+            <ul className={`combo-box-options app-scroll ${isOpen ? '' : 'hidden'}`} style={optionsStyle}>
                 {noneAllowed &&
                     <li
                         key={0}

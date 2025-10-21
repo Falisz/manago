@@ -20,12 +20,27 @@ export const JobPost = sequelize.define('JobPost', {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
     },
     color: DataTypes.STRING(7)
 }, {
     tableName: 'job_posts',
     timestamps: false,
 });
+// e.g.: Bar, MainFloor, Corridors, Delivery, Gift Preparation, Registers
+
+export const JobLocation = sequelize.define('JobLocation', {
+    name: {
+        type: DataTypes.STRING, 
+        allowNull: false,
+        unique: true,
+    },
+    color: DataTypes.STRING(7)
+}, {
+    tableName: 'job_locations',
+    timestamps: false
+});
+// e.g: Office, Client's Office, Field, Remotely, Home Office, etc.
 
 export const Shift = sequelize.define('Shift', {
     user: {
@@ -43,6 +58,10 @@ export const Shift = sequelize.define('Shift', {
     job_post: {
         type: DataTypes.INTEGER,
         references: { model: JobPost, key: 'id' }
+    },
+    job_location: {
+        type: DataTypes.INTEGER,
+        references: { model: JobLocation, key: 'id' }
     },
     schedule: {
         type: DataTypes.INTEGER,
@@ -212,7 +231,7 @@ export const DispositionPreset = sequelize.define('DispositionPreset', {
     tableName: 'disposition_presets',
     timestamps: false,
 });
-// OFF: 00:00 - 00:00, FULL: 00:00 - 23:59, MS: 08:00 - 16:00, AS: 16:00 - 23:59
+// OFF: 00:00 - 00:00, FULL: 00:00 - 23:59, MS: 06:00 - 15:00, AS: 15:00 - 23:59
 
 export const Disposition = sequelize.define('Disposition', {
     user: {

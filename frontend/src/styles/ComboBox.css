@@ -2,6 +2,9 @@
     position: relative;
     white-space: nowrap;
     user-select: none;
+}
+
+.app-form .app-combo-box {
     max-width: 50%;
     margin: 0 0 0 5px;
     min-width: max(200px, 33%);
@@ -11,7 +14,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 15px;
+    padding: 0 0 0 10px;
     border: none;
     border-radius: var(--def-border-radius);
     background: var(--text-color-3);
@@ -49,8 +52,7 @@
     opacity: 1;
 }
 .app-combo-box .icon.app-clickable {
-    position: absolute;
-    right: 5px;
+    margin-left: auto;
 }
 .app.fluent .app-combo-box .combo-box-selected {
     background-color: var(--seethrough-background-2);
@@ -77,6 +79,7 @@
     z-index: 1000;
     max-height: 200px;
     overflow-y: auto;
+    overflow-x: hidden;
     transition: .3s ease-in-out;
 }
 .app.fluent .combo-box-options {

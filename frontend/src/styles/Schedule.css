@@ -29,19 +29,6 @@
     border-collapse: collapse;
 }
 
-.app-schedule-table tr th:nth-child(2) {
-    border-radius: var(--big-border-radius) 0 0 0;
-}
-.app-schedule-table tr th:last-child {
-    border-radius: 0 var(--big-border-radius) 0 0;
-}
-.app-schedule-table tr:last-child td:nth-child(2) {
-    border-radius: 0 0 0 var(--big-border-radius);
-}
-.app-schedule-table tr:last-child td:last-child {
-    border-radius: 0 0 var(--big-border-radius) 0;
-}
-
 .app-schedule-table tr:not(:last-child) td {
     border-bottom: 1px solid var(--text-color-3);
 }
@@ -59,6 +46,7 @@
     text-align: left;
 }
 .app-schedule-table .day-header {
+    border-radius: var(--big-border-radius) var(--big-border-radius) 0 0;
     font-weight: 300;
 }
 .app-schedule-table .day-header .date {
@@ -101,8 +89,15 @@
     background: var(--background-color-3);
     transition: .1s ease-in-out;
 }
+.app.fluent .app-schedule-table .column-highlight {
+    background: var(--seethrough-background);
+    transition: .1s ease-in-out;
+}
 .app-schedule-table tr td {
     padding: 0;
+}
+.app.fluent .app-schedule-table tr td {
+    padding: 10px;
 }
 .app-schedule-table .section-header {
     font-weight: bold;
@@ -122,13 +117,22 @@
     transition: 0.3s ease-in-out;
     border: 0;
     border-radius: 0;
-    font-size: 0.9em;
+    font-size: 0.9rem;
     color: var(--text-color-3);
     white-space: nowrap;
+}
+.app.fluent .app-schedule-table .shift-item,
+.app.fluent .app-schedule-table .leave-item {
+    border-radius: var(--big-border-radius);
+    font-size: 0.8rem;
 }
 .app-schedule-table .shift-item .subtitle,
 .app-schedule-table .leave-item .subtitle {
     font-style: italic;
-    font-size: 0.8em;
+    font-size: 0.8rem;
     font-weight: 600;
+}
+.app.fluent .app-schedule-table .shift-item .subtitle,
+.app.fluent .app-schedule-table .leave-item .subtitle {
+    font-size: 0.7rem;
 }

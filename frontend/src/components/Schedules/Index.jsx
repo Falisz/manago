@@ -137,7 +137,20 @@ const ScheduleHeader = ({scheduleConfig, setScheduleConfig}) => {
 
     return (
         <div className={'app-schedule-header app-form'}>
-            <h1>Schedule</h1>
+            <ComboBox
+                name={'schedule'}
+                searchable={false}
+                value={scheduleConfig.schedule}
+                options={[
+                    {id: 'users', name: 'User Schedule'},
+                    {id: 'jobs', name: 'Jobs Schedule'},
+                    {id: 'monthly', name: 'Monthly Schedule'}
+                ]}
+                onChange={handleChange}
+                style={{minWidth: 'unset'}}
+                selectedStyle={{background: 'none'}}
+                selectedTextStyle={{fontFamily: 'Roboto Condensed, sans-serif', fontSize: '2rem', margin: 0, padding: 0}}
+            />
             <ComboBox
                 placeholder={'Pick a group'}
                 name={'group'}
@@ -362,6 +375,7 @@ const ScheduleIndex = () => {
     const toDate = to ? new Date(to) : new Date(fromDate.getTime() + 6 * 86400000);
 
     const [scheduleConfig, setScheduleConfig] = useState({
+        schedule: 'users',
         fromDate,
         toDate,
         group: params.get('group') || 'you',
@@ -477,12 +491,20 @@ const ScheduleIndex = () => {
             scheduleConfig={scheduleConfig}
             setScheduleConfig={setScheduleConfig}
         />
-        <Schedule
-            dates={dates}
-            users={users}
-            placeholder={placeholder}
-            loading={loading}
-        />
+        {scheduleConfig.schedule === 'users' &&
+            <Schedule
+                dates={dates}
+                users={users}
+                placeholder={placeholder}
+                loading={loading}
+            />
+        }
+        {scheduleConfig.schedule === 'monthly' &&
+            <div>Monthly calendar will be here. Similarly with below, it allows to set up date and select branch/weekend.</div>
+        }
+        {scheduleConfig.schedule === 'jobs' &&
+            <div>Job Posts schedule will be here. This will be only available if job posts are enabled. It has only branch and project views for specific date-scopes.</div>
+        }
     </div>
 };
 
