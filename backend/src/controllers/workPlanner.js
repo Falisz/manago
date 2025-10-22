@@ -27,7 +27,7 @@ import sequelize from "../utils/database.js";
  * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Schedule(s)? False by default.
  * @returns {Promise<Object|Object[]|null>} Single Schedule, array of Schedules, or null
  */
-export async function getSchedule({id, author=null, include_shifts=false} = {}) {
+export async function getSchedule({id, author, stard_date, end_date, include_shifts=false} = {}) {
         
     // Logic if no ID is provided - fetch all Schedules
     if (!id || isNaN(id)) {
@@ -36,6 +36,12 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
 
         if (author) 
             where.author = author;
+
+        if (stard_date)
+            where.stard_date = stard_date;
+
+        if (end_date)
+            where.end_date = end_date;
 
         const schedules = await Schedule.findAll({ where, raw: true });
 
@@ -65,12 +71,20 @@ export async function getSchedule({id, author=null, include_shifts=false} = {}) 
  * @param {Object} data - Schedule data
  * @param {string} data.name - optional - Schedule name
  * @param {string} data.description - optional - Schedule description
+ * @param {string} data.start_date - Schedule start date
+ * @param {string} data.end_date - Schedule end date
  * @param {number} data.author - User ID of Schedule author
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createSchedule(data) {
     if (!data.author) 
         return { success: false, message: 'Schedule Author not provided.' };
+
+    if (!data.start_date) 
+        return { success: false, message: 'Schedule Start Date not provided.' };
+
+    if (!data.end_date) 
+        return { success: false, message: 'Schedule End Date not provided.' };
 
     if (!(await getUser(data.author))) 
         return { success: false, message: 'Specified Author User not found.' };
@@ -79,6 +93,8 @@ export async function createSchedule(data) {
         id: await randomId(Schedule),
         name: data.name || null,
         description: data.description || null,
+        stard_date: new Date(data.start_date),
+        end_date: new Date(data.end_date),
         author: data.author
     });
 
@@ -114,7 +130,7 @@ export async function updateSchedule(id, data) {
  * @param {boolean} delete_shifts - optional - Should shifts within this Schedule be deleted. True by default.
  * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
-export async function deleteSchedule({id, delete_shifts=true} = {}) {
+export async function deleteSchedule(id, delete_shifts=true) {
     if (!isNumberOrNumberArray(id))
         return { success: false, message: `Invalid Schedule ID${Array.isArray(id) ? 's' : ''} provided.` };
 
