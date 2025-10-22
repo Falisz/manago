@@ -24,7 +24,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     
     // Wild-card permission
     if (permissions.has('*'))
-        return { hasAccess: true };
+        return { hasFullAccess: true, hasAccess: true };
 
     const hasPermission = (resource = resource, resource2 = resource2) =>
         permissions.has(
@@ -34,9 +34,9 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         );
 
     const resourceAccess = async (resource, ids) => {
-        if (!resource)
-            return false;
-
+        if (!resource || !ids)
+            return { hasFullAccess: false, hasAccess: false , forbiddenIds: ids};
+        
         if (!(ids instanceof Set))
             ids = new Set(ids);
 
@@ -72,23 +72,28 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         else if (resource === 'schedule')
             allowedIds = new Set((await getSchedule({author: user})).map(s => s.id));
 
+        const isSubset = (set1, set2) => [...set1].every(item => set2.has(item));
+        const intersection = (set1, set2) => [...set1].filter(item => set2.has(item));
+        const difference = (set1, set2) => [...set1].filter(item => !set2.has(item));
+
         return { 
-            hasAccess: ids.isSubsetOf(allowedIds), 
-            allowedIds: ids.intersection(allowedIds),
-            forbiddenIds: ids.difference(allowedIds) 
+            hasFullAccess: isSubset(ids, allowedIds),
+            hasAccess: intersection(ids, allowedIds).length > 0, 
+            allowedIds: intersection(ids, allowedIds),
+            forbiddenIds: difference(ids, allowedIds) 
         };
     }
     
     // Self permission
     if (action !== 'assign' && resource === 'user' && id === user && hasPermission('self')) 
-        return { hasAccess: true };
+        return { hasFullAccess: true, hasAccess: true };
 
     // Any-resource permission
     if (hasPermission(resource, action === 'assign' ?? resource2))
-        return { hasAccess: true };
+        return { hasFullAccess: true, hasAccess: true };
 
     if (action === 'create')
-        return { hasAccess: false };
+        return { hasFullAccess: true, hasAccess: false };
 
     // Managed-resource permissions 
     // permission name format: <action>-managed-<resource> (e.g. read-managed-user)
@@ -98,7 +103,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     
     else
         if (hasPermission('assign', resource, resource2))
-            return { hasAccess: true };
+            return { hasFullAccess: true, hasAccess: true };
         
         else if (hasPermission(`managed-${resource}`, resource2))
             return await resourceAccess(resource, Array.from(id));
@@ -107,13 +112,30 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
             return await resourceAccess(resource2, Array.from(id2));
         
         else if (hasPermission(`managed-${resource}`, `managed-${resource2}`)) {
-            const { hasAccess, forbiddenIds } = await resourceAccess(resource, Array.from(id));
-            const { hasAccess2, forbiddenIds2 } = await resourceAccess(resource2, Array.from(id2));
+            const { 
+                hasFullAccess, 
+                hasAccess, 
+                allowedIds,
+                forbiddenIds 
+            } = await resourceAccess(resource, Array.from(id));
+            const { 
+                hasFullAccess: hasFullAccess2, 
+                hasAccess: hasAccess2, 
+                allowedIds: allowedIds2,
+                forbiddenIds: forbiddenIds2
+            } = await resourceAccess(resource2, Array.from(id2));
             
-            return { hasAccess: hasAccess && hasAccess2, forbiddenIds, forbiddenIds2 };
+            return { 
+                hasFullAccess: hasFullAccess && hasFullAccess2, 
+                hasAccess: hasAccess && hasAccess2, 
+                allowedIds,
+                forbiddenIds,
+                allowedIds2, 
+                forbiddenIds2
+            };
         }
 
-    return { hasAccess: false };
+    return { hasFullAccess: false, hasAccess: false };
     
 }
 

@@ -30,17 +30,22 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     if (ids.length === 0)
         return res.status(400).json({ message: `No valid ${resourceName} IDs provided.` });
 
-    const { hasAccess, forbiddenIds } = await checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+    const { 
+        hasFullAccess, 
+        hasAccess, 
+        allowedIds, 
+        forbiddenIds 
+    } = await checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
 
     if (!hasAccess)
-        if (forbiddenIds.length > 1 && forbiddenIds.length != ids.length) 
-            return res.status(501).json({ message: `You cannot delete ${resourceName}s (IDs: ${forbiddenIds.join(', ')}).` });
+        return res.status(501).json({ message: `You are not premitted to delete ${resourceName}.` });
 
-        else if (forbiddenIds.length)
-            return res.status(501).json({ message: `You cannot delete ${resourceName} (ID: ${forbiddenIds[0]}).` });
-        
-        else 
-            return res.status(501).json({ message: `You cannot delete ${resourceName}.` });
+    let warning;
+
+    if (!hasFullAccess) {
+        ids = allowedIds;
+        warning = `You are not premitted to delete ${resourceName + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID')} ${forbiddenIds.join(', ')}.`
+    }
 
     try {
         const { success, message, deletedCount } = await deleteFunction(ids, ...args);
@@ -48,7 +53,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
         if (!success)
             return res.status(400).json({ message });
 
-        return res.json({ message, deletedCount });
+        return res.json({ message, deletedCount, warning });
         
     } catch (err) {
         if (ids.length > 1) 
