@@ -6,9 +6,29 @@ import {
     getUserManagers
 } from '../controllers/users.js';
 import { getTeamUsers } from '../controllers/teams.js';
-import { getProject } from '../controllers/projects.js';
-import { getBranch } from '../controllers/branches.js';
+import { getProject, getProjectUsers } from '../controllers/projects.js';
+import { getBranch, getBranchUsers } from '../controllers/branches.js';
 import { getSchedule } from '../controllers/workPlanner.js';
+
+async function getManagedUsers(manager) {
+    const reportees = (await getUserManagers({manager, include_all_users: true})).map(u => u.id);
+    
+    const managedTeams = (await getTeamUsers({user: manager, role: 3, include_subteams: true})).map(t => t.id);
+    const teamReportees = (await getTeamUsers({team: managedTeams, role: [1, 2], include_subteams: true})).map(u => u.id);
+    
+    const managedProjects = (await getProject({manager})).map(p => p.id);
+    const projectReportees = (await getProjectUsers({project: managedProjects})).map(u => u.id);
+
+    const managedBranches = (await getBranch({manager})).map(b => b.id);
+    const branchReportees = (await getBranchUsers({branch: managedBranches})).map(u => u.id);
+
+    return Array.from(new Set([
+        ...reportees,
+        ...teamReportees,
+        ...projectReportees,
+        ...branchReportees
+    ]));
+}
 
 async function checkAccess(user, action, resource, id, resource2, id2) {
     if (!user || !action || !resource) 
@@ -37,53 +57,52 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         if (!resource || !ids)
             return { hasFullAccess: false, hasAccess: false };
 
-        if (Array.isArray(ids))
-            ids = new Set(ids);
-        else 
-            ids = new Set([ids]);
+        if (!Array.isArray(ids))
+            ids = [ids];
 
-        let allowedIds;
+        let permittedIds;
 
-        if (resource === 'user' || resource === 'manager') {
-            const directReportees = (await getUserManagers({manager: user, include_all_users: true})).map(u => u.id);
-            const managedTeams = (await getTeamUsers({user, role: 3, include_subteams: true})).map(t => t.id);
-            const teamReportees = (await getTeamUsers({team: managedTeams, role: [1, 2], include_subteams: true})).map(u => u.id);
-            
-            allowedIds = new Set([...directReportees, ...teamReportees]);
-        }
-
+        if (resource === 'user' || resource === 'manager')
+            permittedIds = new Set(await getManagedUsers(user));
+        
         else if (resource === 'role') {
-            allowedIds = new Set((await getUserRoles({user})).map(r => r.id));
+            permittedIds = new Set((await getUserRoles({user})).map(r => r.id));
 
-            if (allowedIds.has(11))
-                [1, 2, 3].forEach(r => allowedIds.add(r));
+            if (permittedIds.has(11))
+                [1, 2, 3].forEach(r => permittedIds.add(r));
 
-            if (allowedIds.has(12) || allowedIds.has(13))
-                [1, 2, 3, 11].forEach(r => allowedIds.add(r));
+            if (permittedIds.has(12) || permittedIds.has(13))
+                [1, 2, 3, 11].forEach(r => permittedIds.add(r));
         }
 
         else if (resource === 'team')
-            allowedIds = new Set((await getTeamUsers({user, role: 3, include_subteams: true})).map(t => t.id));
+            permittedIds = new Set((await getTeamUsers({user, role: 3, include_subteams: true})).map(t => t.id));
 
         else if (resource === 'project')
-            allowedIds = new Set((await getProject({manager: user})).map(p => p.id));
+            permittedIds = new Set((await getProject({manager: user})).map(p => p.id));
 
         else if (resource === 'branch')
-            allowedIds = new Set((await getBranch({manager: user})).map(p => p.id));
+            permittedIds = new Set((await getBranch({manager: user})).map(p => p.id));
 
         else if (resource === 'schedule')
-            allowedIds = new Set((await getSchedule({author: user})).map(s => s.id));
+            permittedIds = new Set((await getSchedule({author: user})).map(s => s.id));
 
-        const isSubset = (set1, set2) => [...set1].every(item => set2.has(item));
-        const intersection = (set1, set2) => [...set1].filter(item => set2.has(item));
-        const difference = (set1, set2) => [...set1].filter(item => !set2.has(item));
+        else if (resource === 'shift')
+            permittedIds = new Set((await getShift({user: await getManagedUsers(user)})).map(s => s.id));
 
-        return { 
-            hasFullAccess: isSubset(ids, allowedIds),
-            hasAccess: intersection(ids, allowedIds).length > 0, 
-            allowedIds: intersection(ids, allowedIds),
-            forbiddenIds: difference(ids, allowedIds) 
-        };
+        const hasFullAccess = [...ids].every(id => permittedIds.has(id));
+        let hasAccess = false;
+        let allowedIds = [];
+
+        if (!hasFullAccess) {
+            allowedIds = [...ids].filter(id => permittedIds.has(id));
+            forbiddenIds = [...ids].filter(id => !permittedIds.has(id));
+        }
+
+        if (allowedIds.length > 0)
+            hasAccess = true;
+
+        return { hasFullAccess, hasAccess, allowedIds, forbiddenIds };
     }
     
     // Self permission
