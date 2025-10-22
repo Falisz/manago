@@ -6,8 +6,7 @@ import {
     getLeave,
     createLeave,
     updateLeave,
-    deleteLeave,
-    getShift
+    deleteLeave
 } from '../controllers/workPlanner.js';
 
 // API Handlers
@@ -18,6 +17,11 @@ import {
  */
 const fetchLeavesHandler = async (req, res) => {
     const { id } = req.params;
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const leaves = await getLeave({
@@ -51,6 +55,12 @@ const fetchLeavesHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createLeaveHandler = async (req, res) => {
+
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'leave');
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
+
     try {
         let { leave } = req.body;
     
@@ -70,7 +80,7 @@ const createLeaveHandler = async (req, res) => {
 };
 
 /**
- * Update a specific Shift or multiple Shifts.
+ * Update a specific Leave or multiple Leaves.
  * @param {express.Request} req
  * @param {express.Response} res
  */
@@ -80,15 +90,33 @@ const updateLeaveHandler = async (req, res) => {
     try {
         if (!id) {
             const { leaves } = req.body;
+
+            const {
+                hasAccess, 
+                hasFullAccess,
+                allowedIds,
+                forbiddenIds 
+            } = await checkAccess(req.session.user, 'update', 'leave', Object.keys(leaves));
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
             
-            const updatedLeaves = [];
             const errorMessages = [];
+
+            if (!hasFullAccess) {            
+                shifts = Object.entries(leaves).filter( (id, _leave) => allowedIds.contains(id));
+                
+                errorMessages.push(`You are not premitted to update Leave${forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:'} ${forbiddenIds.join(', ')}.`);
+            }
+
+            const updatedLeaves = [];
 
             for (const [id, leave] of Object.entries(leaves)) {
                 const { success, message } = await updateLeave(parseInt(id), leave);
 
                 if (success)
                     updatedLeaves.push(await getLeave({ id }));
+
                 else
                     errorMessages.push(message);
             }
@@ -97,6 +125,11 @@ const updateLeaveHandler = async (req, res) => {
 
         } else {
             let { leave } = req.body;
+
+            const { hasAccess } = await checkAccess(req.session.user, 'update', 'leave', id);
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
 
             const { success, message } = await updateLeave(parseInt(id), leave);
             

@@ -44,7 +44,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
 
     if (!hasFullAccess) {
         ids = allowedIds;
-        warning = `You are not premitted to delete ${resourceName + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID')} ${forbiddenIds.join(', ')}.`
+        warning = `You are not premitted to delete ${resourceName + (forbiddenIds.length > 1 ? 's with IDs:' : ' with ID')} ${forbiddenIds.join(', ')}.`
     }
 
     try {

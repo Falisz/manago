@@ -8,7 +8,7 @@ import {
     createShift,
     updateShift,
     deleteShift
-} from "../controllers/workPlanner.js";
+} from '../controllers/workPlanner.js';
 
 // API Handlers
 /**
@@ -35,8 +35,8 @@ const fetchShiftsHandler = async (req, res) => {
                 req.query.job_post != null ? parseInt(req.query.job_post) : undefined,
             schedule: req.body.schedule ? req.body.schedule :
                 req.query.schedule != null ? parseInt(req.query.schedule) : undefined,
-            start_time: req.body.start_date ? new Date(req.body.start_date) :
-                req.query.start_date ? new Date(req.query.start_date) : undefined,
+            start_time: req.body.start_date ? new Date(req.body.start_date+'T00:00') :
+                req.query.start_date ? new Date(req.query.start_date+'T00:00') : undefined,
             end_time: req.body.end_date ? new Date(req.body.end_date+'T23:59') :
                 req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
         });
@@ -80,7 +80,7 @@ const createShiftHandler = async (req, res) => {
                     errorMessages.push(message);
             }
 
-            res.status(201).json({ message: `Created ${newShifts.length()} new shifts.`, newShifts, errorMessages})
+            res.status(201).json({ message: `Created ${newShifts.length} new shifts.`, newShifts, errorMessages})
 
         } else {
             let { shift } = req.body;
@@ -111,16 +111,34 @@ const updateShiftHandler = async (req, res) => {
 
     try {
         if (!id) {
-            const { shifts } = req.body;
+            let { shifts } = req.body;
+
+            const {
+                hasAccess, 
+                hasFullAccess,
+                allowedIds,
+                forbiddenIds 
+            } = await checkAccess(req.session.user, 'update', 'shift', Object.keys(shifts));
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
+
+            const errorMessages = [];
+
+            if (!hasFullAccess) {            
+                shifts = Object.entries(shifts).filter( (id, _shift) => allowedIds.contains(id));
+                
+                errorMessages.push(`You are not premitted to update ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
+            }
 
             const updatedShifts = [];
-            const errorMessages = [];
 
             for (const [id, shift] of Object.entries(shifts)) {
                 const { success, message } = await updateShift(parseInt(id), shift);
 
                 if (success)
                     updatedShifts.push(await getShift({ id }));
+                
                 else
                     errorMessages.push(message);
             }
@@ -129,6 +147,11 @@ const updateShiftHandler = async (req, res) => {
 
         } else {
             let { shift } = req.body;
+
+            const { hasAccess } = await checkAccess(req.session.user, 'update', 'shift', id);
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
 
             const { success, message } = await updateShift(parseInt(id), shift);
             
