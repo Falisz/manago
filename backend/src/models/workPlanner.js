@@ -6,14 +6,21 @@ import {User} from "./users.js";
 export const Schedule = sequelize.define('Schedule', {
     name: DataTypes.STRING,
     description: DataTypes.TEXT,
+    start_date: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
+    end_date: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
     author: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: User, key: 'id' }
-    }
+    },
 }, {
-    tableName: 'schedules',
-    timestamps: false,
+    tableName: 'schedules'
 }); 
 
 export const JobPost = sequelize.define('JobPost', {
