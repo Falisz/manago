@@ -10,6 +10,25 @@ import useUser from "../../hooks/useUser";
 import Button from '../Button';
 import {useModals} from "../../contexts/ModalContext";
 
+// DESIGN NOTES:
+// - Two subpages in Work Planner:
+// -- a Schedule page with currently published schedule
+// -- a Workings Schedules with all WIP schedules authoured or available by given Manager.
+// - Edit button in the Schedule page creates a copy of the given schedule scope in the frontend and allows user to edit it - It's only in the frontend and can be either:
+// -- Published - instantly sends new revision of the shifts to the server replacing the old ones - for given days;
+// -- Saved - meaning it is saved as a Working Schedule to be later on access from the backend.
+// - On the Working Schedules there is an option to create new empty schedule for given scope of dates and people or edit any existing ones,
+// - Editing the Published Schedule can be either saved (to a Working Schedule), discarded or published (Publishing the Working Schedule to replace edited dates). 
+// - Working Schedule has set date range but this can be altered. If shrinking it and reducing dates that already have shifts planned this shifts will be removed once Schedule is saved.
+// - Each Working Schedule can be further saved, deleted or published.
+// - Publishing essentially means the Working Schedules to be deleted and shift in it being 'freed' from Schedule ID to be treated as published - viewable to respectively targeted users. 
+// - In case of conflict in publishing working schedule because there already are some shifts for the specific day published there are two options:
+// -- replace - grabs IDs of already existings shifts from conflicting days in scope and they get removed. Then the shifts get posted. 
+// -- skip - skips the days that currently have existings shifts.
+// - Performance limits in place - no larger scope than 31 days and 100 users.
+// - It will also require new component - Leave Planner - that will be aside option from Shift scheduels and Dispositions just for scheduling eventual Leaves.
+// - Each Shift can also be opened in a detailed mode - and edited or deleted like any other resource. The shift can be reassigned to other person, moved to different day or time. It can be also individually published or reverted back to the working schedule (if there is any authored).
+
 const generateDateList = (fromDate, toDate) => {
     const dates = [];
     const currentDate = new Date(fromDate);
