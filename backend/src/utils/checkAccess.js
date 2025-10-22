@@ -35,10 +35,12 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
     const resourceAccess = async (resource, ids) => {
         if (!resource || !ids)
-            return { hasFullAccess: false, hasAccess: false , forbiddenIds: ids};
-        
-        if (!(ids instanceof Set))
+            return { hasFullAccess: false, hasAccess: false };
+
+        if (Array.isArray(ids))
             ids = new Set(ids);
+        else 
+            ids = new Set([ids]);
 
         let allowedIds;
 
