@@ -7,6 +7,12 @@ import LeaveItem from './LeaveItem';
 import ShiftItem from './ShiftItem';
 import {Item, Menu, useContextMenu} from 'react-contexify';
 
+// TODO: add autosaving, discarding changes to the last saved state, displaying user dispos and leaves, and leave requests
+//  double click on a shift to edit it (time and post and location)
+//  three bins - one for new shifts, one for updated shifts and one for deleted shifts to be properly handled once there is save and sent to backend.
+//  the update and delete bins only used for editing current draft schedule, in case of new schedule or editing current one there is only new bin
+//  as the schedule is saved to backend, the bins are cleared
+
 const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}) => {
     const { openModal } = useModals();
 
@@ -135,7 +141,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
             const sameCell = sameDay(new Date(sourceShift.start_time), targetDate) && sourceShift.user === user;
 
-            if (sameCell)
+            if (sameCell && !isCopy)
                 return;
 
             const endTime = new Date(sourceShift.end_time);
@@ -236,16 +242,13 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
         setUsers((prev) => {
             const newUsers = new Map(prev);
             const user = newUsers.get(userID);
-
             newUsers.set(userID, {
                 ...user,
                 shifts: user.shifts.filter((s) => s.id !== shift.id)
             });
-
             return newUsers;
-        });
 
-        console.log(shift);
+        })
     }
 
     const holidays = [
