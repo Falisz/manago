@@ -7,6 +7,7 @@ import Button from '../Button';
 import {formatDate, generateDateList} from '../../utils/dates';
 import ScheduleSelector from './ScheduleSelector';
 import UserShiftTable from './UserShiftTable';
+import '../../styles/Schedule.css';
 
 const Schedule = () => {
     const { user } = useAppState();
@@ -62,7 +63,7 @@ const Schedule = () => {
         else
             newParams.delete('schedule');
 
-        if (schedule.formData)
+        if (schedule.fromDate)
             newParams.set('from', formatDate(schedule.fromDate));
         else
             newParams.delete('from');
@@ -88,7 +89,7 @@ const Schedule = () => {
             newParams.delete('gid');
 
         setSearchParams(newParams, { replace: true });
-    }, [schedule.type, schedule.formData, schedule.toDate, schedule.group, schedule.groupId])
+    }, [schedule.type, schedule.fromDate, schedule.toDate, schedule.group, schedule.groupId])
 
     const dates = generateDateList(schedule.fromDate, schedule.toDate);
 

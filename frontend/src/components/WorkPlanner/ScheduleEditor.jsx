@@ -4,6 +4,7 @@ import useAppState from '../../contexts/AppStateContext';
 import Button from "../Button";
 import UserShiftTable from "./UserShiftTable";
 import {generateDateList} from "../../utils/dates";
+import '../../styles/Schedule.css';
 
 const ScheduleEditor = () => {
 
@@ -11,15 +12,15 @@ const ScheduleEditor = () => {
 
     const config = appState.schedule_editor;
 
-    console.log(config);
+    if (!config) return null;
 
     const title = () => {
-        if (!config || !config.type) return "No Schedule chosen"
+        if (!config.type) return "No Schedule chosen"
         switch (config.type) {
             case 'new':
                 return "Planning a New Schedule";
             case 'current':
-                return "Edit Published Schedule";
+                return "Editing Published Schedule";
             default:
                 return "Editing Schedule: " + config.name;
         }

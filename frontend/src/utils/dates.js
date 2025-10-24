@@ -35,3 +35,7 @@ export function sameDay (date1, date2) {
         date1.getUTCDate() === date2.getUTCDate()
     );
 }
+
+export function toUTCDate (s) {
+    return new Date(`${s}T00:00:00Z`);
+}

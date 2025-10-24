@@ -1,13 +1,14 @@
 // FRONTEND/components/WorkPlanner/UserShiftTable.jsx
-import React from 'react';
+import React, {useRef, useState} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import Loader from '../Loader';
-import { formatDate, formatTime, sameDay } from '../../utils/dates';
+import { formatDate, formatTime, sameDay, toUTCDate } from '../../utils/dates';
 import LeaveItem from './LeaveItem';
 import ShiftItem from './ShiftItem';
 
-const UserShiftTable = ({dates, users, placeholder, loading}) => {
+const UserShiftTable = ({dates, users, placeholder, loading, editable}) => {
     const { openModal } = useModals();
+    const [ shifts, setShifts ] = useState(users);
 
     const getSelector = (e) => {
         const user = e.currentTarget.getAttribute('data-user');
@@ -48,6 +49,123 @@ const UserShiftTable = ({dates, users, placeholder, loading}) => {
         if (selector) {
             document.querySelectorAll(selector)
                 .forEach(cell => cell.classList.remove('column-highlight'));
+        }
+    };
+
+    const dragPreviewRef = useRef(null);
+
+    const makeShiftDragHandlers = (shift) => ({
+        draggable: true,
+        onDragStart: (e) => {
+            e.dataTransfer.effectAllowed = 'copyMove';
+            const payload = JSON.stringify({
+                type: 'shift',
+                startTime: shift.startTime,
+                endTime: shift.endTime,
+                role: shift.role,
+                sourceUser: shift.user,
+                sourceDate: new Date(shift.start_time).toISOString(),
+            });
+            e.dataTransfer.setData('application/json', payload);
+
+            const target = e.currentTarget;
+            const clone = target.cloneNode(true);
+            clone.style.pointerEvents = 'none';
+            clone.style.position = 'fixed';
+            clone.style.top = '-1000px';
+            clone.style.right = '-1000px';
+            document.querySelector('.app-schedule-table').appendChild(clone);
+            dragPreviewRef.current = clone;
+            try {
+                e.dataTransfer.setDragImage(clone, 10, 10);
+            } catch {}
+        },
+        onDragEnd: () => {
+            if (dragPreviewRef.current) {
+                dragPreviewRef.current.remove();
+                dragPreviewRef.current = null;
+            }
+        },
+    });
+
+    const handleCellDrop = (user, dateStr) => (e) => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData('application/json');
+        if (!data) return;
+        let parsed;
+        try {
+            parsed = JSON.parse(data);
+        } catch {
+            return;
+        }
+        if (parsed?.type !== 'shift') return;
+
+        const targetDate = toUTCDate(dateStr);
+        const targetUser = user;
+
+        const isCopy = !!(e.ctrlKey || e.metaKey);
+
+        const newShift = {
+            user: targetUser,
+            date: targetDate,
+            startTime: parsed.startTime,
+            endTime: parsed.endTime,
+            role: parsed.role,
+        };
+
+        setShifts((prev) => {
+            const targetUser = users.find(u => u.id === user);
+            const leaves = targetUser ? targetUser['leaves'] : [];
+
+            const hasLeaveOnTargetDay = leaves.some(
+                (l) =>
+                    targetDate >= new Date(l.start_date) &&
+                    targetDate <= new Date(l.end_date)
+            );
+
+            const sourceDate = new Date(parsed.sourceDate);
+            const isSameCellAsSource =
+                parsed.sourceUser === targetUser && sameDay(sourceDate, targetDate);
+
+            if (isCopy) {
+                if (hasLeaveOnTargetDay) return prev;
+                return [...prev, newShift];
+            } else {
+                if (isSameCellAsSource) return prev;
+                if (hasLeaveOnTargetDay) return prev;
+
+                const withoutSource = prev.filter(
+                    (s) =>
+                        !(
+                            s.user === parsed.sourceUser &&
+                            sameDay(s.date, sourceDate) &&
+                            s.startTime === parsed.startTime &&
+                            s.endTime === parsed.endTime &&
+                            s.role === parsed.role
+                        )
+                );
+                return [...withoutSource, newShift];
+            }
+        });
+    };
+
+    const handleCellDragOver = (user, dateStr) => (e) => {
+        e.preventDefault();
+        const targetDate = toUTCDate(dateStr);
+        const targetUser = users.find(u => u.id === user);
+        const leaves = targetUser ? targetUser['leaves'] : [];
+
+        const hasLeaveOnTargetDay = leaves.some(
+            (l) =>
+                l.user === user &&
+                targetDate >= new Date(Date.UTC(l.startDate.getUTCFullYear(), l.startDate.getUTCMonth(), l.startDate.getUTCDate())) &&
+                targetDate <= new Date(Date.UTC(l.endDate.getUTCFullYear(), l.endDate.getUTCMonth(), l.endDate.getUTCDate()))
+        );
+
+        if (hasLeaveOnTargetDay) {
+            e.dataTransfer.dropEffect = 'none';
+        } else {
+            e.dataTransfer.dropEffect = (e.ctrlKey || e.metaKey) ? 'copy' : 'move';
         }
     };
 
@@ -100,7 +218,7 @@ const UserShiftTable = ({dates, users, placeholder, loading}) => {
             {placeholder && <tr>
                 <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{placeholder}</td>
             </tr>}
-            {users?.map((user) => {
+            {shifts?.map((user) => {
                 return <tr key={user.id}>
                     <td
                         className={'user-cell'}
@@ -157,6 +275,8 @@ const UserShiftTable = ({dates, users, placeholder, loading}) => {
                                 colSpan={colSpan}
                                 onMouseEnter={handleMouseEnter}
                                 onMouseLeave={handleMouseLeave}
+                                onDragOver={editable ? handleCellDragOver(user.id, formattedDate) : null}
+                                onDrop={editable ? handleCellDrop(user.id, formattedDate) : null}
                             >
                                 {isLeaveStart ? <LeaveItem days={leave.days} type={leave.type} color={leave.color} /> :
                                     shift.length > 0 ?
@@ -165,6 +285,7 @@ const UserShiftTable = ({dates, users, placeholder, loading}) => {
                                             time={`${formatTime(s.start_time)} - ${formatTime(s.end_time)}`}
                                             role={s.job_post.name}
                                             color={s.job_post.color}
+                                            draggableProps={editable ? makeShiftDragHandlers(s) : []}
                                         /> ) : null }
                             </td>
                         );

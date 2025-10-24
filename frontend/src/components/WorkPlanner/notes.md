@@ -1,7 +1,7 @@
 ## DESIGN NOTES:
 - Two subpages in Work Planner:
   - a Schedule page with currently published schedule
-    - a Workings Schedules with all WIP schedules authored or available by a given Manager.
+  - a Workings Schedules with all WIP schedules authored or available by a given Manager.
 - Edit button in the Schedule page creates a copy of the given schedule scope in the frontend and allows a user to edit it - It's only in the frontend and can be either:
   - Published - instantly sends new revision of the shifts to the server replacing the old ones - for given days;
   - Saved - meaning it is saved as a Working Schedule to be later on access from the backend.
