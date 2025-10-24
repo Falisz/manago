@@ -16,6 +16,8 @@ import '../styles/Button.css';
  * @param name
  * @param icon
  * @param transparent
+ * @param style
+ * @param iconStyle
  * @returns {JSX.Element}
  * @constructor
  */
@@ -31,7 +33,8 @@ const Button = ({
     name,
     icon=null,
     transparent=false,
-    style
+    style,
+    iconStyle
 }) =>
     <button
         id={id}
@@ -43,7 +46,7 @@ const Button = ({
         disabled={disabled}
         style={style}
     >
-        {icon && <Icon i={icon}/>}
+        {icon && <Icon i={icon} style={iconStyle}/>}
         {children || label}
     </button>;
 

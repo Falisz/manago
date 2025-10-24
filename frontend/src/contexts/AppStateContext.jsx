@@ -219,6 +219,11 @@ export const AppStateProvider = ({ children }) => {
         }
     }, [getUser, refreshPages]);
 
+    const setScheduleEditor = useCallback(async (scheduleEditor) => {
+        if (!scheduleEditor) return;
+        setAppState(prev => ({...prev, schedule_editor: scheduleEditor}));
+    }, [setAppState]);
+
     useEffect(() => {
         checkConnection().then();
         const interval = setInterval(checkConnection, 60000);
@@ -251,6 +256,7 @@ export const AppStateProvider = ({ children }) => {
             logoutUser,
             appState,
             getConfigOptions,
+            setScheduleEditor,
             refreshConfig,
             checkConnection,
             refreshModules,

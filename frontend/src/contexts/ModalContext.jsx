@@ -16,6 +16,7 @@ import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../component
 import PostDetails from '../components/Posts/Details';
 import InWorks from '../components/InWorks';
 import ConfirmPrompt from '../components/ConfirmPrompt';
+import NewSchedule from "../components/WorkPlanner/NewSchedule";
 
 const ModalContext = createContext();
 
@@ -160,6 +161,8 @@ export const ModalProvider = ({ children }) => {
                 return <TeamEdit parentId={modal.parentId} />;
             case 'postDetails':
                 return <PostDetails postId={modal.contentId} />;
+            case 'newSchedule':
+                return <NewSchedule />;
             case 'confirm':
                 return <ConfirmPrompt
                     message={modal.message}

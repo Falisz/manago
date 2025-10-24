@@ -84,7 +84,7 @@ const SubNav = ({currentMainPage, location}) => {
             </Link>
             }
             {currentMainPage?.subpages?.map((subpage) => (
-                <Link
+                !subpage.hidden && <Link
                     key={subpage.path}
                     className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
                     to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}
