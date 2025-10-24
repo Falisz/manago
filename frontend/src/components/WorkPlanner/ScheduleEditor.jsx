@@ -9,13 +9,13 @@ import '../../styles/Schedule.css';
 const ScheduleEditor = () => {
 
     const { appState } = useAppState();
-
     const config = appState.schedule_editor;
-
     // Working copy of users and their shifts.
-    const [ users, setUsers ] = useState(config.users);
+    const [ users, setUsers ] = useState( config && config.users);
 
-    if (!config) return null;
+    if (!config)
+        return null;
+
 
     const title = () => {
         if (!config.type) return "No Schedule chosen"

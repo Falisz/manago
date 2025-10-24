@@ -1,13 +1,22 @@
 // FRONTEND/components/WorkPlanner/UserShiftTable.jsx
-import React, {useRef, useState} from 'react';
+import React, {useRef} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import Loader from '../Loader';
-import { formatDate, formatTime, sameDay, toUTCDate } from '../../utils/dates';
+import { formatDate, formatTime, sameDay } from '../../utils/dates';
 import LeaveItem from './LeaveItem';
 import ShiftItem from './ShiftItem';
+import {Item, Menu, useContextMenu} from 'react-contexify';
 
 const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}) => {
     const { openModal } = useModals();
+
+    const MENU_ID = 'schedule_context_menu';
+    const { show } = useContextMenu({ id: MENU_ID, });
+
+    const displayContextMenu = (e, item) => {
+        e.preventDefault();
+        show({ event: e, props: item });
+    }
 
     const getSelector = (e) => {
         const user = e.currentTarget.getAttribute('data-user');
@@ -53,24 +62,30 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
     const dragPreviewRef = useRef(null);
 
+    const hasLeaveOnTarget = (leaves, targetDate) => leaves.some(
+            (l) => {
+                l.start_date = new Date(l.start_date);
+                l.end_date = new Date(l.end_date);
+
+                return targetDate >= new Date(Date.UTC(l.start_date.getUTCFullYear(), l.start_date.getUTCMonth(), l.start_date.getUTCDate())) &&
+                    targetDate <= new Date(Date.UTC(l.end_date.getUTCFullYear(), l.end_date.getUTCMonth(), l.end_date.getUTCDate()))
+            }
+        );
+
     const makeShiftDragHandlers = (shift) => ({
         draggable: true,
         onDragStart: (e) => {
             e.dataTransfer.effectAllowed = 'copyMove';
-            const payload = JSON.stringify({
-                type: 'shift',
-                startTime: shift.startTime,
-                endTime: shift.endTime,
-                role: shift.role,
-                sourceUser: shift.user,
-                sourceDate: new Date(shift.start_time).toISOString(),
-            });
+            const payload = JSON.stringify(shift);
             e.dataTransfer.setData('application/json', payload);
+
+            const width = e.currentTarget.getBoundingClientRect().width;
 
             const target = e.currentTarget;
             const clone = target.cloneNode(true);
             clone.style.pointerEvents = 'none';
             clone.style.position = 'fixed';
+            clone.style.width = `${width}px`;
             clone.style.top = '-1000px';
             clone.style.right = '-1000px';
             document.querySelector('.app-schedule-table').appendChild(clone);
@@ -87,80 +102,125 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
         },
     });
 
-    const handleCellDrop = (user, dateStr) => (e) => {
+    const handleCellDrop = (user, date) => (e) => {
         e.preventDefault();
-        const data = e.dataTransfer.getData('application/json');
-        if (!data) return;
-        let parsed;
-        try {
-            parsed = JSON.parse(data);
-        } catch {
-            return;
-        }
-        if (parsed?.type !== 'shift') return;
 
-        const targetDate = toUTCDate(dateStr);
-        const targetUser = user;
+        const targetUser = users.get(user);
+        const targetDate = new Date(date);
+        const leaves = targetUser ? targetUser['leaves'] : [];
+
+        const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
+
+        if (hasLeaveOnTargetDay)
+            return;
 
         const isCopy = !!(e.ctrlKey || e.metaKey);
 
-        const newShift = {
-            user: targetUser,
-            date: targetDate,
-            startTime: parsed.startTime,
-            endTime: parsed.endTime,
-            role: parsed.role,
-        };
+        const data = e.dataTransfer.getData('application/json');
 
-        // TODO: updating whole user-shift map of id: user with shifts that they have.
+        if (!data)
+            return;
+
+        let sourceShift;
+        let newShift;
+
+        try {
+
+            sourceShift = JSON.parse(data);
+            newShift = JSON.parse(data);
+
+            newShift.user = user;
+
+            const startTime = new Date(sourceShift.start_time);
+
+            const sameCell = sameDay(new Date(sourceShift.start_time), targetDate) && sourceShift.user === user;
+
+            if (sameCell)
+                return;
+
+            const endTime = new Date(sourceShift.end_time);
+
+            const isSameDay = sameDay(startTime, endTime);
+
+            startTime.setFullYear(targetDate.getFullYear());
+            startTime.setMonth(targetDate.getMonth());
+            startTime.setDate(targetDate.getDate());
+
+            if (isSameDay) {
+                endTime.setFullYear(targetDate.getFullYear());
+                endTime.setMonth(targetDate.getMonth());
+                endTime.setDate(targetDate.getDate());
+            } else {
+                const nextDay = new Date(targetDate);
+                nextDay.setDate(targetDate.getDate() + 1);
+                endTime.setFullYear(nextDay.getFullYear());
+                endTime.setMonth(nextDay.getMonth());
+                endTime.setDate(nextDay.getDate());
+            }
+
+            newShift.start_time = startTime.toISOString();
+            newShift.end_time = endTime.toISOString();
+
+            if (isCopy)
+                newShift.id = `new${Math.floor(Math.random() * 1001)}`;
+
+        } catch {
+            return;
+        }
+
         setUsers((prev) => {
-            const targetUser = users.find(u => u.id === user);
-            const leaves = targetUser ? targetUser['leaves'] : [];
-
-            const hasLeaveOnTargetDay = leaves.some(
-                (l) =>
-                    targetDate >= new Date(l.start_date) &&
-                    targetDate <= new Date(l.end_date)
-            );
-
-            const sourceDate = new Date(parsed.sourceDate);
-            const isSameCellAsSource =
-                parsed.sourceUser === targetUser && sameDay(sourceDate, targetDate);
 
             if (isCopy) {
-                if (hasLeaveOnTargetDay) return prev;
-                return [...prev, newShift];
-            } else {
-                if (isSameCellAsSource) return prev;
-                if (hasLeaveOnTargetDay) return prev;
+                const newUsers = new Map(prev);
 
-                const withoutSource = prev.filter(
-                    (s) =>
-                        !(
-                            s.user === parsed.sourceUser &&
-                            sameDay(s.date, sourceDate) &&
-                            s.startTime === parsed.startTime &&
-                            s.endTime === parsed.endTime &&
-                            s.role === parsed.role
-                        )
-                );
-                return [...withoutSource, newShift];
+                const targetUser = newUsers.get(user);
+                const updatedTargetUser = { ...targetUser, shifts: [...targetUser.shifts, newShift] };
+
+                newUsers.set(user, updatedTargetUser);
+
+                return newUsers;
+
+            } else {
+                const newUsers = new Map(prev);
+
+                const targetUser = newUsers.get(user);
+
+                if (sourceShift.user === user) {
+                    const updatedTargetUser = {
+                        ...targetUser,
+                        shifts: [...targetUser.shifts.filter((s) => s.id !== sourceShift.id), newShift] };
+
+                    newUsers.set(user, updatedTargetUser);
+
+                } else {
+                    const updatedTargetUser = {
+                        ...targetUser,
+                        shifts: [...targetUser.shifts, newShift] };
+
+                    newUsers.set(user, updatedTargetUser);
+
+                    const sourceUser = newUsers.get(sourceShift.user);
+
+                    const updatedSourceUser = {
+                        ...sourceUser,
+                        shifts: sourceUser.shifts.filter((s) => s.id !== sourceShift.id)
+                    };
+
+                    newUsers.set(sourceShift.user, updatedSourceUser);
+                }
+
+                return newUsers;
             }
         });
     };
 
-    const handleCellDragOver = (user, dateStr) => (e) => {
+    const handleCellDragOver = (user, date) => (e) => {
         e.preventDefault();
-        const targetDate = toUTCDate(dateStr);
-        const targetUser = users.find(u => u.id === user);
-        const leaves = targetUser ? targetUser['leaves'] : [];
+        const targetUser = users.get(user);
+        const leaves = targetUser ? targetUser.leaves : [];
 
-        const hasLeaveOnTargetDay = leaves.some(
-            (l) =>
-                l.user === user &&
-                targetDate >= new Date(Date.UTC(l.startDate.getUTCFullYear(), l.startDate.getUTCMonth(), l.startDate.getUTCDate())) &&
-                targetDate <= new Date(Date.UTC(l.endDate.getUTCFullYear(), l.endDate.getUTCMonth(), l.endDate.getUTCDate()))
-        );
+        const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
+
 
         if (hasLeaveOnTargetDay) {
             e.dataTransfer.dropEffect = 'none';
@@ -168,6 +228,25 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
             e.dataTransfer.dropEffect = (e.ctrlKey || e.metaKey) ? 'copy' : 'move';
         }
     };
+
+    const handleShiftDelete = (shift) => {
+
+        const userID = shift.user;
+
+        setUsers((prev) => {
+            const newUsers = new Map(prev);
+            const user = newUsers.get(userID);
+
+            newUsers.set(userID, {
+                ...user,
+                shifts: user.shifts.filter((s) => s.id !== shift.id)
+            });
+
+            return newUsers;
+        });
+
+        console.log(shift);
+    }
 
     const holidays = [
         {
@@ -218,7 +297,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
             {placeholder && <tr>
                 <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{placeholder}</td>
             </tr>}
-            {shifts?.map((user) => {
+            {users && [...users.values()].map((user) => {
                 return <tr key={user.id}>
                     <td
                         className={'user-cell'}
@@ -275,8 +354,8 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
                                 colSpan={colSpan}
                                 onMouseEnter={handleMouseEnter}
                                 onMouseLeave={handleMouseLeave}
-                                onDragOver={editable ? handleCellDragOver(user.id, formattedDate) : null}
-                                onDrop={editable ? handleCellDrop(user.id, formattedDate) : null}
+                                onDragOver={editable ? handleCellDragOver(user.id, date) : null}
+                                onDrop={editable ? handleCellDrop(user.id, date) : null}
                             >
                                 {isLeaveStart ? <LeaveItem days={leave.days} type={leave.type} color={leave.color} /> :
                                     shift.length > 0 ?
@@ -286,6 +365,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
                                             role={s.job_post.name}
                                             color={s.job_post.color}
                                             draggableProps={editable ? makeShiftDragHandlers(s) : []}
+                                            onContextMenu={(e) => displayContextMenu(e, s)}
                                         /> ) : null }
                             </td>
                         );
@@ -294,6 +374,14 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
             })}
             </tbody>
         </table>
+        <Menu className={'app-context-menu'} id={MENU_ID}>
+            <Item
+                key={2}
+                onClick={({props}) => handleShiftDelete(props)}
+            >
+                Delete Shift
+            </Item>
+        </Menu>
     </div>
 }
 export default UserShiftTable;

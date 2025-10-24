@@ -77,27 +77,39 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                 {withCredentials: true}
             )).data;
 
-            // TODO: Change those users into map {id: user} with user objects being their ids, names and arrays of shifts and leaves.
-
-            users = users
-                .map(user => ({
-                    ...user,
-                    shifts: shifts.filter(shift => shift.user.id === user.id),
-                    leaves: leaves.filter(leave => leave.user.id === user.id)
-                }))
-                .sort((a, b) => {
-                    if (a.hasOwnProperty('team') && b.hasOwnProperty('team')) {
-                        if (a.team.id !== b.team.id) {
-                            return a.team.id < b.team.id ? -1 : 1;
-                        }
-                        return a.role.id > b.role.id ? -1 : 1;
-
-                    } else {
-                        return (a.last_name + ' ' + a.first_name).localeCompare(b.last_name + ' ' + b.first_name);
+            const userMap = new Map(
+                users.map(user => [
+                    user.id,
+                    {
+                        ...user,
+                        shifts: shifts
+                            .filter(shift => shift.user.id === user.id)
+                            .map(shift => ({...shift, user: shift.user.id})),
+                        leaves: leaves
+                            .filter(leave => leave.user.id === user.id)
+                            .map(leave => ({...leave, user: leave.user.id}))
                     }
-                });
+                ])
+            );
 
-            setSchedule(prev => ({...prev, users: users, placeholder: null, loading: false}));
+            const sortedUserMap = new Map(
+                [...userMap.entries()].sort((a, b) => {
+                    const userA = a[1];
+                    const userB = b[1];
+
+                    if (userA.hasOwnProperty('team') && userB.hasOwnProperty('team'))
+                        if (userA.team.id !== userB.team.id)
+                            return userA.team.id < userB.team.id ? -1 : 1;
+                        else
+                            return userA.role.id > userB.role.id ? -1 : 1;
+
+                    else
+                        return (userA.last_name + ' ' + userA.first_name).localeCompare(userB.last_name + ' ' + userB.first_name);
+
+                })
+            );
+
+            setSchedule(prev => ({...prev, users: sortedUserMap, placeholder: null, loading: false}));
         } catch (err) {
             console.error('Error fetching users:', err);
             return [];

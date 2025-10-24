@@ -1,9 +1,9 @@
 // FRONTEND/components/WorkPlanner/ShiftItem.jsx
 import React from 'react';
 
-const ShiftItem = ({ time, role, color, draggableProps }) => (
+const ShiftItem = ({ time, role, color, draggableProps, onContextMenu}) => (
     <div
-        {...draggableProps} className={'shift-item'} style={{background: color+'90'}} >
+        {...draggableProps} className={'shift-item'} style={{background: color+'90'}} onContextMenu={onContextMenu}>
         <span>{time}</span>
         <span className={'subtitle'}>{role}</span>
     </div>
