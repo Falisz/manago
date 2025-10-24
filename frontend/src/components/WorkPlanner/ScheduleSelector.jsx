@@ -77,6 +77,8 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                 {withCredentials: true}
             )).data;
 
+            // TODO: Change those users into map {id: user} with user objects being their ids, names and arrays of shifts and leaves.
+
             users = users
                 .map(user => ({
                     ...user,

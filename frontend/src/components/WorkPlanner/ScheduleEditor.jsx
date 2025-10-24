@@ -1,5 +1,5 @@
 // FRONTEND/components/WorkPlanner/ScheduleEditor.jsx
-import React from 'react';
+import React, {useState} from 'react';
 import useAppState from '../../contexts/AppStateContext';
 import Button from "../Button";
 import UserShiftTable from "./UserShiftTable";
@@ -11,6 +11,9 @@ const ScheduleEditor = () => {
     const { appState } = useAppState();
 
     const config = appState.schedule_editor;
+
+    // Working copy of users and their shifts.
+    const [ users, setUsers ] = useState(config.users);
 
     if (!config) return null;
 
@@ -39,7 +42,8 @@ const ScheduleEditor = () => {
             </div>
             <UserShiftTable
                 dates={dates}
-                users={config.users}
+                users={users}
+                setUsers={setUsers}
                 editable={true}
             />
         </div>

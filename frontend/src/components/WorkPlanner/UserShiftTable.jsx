@@ -6,9 +6,8 @@ import { formatDate, formatTime, sameDay, toUTCDate } from '../../utils/dates';
 import LeaveItem from './LeaveItem';
 import ShiftItem from './ShiftItem';
 
-const UserShiftTable = ({dates, users, placeholder, loading, editable}) => {
+const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}) => {
     const { openModal } = useModals();
-    const [ shifts, setShifts ] = useState(users);
 
     const getSelector = (e) => {
         const user = e.currentTarget.getAttribute('data-user');
@@ -113,7 +112,8 @@ const UserShiftTable = ({dates, users, placeholder, loading, editable}) => {
             role: parsed.role,
         };
 
-        setShifts((prev) => {
+        // TODO: updating whole user-shift map of id: user with shifts that they have.
+        setUsers((prev) => {
             const targetUser = users.find(u => u.id === user);
             const leaves = targetUser ? targetUser['leaves'] : [];
 
