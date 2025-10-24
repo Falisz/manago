@@ -4,11 +4,12 @@ import { User } from '../models/users.js';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
 import randomId from '../utils/randomId.js';
-import isNumberOrNumberArray from "../utils/isNumberOrNumberArray.js";
+import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 
 /**
  * Retrieves one Project by its ID or all Projects if ID is not provided.
  * @param {number} id - optional - Project ID to fetch a specific project
+ * @param {number|number[]} manager - optional - Manager user ID(s) to filter projects by
  * @param {boolean} get_members - optional - Should members be fetched for the found Projects?
  * @returns {Promise<Object|Array|null>} Single Project, array of Projects, or null
  */
@@ -22,8 +23,12 @@ export async function getProject({ id, manager, get_members = true } = {}) {
 
     // Logic if no ID is provided - fetch all Projects
     if (!id || isNaN(id)) {
+        const where = {};
+        if (manager)
+            where.manager = manager;
+
         const projects = await Project.findAll({
-            where: { manager },
+            where,
             order: [['id', 'ASC']],
             raw: true
         });

@@ -14,6 +14,7 @@ import {
 /**
  * Fetch a Shift or multiple Shifts.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchShiftsHandler = async (req, res) => {
@@ -55,6 +56,7 @@ const fetchShiftsHandler = async (req, res) => {
 /**
  * Create a new Shift or multiple Shifts.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const createShiftHandler = async (req, res) => {
@@ -104,6 +106,7 @@ const createShiftHandler = async (req, res) => {
 /**
  * Update a specific Shift or multiple Shifts.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateShiftHandler = async (req, res) => {
@@ -128,7 +131,7 @@ const updateShiftHandler = async (req, res) => {
             if (!hasFullAccess) {            
                 shifts = Object.entries(shifts).filter( (id, _shift) => allowedIds.contains(id));
                 
-                errorMessages.push(`You are not premitted to update ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
+                errorMessages.push(`You are not permitted to update ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
             }
 
             const updatedShifts = [];

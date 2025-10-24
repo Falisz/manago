@@ -1,6 +1,7 @@
 // BACKEND/api/leaves.js
 import express from 'express';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
+import checkAccess from '../utils/checkAccess.js';
 import deleteResource from '../utils/deleteResource.js';
 import {
     getLeave,
@@ -13,6 +14,7 @@ import {
 /**
  * Fetch a Leave or multiple Leaves.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchLeavesHandler = async (req, res) => {
@@ -52,6 +54,7 @@ const fetchLeavesHandler = async (req, res) => {
 /**
  * Create a Leave or multiple Leaves.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const createLeaveHandler = async (req, res) => {
@@ -69,7 +72,7 @@ const createLeaveHandler = async (req, res) => {
         if (!success)
             return res.status(400).json({ message });
 
-        leave = await getShift({id});
+        leave = await getLeave({id});
 
         res.status(201).json({ message, leave });
 
@@ -82,6 +85,7 @@ const createLeaveHandler = async (req, res) => {
 /**
  * Update a specific Leave or multiple Leaves.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateLeaveHandler = async (req, res) => {
@@ -89,7 +93,7 @@ const updateLeaveHandler = async (req, res) => {
 
     try {
         if (!id) {
-            const { leaves } = req.body;
+            let { leaves } = req.body;
 
             const {
                 hasAccess, 
@@ -103,10 +107,10 @@ const updateLeaveHandler = async (req, res) => {
             
             const errorMessages = [];
 
-            if (!hasFullAccess) {            
-                shifts = Object.entries(leaves).filter( (id, _leave) => allowedIds.contains(id));
+            if (!hasFullAccess) {
+                leaves = Object.entries(leaves).filter( (id, _leave) => allowedIds.contains(id));
                 
-                errorMessages.push(`You are not premitted to update Leave${forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:'} ${forbiddenIds.join(', ')}.`);
+                errorMessages.push(`You are not permitted to update Leave${forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:'} ${forbiddenIds.join(', ')}.`);
             }
 
             const updatedLeaves = [];

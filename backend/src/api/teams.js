@@ -16,6 +16,7 @@ import {
 /**
  * Fetch all Teams or a Team by its ID.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchTeamsHandler = async (req, res) => {
@@ -45,6 +46,7 @@ const fetchTeamsHandler = async (req, res) => {
 /**
  * Fetch Users for a specific team.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchTeamUsersHandler = async (req, res) => {
@@ -75,15 +77,16 @@ const fetchTeamUsersHandler = async (req, res) => {
 /**
  * Create a new Team.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const createTeamHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'team', id);
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'team');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
-    
+
     try {
         const { success, message, id} = await createTeam(req.body);
 
@@ -114,6 +117,7 @@ const createTeamHandler = async (req, res) => {
 /**
  * Update a specific Team by ID.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateTeamHandler = async (req, res) => {
@@ -159,6 +163,7 @@ const updateTeamHandler = async (req, res) => {
 /**
  * Update Team assignments (Managers or Leaders).
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateAssignmentsHandler = async(req, res) => {

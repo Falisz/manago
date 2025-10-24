@@ -8,12 +8,13 @@ import {
     createSchedule,
     updateSchedule,
     deleteSchedule
-} from "../controllers/workPlanner.js";
+} from '../controllers/workPlanner.js';
 
 // API Handlers
 /**
  * Fetch a Working Schedule or multiple Working Schedules.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchScheduleHandler = async (req, res) => {
@@ -33,7 +34,7 @@ const fetchScheduleHandler = async (req, res) => {
                 req.query.start_date ? new Date(req.query.start_date) : undefined,
             end_date: req.body.end_date ? new Date(req.body.end_date+'T23:59') :
                 req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
-            include_shifts: req.query.include_shifts ? true : false,
+            include_shifts: !!req.query.include_shifts,
         });
 
         if (id && !schedules)
@@ -50,6 +51,7 @@ const fetchScheduleHandler = async (req, res) => {
 /**
  * Create a new Working Schedule.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const createScheduleHandler = async (req, res) => {
@@ -80,6 +82,7 @@ const createScheduleHandler = async (req, res) => {
 /**
  * Update a specific Working Schedule.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateScheduleHandler = async (req, res) => {

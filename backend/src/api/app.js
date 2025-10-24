@@ -77,6 +77,7 @@ const fetchConfigOptionsHandler = async (_req, res) => {
 /**
  * Update app configuration.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateConfigHandler = async (req, res) => {
@@ -185,7 +186,7 @@ const toggleManagerViewHandler = async (req, res) => {
                 manager_view: false
             });
 
-        const hasAccess = await checkAccess(req.session.user, 'accesss', 'manager-view');
+        const hasAccess = await checkAccess(req.session.user, 'access', 'manager-view');
 
         if (!hasAccess)
             return res.status(403).json({

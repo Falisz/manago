@@ -13,6 +13,7 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
  * @param {string} group - optional - Kind of group users to be fetched - currently available: employees, managers
  * @param {boolean} roles - optional - Should Roles be added to the output User
  * @param {boolean} managers - optional - Should Managers be added to the output User
+ * @param permissions
  * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
  * @param {boolean} removed - optional - default false - Should be removed Users included
  * @param {boolean} include_ppi - optional - Should PPI data be included
@@ -30,6 +31,20 @@ export async function getUser({id, group, roles=true, managers=true, permissions
 
     if (!include_configs)
         exclude.push('locale', 'theme_mode', 'manager_view_enabled', 'manager_nav_collapsed');
+
+    const fetchPermissions = async (user) => {
+        let roleIds;
+
+        if (user.roles)
+            roleIds = user.roles.map(r => r.id);
+        else
+            roleIds = (await getUserRoles({user: user.id})).map(r => r.id);
+
+        const rolePermissions = (await getRolePermissions({role: roleIds})).map(p => p.name);
+        const userPermissions = (await getUserPermissions({user: user.id})).map(p => p.name);
+
+        return [...rolePermissions, ...userPermissions];
+    }
 
     // Logic if no ID is provided - fetch all Users
     if (!id || isNaN(id)) {
@@ -74,19 +89,8 @@ export async function getUser({id, group, roles=true, managers=true, permissions
             if (roles)
                 user.roles = await getUserRoles({user: user.id});
 
-            if (permissions) {
-                let roleIds;
-
-                if (user.roles)
-                    roleIds = user.roles.map(r => r.id);
-                else 
-                    roleIds = (await getUserRoles({user: user.id})).map(r => r.id);
-
-                const rolePermissions = (await getRolePermissions({role: roleIds})).map(p => p.name);
-                const userPermissions = (await getUserPermissions({user: user.id})).map(p => p.name);
-
-                user.permissions = [...rolePermissions, ...userPermissions];
-            }
+            if (permissions)
+                user.permissions = await fetchPermissions(user);
 
             if (managers)
                 user.managers = await getUserManagers({user: user.id});
@@ -111,19 +115,8 @@ export async function getUser({id, group, roles=true, managers=true, permissions
     if (roles)
         user.roles = await getUserRoles({user: id});
 
-    if (permissions) {
-        let roleIds;
-
-        if (user.roles)
-            roleIds = user.roles.map(r => r.id);
-        else 
-            roleIds = (await getUserRoles({user: user.id})).map(r => r.id);
-
-        const rolePermissions = (await getRolePermissions({role: roleIds})).map(p => p.name);
-        const userPermissions = (await getUserPermissions({user: user.id})).map(p => p.name);
-
-        user.permissions = [...rolePermissions, ...userPermissions];
-    }
+    if (permissions)
+        user.permissions = await fetchPermissions(user);
 
     if (managers)
         user.managers = await getUserManagers({user: id});

@@ -18,6 +18,7 @@ import {
 /**
  * Fetch Users or a User by their ID.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {boolean} req.include_ppi
  * @param {boolean} req.include_configs
  * @param {express.Response} res
@@ -58,6 +59,7 @@ const fetchUsersHandler = async (req, res) => {
 /**
  * Fetch Roles for a specific User.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchUserRolesHandler = async (req, res) => {
@@ -82,6 +84,7 @@ const fetchUserRolesHandler = async (req, res) => {
 /**
  * Fetch Managers for a specific User.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchUserManagersHandler = async (req, res) => {
@@ -106,6 +109,7 @@ const fetchUserManagersHandler = async (req, res) => {
 /**
  * Fetch users managed by a specific manager.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchManagedUsersHandler = async (req, res) => {
@@ -130,6 +134,7 @@ const fetchManagedUsersHandler = async (req, res) => {
 /**
  * Create a new User.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const createUserHandler = async (req, res) => {
@@ -177,6 +182,7 @@ const checkUserIdHandler = async (req, res) => {
 /**
  * Update a specific user by ID.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateUserHandler = async (req, res) => {
@@ -206,6 +212,7 @@ const updateUserHandler = async (req, res) => {
 /**
  * Update user assignments (managers or roles).
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateAssignmentsHandler = async (req, res) => {
@@ -245,6 +252,7 @@ const updateAssignmentsHandler = async (req, res) => {
 /**
  * Update Roles for a specific User.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateUserRolesHandler = async (req, res) => {
@@ -273,6 +281,7 @@ const updateUserRolesHandler = async (req, res) => {
 /**
  * Update Managers for a specific User.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateUserManagersHandler = async (req, res) => {

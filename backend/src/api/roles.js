@@ -15,6 +15,7 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch all Roles or a Role by its ID.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchRolesHandler = async (req, res) => {
@@ -46,6 +47,7 @@ const fetchRolesHandler = async (req, res) => {
 /**
  * Fetch roles for a specific user.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchUsersWithRoleHandler = async (req, res) => {
@@ -70,11 +72,12 @@ const fetchUsersWithRoleHandler = async (req, res) => {
 /**
  * Create a new Role.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const createRoleHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'role', id);
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'role');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -98,17 +101,16 @@ const createRoleHandler = async (req, res) => {
 /**
  * Update a specific Role by ID.
  * @param {express.Request} req
+ * @param {Object} req.session
  * @param {express.Response} res
  */
 const updateRoleHandler = async (req, res) => {
-    
+    const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'update', 'role', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
-
-    const { id } = req.params;
     
     try {
         const { success, message } = await updateRole(parseInt(id), req.body);

@@ -15,19 +15,21 @@ import {
 import { User } from '../models/users.js';
 import { getUser } from './users.js';
 import { Op } from 'sequelize';
-import randomId from "../utils/randomId.js";
-import isNumberOrNumberArray from "../utils/isNumberOrNumberArray.js";
-import sequelize from "../utils/database.js";
+import randomId from '../utils/randomId.js';
+import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
+import sequelize from '../utils/database.js';
 
 // Schedules
 /**
  * Retrieves one Working Schedule by its ID or all Schedules if an ID is not provided.
  * @param {number|null} id - optional - Schedule ID to fetch a specific Schedule
  * @param {number|null} author - optional - User ID(s) to fetch Schedules authored by that User(s)
+ * @param start_date
+ * @param end_date
  * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Schedule(s)? False by default.
  * @returns {Promise<Object|Object[]|null>} Single Schedule, array of Schedules, or null
  */
-export async function getSchedule({id, author, stard_date, end_date, include_shifts=false} = {}) {
+export async function getSchedule({id, author, start_date, end_date, include_shifts=false} = {}) {
         
     // Logic if no ID is provided - fetch all Schedules
     if (!id || isNaN(id)) {
@@ -37,8 +39,8 @@ export async function getSchedule({id, author, stard_date, end_date, include_shi
         if (author) 
             where.author = author;
 
-        if (stard_date)
-            where.stard_date = stard_date;
+        if (start_date)
+            where.start_date = start_date;
 
         if (end_date)
             where.end_date = end_date;
@@ -93,7 +95,7 @@ export async function createSchedule(data) {
         id: await randomId(Schedule),
         name: data.name || null,
         description: data.description || null,
-        stard_date: new Date(data.start_date),
+        start_date: new Date(data.start_date),
         end_date: new Date(data.end_date),
         author: data.author
     });

@@ -1,7 +1,7 @@
 // BACKEND/api/posts.js
 import express from 'express';
 import { createPost, deletePost, getPost, updatePost } from '../controllers/posts.js';
-import checkResourceIdHandler from "../utils/checkResourceId.js";
+import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
