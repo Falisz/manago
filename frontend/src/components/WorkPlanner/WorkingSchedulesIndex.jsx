@@ -29,30 +29,29 @@ const ScheduleDraftItem = ({schedule}) => {
     }, [setScheduleEditor, closeTopModal, navigate, schedule, startDate, endDate]);
 
     return (
-        <div>
-            <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                <h2 style={{marginRight: 'auto'}}>{schedule.name} ({formatDate(startDate)} - {formatDate(endDate)})</h2>
+        <div className={'schedule-draft-item'}>
+            <div className={'schedule-draft-item-header'}>
+                <h2>{schedule.name} ({formatDate(startDate)} - {formatDate(endDate)})</h2>
                 <Button
                     icon={'preview'}
                     title={'Preview'}
                     transparent={true}
-                    iconStyle={{fontSize: '2rem'}}
                 />
                 <Button
                     icon={'edit'}
                     title={'Edit'}
                     transparent={true}
-                    iconStyle={{fontSize: '2rem'}}
                     onClick={editSchedule}
                 />
                 <Button
                     icon={'delete'}
                     title={'Delete'}
                     transparent={true}
-                    iconStyle={{fontSize: '2rem'}}
                 />
             </div>
-            <p>{schedule.description}</p>
+            <div className={'schedule-draft-item-description'}>
+                {schedule.description}
+            </div>
         </div>
     );
 }
@@ -60,24 +59,17 @@ const ScheduleDraftItem = ({schedule}) => {
 const WorkingScheduleIndex = () => {
 
     const { scheduleDrafts, fetchScheduleDrafts  } = useScheduleDrafts();
-    const { openModal } = useModals();
 
     useEffect(() => {
         fetchScheduleDrafts().then();
     }, [fetchScheduleDrafts]);
 
     return (
-        <div>
-            <h1>Schedule Drafts</h1>
-            <Button
-                icon={'add'}
-                label={'Plan new schedule'}
-                onClick={() => openModal({content: 'newSchedule', type: 'dialog'})}
-            />
+        <>
             {scheduleDrafts && scheduleDrafts.length > 0 &&
                 scheduleDrafts.map((schedule, idx) => <ScheduleDraftItem key={idx} schedule={schedule}/>)
             }
-        </div>
+        </>
     );
 };
 

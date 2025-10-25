@@ -7,19 +7,60 @@
     height: calc(100% - 40px);
     overflow-y: scroll;
 }
+.app.fluent .work-planner {
+    margin: 0;
+    height: 100%;
+    gap: 10px;
+}
 .planner-widget {
     background: var(--background-gradient);
     border-radius: var(--def-border-radius);
     padding: 20px;
-    flex: 1 1 300px;
+    flex: 1 1 400px;
 }
 .app.fluent .planner-widget {
-    background: var(--seethrough-background-2);
+    background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
+}
+.planner-widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 .planner-widget h1 {
     margin: 0;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
     font-size: 2rem;
+}
+
+.schedule-draft-item {
+    padding: 15px 10px;
+    border-radius: var(--big-border-radius);
+}
+.schedule-draft-item:hover {
+    background: var(--seethrough-background);
+}
+.schedule-draft-item h2 {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 300;
+    font-size: 1.6rem;
+    margin: 0 auto 0 0;
+    padding-left: 10px;
+}
+.schedule-draft-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.app.fluent .schedule-draft-item-header .app-button {
+    padding: 7px;
+}
+.schedule-draft-item-header .app-button .icon {
+    font-size: 1.5rem;
+}
+.schedule-draft-item-description {
+    padding-left: 20px;
+    font-style: italic;
 }

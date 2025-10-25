@@ -2,8 +2,11 @@
 import React from 'react';
 import WorkingSchedulesIndex from './WorkingSchedulesIndex';
 import '../../styles/WorkPlanner.css';
+import Button from "../Button";
+import {useModals} from "../../contexts/ModalContext";
 
 const WorkPlanner = () => {
+    const { openModal } = useModals();
 
     return (
         <div className={'work-planner app-scroll'}>
@@ -16,6 +19,14 @@ const WorkPlanner = () => {
                 <p>Here you can view and edit your teams schedule.</p>
             </div>
             <div className={'planner-widget'}>
+                <div className={'planner-widget-header'}>
+                    <h1>Schedule Drafts</h1>
+                    <Button
+                        icon={'add'}
+                        label={'Plan new schedule'}
+                        onClick={() => openModal({content: 'newSchedule', type: 'dialog'})}
+                    />
+                </div>
                 <WorkingSchedulesIndex/>
             </div>
             <div className={'planner-widget'}>
