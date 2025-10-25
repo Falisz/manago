@@ -68,7 +68,7 @@ const WorkingScheduleIndex = () => {
 
     return (
         <div>
-            <h1>Working Schedules</h1>
+            <h1>Schedule Drafts</h1>
             <Button
                 icon={'add'}
                 label={'Plan new schedule'}

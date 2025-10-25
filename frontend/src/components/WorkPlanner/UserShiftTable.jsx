@@ -2,7 +2,7 @@
 import React, {useRef} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import Loader from '../Loader';
-import { formatDate, formatTime, sameDay } from '../../utils/dates';
+import { formatDate, sameDay } from '../../utils/dates';
 import LeaveItem from './LeaveItem';
 import ShiftItem from './ShiftItem';
 import {Item, Menu, useContextMenu} from 'react-contexify';
@@ -20,6 +20,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
     const { show } = useContextMenu({ id: MENU_ID, });
 
     const displayContextMenu = (e, item) => {
+        if (!editable) return;
         e.preventDefault();
         show({ event: e, props: item });
     }
@@ -39,6 +40,31 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
         else return null;
     }
+
+    const handleShiftSelection = (shift) => {
+        const userId = shift.user;
+
+        setUsers((prev) => {
+            const newUsers = new Map(prev);
+
+            const user = newUsers.get(userId);
+
+            const updatedUser = {
+                ...user,
+                shifts: user.shifts.map((s) => {
+                    if (s.id === shift.id) {
+                        return {
+                            ...s,
+                            selected: !s.selected
+                        }
+                    } else return s;
+                })
+            }
+            newUsers.set(userId, updatedUser);
+
+            return newUsers;
+        })
+    };
 
     const handleMouseEnter = (e) => {
         const selector = getSelector(e);
@@ -78,37 +104,45 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
             }
         );
 
-    const makeShiftDragHandlers = (shift) => ({
-        draggable: true,
-        onDragStart: (e) => {
-            e.dataTransfer.effectAllowed = 'copyMove';
-            const payload = JSON.stringify(shift);
-            e.dataTransfer.setData('application/json', payload);
+    const handleShiftClick = (e, shift) => {
+        if (!editable) return;
+        e.preventDefault();
 
-            const width = e.currentTarget.getBoundingClientRect().width;
+        if (e.shiftKey) {
+            handleShiftSelection(shift)
+        }
+    }
 
-            const target = e.currentTarget;
-            const clone = target.cloneNode(true);
-            clone.style.pointerEvents = 'none';
-            clone.style.position = 'fixed';
-            clone.style.width = `${width}px`;
-            clone.style.top = '-1000px';
-            clone.style.right = '-1000px';
-            document.querySelector('.app-schedule-table').appendChild(clone);
-            dragPreviewRef.current = clone;
-            try {
-                e.dataTransfer.setDragImage(clone, 10, 10);
-            } catch {}
-        },
-        onDragEnd: () => {
-            if (dragPreviewRef.current) {
-                dragPreviewRef.current.remove();
-                dragPreviewRef.current = null;
-            }
-        },
-    });
+    const handleShiftDragStart = (e, shift) => {
+        if (!editable) return;
+
+        e.dataTransfer.effectAllowed = 'copyMove';
+        const payload = JSON.stringify(shift);
+        e.dataTransfer.setData('application/json', payload);
+
+        const width = e.currentTarget.getBoundingClientRect().width;
+
+        const target = e.currentTarget;
+        const clone = target.cloneNode(true);
+        clone.style.pointerEvents = 'none';
+        clone.style.position = 'fixed';
+        clone.style.width = `${width}px`;
+        clone.style.top = '-1000px';
+        clone.style.right = '-1000px';
+        document.querySelector('.app-schedule-table').appendChild(clone);
+        dragPreviewRef.current = clone;
+        try {
+            e.dataTransfer.setDragImage(clone, 10, 10);
+        } catch {}
+    };
+
+    const handleShiftDragEnd = () => {
+        dragPreviewRef.current.remove();
+        dragPreviewRef.current = null;
+    };
 
     const handleCellDrop = (user, date) => (e) => {
+        if (!editable) return;
         e.preventDefault();
 
         const targetUser = users.get(user);
@@ -176,32 +210,29 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
         setUsers((prev) => {
 
-            if (isCopy) {
-                const newUsers = new Map(prev);
+            const newUsers = new Map(prev);
+            const targetUser = newUsers.get(user);
 
-                const targetUser = newUsers.get(user);
+            if (isCopy) {
                 const updatedTargetUser = { ...targetUser, shifts: [...targetUser.shifts, newShift] };
 
                 newUsers.set(user, updatedTargetUser);
 
-                return newUsers;
-
             } else {
-                const newUsers = new Map(prev);
-
-                const targetUser = newUsers.get(user);
 
                 if (sourceShift.user === user) {
                     const updatedTargetUser = {
                         ...targetUser,
-                        shifts: [...targetUser.shifts.filter((s) => s.id !== sourceShift.id), newShift] };
+                        shifts: [...targetUser.shifts.filter((s) => s.id !== sourceShift.id), newShift]
+                    };
 
                     newUsers.set(user, updatedTargetUser);
 
                 } else {
                     const updatedTargetUser = {
                         ...targetUser,
-                        shifts: [...targetUser.shifts, newShift] };
+                        shifts: [...targetUser.shifts, newShift]
+                    };
 
                     newUsers.set(user, updatedTargetUser);
 
@@ -214,19 +245,19 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
                     newUsers.set(sourceShift.user, updatedSourceUser);
                 }
-
-                return newUsers;
             }
+
+            return newUsers;
         });
     };
 
     const handleCellDragOver = (user, date) => (e) => {
+        if (!editable) return;
         e.preventDefault();
         const targetUser = users.get(user);
         const leaves = targetUser ? targetUser.leaves : [];
 
         const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
-
 
         if (hasLeaveOnTargetDay) {
             e.dataTransfer.dropEffect = 'none';
@@ -360,16 +391,25 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
                                 onDragOver={editable ? handleCellDragOver(user.id, date) : null}
                                 onDrop={editable ? handleCellDrop(user.id, date) : null}
                             >
-                                {isLeaveStart ? <LeaveItem days={leave.days} type={leave.type} color={leave.color} /> :
-                                    shift.length > 0 ?
-                                        shift.map((s, si) => <ShiftItem
+                                {isLeaveStart ?
+                                    <LeaveItem
+                                        days={leave.days}
+                                        type={leave.type}
+                                        color={leave.color}
+                                    /> : shift.length > 0 ? shift.map((s, si) =>
+                                        <ShiftItem
                                             key={si}
-                                            time={`${formatTime(s.start_time)} - ${formatTime(s.end_time)}`}
-                                            role={s.job_post.name}
-                                            color={s.job_post.color}
-                                            draggableProps={editable ? makeShiftDragHandlers(s) : []}
-                                            onContextMenu={(e) => displayContextMenu(e, s)}
-                                        /> ) : null }
+                                            shift={s}
+                                            editable={editable}
+                                            onDragStart={handleShiftDragStart}
+                                            onDragEnd={handleShiftDragEnd}
+                                            onContextMenu={displayContextMenu}
+                                            onClick={handleShiftClick}
+                                            onDoubleClick={() => console.log(s)}
+                                            onSelect={() => handleShiftSelection(s)}
+                                            onDelete={() => handleShiftDelete(s)}
+                                        /> ) : null
+                                }
                             </td>
                         );
                     })}
