@@ -1,18 +1,18 @@
 // FRONTEND/Components/Users/Index.jsx
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import useUser from '../../hooks/useUser';
+import useUsers from '../../hooks/useUsers';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const UsersIndexPage = ({content='users'}) => {
     const { openModal, refreshData, closeTopModal, refreshTriggers } = useModals();
-    const { users, usersLoading: loading, fetchUsers, deleteUser, deleteUsers } = useUser();
+    const { users, usersLoading: loading, fetchUsers, deleteUser, deleteUsers } = useUsers();
 
     useEffect(() => {
         if (!users || refreshTriggers?.users) {
             delete refreshTriggers.users;
-            fetchUsers({type: content}).then();
+            fetchUsers({group: content}).then();
         }
     }, [content, users, refreshTriggers, fetchUsers]);
 
@@ -22,7 +22,7 @@ const UsersIndexPage = ({content='users'}) => {
                     type: 'pop-up',
                     message: 'Are you sure you want to delete this user? This action cannot be undone.',
                     onConfirm: () => {
-                        deleteUser(id).then();
+                        deleteUser({userId: id}).then();
                         refreshData('users', true);
                         closeTopModal();
                     },
@@ -35,7 +35,7 @@ const UsersIndexPage = ({content='users'}) => {
             type: 'pop-up',
             message: `Are you sure you want to delete ${selectedUsers.size} selected User${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
             onConfirm: () => {
-                deleteUsers(selectedUsers).then();
+                deleteUsers({userIds: selectedUsers}).then();
                 refreshData('users', true);
                 closeTopModal();
             },

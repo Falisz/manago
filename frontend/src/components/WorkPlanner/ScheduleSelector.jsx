@@ -2,7 +2,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import useAppState from '../../contexts/AppStateContext';
 import useTeam from '../../hooks/useTeam';
-import useUser from '../../hooks/useUser';
+import useUsers from '../../hooks/useUsers';
 import ComboBox from '../ComboBox';
 import useShifts from "../../hooks/useShifts";
 import useLeaves from "../../hooks/useLeaves";
@@ -13,7 +13,7 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
 
     const { appState, user } = useAppState();
     const { fetchTeams } = useTeam();
-    const { fetchUsers } = useUser();
+    const { fetchUsers } = useUsers();
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
     const groupOptions = [

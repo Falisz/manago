@@ -5,11 +5,11 @@ import Button from "../Button";
 import UserShiftTable from "./UserShiftTable";
 import {generateDateList} from "../../utils/dates";
 import '../../styles/Schedule.css';
-import useUser from "../../hooks/useUser";
+import useUsers from "../../hooks/useUsers";
 
 const ScheduleEditor = () => {
     const { appState } = useAppState();
-    const { fetchUsers } = useUser();
+    const { fetchUsers } = useUsers();
     const config = useMemo(() => appState.schedule_editor || {}, [appState.schedule_editor]);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
     const [ users, setUsers ] = useState();

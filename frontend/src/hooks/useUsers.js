@@ -2,16 +2,35 @@
 import { useCallback, useRef, useState } from 'react';
 import axios from 'axios';
 
-const useUser = () => {
-    // All users related states
+const useUsers = () => {
+    // States and Refs
     const [users, setUsers] = useState(null);
-    const [usersLoading, setUsersLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [success, setSuccess] = useState(null);
+    const [warning, setWarning] = useState(null);
+    const [error, setError] = useState(null);
+    const userCacheRef = useRef({});
 
-    // All users related callbacks
+    // Callbacks
+    const clearNotices = () => {
+        setError(null);
+        setWarning(null);
+        setSuccess(null);
+    };
+
     const fetchUsers = useCallback(async ({userId = null, userScope = 'all', scopeId = null, group = null,
-                                              loading = true, map = false}) => {
+                                              loading = true, reload = false, map = false}) => {
+
+        if (userId && userCacheRef.current[userId] && !reload) {
+            clearNotices();
+            setLoading(false);
+
+            setUsers(userCacheRef.current[userId]);
+            return userCacheRef.current[userId];
+        }
+
         try {
-            setUsersLoading(loading);
+            setLoading(loading);
 
             let url = '/users';
 
@@ -36,6 +55,9 @@ const useUser = () => {
 
             const res = await axios.get(url, { withCredentials: true });
 
+            if (userId)
+                userCacheRef.current[userId] = res.data;
+
             let users = res.data;
 
             if (map) {
@@ -47,68 +69,18 @@ const useUser = () => {
             }
 
             setUsers(users);
+
             return users;
 
         } catch (err) {
             console.error('Error fetching users:', err);
             return null;
         } finally {
-            setUsersLoading(false);
-        }
-    }, []);
-
-    const deleteUsers = useCallback(async (userIds) => {
-        try {
-            await axios.delete(`/users`, {data: {userIds: Array.from(userIds)}}, { withCredentials: true });
-            return true;
-        } catch (err) {
-            console.error('Error deleting Users:', err);
-            return false;
-        }
-    }, []);
-
-    // Single user related states
-    const [user, setUser] = useState(null);
-    const userCacheRef = useRef({});
-    const [loading, setLoading] = useState(true);
-    const [success, setSuccess] = useState(null);
-    const [warning, setWarning] = useState(null);
-    const [error, setError] = useState(null);
-
-    // Single user related callbacks
-    const clearNotices = () => {
-        setError(null);
-        setWarning(null);
-        setSuccess(null);
-    };
-
-    const fetchUser = useCallback(async (userId, reload = false) => {
-        if (!userId) return null;
-
-        if (userCacheRef.current[userId] && !reload) {
-            setUser(userCacheRef.current[userId]);
-            setLoading(false);
-            clearNotices();
-            return userCacheRef.current[userId];
-        }
-        try {
-            setLoading(true);
-            clearNotices();            
-            const res = await axios.get(`/users/${userId}`, { withCredentials: true });
-            setUser(res.data);
-            userCacheRef.current[userId] = res.data;
-            return res.data;
-        } catch (err) {
-            if (err.status === 404) {
-                setError('User not found.');
-            } else {
-                setError('Error fetching the user.');
-                console.error('Error fetching the user:', err);
-            }
-        } finally {
             setLoading(false);
         }
     }, []);
+
+    const fetchUser = useCallback(async ({userId, reload}) => await fetchUsers({userId, reload}), [fetchUsers]);
 
     const saveUser = useCallback(async (formData, userId = null) => {
         const newUser = !userId;
@@ -150,6 +122,31 @@ const useUser = () => {
         }
     }, [fetchUser]);
 
+    const deleteUsers = useCallback(async ({userId, userIds}) => {
+        if (userId) try {
+            setLoading(true);
+            clearNotices();
+            await axios.delete(`/users/${userId}`, { withCredentials: true });
+            delete userCacheRef.current[userId];
+            return true;
+
+        } catch (err) {
+            console.error('Error deleting user:', err);
+            setError('Failed to delete user. Please try again.');
+            return false;
+        } finally {
+            setLoading(false);
+        } else try {
+            await axios.delete(`/users`, {data: {userIds: Array.from(userIds)}}, { withCredentials: true });
+            return true;
+        } catch (err) {
+            console.error('Error deleting Users:', err);
+            return false;
+        }
+    }, []);
+
+    const deleteUser = useCallback(async ({userId}) => await deleteUsers({userId}), [deleteUsers]);
+
     const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
         try {
             clearNotices();
@@ -161,38 +158,19 @@ const useUser = () => {
         }
     }, []);
 
-    const deleteUser = useCallback(async (userId) => {
-        try {
-            setLoading(true);
-            clearNotices();
-            await axios.delete(`/users/${userId}`, { withCredentials: true });
-            setUser(null);
-            delete userCacheRef.current[userId];
-            return true;
-        } catch (err) {
-            console.error('Error deleting user:', err);
-            setError('Failed to delete user. Please try again.');
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
     return {
         users,
-        usersLoading,
-        fetchUsers,
-        deleteUsers,
-        user,
         loading,
-        setLoading,
-        error,
-        warning,
         success,
+        warning,
+        error,
+        fetchUsers,
         fetchUser,
         saveUser,
-        saveUserAssignment,
-        deleteUser
+        deleteUsers,
+        deleteUser,
+        setLoading,
+        saveUserAssignment
     };
 }
-export default useUser;
+export default useUsers;

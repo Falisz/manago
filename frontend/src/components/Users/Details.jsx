@@ -1,23 +1,23 @@
 // FRONTEND/components/Users/Details.js
 import React, {useEffect} from 'react';
 import Loader from '../Loader';
-import useUser from '../../hooks/useUser';
+import useUsers from '../../hooks/useUsers';
 import { useModals } from '../../contexts/ModalContext';
 import Details from "../Details";
 
 const UserDetails = ({ userId }) => {
-    const { user, loading, fetchUser, deleteUser } = useUser();
+    const { users: user, loading, fetchUser, deleteUser } = useUsers();
     const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {
         if (userId) {
-            fetchUser(userId).then();
+            fetchUser({userId}).then();
         }
     }, [userId, fetchUser]);
 
     useEffect(() => {
         if (refreshTriggers?.user?.data === parseInt(userId)) {
-            fetchUser(userId, true).then();
+            fetchUser({userId, reload: true}).then();
         }
     }, [userId, fetchUser, refreshTriggers]);
 
@@ -138,7 +138,7 @@ const UserDetails = ({ userId }) => {
                 type: 'section-header',
                 text: 'Managers',
                 editButton: {
-                    onClick: (user) => openModal({content: 'userManagerAssignment', data: [user], type: 'dialog'}),
+                    onClick: (user) => openModal({content: 'userManagerAssignment', data: user, type: 'dialog'}),
                 }
             },
             managers: {

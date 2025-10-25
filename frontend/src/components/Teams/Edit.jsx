@@ -1,14 +1,14 @@
 // FRONTEND/components/Teams/Edit.js
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useTeam from '../../hooks/useTeam';
-import useUser from '../../hooks/useUser';
+import useUsers from '../../hooks/useUsers';
 import Loader from '../Loader';
 import EditForm from "../EditForm";
 
 export const TeamUserAssignment = ({team}) => {
     const {saveTeamAssignment} = useTeam();
-    const {users, usersLoading, fetchUsers} = useUser();
-    const {users: managers, usersLoading: managersLoading, fetchUsers: fetchManagers} = useUser();
+    const {users, usersLoading, fetchUsers} = useUsers();
+    const {users: managers, usersLoading: managersLoading, fetchUsers: fetchManagers} = useUsers();
 
     useEffect(() => {
         fetchUsers().then();
@@ -74,7 +74,7 @@ export const TeamUserAssignment = ({team}) => {
 }
 
 export const TeamUserBulkAssignment = ({teams}) => {
-    const {users, usersLoading: loading, fetchUsers} = useUser();
+    const {users, usersLoading: loading, fetchUsers} = useUsers();
     const { saveTeamAssignment } = useTeam();
 
     useEffect(() => {
@@ -151,8 +151,8 @@ export const TeamUserBulkAssignment = ({teams}) => {
 const TeamEdit = ({ teamId, parentId }) => {
     const { team, loading, error, setLoading, fetchTeam, saveTeam } = useTeam();
     const { teams, fetchTeams } = useTeam();
-    const { users, fetchUsers } = useUser();
-    const { users: managers, fetchUsers: fetchManagers } = useUser();
+    const { users, fetchUsers } = useUsers();
+    const { users: managers, fetchUsers: fetchManagers } = useUsers();
 
     useEffect(() => {
         fetchUsers().then();

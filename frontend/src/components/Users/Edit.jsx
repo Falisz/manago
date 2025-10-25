@@ -1,12 +1,12 @@
 // FRONTEND/components/Users/Edit.js
 import React, {useEffect, useMemo} from 'react';
-import useUser from '../../hooks/useUser';
+import useUsers from '../../hooks/useUsers';
 import useRole from '../../hooks/useRole';
 import Loader from '../Loader';
 import EditForm from '../EditForm';
 
 export const UserRoleAssignment = ({user}) => {
-    const {saveUserAssignment} = useUser();
+    const {saveUserAssignment} = useUsers();
     const {roles, rolesLoading: loading, fetchRoles} = useRole();
 
     useEffect(() => {
@@ -43,7 +43,7 @@ export const UserRoleAssignment = ({user}) => {
 }
 
 export const UserManagerAssignment = ({user}) => {
-    const {users: managers, usersLoading: loading, fetchUsers, saveUserAssignment} = useUser();
+    const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
 
     useEffect(() => {
         fetchUsers('managers').then();
@@ -80,7 +80,7 @@ export const UserManagerAssignment = ({user}) => {
 }
 
 export const UserRoleBulkAssignment = ({users}) => {
-    const { saveUserAssignment } = useUser();
+    const { saveUserAssignment } = useUsers();
     const { roles, rolesLoading: loading, fetchRoles } = useRole();
 
     useEffect(() => {
@@ -145,7 +145,7 @@ export const UserRoleBulkAssignment = ({users}) => {
 }
 
 export const UserManagerBulkAssignment = ({users}) => {
-    const {users: managers, usersLoading: loading, fetchUsers, saveUserAssignment} = useUser();
+    const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
 
     useEffect(() => {
         fetchUsers('managers').then();
@@ -210,15 +210,15 @@ export const UserManagerBulkAssignment = ({users}) => {
 }
 
 const UserEdit = ({userId, preset}) => {
-    const {user, loading, setLoading, error, fetchUser, saveUser} = useUser();
-    const {users: managers, fetchUsers} = useUser();
+    const {users: user, loading, setLoading, error, fetchUser, saveUser} = useUsers();
+    const {users: managers, fetchUsers} = useUsers();
     const {roles, fetchRoles} = useRole();
 
     useEffect(() => {
         fetchRoles().then();
         fetchUsers('managers').then();
         if (userId) {
-            fetchUser(userId).then();
+            fetchUser({userId}).then();
         } else {
             setLoading(false);
         }
