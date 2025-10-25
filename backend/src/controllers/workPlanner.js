@@ -725,7 +725,7 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
             where.start_date = {[Op.gte]: start_date};
 
         if (end_date)
-            where.end_time = {[Op.lte]: end_date};
+            where.end_date = {[Op.lte]: end_date};
     }
 
     const include = [

@@ -19,28 +19,75 @@ import {
  */
 const fetchShiftsHandler = async (req, res) => {
     const { id } = req.params;
+    let query = {};
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'shift', id);
+    if (req.url.includes('batch')) {
 
-    if (!hasAccess)
-        return res.status(403).json({message: 'Not permitted.'});
+        if (!req.body)
+            return res.status(400).json({message: 'No data provided.'});
+
+        if (req.body.users)
+            query.user = req.body.users;
+
+        if (req.body.job_posts)
+            query.job_post = req.body.job_posts;
+
+        if (req.body.schedules)
+            query.schedule = req.body.schedule;
+
+        if (req.body.dates) {
+            query.date = [];
+            for (const date of req.body.dates) {
+                try {
+                    query.date.push(new Date(date).toISOString().split('T')[0]);
+                } catch {
+                }
+            }
+        }
+        else {
+            if (req.body.start_date)
+                query.start_time = req.body.start_date;
+
+            if (req.body.end_date)
+                query.end_time = req.body.end_date;
+        }
+
+    } else {
+
+        if (id) {
+            const { hasAccess } = await checkAccess(req.session.user, 'read', 'shift', id);
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
+
+            query.id = id;
+        } else {
+
+            if (req.query.user)
+                query.user = parseInt(req.query.user);
+
+            if (req.query.schedule)
+                query.schedule = parseInt(req.query.schedule);
+
+            if (req.query.job_post)
+                query.job_post = parseInt(req.query.job_post);
+
+            if (req.query.date)
+                query.date = new Date(req.query.date).toISOString().split('T')[0];
+
+            else {
+                if (req.query.start_date)
+                    query.start_time = new Date(req.query.start_date+'T00:00');
+
+                if (req.query.end_date)
+                    query.end_time = new Date(req.query.end_date+'T23:59');
+            }
+        }
+    }
 
     try {
-        const shifts = await getShift({
-            id: id != null ? parseInt(id) : undefined,
-            date: req.body.date ? req.body.date :
-                req.query.date != null ? req.query.date : undefined,
-            user: req.body.user ? req.body.user :
-                req.query.user != null ? parseInt(req.query.user) : undefined,
-            job_post: req.body.job_post ? req.body.job_post :
-                req.query.job_post != null ? parseInt(req.query.job_post) : undefined,
-            schedule: req.body.schedule ? req.body.schedule :
-                req.query.schedule != null ? parseInt(req.query.schedule) : undefined,
-            start_time: req.body.start_date ? new Date(req.body.start_date+'T00:00') :
-                req.query.start_date ? new Date(req.query.start_date+'T00:00') : undefined,
-            end_time: req.body.end_date ? new Date(req.body.end_date+'T23:59') :
-                req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
-        });
+
+        const shifts = await getShift(query);
 
         if (id && !shifts)
             return res.status(404).json({ message: 'Shift not found.' });

@@ -19,26 +19,68 @@ import {
  */
 const fetchLeavesHandler = async (req, res) => {
     const { id } = req.params;
+    let query = {};
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave', id);
 
-    if (!hasAccess)
-        return res.status(403).json({message: 'Not permitted.'});
+    if (req.url.includes('batch')) {
+        if (!req.body)
+            return res.status(400).json({message: 'No data provided.'});
+
+        if (req.body.users)
+            query.user = req.body.users;
+
+        if (req.body.date) {
+            if (!Array.isArray(req.body.date))
+                req.body.date = [req.body.date];
+
+            query.date = [];
+
+            for (const date of req.body.date) {
+                try {
+                    query.date.push(new Date(date).toISOString().split('T')[0]);
+                } catch {
+                }
+            }
+        }
+        else {
+            if (req.body.start_date)
+                query.start_date = req.body.start_date;
+
+            if (req.body.end_date)
+                query.end_date = req.body.end_date;
+        }
+    } else {
+
+        if (id) {
+            const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave', id);
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
+
+            query.id = id;
+        } else {
+
+            if (req.query.user)
+                query.user = parseInt(req.query.user);
+
+            if (req.query.approver)
+                query.approver = parseInt(req.query.approver);
+
+            if (req.query.date)
+                query.date = new Date(req.query.date).toISOString().split('T')[0];
+
+            else {
+                if (req.query.start_date)
+                    query.start_date = new Date(req.query.start_date+'T00:00');
+
+                if (req.query.end_date)
+                    query.end_date = new Date(req.query.end_date+'T23:59');
+            }
+        }
+    }
 
     try {
-        const leaves = await getLeave({
-            id: id != null ? parseInt(id) : undefined,
-            user: req.body.user ? req.body.user :
-                req.query.user != null ? parseInt(req.query.user) : undefined,
-            approver: req.body.approver ? req.body.approver :
-                req.query.approver != null ? parseInt(req.query.approver) : undefined,
-            date: req.body.date ? new Date(req.body.date) :
-                req.query.date ? new Date(req.query.date) : undefined,
-            start_date: req.body.start_date ? new Date(req.body.start_date) :
-                req.query.start_date ? new Date(req.query.start_date) : undefined,
-            end_date: req.body.end_date ? new Date(req.body.end_date) :
-                req.query.end_date ? new Date(req.query.end_date) : undefined,
-        });
+        const leaves = await getLeave(query);
 
         if (id && !leaves)
             return res.status(404).json({ message: 'Leave not found.' });
