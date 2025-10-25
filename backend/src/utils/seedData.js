@@ -33,7 +33,7 @@ const appModules = [
 const appConfigs = [
     {
         configName: 'style',
-        selectedOption: 'fluent',
+        selectedOption: 'flat',
         module: 0,
         options: ['fluent', 'flat']
     },
@@ -172,20 +172,29 @@ const appPages = [
                     "component": "WorkPlanner",
                     "subpages": [
                         {
-                            "path": "schedules",
-                            "title": "Schedules",
+                            "path": "schedule",
+                            "title": "Schedule",
                             "icon": "",
-                            "component": "ScheduleIndex"
-                        }, {
+                            "component": "Schedule"
+                        },
+                        {
+                            "path": "editor",
+                            "title": "Schedule Editor",
+                            "icon": "",
+                            "component": "ScheduleEditor",
+                            "hidden": true
+                        },
+                        {
                             "path": "leaves",
-                            "title": "Leaves and Holidays",
+                            "title": "Leaves",
                             "icon": "",
                             "component": "LeavesIndex"
-                        }, {
-                            "path": "job-posts",
-                            "title": "Job Posts",
+                        },
+                        {
+                            "path": "settings",
+                            "title": "Settings",
                             "icon": "",
-                            "component": "JobPostsIndex"
+                            "component": "WorkPlannerSettings"
                         }
                     ]
                 },
@@ -471,6 +480,10 @@ const users = [
     {id: 100042, first_name: 'Employee', last_name: 'Thirty', login: 'emp30',
         email: 'emp30@com.com', password: defaultPassword, active: true,
         manager_view_enabled: false, manager_nav_collapsed: false},
+    {id: 1, first_name: 'Admin', last_name: 'Me', login: 'admin',
+        email: 'admin@com.com', password: await bcrypt.hash('1234', 10), active: true,
+        manager_view_enabled: true, manager_nav_collapsed: true
+    }
 ];
 
 const userRoles = [

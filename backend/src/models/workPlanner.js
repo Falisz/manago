@@ -1,11 +1,22 @@
 // BACKEND/models/workPlanner.js
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
-import {User} from "./users.js";
+import {User} from './users.js';
 
 export const Schedule = sequelize.define('Schedule', {
-    name: DataTypes.STRING,
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
     description: DataTypes.TEXT,
+    user_scope: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    user_scope_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
     start_date: {
         type: DataTypes.DATE,
         allowNull: false
