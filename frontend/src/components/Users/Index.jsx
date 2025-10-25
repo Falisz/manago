@@ -7,7 +7,7 @@ import Table from '../Table';
 
 const UsersIndexPage = ({content='users'}) => {
     const { openModal, refreshData, closeTopModal, refreshTriggers } = useModals();
-    const { users, usersLoading: loading, fetchUsers, deleteUser, deleteUsers } = useUsers();
+    const { users, loading, fetchUsers, deleteUser, deleteUsers } = useUsers();
 
     useEffect(() => {
         if (!users || refreshTriggers?.users) {
