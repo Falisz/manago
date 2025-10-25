@@ -12,7 +12,7 @@ export const TeamUserAssignment = ({team}) => {
 
     useEffect(() => {
         fetchUsers().then();
-        fetchManagers('managers').then();
+        fetchManagers({type: 'managers'}).then();
     }, [fetchUsers, fetchManagers]);
 
     const formStructure = useMemo(() => ({

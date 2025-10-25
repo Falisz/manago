@@ -10,16 +10,11 @@ const UsersIndexPage = ({content='users'}) => {
     const { users, usersLoading: loading, fetchUsers, deleteUser, deleteUsers } = useUser();
 
     useEffect(() => {
-        if (!users) {
-            fetchUsers(content).then();
+        if (!users || refreshTriggers?.users) {
+            delete refreshTriggers.users;
+            fetchUsers({type: content}).then();
         }
-    }, [content, users, fetchUsers]);
-
-    useEffect(() => {
-        if (refreshTriggers?.users) {
-            fetchUsers(content).then();
-        }
-    }, [content, refreshTriggers, fetchUsers]);
+    }, [content, users, refreshTriggers, fetchUsers]);
 
     const handleUserDelete = useCallback((id) => {
         openModal({

@@ -8,15 +8,47 @@ const useUser = () => {
     const [usersLoading, setUsersLoading] = useState(true);
 
     // All users related callbacks
-    const fetchUsers = useCallback(async (type=null, loading=true) => {
+    const fetchUsers = useCallback(async ({userId = null, userScope = 'all', scopeId = null, group = null,
+                                              loading = true, map = false}) => {
         try {
             setUsersLoading(loading);
+
             let url = '/users';
-            if (type === 'employees' || type === 'managers')
-                url = url + '?group=' + type;
+
+            if (userId) {
+                url = `/users/${userId}`;
+            } else if (userScope !== 'all') {
+                if (userScope === 'manager')
+                    url = `/users/${scopeId}/managed-users`;
+
+                else if (userScope === 'team')
+                    url = `/teams/${scopeId}/users?include_subteams=true`;
+
+                else if (userScope === 'branch')
+                    url = `/branches/${scopeId}/users`;
+
+                else if (userScope === 'project')
+                    url = `/projects/${scopeId}/users`;
+
+            } else if (group === 'employees' || group === 'managers') {
+                url = `/users?group=${group}`;
+            }
+
             const res = await axios.get(url, { withCredentials: true });
-            setUsers(res.data);
-            return res.data;
+
+            let users = res.data;
+
+            if (map) {
+                if (!Array.isArray(users))
+                    users = [users];
+                users = new Map(
+                    users.map(user => [user.id, user])
+                );
+            }
+
+            setUsers(users);
+            return users;
+
         } catch (err) {
             console.error('Error fetching users:', err);
             return null;
