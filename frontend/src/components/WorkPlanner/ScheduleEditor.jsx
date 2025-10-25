@@ -50,8 +50,6 @@ const ScheduleEditor = () => {
 
     }, [config, fetchUsers, params]);
 
-    console.log(config);
-
     if (!config.fromDate || !config.toDate)
         return <span>No time range specified.</span>;
 

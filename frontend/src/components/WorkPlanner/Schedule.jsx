@@ -29,8 +29,8 @@ const Schedule = () => {
         fromDate,
         toDate,
         month: null,
-        group: params.get('group') || 'you',
-        groupId: params.get('gid') || user.id,
+        userScope: params.get('scope') || 'you',
+        scopeId: params.get('sid') || user.id,
         users: []
     });
 
@@ -43,8 +43,8 @@ const Schedule = () => {
             type: 'current',
             fromDate: schedule.fromDate,
             toDate: schedule.toDate,
-            group: schedule.group,
-            groupId: schedule.groupId,
+            userScope: schedule.userScope,
+            scopeId: schedule.scopeId,
             users: schedule.users
         });
         navigate('/planner/editor');
@@ -78,18 +78,18 @@ const Schedule = () => {
         else
             newParams.delete('month');
 
-        if (schedule.group)
-            newParams.set('group', schedule.group);
+        if (schedule.userScope)
+            newParams.set('scope', schedule.userScope);
         else
-            newParams.delete('group');
+            newParams.delete('scope');
 
-        if (schedule.groupId && schedule.group !== 'you')
-            newParams.set('gid', schedule.groupId);
+        if (schedule.scopeId && schedule.userScope !== 'you')
+            newParams.set('sid', schedule.scopeId);
         else
-            newParams.delete('gid');
+            newParams.delete('sid');
 
         setSearchParams(newParams, { replace: true });
-    }, [schedule.type, schedule.fromDate, schedule.toDate, schedule.group, schedule.groupId])
+    }, [schedule, search, setSearchParams])
 
     const dates = generateDateList(schedule.fromDate, schedule.toDate);
 

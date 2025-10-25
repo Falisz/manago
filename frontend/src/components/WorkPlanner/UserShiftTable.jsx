@@ -406,8 +406,8 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
                                             onContextMenu={displayContextMenu}
                                             onClick={handleShiftClick}
                                             onDoubleClick={() => console.log(s)}
-                                            onSelect={() => handleShiftSelection(s)}
-                                            onDelete={() => handleShiftDelete(s)}
+                                            selectShift={() => handleShiftSelection(s)}
+                                            deleteShift={() => handleShiftDelete(s)}
                                         /> ) : null
                                 }
                             </td>

@@ -4,8 +4,8 @@ import useAppState from '../../contexts/AppStateContext';
 import useTeam from '../../hooks/useTeam';
 import useUser from '../../hooks/useUser';
 import ComboBox from '../ComboBox';
-import axios from 'axios';
-import {useLocation, useSearchParams} from 'react-router-dom';
+import useShifts from "../../hooks/useShifts";
+import useLeaves from "../../hooks/useLeaves";
 
 const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, include_teams, include_branches,
                               include_projects, include_specific, include_by_manager, date_range = true,
@@ -14,86 +14,112 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
     const { appState, user } = useAppState();
     const { fetchTeams } = useTeam();
     const { fetchUsers } = useUser();
-    const [ groupOptions, setGroupOptions ] = useState([]);
+    const { fetchShifts } = useShifts();
+    const { fetchLeaves } = useLeaves();
+    const groupOptions = [
+        ...(include_all ?
+            [{ id: 'all', name: 'All Users' }] : []),
+        ...(include_you ?
+            [{ id: 'you', name: 'Yours' }] : []),
+        ...(include_teams && appState.modules.find((m) => m.title === 'Teams' && m.enabled) ?
+            [{ id: 'team', name: 'Team' }] : []),
+        ...(include_branches && appState.modules.find((m) => m.title === 'Branches' && m.enabled) ?
+            [{ id: 'branch', name: 'Branch' }] : []),
+        ...(include_projects && appState.modules.find((m) => m.title === 'Projects' && m.enabled) ?
+            [{ id: 'project', name: 'Project' }] : []),
+        ...(include_by_manager ?
+            [{ id: 'manager', name: 'Users by Manager' }] : []),
+        ...(include_specific ?
+            [{ id: 'user', name: 'User' }] : []),
+    ];
     const [ groupIdOptions, setGroupIdOptions ] = useState([]);
-    const { search } = useLocation();
-    const [ _, setSearchParams ] = useSearchParams();
 
-    const getUsers = useCallback(async (group, id) => {
-        setSchedule(prev => ({...prev, loading: true}));
-
-        if (!id && group !== 'all') {
-            setSchedule(prev => ({...prev, users: [], loading: false}));
-            if (group === 'team')
-                setSchedule(prev => ({...prev, placeholder: 'Select a Team.'}));
-            else if (group === 'branch')
-                setSchedule(prev => ({...prev, placeholder: 'Select a Branch.'}));
-            else if (group === 'project')
-                setSchedule(prev => ({...prev, placeholder: 'Select a Project.'}));
-            else if (['user', 'manager'].includes(group))
-                setSchedule(prev => ({...prev, placeholder: 'Select a User.'}));
-            else
-                setSchedule(prev => ({...prev, placeholder: 'Select a Group.'}));
-            return [];
-        }
-
-        let url;
-
-        if (group === 'team') {
-            url = `/teams/${id}/users?include_subteams=true`;
-        } else if (group === 'branch') {
-            url = `/branches/${id}/users`;
-        } else if (group === 'project') {
-            url = `/projects/${id}/users`;
-        } else if (group === 'user') {
-            url = `/users/${id}`;
-        } else if (group === 'you') {
-            url = `/users/${user.id}`;
-        } else if (group === 'manager') {
-            url = `/users/${id}/managed-users`;
-        } else if (group === 'all') {
-            url = '/users';
-        } else {
-            setSchedule(prev => ({...prev, users: [], loading: false}));
-            return [];
-        }
-
-        try {
-            let users = (await axios.get(
-                url,
-                { withCredentials: true }
-            )).data;
-            users = Array.isArray(users) ? users : [users];
-
-            const shifts = (await axios.post(
-                '/shifts/batch',
-                {user: users.map(u => u.id)},
-                {withCredentials: true}
-            )).data;
-
-            const leaves = (await axios.post(
-                '/leaves/batch',
-                {user: users.map(u => u.id)},
-                {withCredentials: true}
-            )).data;
-
-            const userMap = new Map(
-                users.map(user => [
-                    user.id,
-                    {
-                        ...user,
-                        shifts: shifts
-                            .filter(shift => shift.user.id === user.id)
-                            .map(shift => ({...shift, user: shift.user.id})),
-                        leaves: leaves
-                            .filter(leave => leave.user.id === user.id)
-                            .map(leave => ({...leave, user: leave.user.id}))
-                    }
-                ])
+    useEffect(() => {
+        if (schedule.userScope === 'team') {
+            fetchTeams(false, true).then(
+                (result) => {
+                    const teamOptions = result.map((team) => ({id: team.id, name: team.name}));
+                    setGroupIdOptions(teamOptions);
+                }
             );
+        } else if (['user', 'manager'].includes(schedule.userScope)) {
+            fetchUsers({group: schedule.userScope === 'manager' ? 'managers' : null}).then(
+                (result) => {
+                    const userOptions = result.map((user) => (
+                        {id: user.id, name: user.first_name + ' ' + user.last_name}
+                    ));
+                    setGroupIdOptions(userOptions);
+                }
+            );
+        } else {
+            setGroupIdOptions([{id: null, name: 'None'}]);
+        }
+    }, [schedule.userScope, fetchTeams, fetchUsers]);
 
-            const sortedUserMap = new Map(
-                [...userMap.entries()].sort((a, b) => {
+    useEffect(() => {
+        setSchedule(prev => ({...prev, loading: true}));
+        let placeholder;
+
+        const userScope = schedule.userScope;
+        const scopeId = schedule.scopeId;
+        const startDate = schedule.fromDate;
+        const endDate = schedule.toDate;
+
+        if (userScope !== 'all' && !scopeId) {
+            if (['user', 'manager'].includes(userScope))
+                placeholder = 'Select a User.';
+
+            else if (userScope === 'team')
+                placeholder = 'Select a Team.';
+
+            else if (userScope === 'branch')
+                placeholder = 'Select a Branch.';
+
+            else if (userScope === 'project')
+                placeholder = 'Select a Project.';
+
+            setSchedule(prev => ({...prev, users: [], placeholder, loading: false}));
+            return;
+        }
+
+        const fetchData = async () => {
+            let users = new Map();
+
+            if (userScope === 'all')
+                users = await fetchUsers({map: true});
+
+            else if (userScope === 'you')
+                users = await fetchUsers({userId: user.id, map: true});
+
+            else if (userScope === 'user')
+                users = await fetchUsers({userId: scopeId, map: true});
+
+            else if (['manager', 'team', 'branch', 'project'].includes(userScope))
+                users = await fetchUsers({userScope, scopeId, map: true});
+
+            if (!users.size) {
+                placeholder = 'No Users found.';
+                setSchedule(prev => ({ ...prev, users, placeholder, loading: false }));
+                return;
+            }
+            placeholder = null;
+
+            const userIds = Array.from(users.keys());
+
+            const shifts = await fetchShifts({users: userIds, start_date: startDate, end_date: endDate});
+            const leaves = await fetchLeaves({users: userIds, start_date: startDate, end_date: endDate});
+
+            users.forEach((user, userId) => {
+                user.shifts = shifts
+                    .filter(shift => shift.user.id === userId)
+                    .map(shift => ({...shift, user: shift.user.id}));
+                user.leaves = leaves
+                    .filter(leave => leave.user.id === userId)
+                    .map(leave => ({...leave, user: leave.user.id}));
+            });
+
+            users = new Map(
+                [...users.entries()].sort((a, b) => {
                     const userA = a[1];
                     const userB = b[1];
 
@@ -104,68 +130,18 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                             return userA.role.id > userB.role.id ? -1 : 1;
 
                     else
-                        return (userA.last_name + ' ' + userA.first_name).localeCompare(userB.last_name + ' ' + userB.first_name);
+                        return (userA.last_name + ' ' + userA.first_name)
+                            .localeCompare(userB.last_name + ' ' + userB.first_name);
 
                 })
             );
 
-            setSchedule(prev => ({...prev, users: sortedUserMap, placeholder: null, loading: false}));
-        } catch (err) {
-            console.error('Error fetching users:', err);
-            return [];
-        }
-    }, [user, setSchedule]);
+            setSchedule(prev => ({...prev, users, placeholder, loading: false}));
+        };
 
-    useEffect(() => {
-        const newGroupOptions = [];
+        fetchData().then();
 
-        if (include_all)
-            newGroupOptions.push({ id: 'all', name: 'All Users' })
-
-        if (include_you)
-            newGroupOptions.push({ id: 'you', name: 'Yours' });
-
-        if (include_teams && appState.modules.find((m) => m.title === 'Teams' && m.enabled))
-            newGroupOptions.push({ id: 'team', name: 'Team' });
-
-        if (include_branches && appState.modules.find((m) => m.title === 'Branches' && m.enabled))
-            newGroupOptions.push({ id: 'branch', name: 'Branch' });
-
-        if (include_projects && appState.modules.find((m) => m.title === 'Projects' && m.enabled))
-            newGroupOptions.push({ id: 'project', name: 'Project' });
-
-        if (include_by_manager)
-            newGroupOptions.push({ id: 'manager', name: 'Users by Manager' });
-
-        if (include_specific)
-            newGroupOptions.push({ id: 'user', name: 'User' });
-
-        setGroupOptions(newGroupOptions);
-    }, [appState, include_all, include_you, include_by_manager, include_specific]);
-
-    useEffect(() => {
-        if (schedule.group === 'team') {
-            fetchTeams(false, true).then(
-                (result) => {
-                    const teamOptions = result.map((team) => ({id: team.id, name: team.name}));
-                    setGroupIdOptions(teamOptions);
-                }
-            );
-        } else if (['user', 'manager'].includes(schedule.group)) {
-            fetchUsers(schedule.group === 'manager' ? 'managers' : null).then(
-                (result) => {
-                    const userOptions = result.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}));
-                    setGroupIdOptions(userOptions);
-                }
-            );
-        } else {
-            setGroupIdOptions([{id: null, name: 'None'}]);
-        }
-    }, [schedule.group, fetchTeams, fetchUsers]);
-
-    useEffect(() => {
-        getUsers(schedule.group, schedule.groupId).then();
-    }, [getUsers, schedule.group, schedule.groupId]);
+    }, [schedule.userScope, schedule.scopeId, schedule.fromDate, schedule.toDate, fetchUsers, setSchedule, user.id]);
 
     const handleChange = useCallback((e) => {
         function isValidDate(d) {
@@ -184,14 +160,14 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
 
         } else {
             setSchedule(prev => ({...prev, [name]: value }));
-            if (name === 'group') {
+            if (name === 'userScope') {
                 if (value === 'you')
-                    setSchedule(prev => ({...prev, groupId: user.id }));
+                    setSchedule(prev => ({...prev, scopeId: user.id }));
                 else
-                    setSchedule(prev => ({...prev, groupId: null }));
+                    setSchedule(prev => ({...prev, scopeId: null }));
             }
         }
-    }, [search, setSearchParams, schedule, setSchedule, user]);
+    }, [setSchedule, user]);
 
     return (
         <div
@@ -207,18 +183,18 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                 <div className={'form-group'} style={{flexDirection: 'row'}}>
                 <ComboBox
                     placeholder={'Pick a group'}
-                    name={'group'}
+                    name={'userScope'}
                     searchable={false}
-                    value={schedule.group}
+                    value={schedule.userScope}
                     options={groupOptions}
                     onChange={handleChange}
                     style={{minWidth: '150px'}}
                 />
-                { schedule.group && !['all', 'you'].includes(schedule.group) && <ComboBox
-                    placeholder={`Pick a ${schedule.group}`}
-                    name={'groupId'}
+                { schedule.userScope && !['all', 'you'].includes(schedule.userScope) && <ComboBox
+                    placeholder={`Pick a ${schedule.userScope}`}
+                    name={'scopeId'}
                     searchable={true}
-                    value={schedule.groupId}
+                    value={schedule.scopeId}
                     options={groupIdOptions}
                     style={{minWidth: '150px'}}
                     onChange={handleChange}

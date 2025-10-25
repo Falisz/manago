@@ -4,7 +4,7 @@ import {formatTime} from "../../utils/dates";
 import Icon from "../Icon";
 
 const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onClick, onDoubleClick,
-                       onSelect, onDelete }) => {
+                       selectShift, deleteShift }) => {
 
     if (!shift) return null;
 
@@ -25,7 +25,7 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
                 i={shift.selected ? 'check_circle' : 'circle'}
                 s={true}
                 style={{fontSize: '.7rem', position: 'absolute', right: '5px', bottom: '5px'}}
-                onClick={onSelect}
+                onClick={selectShift}
             />
         }
         {editable &&
@@ -36,7 +36,7 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
                 i={'close'}
                 s={true}
                 style={{fontSize: '.7rem', position: 'absolute', right: '5px', top: '5px'}}
-                onClick={onDelete}
+                onClick={deleteShift}
             />
         }
     </div>
