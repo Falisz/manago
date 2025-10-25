@@ -66,53 +66,55 @@ const AppSettings = () => {
                     className={'app-form seethrough app-scroll app-overflow-y'}
                     onSubmit={handleSubmit}
                 >
-                    <div className={'form-group'}>
-                        <label
-                            className={'form-label'}
-                        >
-                            <Icon i={'type_specimen'} s={true}/>
-                            Style
-                        </label>
-                        <ComboBox
-                            name='style'
-                            value={formConfig.style}
-                            options={configOptions.style}
-                            onChange={handleChange}
-                            upperCaseNames={true}
-                            searchable={false}
-                        />
-                    </div>
-                    <div className={'form-group'}>
-                        <label
-                            className={'form-label'}
-                        >
-                            <Icon i={'routine'} s={true}/>
-                            Theme
-                        </label>
-                        <ComboBox
-                            name='theme'
-                            value={formConfig.theme}
-                            options={configOptions.theme}
-                            onChange={handleChange}
-                            upperCaseNames={true}
-                            searchable={false}
-                        />
-                    </div>
-                    <div className={'form-group'}>
-                        <label
-                            className={'form-label'}
-                        >
-                            <Icon i={'palette'} s={true}/>
-                            Color
-                        </label>
-                        <ComboBox
-                            className={'palette'}
-                            name='color'
-                            value={formConfig.color}
-                            options={configOptions.color}
-                            onChange={handleChange}
-                            upperCaseNames={true}
-                        />
+                    <div className={'form-section'}>
+                        <div className={'form-group'}>
+                            <label
+                                className={'form-label'}
+                            >
+                                <Icon i={'type_specimen'} s={true}/>
+                                Style
+                            </label>
+                            <ComboBox
+                                name='style'
+                                value={formConfig.style}
+                                options={configOptions.style}
+                                onChange={handleChange}
+                                upperCaseNames={true}
+                                searchable={false}
+                            />
+                        </div>
+                        <div className={'form-group'}>
+                            <label
+                                className={'form-label'}
+                            >
+                                <Icon i={'routine'} s={true}/>
+                                Theme
+                            </label>
+                            <ComboBox
+                                name='theme'
+                                value={formConfig.theme}
+                                options={configOptions.theme}
+                                onChange={handleChange}
+                                upperCaseNames={true}
+                                searchable={false}
+                            />
+                        </div>
+                        <div className={'form-group'}>
+                            <label
+                                className={'form-label'}
+                            >
+                                <Icon i={'palette'} s={true}/>
+                                Color
+                            </label>
+                            <ComboBox
+                                className={'palette'}
+                                name='color'
+                                value={formConfig.color}
+                                options={configOptions.color}
+                                onChange={handleChange}
+                                upperCaseNames={true}
+                            />
+                        </div>
                     </div>
                     <div
                         className={'form-group ' + (formConfig.style !== 'fluent' ? 'disabled' : '') }
