@@ -7,12 +7,12 @@ import EditForm from "../EditForm";
 
 export const TeamUserAssignment = ({team}) => {
     const {saveTeamAssignment} = useTeam();
-    const {users, usersLoading, fetchUsers} = useUsers();
-    const {users: managers, usersLoading: managersLoading, fetchUsers: fetchManagers} = useUsers();
+    const {users, loading: usersLoading, fetchUsers} = useUsers();
+    const {users: managers, loading: managersLoading, fetchUsers: fetchManagers} = useUsers();
 
     useEffect(() => {
         fetchUsers().then();
-        fetchManagers({type: 'managers'}).then();
+        fetchManagers({group: 'managers'}).then();
     }, [fetchUsers, fetchManagers]);
 
     const formStructure = useMemo(() => ({

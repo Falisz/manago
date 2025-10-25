@@ -6,10 +6,11 @@ import UserShiftTable from "./UserShiftTable";
 import {generateDateList} from "../../utils/dates";
 import '../../styles/Schedule.css';
 import useUsers from "../../hooks/useUsers";
+import Loader from "../Loader";
 
 const ScheduleEditor = () => {
     const { appState } = useAppState();
-    const { fetchUsers } = useUsers();
+    const { fetchUsers, loading, setLoading } = useUsers();
     const config = useMemo(() => appState.schedule_editor || {}, [appState.schedule_editor]);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
     const [ users, setUsers ] = useState();
@@ -19,6 +20,7 @@ const ScheduleEditor = () => {
     });
 
     useEffect(() => {
+        setLoading(true);
 
         const parseDate = (dateStr) => {
             if (!dateStr) return null;
@@ -37,16 +39,14 @@ const ScheduleEditor = () => {
                     scopeId = config.user_scope_id;
                 }
 
-                console.log(userScope, scopeId);
-
                 if (userScope && scopeId) {
                     const fetchedUsers = await fetchUsers({ userScope, scopeId, map: true });
-                    console.log(fetchedUsers);
                     setUsers(fetchedUsers);
                 }
 
             } else {
                 setUsers(config.users);
+                setLoading(false);
             }
 
             const fromDate = parseDate(params.get('from')) || config.fromDate;
@@ -64,6 +64,9 @@ const ScheduleEditor = () => {
 
     if (!users)
         return <span>No users specified.</span>;
+
+    if (loading)
+        return <Loader/>;
 
 
     const title = () => {

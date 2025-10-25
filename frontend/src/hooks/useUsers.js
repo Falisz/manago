@@ -19,7 +19,7 @@ const useUsers = () => {
     };
 
     const fetchUsers = useCallback(async ({userId = null, userScope = 'all', scopeId = null, group = null,
-                                              loading = true, reload = false, map = false}) => {
+                                              loading = true, reload = false, map = false} = {}) => {
 
         if (userId && userCacheRef.current[userId] && !reload) {
             clearNotices();
