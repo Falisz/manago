@@ -1,37 +1,37 @@
 // FRONTEND/components/WorkPlanner/WorkingSchedulesIndex.jsx
 import React, {useCallback, useEffect, useMemo} from 'react';
-import useSchedule from "../../hooks/useSchedule";
 import Button from "../Button";
 import {useModals} from "../../contexts/ModalContext";
 import useAppState from "../../contexts/AppStateContext";
 import {useNavigate} from "react-router-dom";
 import {formatDate} from "../../utils/dates";
+import useScheduleDrafts from "../../hooks/useScheduleDrafts";
 
-const WorkingScheduleItem = ({workingSchedule}) => {
+const ScheduleDraftItem = ({schedule}) => {
 
     const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
     const { closeTopModal } = useModals();
 
-    const startDate = useMemo(() => new Date(workingSchedule.start_date), [workingSchedule]);
-    const endDate = useMemo(() => new Date(workingSchedule.end_date), [workingSchedule]);
+    const startDate = useMemo(() => new Date(schedule.start_date), [schedule]);
+    const endDate = useMemo(() => new Date(schedule.end_date), [schedule]);
 
     const editSchedule = useCallback(() => {
         setScheduleEditor({
             type: 'working',
-            name: workingSchedule.name,
-            schedule: workingSchedule.id,
+            name: schedule.name,
+            schedule: schedule.id,
             fromDate: startDate,
             toDate: endDate
         });
         navigate('/planner/editor');
         closeTopModal();
-    }, [setScheduleEditor, closeTopModal, navigate, workingSchedule, startDate, endDate]);
+    }, [setScheduleEditor, closeTopModal, navigate, schedule, startDate, endDate]);
 
     return (
         <div>
             <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                <h2 style={{marginRight: 'auto'}}>{workingSchedule.name} ({formatDate(startDate)} - {formatDate(endDate)})</h2>
+                <h2 style={{marginRight: 'auto'}}>{schedule.name} ({formatDate(startDate)} - {formatDate(endDate)})</h2>
                 <Button
                     icon={'preview'}
                     title={'Preview'}
@@ -52,19 +52,19 @@ const WorkingScheduleItem = ({workingSchedule}) => {
                     iconStyle={{fontSize: '2rem'}}
                 />
             </div>
-            <p>{workingSchedule.description}</p>
+            <p>{schedule.description}</p>
         </div>
     );
 }
 
 const WorkingScheduleIndex = () => {
 
-    const { fetchWorkingSchedules, workingSchedules } = useSchedule();
+    const { scheduleDrafts, fetchScheduleDrafts  } = useScheduleDrafts();
     const { openModal } = useModals();
 
     useEffect(() => {
-        fetchWorkingSchedules().then();
-    }, [fetchWorkingSchedules]);
+        fetchScheduleDrafts().then();
+    }, [fetchScheduleDrafts]);
 
     return (
         <div>
@@ -74,8 +74,8 @@ const WorkingScheduleIndex = () => {
                 label={'Plan new schedule'}
                 onClick={() => openModal({content: 'newSchedule', type: 'dialog'})}
             />
-            {workingSchedules && workingSchedules.length > 0 &&
-                workingSchedules.map((workingSchedule, idx) => <WorkingScheduleItem key={idx} workingSchedule={workingSchedule}/>)
+            {scheduleDrafts && scheduleDrafts.length > 0 &&
+                scheduleDrafts.map((schedule, idx) => <ScheduleDraftItem key={idx} schedule={schedule}/>)
             }
         </div>
     );

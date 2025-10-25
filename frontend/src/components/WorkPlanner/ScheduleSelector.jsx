@@ -141,7 +141,8 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
 
         fetchData().then();
 
-    }, [schedule.userScope, schedule.scopeId, schedule.fromDate, schedule.toDate, fetchUsers, setSchedule, user.id]);
+    }, [schedule.userScope, schedule.scopeId, schedule.fromDate, schedule.toDate,
+        fetchUsers, fetchLeaves, fetchShifts, setSchedule, user.id]);
 
     const handleChange = useCallback((e) => {
         function isValidDate(d) {
