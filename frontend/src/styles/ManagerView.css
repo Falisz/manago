@@ -244,12 +244,15 @@
 .app.manager .app-content main {
     display: flex;
     position: relative;
+    padding: 0 0 10px 0;
     flex: 1;
     align-items: center;
     flex-direction: column;
     margin: 0;
-    padding: 0 10px 10px 0;
     overflow: hidden;
+}
+.app.manager.fluent .app-content main {
+    padding: 0 10px 10px 0;
 }
 .app.manager .app-content main .page-header {
     display: flex;
