@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
 import {AppConfig, AppModule, AppPage} from '../models/app.js';
-import {User, UserManager, Role, UserRole, Permission, RolePermission} from '../models/users.js';
+import {User, UserManager, Role, UserRole, Permission, RolePermission, UserPermission} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
 import {Schedule, JobPost, Shift, Holiday, RequestStatus, LeaveType, Leave} from '../models/workPlanner.js';
 import {Post, Channel} from '../models/posts.js';
@@ -486,6 +486,10 @@ const users = [
     }
 ];
 
+const userPermissions = [
+    {user: 1, permission: 999},
+];
+
 const userRoles = [
     {user: 137500, role: 1},
     {user: 475776, role: 1},
@@ -844,6 +848,7 @@ const seedStructure = [
     { model: Role, tableName: 'roles', data: roles, itemsName: 'roles' },
     { model: RolePermission, tableName: 'role_permissions', data: rolePermissions, itemName: 'role permission assignments'},
     { model: User, tableName: 'users', data: users, itemsName: 'users' },
+    { model: UserPermission, tableName: 'user_permission', data: userPermissions, itemsName: 'user permission assignments' },
     { model: UserRole, tableName: 'user_roles', data: userRoles, itemsName: 'user roles assignments' },
     { model: Team, tableName: 'teams', data: teams, itemsName: 'teams' },
     { model: TeamRole, tableName: 'team_roles', data: teamRoles, itemsName: 'team roles' },

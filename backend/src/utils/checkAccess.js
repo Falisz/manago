@@ -46,7 +46,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     if (permissions.has('*'))
         return { hasFullAccess: true, hasAccess: true };
 
-    const hasPermission = (resource = resource, resource2 = resource2) =>
+    const hasPermission = (resource = resource, resource2) =>
         permissions.has(
             action.toLowerCase() +
             '-' + resource.toLowerCase() +
@@ -125,7 +125,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
         return { hasFullAccess: true, hasAccess: true };
 
     // Any-resource permission
-    if (hasPermission(resource, action === 'assign' ?? resource2))
+    if (resource2 && hasPermission(resource, action === 'assign' ?? resource2))
         return { hasFullAccess: true, hasAccess: true };
 
     if (action === 'create')
@@ -138,7 +138,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
             if (hasPermission(`${type}-${resource}`))
                 return await resourceAccess(resource, Array.from(id));
         
-        else
+        else if (resource2)
             if (hasPermission('assign', resource, resource2))
                 return { hasFullAccess: true, hasAccess: true };
             
