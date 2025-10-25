@@ -10,75 +10,86 @@ import useUser from "../../hooks/useUser";
 const ScheduleEditor = () => {
     const { appState } = useAppState();
     const { fetchUsers } = useUser();
-    const [ users, setUsers ] = useState();
     const config = useMemo(() => appState.schedule_editor || {}, [appState.schedule_editor]);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
+    const [ users, setUsers ] = useState();
+    const [ dateRange, setDateRange ] = useState({
+        fromDate: config.fromDate,
+        toDate: config.toDate,
+    });
 
     useEffect(() => {
-        if (!config.users) {
-            if (!config.user_scope)
-                config.user_scope = params.get('user_scope');
-            if (!config.user_scope_id)
+
+        const parseDate = (dateStr) => {
+            if (!dateStr) return null;
+            const date = new Date(dateStr);
+            return date instanceof Date && !isNaN(date.getTime()) ? date : null;
+        };
+
+        const fetchData = async () => {
+            if (!config.users) {
+                const userScope = config.user_scope || params.get('user_scope');
+                let scopeId;
+
                 try {
-                    config.user_scope_id = parseInt(params.get('user_scope_id'));
+                    scopeId = parseInt(params.get('sid')) || config.user_scope_id;
                 } catch {
-                    return;
+                    scopeId = config.user_scope_id;
                 }
 
-            const userScope = config.user_scope;
-            const userScopeId = config.user_scope_id;
-            fetchUsers({userScope, userScopeId, map: true}).then(users => {
-                config.users = users;
-            });
-        }
+                console.log(userScope, scopeId);
 
-        if (!config.fromDate)
-            try {
-                config.fromDate = new Date(params.get('from'));
-            } catch {
-                return;
+                if (userScope && scopeId) {
+                    const fetchedUsers = await fetchUsers({ userScope, scopeId, map: true });
+                    console.log(fetchedUsers);
+                    setUsers(fetchedUsers);
+                }
+
+            } else {
+                setUsers(config.users);
             }
 
-        if (!config.toDate)
-            try {
-                config.toDate = new Date(params.get('to'));
-            } catch {
-                return;
-            }
+            const fromDate = parseDate(params.get('from')) || config.fromDate;
+            const toDate = parseDate(params.get('to')) || config.toDate;
 
-        setUsers(config.users);
+            setDateRange({ fromDate, toDate });
+        };
+
+        fetchData().then();
 
     }, [config, fetchUsers, params]);
 
-    if (!config.fromDate || !config.toDate)
+    if (!dateRange.fromDate || !dateRange.toDate)
         return <span>No time range specified.</span>;
 
-    if (!config.users || !config.users.size)
+    if (!users)
         return <span>No users specified.</span>;
 
 
     const title = () => {
-        if (!config.type) return "No Schedule chosen"
+        if (!config.type)
+            return "Empty Schedule"
+
         switch (config.type) {
             case 'new':
-                return "Planning a New Schedule";
+                return "New Schedule Draft";
             case 'current':
                 return "Editing Published Schedule";
             default:
-                return "Editing Schedule: " + config.name;
+                return "Editing Schedule Draft: " + config.name;
         }
     }
 
-    const dates = generateDateList(config.fromDate, config.toDate);
+    const dates = generateDateList(dateRange.fromDate, dateRange.toDate);
 
     return (
-        <div style={{width: 'calc(100% - 20px)', padding: '30px'}}>
-            <div className={'schedule-editor-header'} style={{display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'space-between'}}>
+        <div className={'app-schedule seethrough'}>
+            <div className={'app-schedule-header'}>
             <span style={{marginRight: 'auto', fontSize: '2rem'}}>{title()}</span>
             {config && config.type !== 'current' && <Button icon={'publish'} label={'Publish'}/>}
             {config && config.type === 'current' && <Button icon={'publish'} label={'Re-Publish'}/>}
             {config && config.type !== 'current' && <Button icon={'save'} label={'Save'}/>}
-            {config && config.type === 'current' && <Button icon={'save'} label={'Save as Draft'}/>}
+            {config && config.type === 'current' && <Button icon={'save'} label={'Save to Drafts'}/>}
             </div>
             <UserShiftTable
                 dates={dates}
