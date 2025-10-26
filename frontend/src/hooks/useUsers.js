@@ -3,28 +3,17 @@ import { useCallback, useRef, useState } from 'react';
 import axios from 'axios';
 
 const useUsers = () => {
-    // States and Refs
-    const [users, setUsers] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [success, setSuccess] = useState(null);
-    const [warning, setWarning] = useState(null);
-    const [error, setError] = useState(null);
+    const [users, setUsers] = useState();
+    const [loading, setLoading] = useState();
+    const [status, setStatus] = useState([]);
     const userCacheRef = useRef({});
-
-    // Callbacks
-    const clearNotices = () => {
-        setError(null);
-        setWarning(null);
-        setSuccess(null);
-    };
 
     const fetchUsers = useCallback(async ({userId = null, userScope = 'all', scopeId = null, group = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
         if (userId && userCacheRef.current[userId] && !reload) {
-            clearNotices();
+            setStatus([]);
             setLoading(false);
-
             setUsers(userCacheRef.current[userId]);
             return userCacheRef.current[userId];
         }
@@ -73,104 +62,151 @@ const useUsers = () => {
             return users;
 
         } catch (err) {
-            console.error('Error fetching users:', err);
+            console.error('fetchUsers error:', err);
+
+            const message = 'Error occurred while fetching the User data.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+
             return null;
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const fetchUser = useCallback(async ({userId, reload}) => await fetchUsers({userId, reload}), [fetchUsers]);
+    const fetchUser = useCallback(async ({userId, reload} = {}) =>
+        await fetchUsers({userId, reload}), [fetchUsers]);
 
-    const saveUser = useCallback(async (formData, userId = null) => {
+    const saveUser = useCallback(async ({userId = null, formData} = {}) => {
+        if (!formData)
+            return null;
+
         const newUser = !userId;
+
         try {
-            clearNotices();
+            setStatus([]);
 
-            const userData = {
-                login: formData.login,
-                email: formData.email,
-                password: formData.password,
-                first_name: formData.first_name,
-                last_name: formData.last_name,
-                active: formData.active,
-                manager_view_access: formData.manager_view_access
-            }
+            let res;
 
-            if (newUser) {
-                const res = await axios.post('/users', userData, { withCredentials: true });
-                userId = parseInt(res.data.user?.id);
-            } else {
-                await axios.put(`/users/${userId}`, userData, { withCredentials: true });
-            }
+            if (newUser)
+                res = await axios.post(
+                    '/users',
+                    formData,
+                    { withCredentials: true }
+                );
 
-            if (userId) {
-                await axios.put(`/users/${userId}/roles`, { roleIds: formData.roles.filter(role => role !== null) }, { withCredentials: true });
+            else
+                res = await axios.put(
+                    `/users/${userId}`,
+                    formData,
+                    { withCredentials: true }
+                );
 
-                if (formData.managers && formData.managers.length > 0 ) {
-                    await axios.put(`/users/${userId}/managers`, { managerIds: formData.managers.filter(role => role !== null) }, { withCredentials: true });
-                }
-            }
+            const { data } = res;
 
-            setSuccess(`User ${newUser? 'created' : 'updated'} successfully.`);
+            if (data.message)
+                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
 
-            return fetchUser(userId, true);
+            return ( data && data.user ) || null;
+
         } catch(err) {
-            console.error('Error saving new user data:', err);
-            setWarning('Error occurred while saving new user data. ' + err.response?.data?.message);
+
+            console.error('saveUser error:', err);
+
+            const { response } = err;
+            let message = 'Error occurred while saving the user data.';
+            if (response && response.data)
+                message += ' ' + response.data.message;
+            message += ' Please try again later.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+
             return null;
         }
     }, [fetchUser]);
 
-    const deleteUsers = useCallback(async ({userId, userIds}) => {
-        if (userId) try {
-            setLoading(true);
-            clearNotices();
-            await axios.delete(`/users/${userId}`, { withCredentials: true });
-            delete userCacheRef.current[userId];
-            return true;
-
-        } catch (err) {
-            console.error('Error deleting user:', err);
-            setError('Failed to delete user. Please try again.');
-            return false;
-        } finally {
-            setLoading(false);
-        } else try {
-            await axios.delete(`/users`, {data: {userIds: Array.from(userIds)}}, { withCredentials: true });
-            return true;
-        } catch (err) {
-            console.error('Error deleting Users:', err);
-            return false;
-        }
-    }, []);
-
-    const deleteUser = useCallback(async ({userId}) => await deleteUsers({userId}), [deleteUsers]);
-
+    // TODO: To refactor
     const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
         try {
-            clearNotices();
+            setStatus([]);
+
             return await axios.post('/users/assignments', {resource, resourceIds, userIds, mode}, { withCredentials: true });
+
         } catch (err) {
-            console.error('Error saving new user assignments:', err);
-            setWarning('Error occurred while saving new user assignments. ' + err.response?.data?.message);
+            console.error('saveUserAssignment error:', err);
+
+            const message = 'Error occurred while saving new User assignments. ' + err.response?.data?.message
+            setStatus(prev => [...prev, {status: 'error', message}]);
+
             return null;
         }
     }, []);
 
+    const deleteUsers = useCallback(async ({userId, userIds} = {}) => {
+
+        const batchMode = Array.isArray(userIds) && userIds.length > 0;
+
+        try {
+            setLoading(true);
+            setStatus([]);
+
+            let res;
+
+            if (batchMode)
+                res = await axios.delete(
+                    `/users/${userId}`,
+                    { withCredentials: true }
+                );
+            else
+                res = await axios.delete(
+                    `/users`,
+                    { data: {userIds: Array.from(userIds).filter(id => id != null)}},
+                    { withCredentials: true }
+                );
+
+            const { data } = res;
+
+            if (batchMode && data.ids)
+                userIds = data.ids;
+
+            if (data.warning)
+                setStatus(prev => [...prev, {status: 'warning', message: data.warning}]);
+
+            if (data.message)
+                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+
+            if (batchMode)
+                userIds.forEach(userId => delete userCacheRef.current[userId]);
+            else
+                delete userCacheRef.current[userId];
+
+            return true;
+        } catch (err) {
+            console.error('deleteTeams error:', err);
+
+            const message = 'Failed to delete Team' + (batchMode ? 's' : '') + '. Please try again.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const deleteUser = useCallback(async ({userId} = {}) =>
+        await deleteUsers({userId}), [deleteUsers]);
+
     return {
         users,
         loading,
-        success,
-        warning,
-        error,
+        status, // 4 kinds: info, success, warning, error
+        setLoading,
+        setStatus,
         fetchUsers,
         fetchUser,
         saveUser,
+        saveUserAssignment,
         deleteUsers,
-        deleteUser,
-        setLoading,
-        saveUserAssignment
+        deleteUser
     };
-}
+};
+
 export default useUsers;
