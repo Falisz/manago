@@ -1,23 +1,19 @@
-// FRONTEND/hooks/useSchedule.js
+// FRONTEND/hooks/useShifts.js
 import { useCallback, useState } from 'react';
 import axios from "axios";
 import {formatDate} from "../utils/dates";
 
 const useShifts = () => {
     const [shifts, setShifts] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [success, setSuccess] = useState(null);
-    const [warning, setWarning] = useState(null);
-    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState();
+    const [status, setStatus] = useState([]);
 
     const fetchShifts = useCallback( async ({shiftId = null, users = null, date, start_date, end_date, schedule,
                                                 job_post, location, loading = true} = {}) => {
 
         try {
+            setStatus([]);
             setLoading(loading);
-            setSuccess(null);
-            setWarning(null);
-            setError(null);
 
             let url;
             let params = {};
@@ -25,10 +21,9 @@ const useShifts = () => {
             const batchMode = [users, date, schedule, job_post, location]
                 .some(param => param != null && Array.isArray(param) && param.length > 0);
 
-            if (shiftId)
+            if (shiftId) {
                 url = `/shifts/${shiftId}`;
-
-            else if (batchMode) {
+            } else if (batchMode) {
                 url = '/shifts/batch';
 
                 if (users)
@@ -81,31 +76,32 @@ const useShifts = () => {
             const shifts = res.data;
 
             setShifts(shifts);
-
             return shifts;
 
         } catch (err) {
+            console.error('fetchShifts error:', err);
 
-            console.error(err);
+            const message = 'Error occurred while fetching the Shift data.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
 
+            return null;
         } finally {
-
             setLoading(false);
         }
 
     }, []);
 
-    const fetchShift = useCallback( async (shiftId) => await fetchShifts({shiftId}), [fetchShifts])
+    const fetchShift = useCallback( async (shiftId) =>
+        await fetchShifts({shiftId}), [fetchShifts]);
 
     return {
         shifts,
         loading,
-        success,
-        warning,
-        error,
-        fetchShift,
+        status,
+        setLoading,
+        setStatus,
         fetchShifts,
-
+        fetchShift,
     };
 };
 

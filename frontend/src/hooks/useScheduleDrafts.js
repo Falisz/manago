@@ -3,9 +3,9 @@ import { useCallback, useState } from 'react';
 import axios from 'axios';
 
 const useScheduleDrafts = () => {
-
     const [scheduleDrafts, setScheduleDrafts] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [status, setStatus] = useState([]);
 
     const fetchScheduleDrafts = useCallback(async ({scheduleId, include_shifts, loading = true}) => {
         try {
@@ -22,10 +22,18 @@ const useScheduleDrafts = () => {
                 url += '?include_shifts=true';
 
             const res = await axios.get(url , { withCredentials: true });
-            setScheduleDrafts(res.data);
-            return res.data;
+
+            const scheduleDrafts = res.data;
+
+            setScheduleDrafts(scheduleDrafts);
+            return scheduleDrafts;
+
         } catch (err) {
-            console.error('Error fetching Schedule Drafts:', err);
+            console.error('fetchScheduleDrafts error:', err);
+
+            const message = 'Error occurred while fetching the Schedule Draft data.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+
             return null;
         } finally {
             setLoading(false);
@@ -35,6 +43,9 @@ const useScheduleDrafts = () => {
     return {
         scheduleDrafts,
         loading,
+        status,
+        setLoading,
+        setStatus,
         fetchScheduleDrafts
     };
 };
