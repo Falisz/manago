@@ -1,25 +1,25 @@
 // FRONTEND/components/Teams/Details.js
 import React, {useEffect} from 'react';
 import Loader from '../Loader';
-import useTeam from '../../hooks/useTeam';
+import useTeams from '../../hooks/useTeams';
 import { useModals } from '../../contexts/ModalContext';
 import Details from "../Details";
 
 const TeamDetails = ({ teamId }) => {
-    const { team, loading, fetchTeam, deleteTeam } = useTeam();
+    const { teams: team, loading, fetchTeam, deleteTeam } = useTeams();
     const { openModal, refreshTriggers, closeTopModal, refreshData } = useModals();
 
     useEffect(() => {
-        if (teamId) {
-            fetchTeam(teamId).then();
-        }
-    }, [teamId, fetchTeam]);
 
-    useEffect(() => {
-        if (refreshTriggers?.team?.data === parseInt(teamId)) {
-            fetchTeam(teamId, true).then();
-        }
-    }, [teamId, fetchTeam, refreshTriggers]);
+        const refresh = refreshTriggers?.team?.data === teamId;
+
+        if (refresh)
+            delete refreshTriggers.team;
+
+        if (teamId && (!team || refresh))
+            fetchTeam({teamId, reload: refresh}).then();
+
+    }, [fetchTeam, team, teamId, refreshTriggers.team]);
 
     const handleDelete = async () => {
         let message = `Are you sure you want to delete this role? This action cannot be undone.`

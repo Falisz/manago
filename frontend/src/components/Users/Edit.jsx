@@ -1,13 +1,13 @@
 // FRONTEND/components/Users/Edit.js
 import React, {useEffect, useMemo} from 'react';
 import useUsers from '../../hooks/useUsers';
-import useRole from '../../hooks/useRole';
+import useRoles from '../../hooks/useRoles';
 import Loader from '../Loader';
 import EditForm from '../EditForm';
 
 export const UserRoleAssignment = ({user}) => {
     const {saveUserAssignment} = useUsers();
-    const {roles, rolesLoading: loading, fetchRoles} = useRole();
+    const {roles, loading, fetchRoles} = useRoles();
 
     useEffect(() => {
         fetchRoles().then();
@@ -46,7 +46,7 @@ export const UserManagerAssignment = ({user}) => {
     const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
 
     useEffect(() => {
-        fetchUsers('managers').then();
+        fetchUsers({group: 'managers'}).then();
     }, [fetchUsers]);
 
     const formStructure = useMemo(() => ({
@@ -81,7 +81,7 @@ export const UserManagerAssignment = ({user}) => {
 
 export const UserRoleBulkAssignment = ({users}) => {
     const { saveUserAssignment } = useUsers();
-    const { roles, rolesLoading: loading, fetchRoles } = useRole();
+    const { roles, loading, fetchRoles } = useRoles();
 
     useEffect(() => {
         fetchRoles().then();
@@ -148,7 +148,7 @@ export const UserManagerBulkAssignment = ({users}) => {
     const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
 
     useEffect(() => {
-        fetchUsers('managers').then();
+        fetchUsers({group: 'managers'}).then();
     }, [fetchUsers]);
 
     const formStructure = useMemo(() => ({
@@ -210,18 +210,19 @@ export const UserManagerBulkAssignment = ({users}) => {
 }
 
 const UserEdit = ({userId, preset}) => {
-    const {users: user, loading, setLoading, error, fetchUser, saveUser} = useUsers();
+    const {users: user, loading, setLoading, fetchUser, saveUser} = useUsers();
     const {users: managers, fetchUsers} = useUsers();
-    const {roles, fetchRoles} = useRole();
+    const {roles, fetchRoles} = useRoles();
 
     useEffect(() => {
         fetchRoles().then();
-        fetchUsers('managers').then();
-        if (userId) {
+        fetchUsers({group: 'managers'}).then();
+
+        if (userId)
             fetchUser({userId}).then();
-        } else {
+        else
             setLoading(false);
-        }
+
     }, [userId, setLoading, fetchUser, fetchRoles, fetchUsers]);
 
     let name = preset === 'manager' ? 'Manager' : preset === 'employee' ? 'Employee' : 'User';
@@ -316,15 +317,13 @@ const UserEdit = ({userId, preset}) => {
             }
         },
         onSubmit: {
-            onSave: (data, id) => saveUser(data, id),
-            refreshTriggers: [['users', true], ...(user ? [['user', user.id]] : [])],
+            onSave: (formData, id) => saveUser({userId: id, formData}),
+            refreshTriggers: [['users', true], ...(user ? [['user', user['id']]] : [])],
             openIfNew: 'userDetails'
         },
     }), [name, saveUser, user, userId, roles, managers]);
 
     if (loading) return <Loader/>;
-
-    if (error) return <div className='error-message'>{error}</div>;
 
     return (
         <EditForm

@@ -10,16 +10,15 @@ const UserDetails = ({ userId }) => {
     const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {
-        if (userId) {
-            fetchUser({userId}).then();
-        }
-    }, [userId, fetchUser]);
+        const refresh = refreshTriggers?.user?.data === userId;
 
-    useEffect(() => {
-        if (refreshTriggers?.user?.data === parseInt(userId)) {
-            fetchUser({userId, reload: true}).then();
-        }
-    }, [userId, fetchUser, refreshTriggers]);
+        if (refresh)
+            delete refreshTriggers.user;
+
+        if (userId && (!user || refresh))
+            fetchUser({userId, reload: refresh}).then();
+
+    }, [fetchUser, user, userId, refreshTriggers.user]);
 
     const handleDelete = async () => {
         openModal({
@@ -49,7 +48,7 @@ const UserDetails = ({ userId }) => {
                     className: 'edit',
                     icon: 'edit',
                     title: 'Edit User',
-                    onClick: () => openModal({content: 'userEdit', contentId: user.id})
+                    onClick: () => openModal({content: 'userEdit', contentId: user['id']})
                 },
                 delete: {
                     className: 'delete',

@@ -1,23 +1,21 @@
 // FRONTEND/components/Roles/Index.js
 import React, { useEffect, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import useRole from '../../hooks/useRole';
+import useRoles from '../../hooks/useRoles';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const RolesIndex = () => {
     const { refreshTriggers } = useModals();
-    const { roles, rolesLoading: loading, fetchRoles } = useRole();
+    const { roles, loading, fetchRoles } = useRoles();
 
     useEffect(() => {
-        if (!roles) 
-            fetchRoles().then();
-    }, [fetchRoles, roles]);
+        if (!roles || refreshTriggers?.roles)
+            fetchRoles({all: true, loading: true}).then();
 
-    useEffect(() => {
-        if (refreshTriggers?.roles) 
-            fetchRoles(false).then();
-    }, [fetchRoles, refreshTriggers]);
+        delete refreshTriggers.roles;
+
+    }, [fetchRoles, roles, refreshTriggers.teams]);
 
     const tableStructure = useMemo(() => ({
         pageHeader: {

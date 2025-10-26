@@ -10,10 +10,10 @@ const UsersIndexPage = ({content='users'}) => {
     const { users, loading, fetchUsers, deleteUser, deleteUsers } = useUsers();
 
     useEffect(() => {
-        if (!users || refreshTriggers?.users) {
-            delete refreshTriggers.users;
+        if (!users || refreshTriggers?.users)
             fetchUsers({group: content}).then();
-        }
+
+        delete refreshTriggers.users;
     }, [content, users, refreshTriggers, fetchUsers]);
 
     const handleUserDelete = useCallback((id) => {

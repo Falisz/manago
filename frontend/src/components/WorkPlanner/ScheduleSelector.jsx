@@ -1,7 +1,7 @@
 // FRONTEND/components/WorkPlanner/ScheduleSelector.jsx
 import React, {useCallback, useEffect, useState} from 'react';
 import useAppState from '../../contexts/AppStateContext';
-import useTeam from '../../hooks/useTeam';
+import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
 import ComboBox from '../ComboBox';
 import useShifts from "../../hooks/useShifts";
@@ -12,7 +12,7 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                               monthly = false, inRow = true }) => {
 
     const { appState, user } = useAppState();
-    const { fetchTeams } = useTeam();
+    const { fetchTeams } = useTeams();
     const { fetchUsers } = useUsers();
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();

@@ -1,12 +1,12 @@
 // FRONTEND/components/Roles/Details.js
 import React, {useEffect} from 'react';
 import Loader from '../Loader';
-import useRole from '../../hooks/useRole';
+import useRoles from '../../hooks/useRoles';
 import { useModals } from '../../contexts/ModalContext';
 import Details from "../Details";
 
 const RoleDetails = ({ roleId }) => {
-    const { role, loading, fetchRole, deleteRole } = useRole();
+    const { role, loading, fetchRole, deleteRole } = useRoles();
     const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {

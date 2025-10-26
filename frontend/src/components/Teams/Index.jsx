@@ -1,25 +1,21 @@
 // FRONTEND/components/Teams/Index.js
 import React, { useEffect, useCallback, useMemo } from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import useTeam from '../../hooks/useTeam';
+import useTeams from '../../hooks/useTeams';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const TeamsIndex = () => {
     const { openModal, refreshData, refreshTriggers, closeTopModal } = useModals();
-    const { teams, teamsLoading: loading, fetchTeams, deleteTeams, deleteTeam } = useTeam();
+    const { teams, loading, fetchTeams, deleteTeams, deleteTeam } = useTeams();
 
     useEffect(() => {
-        if (!teams) {
-            fetchTeams(true, true).then();
-        }
-    }, [fetchTeams, teams]);
+        if (!teams || refreshTriggers?.teams)
+            fetchTeams({all: true, loading: true}).then();
 
-    useEffect(() => {
-        if (refreshTriggers?.teams) {
-            fetchTeams().then();
-        }
-    }, [refreshTriggers, fetchTeams]);
+        delete refreshTriggers.teams;
+
+    }, [fetchTeams, teams, refreshTriggers.teams]);
 
     const handleTeamDelete = useCallback((team) => {
         let message = `Are you sure you want to delete this team? This action cannot be undone.`;
@@ -135,7 +131,7 @@ const TeamsIndex = () => {
 
     return (
         <Table
-            dataSource={teams.filter(team => team.parent_team === null)}
+            dataSource={teams && teams.filter(team => team.parent_team === null)}
             tableStructure={tableStructure}
             hasSelectableRows={true}
             dataPlaceholder={'No Teams found.'}

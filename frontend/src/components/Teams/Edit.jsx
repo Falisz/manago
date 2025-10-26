@@ -1,12 +1,12 @@
 // FRONTEND/components/Teams/Edit.js
 import React, {useCallback, useEffect, useMemo} from 'react';
-import useTeam from '../../hooks/useTeam';
+import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
 import Loader from '../Loader';
 import EditForm from "../EditForm";
 
 export const TeamUserAssignment = ({team}) => {
-    const {saveTeamAssignment} = useTeam();
+    const {saveTeamAssignment} = useTeams();
     const {users, loading: usersLoading, fetchUsers} = useUsers();
     const {users: managers, loading: managersLoading, fetchUsers: fetchManagers} = useUsers();
 
@@ -75,7 +75,7 @@ export const TeamUserAssignment = ({team}) => {
 
 export const TeamUserBulkAssignment = ({teams}) => {
     const {users, usersLoading: loading, fetchUsers} = useUsers();
-    const { saveTeamAssignment } = useTeam();
+    const { saveTeamAssignment } = useTeams();
 
     useEffect(() => {
         fetchUsers().then();
@@ -149,18 +149,18 @@ export const TeamUserBulkAssignment = ({teams}) => {
 }
 
 const TeamEdit = ({ teamId, parentId }) => {
-    const { team, loading, error, setLoading, fetchTeam, saveTeam } = useTeam();
-    const { teams, fetchTeams } = useTeam();
+    const { teams: team, loading, error, setLoading, fetchTeam, saveTeam } = useTeams();
+    const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
 
     useEffect(() => {
         fetchUsers().then();
         fetchManagers('managers').then();
-        fetchTeams(true, true).then();
+        fetchTeams({all: true, loading: true}).then();
 
         if (teamId) {
-            fetchTeam(teamId).then();
+            fetchTeam({teamId}).then();
         } else {
             setLoading(false);
         }
@@ -257,7 +257,7 @@ const TeamEdit = ({ teamId, parentId }) => {
             }
         },
         onSubmit: {
-            onSave: (data, id) => saveTeam(data, id),
+            onSave: (formData, id) => saveTeam({teamId: id, formData}),
             refreshTriggers: [['teams', true], ...(team ? [['team', team.id]] : [])],
             openIfNew: 'userDetails'
         },
