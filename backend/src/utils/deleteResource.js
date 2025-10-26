@@ -53,7 +53,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
         if (!success)
             return res.status(400).json({ message });
 
-        return res.json({ message, deletedCount, warning });
+        return res.json({ message, deletedCount, ids, warning });
         
     } catch (err) {
         if (ids.length > 1) 
