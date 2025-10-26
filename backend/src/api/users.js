@@ -152,6 +152,14 @@ const createUserHandler = async (req, res) => {
 
         const user = await getUser({id});
 
+        const { roles, managers } = req.body;
+
+        if (roles && roles.length > 0)
+            await updateUserRoles([id], roles.filter(id => id !== null), 'set');
+
+        if (managers && managers.length > 0)
+            await updateUserManagers([id], managers.filter(id => id !== null), 'set');
+
         res.status(201).json({ message, user });
 
     } catch (err) {
@@ -194,12 +202,21 @@ const updateUserHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        const { success, message } = await updateUser(parseInt(id), req.body);
+
+        const { roles, managers, ...userData } = req.body;
+
+        const { success, message } = await updateUser(parseInt(id), userData);
 
         if (!success)
             return res.status(400).json({ message });
 
         const user = await getUser({id});
+
+        if (roles != null)
+            await updateUserRoles([id], roles.filter(id => id !== null), 'set');
+
+        if (managers != null)
+            await updateUserManagers([id], managers.filter(id => id !== null), 'set');
 
         res.json({ message, user });
 
@@ -250,64 +267,6 @@ const updateAssignmentsHandler = async (req, res) => {
 };
 
 /**
- * Update Roles for a specific User.
- * @param {express.Request} req
- * @param {Object} req.session
- * @param {express.Response} res
- */
-const updateUserRolesHandler = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const { roleIds } = req.body;
-
-        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'user', id, 'role', roleIds);
-
-        if (!hasAccess)
-            return res.status(403).json({message: 'Not permitted.'});
-
-        const { success, message} = await updateUserRoles([parseInt(id)], roleIds, 'set');
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message });
-    } catch (err) {
-        console.error(`Error updating User Roles (User ID: ${id}):`, err, 'Provided data: ', req.body);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Update Managers for a specific User.
- * @param {express.Request} req
- * @param {Object} req.session
- * @param {express.Response} res
- */
-const updateUserManagersHandler = async (req, res) => {
-    const { id } = req.params;
-    
-    try {
-        const { managerIds } = req.body;
-
-        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'user', id, 'manager', managerIds);
-
-        if (!hasAccess)
-            return res.status(403).json({message: 'Not permitted.'});
-
-        const { success, message } = await updateUserManagers([parseInt(id)], managerIds, 'set');
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        res.json({ message });
-    } catch (err) {
-        console.error(`Error updating User Managers (User ID: ${id}):`, err, 'Provided data: ', req.body);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
  * Delete a specific User by ID.
  * @param {express.Request} req
  * @param {express.Response} res
@@ -326,8 +285,6 @@ router.get('/check-id/:id', checkResourceIdHandler, checkUserIdHandler);
 router.post('/', createUserHandler);
 router.post('/assignments', updateAssignmentsHandler);
 router.put('/:id', checkResourceIdHandler, updateUserHandler);
-router.put('/:id/roles', checkResourceIdHandler, updateUserRolesHandler);
-router.put('/:id/managers', checkResourceIdHandler, updateUserManagersHandler);
 router.delete('/', deleteUserHandler);
 router.delete('/:id', deleteUserHandler);
 

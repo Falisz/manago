@@ -95,19 +95,19 @@ const createTeamHandler = async (req, res) => {
 
         const team = await getTeam({id});
 
-        const { leader_ids, manager_ids } = req.body;
+        const { members, leaders, managers } = req.body;
 
-        if (manager_ids && manager_ids.length > 0) {
-            const teamManagers = manager_ids.filter(id => id !== null);
-            await updateTeamUsers([id], teamManagers, 3);
-        }
+        if (managers && managers.length > 0)
+            await updateTeamUsers([id], managers.filter(id => id !== null), 3, 'set');
 
-        if (leader_ids && leader_ids.length > 0) {
-            const teamLeaders = leader_ids.filter(id => id !== null);
-            await updateTeamUsers([id], teamLeaders, 2);
-        }
+        if (leaders && leaders.length > 0)
+            await updateTeamUsers([id], leaders.filter(id => id !== null), 2, 'set');
+``
+        if (members && members.length > 0)
+            await updateTeamUsers([id], members.filter(id => id !== null), 1, 'set');
 
         res.status(201).json({ message, team });
+
     } catch (err) {
         console.error('Error creating a Team:', err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
