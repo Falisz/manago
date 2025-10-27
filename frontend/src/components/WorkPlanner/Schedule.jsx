@@ -13,7 +13,7 @@ const Schedule = () => {
     const { user } = useAppState();
     const { search } = useLocation();
     const params = new URLSearchParams(search);
-    const [ _, setSearchParams ] = useSearchParams();
+    const setSearchParams = useSearchParams()[1];
     const isMounted = useRef(false);
 
     const from = params.get('from');

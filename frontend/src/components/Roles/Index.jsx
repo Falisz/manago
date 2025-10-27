@@ -15,7 +15,7 @@ const RolesIndex = () => {
 
         delete refreshTriggers.roles;
 
-    }, [fetchRoles, roles, refreshTriggers.teams]);
+    }, [fetchRoles, roles, refreshTriggers.roles]);
 
     const tableStructure = useMemo(() => ({
         pageHeader: {

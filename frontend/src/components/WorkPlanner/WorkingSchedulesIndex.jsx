@@ -33,7 +33,7 @@ const ScheduleDraftItem = ({schedule}) => {
 
     useEffect(() => {
         fetchUsers({userScope: schedule.user_scope, scopeId: schedule.user_scope_id }).then();
-    },[])
+    },[fetchUsers, schedule.user_scope, schedule.user_scope_id]);
 
     return (
         <div className={'schedule-draft-item'}>

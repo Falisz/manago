@@ -57,7 +57,7 @@ const ScheduleEditor = () => {
 
         fetchData().then();
 
-    }, [config, fetchUsers, params]);
+    }, [config, fetchUsers, params, setLoading]);
 
     if (!dateRange.fromDate || !dateRange.toDate)
         return <span>No time range specified.</span>;
