@@ -19,7 +19,6 @@ const ScheduleDraftItem = ({schedule}) => {
     const endDate = useMemo(() => new Date(schedule.end_date), [schedule]);
 
     const editSchedule = useCallback(() => {
-        console.log(schedule);
         setScheduleEditor({
             type: 'working',
             fromDate: startDate,

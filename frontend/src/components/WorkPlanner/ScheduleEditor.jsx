@@ -9,9 +9,9 @@ import useUsers from "../../hooks/useUsers";
 import Loader from "../Loader";
 
 const ScheduleEditor = () => {
-    const { appState } = useAppState();
+    const { appCache } = useAppState();
     const { fetchUsers, loading, setLoading } = useUsers();
-    const config = useMemo(() => appState.schedule_editor || {}, [appState.schedule_editor]);
+    const config = useMemo(() => appCache.current.schedule_editor || {}, [appCache]);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
     const [ users, setUsers ] = useState();
     const [ dateRange, setDateRange ] = useState({
