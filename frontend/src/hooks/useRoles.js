@@ -1,21 +1,25 @@
 // FRONTEND/hooks/useRoles.js
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import axios from 'axios';
+import useAppState from '../contexts/AppStateContext';
 
 const useRoles = () => {
     const [roles, setRoles] = useState(null);
     const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState();
-    const roleCacheRef = useRef({});
+    const { appCache } = useAppState();
+    const roleCache = appCache.current.roles;
 
     const fetchRoles = useCallback(async ({roleId = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
-        if (roleId && roleCacheRef.current[roleId] && !reload) {
-            setStatus([])
+        let roles;
+        setStatus([]);
+
+        if (roleId && !reload && roleCache[roleId]) {
+            setRoles(roleCache[roleId]);
             setLoading(false);
-            setRoles(roleCacheRef.current[roleId]);
-            return roleCacheRef.current[roleId];
+            return roleCache[roleId];
         }
 
         try {
@@ -29,9 +33,9 @@ const useRoles = () => {
             const res = await axios.get(url, { withCredentials: true });
 
             if (roleId)
-                roleCacheRef.current[roleId] = res.data;
+                roleCache[roleId] = res.data;
 
-            let roles = res.data;
+            roles = res.data;
 
             if (map) {
                 if (!Array.isArray(roles))
@@ -41,20 +45,18 @@ const useRoles = () => {
                 );
             }
 
-            setRoles(roles);
-            return roles;
-
         } catch (err) {
             console.error('fetchRoles error:', err);
 
             const message = 'Error occurred while fetching the Role data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
-
-            return null;
-        } finally {
-            setLoading(false);
         }
-    }, []);
+
+        setRoles(roles);
+        setLoading(false);
+        return roles;
+        
+    }, [roleCache]);
 
     const fetchRole = useCallback(async ({roleId, reload} = {}) =>
         await fetchRoles({roleId, reload}), [fetchRoles]);
@@ -122,7 +124,7 @@ const useRoles = () => {
             if (data.message)
                 setStatus(prev => [...prev, {status: 'success', message: data.message}]);
 
-            delete roleCacheRef.current[roleId];
+            delete roleCache[roleId];
 
             return true;
         } catch (err) {
@@ -135,7 +137,7 @@ const useRoles = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [roleCache]);
 
     return {
         roles,

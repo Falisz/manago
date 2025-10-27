@@ -10,11 +10,11 @@ const useShifts = () => {
 
     const fetchShifts = useCallback( async ({shiftId = null, users = null, date, start_date, end_date, schedule,
                                                 job_post, location, loading = true} = {}) => {
+        let shifts;
+        setStatus([]);
+        setLoading(loading);
 
         try {
-            setStatus([]);
-            setLoading(loading);
-
             let url;
             let params = {};
             let payload = {};
@@ -31,6 +31,7 @@ const useShifts = () => {
 
                 if (date)
                     payload.dates = date;
+                
                 else {
                     if (start_date)
                         payload.start_date = start_date;
@@ -73,21 +74,18 @@ const useShifts = () => {
 
             const res = await axios[batchMode ? 'post' : 'get'](url, batchMode ? payload : null, { withCredentials: true });
 
-            const shifts = res.data;
-
-            setShifts(shifts);
-            return shifts;
+            shifts = res.data;
 
         } catch (err) {
             console.error('fetchShifts error:', err);
 
             const message = 'Error occurred while fetching the Shift data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
-
-            return null;
-        } finally {
-            setLoading(false);
         }
+
+        setShifts(shifts);
+        setLoading(false);
+        return shifts;
 
     }, []);
 

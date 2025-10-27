@@ -8,8 +8,11 @@ const useScheduleDrafts = () => {
     const [status, setStatus] = useState([]);
 
     const fetchScheduleDrafts = useCallback(async ({scheduleId, include_shifts, loading = true}) => {
+
+        let scheduleDrafts;
+        setLoading(loading);
+
         try {
-            setLoading(loading);
 
             let url;
 
@@ -23,21 +26,31 @@ const useScheduleDrafts = () => {
 
             const res = await axios.get(url , { withCredentials: true });
 
-            const scheduleDrafts = res.data;
-
-            setScheduleDrafts(scheduleDrafts);
-            return scheduleDrafts;
+            scheduleDrafts = res.data;
 
         } catch (err) {
             console.error('fetchScheduleDrafts error:', err);
 
             const message = 'Error occurred while fetching the Schedule Draft data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
-
-            return null;
-        } finally {
-            setLoading(false);
         }
+
+        setScheduleDrafts(scheduleDrafts);
+        setLoading(false);
+        return scheduleDrafts;
+        
+    }, []);
+
+    const fetchScheduleDraft = useCallback( async ({scheduleId}) =>
+        await fetchScheduleDrafts({scheduleId}), [fetchScheduleDrafts]);
+
+    const saveScheduleDraft = useCallback( async ({scheduleData}) => {
+        setStatus([]);
+        // Function to save (create, update) schedule drafts - not to publish them.
+    }, []);
+
+    const publishScheduleDraft = useCallback( async ({scheduleId, scheduleData, mode}) => {
+        // Function to publish schedule drafts - not to update them.
     }, []);
 
     return {
@@ -46,7 +59,10 @@ const useScheduleDrafts = () => {
         status,
         setLoading,
         setStatus,
-        fetchScheduleDrafts
+        fetchScheduleDrafts,
+        fetchScheduleDraft,
+        saveScheduleDraft,
+        publishScheduleDraft
     };
 };
 export default useScheduleDrafts;

@@ -25,19 +25,35 @@ const AppStateContext = createContext();
 export const AppStateProvider = ({ children }) => {
     // App's states
     const isCheckingUserRef = useRef(false);
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null);
     const [appState, setAppState] = useState({
         is_connected: true,
+        loading: true,
         theme: Cookies.get('theme'),
         style: Cookies.get('style'),
         color: Cookies.get('color'),
         background: Cookies.get('background'),
         modules: [],
-        pages: []
+        pages: [],
+        user: null,
+        schedule_editor: null
+    });
+    const appCache = useRef({
+        users: {},
+        roles: {},
+        teams: {},
+        shifts: {},
+        schedule_editor: null
     });
 
     // API Get calls.
+    const setLoading = useCallback((loading) => {
+        setAppState(prev => ({ ...prev, loading }));
+    }, []);
+
+    const setUser = useCallback((user) => {
+        setAppState(prev => ({ ...prev, user }));
+    }, []);
+
     const getUser = useCallback(async () => {
         const response = await axios.get('/auth', { withCredentials: true });
         return response.data.user;
@@ -88,7 +104,7 @@ export const AppStateProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [setLoading, setUser]);
 
     const refreshConfig = useCallback(async (hasRetried = false) => {
         try {
@@ -120,7 +136,7 @@ export const AppStateProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [getConfig]);
+    }, [getConfig, setLoading]);
 
     const checkConnection = useCallback(async () => {
         try {
@@ -187,7 +203,7 @@ export const AppStateProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [refreshPages]);
+    }, [refreshPages, setLoading, setUser]);
 
     const toggleTheme = useCallback(async(userId, theme_mode) => {
         if (!userId) return null;
@@ -201,7 +217,7 @@ export const AppStateProvider = ({ children }) => {
         } catch (err) {
             console.error('Theme switching error: ', err);
         }
-    }, []);
+    }, [setUser]);
 
     const authUser = useCallback(async (withLoader = false) => {
         if (isCheckingUserRef.current) return;
@@ -217,12 +233,12 @@ export const AppStateProvider = ({ children }) => {
             isCheckingUserRef.current = false;
             await refreshPages();
         }
-    }, [getUser, refreshPages]);
+    }, [getUser, refreshPages, setLoading, setUser]);
 
     const setScheduleEditor = useCallback(async (scheduleEditor) => {
         if (!scheduleEditor) return;
-        setAppState(prev => ({...prev, schedule_editor: scheduleEditor}));
-    }, [setAppState]);
+        appCache.current.schedule_editor = scheduleEditor;
+    }, [appCache]);
 
     useEffect(() => {
         checkConnection().then();
@@ -245,16 +261,16 @@ export const AppStateProvider = ({ children }) => {
         handleInit().then();
 
         return () => clearInterval(interval);
-    }, [checkConnection, getUser, getConfig, getModules, getPages]);
+    }, [checkConnection, getUser, getConfig, getModules, getPages, setLoading, setUser]);
 
     return (
         <AppStateContext.Provider value={{
-            loading,
+            user: appState.user,
+            appState,
+            appCache,
             setLoading,
-            user,
             authUser,
             logoutUser,
-            appState,
             getConfigOptions,
             setScheduleEditor,
             refreshConfig,

@@ -1,21 +1,25 @@
 // FRONTEND/hooks/useUser.js
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import axios from 'axios';
+import useAppState from '../contexts/AppStateContext';
 
 const useUsers = () => {
     const [users, setUsers] = useState();
     const [loading, setLoading] = useState();
     const [status, setStatus] = useState([]);
-    const userCacheRef = useRef({});
+    const { appCache } = useAppState();
+    const userCache = appCache.current.users;
 
     const fetchUsers = useCallback(async ({userId = null, userScope = 'all', scopeId = null, group = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
-        if (userId && userCacheRef.current[userId] && !reload) {
-            setStatus([]);
+        let users;
+        setStatus([]);
+
+        if (userId && !reload && userCache[userId]) {
+            setUsers(userCache[userId]);
             setLoading(false);
-            setUsers(userCacheRef.current[userId]);
-            return userCacheRef.current[userId];
+            return userCache[userId];
         }
 
         try {
@@ -45,7 +49,7 @@ const useUsers = () => {
             const res = await axios.get(url, { withCredentials: true });
 
             if (userId)
-                userCacheRef.current[userId] = res.data;
+                userCache[userId] = res.data;
 
             let users = res.data;
 
@@ -57,21 +61,18 @@ const useUsers = () => {
                 );
             }
 
-            setUsers(users);
-
-            return users;
-
         } catch (err) {
             console.error('fetchUsers error:', err);
 
             const message = 'Error occurred while fetching the User data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
-
-            return null;
-        } finally {
-            setLoading(false);
         }
-    }, []);
+
+        setUsers(users);
+        setLoading(false);
+        return users;
+
+    }, [userCache]);
 
     const fetchUser = useCallback(async ({userId, reload} = {}) =>
         await fetchUsers({userId, reload}), [fetchUsers]);
@@ -121,7 +122,7 @@ const useUsers = () => {
 
             return null;
         }
-    }, [fetchUser]);
+    }, []);
 
     // TODO: To refactor
     const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
@@ -174,9 +175,9 @@ const useUsers = () => {
                 setStatus(prev => [...prev, {status: 'success', message: data.message}]);
 
             if (batchMode)
-                userIds.forEach(userId => delete userCacheRef.current[userId]);
+                userIds.forEach(userId => delete userCache[userId]);
             else
-                delete userCacheRef.current[userId];
+                delete userCache[userId];
 
             return true;
         } catch (err) {
@@ -189,7 +190,7 @@ const useUsers = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [userCache]);
 
     const deleteUser = useCallback(async ({userId} = {}) =>
         await deleteUsers({userId}), [deleteUsers]);

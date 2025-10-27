@@ -20,32 +20,41 @@ import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
 
 const AppContent = () => {
-    const { loading, appState, user } = useAppState();
+    const { appState, user } = useAppState();
 
     useEffect(() => {
         const root = document.getElementById('root');
+
         root.classList.remove(
             'red', 'green', 'blue',
             'cyan', 'magenta', 'yellow',
             'orange', 'lime', 'pink', 'mono',
             'light', 'dark', 'flat', 'fluent'
         );
+
         root.classList.forEach(cls => {
             if (cls.startsWith('bg-')) {
                 root.classList.remove(cls);
             }
         });
-        if (appState.style) root.classList.add(appState.style);
-        if (user?.theme_mode !== null && user?.theme_mode !== undefined ) {
-            root.classList.add(user?.theme_mode);
-        } else if (appState.theme) {
+
+        if (appState.style) 
+            root.classList.add(appState.style);
+
+        if (user && user.hasOwnPropety('theme_mode') && user.theme_mode != null )
+            root.classList.add(user.theme_mode);
+        else if (appState.theme)
             root.classList.add(appState.theme);
-        }
-        if (appState.color) root.classList.add(appState.color);
-        if (appState.style === 'fluent' && appState.background) root.classList.add('bg-' + appState.background);
+        
+        if (appState.color) 
+            root.classList.add(appState.color);
+
+        if (appState.style === 'fluent' && appState.background) 
+            root.classList.add('bg-' + appState.background);
+
     }, [appState, user]);
 
-    if (loading) {
+    if (appState.loading) {
         return <Loader />;
     }
 

@@ -1,21 +1,25 @@
 // FRONTEND/hooks/useTeams.js
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import axios from 'axios';
+import useAppState from '../contexts/AppStateContext';
 
 const useTeams = () => {
     const [teams, setTeams] = useState(null);
     const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState();
-    const teamCacheRef = useRef({});
+    const { appCache } = useAppState();
+    const teamCache = appCache.current.teams;
 
     const fetchTeams = useCallback(async ({teamId = null, all = false,
                                               loading = true, reload = false, map = false} = {}) => {
 
-        if (teamId && teamCacheRef.current[teamId] && !reload) {
-            setStatus([]);
+        let teams;
+        setStatus([]);
+
+        if (teamId && !reload && teamCache[teamId]) {
+            setTeams(teamCache[teamId]);
             setLoading(false);
-            setTeams(teamCacheRef.current[teamId]);
-            return teamCacheRef.current[teamId];
+            return teamCache[teamId];
         }
 
         try {
@@ -32,9 +36,9 @@ const useTeams = () => {
             const res = await axios.get(url, { withCredentials: true });
 
             if (teamId)
-                teamCacheRef.current[teamId] = res.data;
+                teamCache[teamId] = res.data;
 
-            let teams = res.data;
+            teams = res.data;
 
             if (map) {
                 if (!Array.isArray(teams))
@@ -44,20 +48,18 @@ const useTeams = () => {
                 );
             }
 
-            setTeams(teams);
-            return teams;
-
         } catch (err) {
             console.error('fetchTeams error:', err);
 
             const message = 'Error occurred while fetching the Team data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
-
-            return null;
-        } finally {
-            setLoading(false);
         }
-    }, []);
+
+        setTeams(teams);
+        setLoading(false);
+        return teams;
+        
+    }, [teamCache]);
 
 
     const fetchTeam = useCallback(async ({teamId, reload} = {}) =>
@@ -161,9 +163,9 @@ const useTeams = () => {
                 setStatus(prev => [...prev, {status: 'success', message: data.message}]);
 
             if (batchMode)
-                teamIds.forEach(teamId => delete teamCacheRef.current[teamId]);
+                teamIds.forEach(teamId => delete teamCache[teamId]);
             else
-                delete teamCacheRef.current[teamId];
+                delete teamCache[teamId];
 
             return true;
 
@@ -177,7 +179,7 @@ const useTeams = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [teamCache]);
 
     const deleteTeam = useCallback(async ({teamId, cascade} = {}) =>
         await deleteTeams({teamId, cascade}), [deleteTeams]);
