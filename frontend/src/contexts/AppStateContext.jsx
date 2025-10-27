@@ -246,8 +246,8 @@ export const AppStateProvider = ({ children }) => {
 
         const handleInit = async () => {
             try {
-                setUser(await getUser());
                 setAppState({
+                    user: await getUser(),
                     ...(await getConfig()),
                     modules: await getModules(),
                     pages: await getPages()

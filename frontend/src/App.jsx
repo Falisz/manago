@@ -20,7 +20,8 @@ import ManagerView from './components/ManagerView';
 import ConnectivityPopup from './components/ConnectivityPopup';
 
 const AppContent = () => {
-    const { appState, user } = useAppState();
+    const { appState } = useAppState();
+    const user = appState.user;
 
     useEffect(() => {
         const root = document.getElementById('root');
