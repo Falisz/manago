@@ -41,7 +41,7 @@ const AppContent = () => {
         if (appState.style) 
             root.classList.add(appState.style);
 
-        if (user && user.hasOwnPropety('theme_mode') && user.theme_mode != null )
+        if (user && user.theme_mode != null )
             root.classList.add(user.theme_mode);
         else if (appState.theme)
             root.classList.add(appState.theme);
