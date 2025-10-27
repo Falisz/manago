@@ -51,7 +51,7 @@ const useUsers = () => {
             if (userId)
                 userCache[userId] = res.data;
 
-            let users = res.data;
+            users = res.data;
 
             if (map) {
                 if (!Array.isArray(users))
