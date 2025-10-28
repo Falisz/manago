@@ -197,6 +197,7 @@ const useUsers = () => {
 
     return {
         users,
+        user: users,
         loading,
         status, // 4 kinds: info, success, warning, error
         setLoading,
