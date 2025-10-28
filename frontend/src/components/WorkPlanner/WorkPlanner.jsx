@@ -1,12 +1,19 @@
 // FRONTEND/components/WorkPlanner/WorkingSchedulesIndex.jsx
-import React from 'react';
-import WorkingSchedulesIndex from './WorkingSchedulesIndex';
+import React, {useEffect} from 'react';
 import '../../styles/WorkPlanner.css';
 import Button from '../Button';
 import {useModals} from '../../contexts/ModalContext';
+import useSchedules from '../../hooks/useSchedules';
+import ScheduleDraftItem from './ScheduleDraftItem';
 
 const WorkPlanner = () => {
     const { openModal } = useModals();
+    
+    const { scheduleDrafts, fetchScheduleDrafts  } = useSchedules();
+
+    useEffect(() => {
+        fetchScheduleDrafts({include_shifts: true}).then();
+    }, [fetchScheduleDrafts]);
 
     return (
         <div className={'work-planner app-scroll'}>
@@ -27,7 +34,9 @@ const WorkPlanner = () => {
                         onClick={() => openModal({content: 'newSchedule', type: 'dialog'})}
                     />
                 </div>
-                <WorkingSchedulesIndex/>
+                {scheduleDrafts && scheduleDrafts.length > 0 &&
+                    scheduleDrafts.map((schedule, idx) => <ScheduleDraftItem key={idx} schedule={schedule}/>)
+                }
             </div>
             <div className={'planner-widget'}>
                 <h1>Pending Leave approvals</h1>

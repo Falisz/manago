@@ -13,7 +13,7 @@ import {Item, Menu, useContextMenu} from 'react-contexify';
 //  the update and delete bins only used for editing current draft schedule, in case of new schedule or editing current one there is only new bin
 //  as the schedule is saved to backend, the bins are cleared
 
-const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}) => {
+const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading, editable}) => {
     const { openModal } = useModals();
 
     const MENU_ID = 'schedule_context_menu';
@@ -44,7 +44,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
     const handleShiftSelection = (shift) => {
         const userId = shift.user;
 
-        setUsers((prev) => {
+        setUserShifts((prev) => {
             const newUsers = new Map(prev);
 
             const user = newUsers.get(userId);
@@ -145,7 +145,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
         if (!editable) return;
         e.preventDefault();
 
-        const targetUser = users.get(user);
+        const targetUser = userShifts.get(user);
         const targetDate = new Date(date);
         const leaves = targetUser ? targetUser['leaves'] : [];
 
@@ -208,7 +208,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
             return;
         }
 
-        setUsers((prev) => {
+        setUserShifts((prev) => {
 
             const newUsers = new Map(prev);
             const targetUser = newUsers.get(user);
@@ -254,7 +254,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
     const handleCellDragOver = (user, date) => (e) => {
         if (!editable) return;
         e.preventDefault();
-        const targetUser = users.get(user);
+        const targetUser = userShifts.get(user);
         const leaves = targetUser ? targetUser.leaves : [];
 
         const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
@@ -270,7 +270,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
         const userID = shift.user;
 
-        setUsers((prev) => {
+        setUserShifts((prev) => {
             const newUsers = new Map(prev);
             const user = newUsers.get(userID);
             newUsers.set(userID, {
@@ -295,6 +295,8 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
 
     if (loading)
         return <Loader/>;
+
+    console.log(userShifts);
 
     return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table'}>
@@ -331,7 +333,7 @@ const UserShiftTable = ({dates, users, setUsers, placeholder, loading, editable}
             {placeholder && <tr>
                 <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{placeholder}</td>
             </tr>}
-            {users && [...users.values()].map((user) => {
+            {userShifts && [...userShifts.values()].map((user) => {
                 return <tr key={user.id}>
                     <td
                         className={'user-cell'}

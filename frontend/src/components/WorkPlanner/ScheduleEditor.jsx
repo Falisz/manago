@@ -13,10 +13,10 @@ const ScheduleEditor = () => {
     const { fetchUsers, loading, setLoading } = useUsers();
     const config = useMemo(() => appCache.current.schedule_editor || {}, [appCache]);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
-    const [ users, setUsers ] = useState();
+    const [ userShifts, setUserShifts ] = useState();
     const [ dateRange, setDateRange ] = useState({
-        fromDate: config.fromDate,
-        toDate: config.toDate,
+        start_date: config.start_date,
+        end_date: config.end_date,
     });
 
     useEffect(() => {
@@ -41,11 +41,11 @@ const ScheduleEditor = () => {
 
                 if (userScope && scopeId) {
                     const fetchedUsers = await fetchUsers({ userScope, scopeId, map: true });
-                    setUsers(fetchedUsers);
+                    setUserShifts(fetchedUsers);
                 }
 
             } else {
-                setUsers(config.users);
+                setUserShifts(config.users);
                 setLoading(false);
             }
 
@@ -59,15 +59,16 @@ const ScheduleEditor = () => {
 
     }, [config, fetchUsers, params, setLoading]);
 
-    if (!dateRange.fromDate || !dateRange.toDate)
+    if (!dateRange.start_date || !dateRange.end_date)
         return <span>No time range specified.</span>;
+    
+    const dates = generateDateList(dateRange.start_date, dateRange.end_date);
 
-    if (!users)
+    if (!userShifts)
         return <span>No users specified.</span>;
 
     if (loading)
         return <Loader/>;
-
 
     const title = () => {
         if (!config.type)
@@ -83,8 +84,6 @@ const ScheduleEditor = () => {
         }
     }
 
-    const dates = generateDateList(dateRange.fromDate, dateRange.toDate);
-
     return (
         <div className={'app-schedule seethrough'}>
             <div className={'app-schedule-header'}>
@@ -96,8 +95,8 @@ const ScheduleEditor = () => {
             </div>
             <UserShiftTable
                 dates={dates}
-                users={users}
-                setUsers={setUsers}
+                userShifts={userShifts}
+                setUserShifts={setUserShifts}
                 editable={true}
             />
         </div>

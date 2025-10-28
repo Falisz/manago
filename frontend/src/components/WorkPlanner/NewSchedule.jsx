@@ -1,39 +1,42 @@
 // FRONTEND/components/WorkPlanner/NewSchedule.jsx
-import {useCallback, useState} from "react";
-import Button from "../Button";
-import {useNavigate} from "react-router-dom";
-import useAppState from "../../contexts/AppStateContext";
-import ScheduleSelector from "./ScheduleSelector";
-import {useModals} from "../../contexts/ModalContext";
-import Loader from "../Loader";
+import {useCallback, useEffect} from 'react';
+import Button from '../Button';
+import {useNavigate} from 'react-router-dom';
+import useAppState from '../../contexts/AppStateContext';
+import ScheduleSelector from './ScheduleSelector';
+import {useModals} from '../../contexts/ModalContext';
+import useSchedules from '../../hooks/useSchedules';
 
 const NewSchedule = () => {
 
     const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
-    const [schedule, setSchedule] = useState({
-        type: 'new',
-        fromDate: new Date(),
-        toDate: new Date(),
-        userScope: null,
-        scopeId: null,
-        users: []
-    });
+    const { schedule, setSchedule, fetchUserShifts } = useSchedules();
+
     const { closeTopModal } = useModals();
 
     const newSchedule = useCallback(() => {
 
-        // Before navigating to the planner editor, we save the schedule to the server.
+        // Before navigating to the planner editor, we save the validated schedule draft to the server.
 
-        setScheduleEditor(schedule);
+        setScheduleEditor({
+            ...schedule,
+            type: 'new'
+        });
+
         navigate('/planner/editor');
+        
         setTimeout(() => {
             closeTopModal();
         }, 100);
     }, [setScheduleEditor, navigate, schedule, closeTopModal]);
 
-    const selectedUsers = Array.from(schedule.users.values());
+    useEffect(() => {
+            fetchUserShifts().then();
+    }, [fetchUserShifts]);
 
+    const selectedUsers = schedule.users?.size > 0 ? Array.from(schedule.users.values()) : [];
+    
     return <>
         <h1>New Schedule Draft</h1>
         <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
@@ -48,15 +51,15 @@ const NewSchedule = () => {
                 <label>Schedule name</label>
                 <input
                     className={'form-input'}
-                    type="text"
-                    placeholder="Schedule name"
+                    type='text'
+                    placeholder='Schedule name'
                     onChange={(e) => setSchedule(prev => ({...prev, name: e.target.value}))}
                     required={true}
                 />
                 <label>Schedule description</label>
                 <textarea
                     className={'form-input'}
-                    placeholder="Schedule description (optional)"
+                    placeholder='Schedule description (optional)'
                     onChange={(e) => setSchedule(prev => ({...prev, description: e.target.value}))}
                 />
             </div>
@@ -67,12 +70,10 @@ const NewSchedule = () => {
             include_branches={true}
             include_projects={true}
             include_specific={true}
-            date_range={true}
-            monthly={false}
             inRow={false}
         />
         <div style={{padding: '0 20px 10px'}}><b>Selected Users ({selectedUsers.length}):</b><br/>
-            {schedule.loading ? <Loader/> : selectedUsers.length > 0 && selectedUsers.map(user => user.first_name + ' ' + user.last_name).join(', ')
+            {schedule.placeholder ? schedule.placeholder : selectedUsers.length > 0 && selectedUsers.map(user => user.first_name + ' ' + user.last_name).join(', ')
         }</div>
         <Button onClick={newSchedule} disabled={!schedule.group || !schedule.groupId}>Start planning!</Button>
         </div>

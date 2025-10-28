@@ -4,18 +4,15 @@ import useAppState from '../../contexts/AppStateContext';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
 import ComboBox from '../ComboBox';
-import useShifts from "../../hooks/useShifts";
-import useLeaves from "../../hooks/useLeaves";
 
-const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, include_teams, include_branches,
+const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, include_all, include_teams, include_branches,
                               include_projects, include_specific, include_by_manager, date_range = true,
                               monthly = false, inRow = true }) => {
 
     const { appState, user } = useAppState();
-    const { fetchTeams } = useTeams();
-    const { fetchUsers } = useUsers();
-    const { fetchShifts } = useShifts();
-    const { fetchLeaves } = useLeaves();
+    const { teams, fetchTeams } = useTeams();
+    const { users, fetchUsers } = useUsers();
+    const { users: managers, fetchUsers: fetchManagers } = useUsers();
     const groupOptions = [
         ...(include_all ?
             [{ id: 'all', name: 'All Users' }] : []),
@@ -35,114 +32,31 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
     const [ groupIdOptions, setGroupIdOptions ] = useState([]);
 
     useEffect(() => {
-        if (schedule.userScope === 'team') {
-            fetchTeams(false, true).then(
-                (result) => {
-                    const teamOptions = result.map((team) => ({id: team.id, name: team.name}));
-                    setGroupIdOptions(teamOptions);
-                }
-            );
-        } else if (['user', 'manager'].includes(schedule.userScope)) {
-            fetchUsers({group: schedule.userScope === 'manager' ? 'managers' : null}).then(
-                (result) => {
-                    const userOptions = result.map((user) => (
-                        {id: user.id, name: user.first_name + ' ' + user.last_name}
-                    ));
-                    setGroupIdOptions(userOptions);
-                }
-            );
+        fetchUsers().then();
+        fetchManagers({ group: 'manager' }).then();
+        fetchTeams({ all: true }).then();
+    }, [fetchUsers, fetchManagers, fetchTeams]);
+
+    useEffect(() => {
+        if (schedule.user_scope === 'team') {
+            const teamOptions = teams.map((team) => (
+                {id: team.id, name: team.name}
+            ));
+            setGroupIdOptions(teamOptions);
+        } else if (schedule.user_scope === 'user') {
+            const userOptions = users.map((user) => (
+                {id: user.id, name: user.first_name + ' ' + user.last_name}
+            ));
+            setGroupIdOptions(userOptions);
+        } else if (schedule.user_scope === 'manager') {
+            const managerOptions = managers.map((manager) => (
+                {id: manager.id, name: manager.first_name + ' ' + manager.last_name}
+            ));
+            setGroupIdOptions(managerOptions);  
         } else {
             setGroupIdOptions([{id: null, name: 'None'}]);
         }
-    }, [schedule.userScope, fetchTeams, fetchUsers]);
-
-    useEffect(() => {
-        setSchedule(prev => ({...prev, loading: true}));
-        let placeholder;
-
-        const userScope = schedule.userScope;
-        const scopeId = schedule.scopeId;
-        const startDate = schedule.fromDate;
-        const endDate = schedule.toDate;
-
-        if (userScope !== 'all' && !scopeId) {
-            if (['user', 'manager'].includes(userScope))
-                placeholder = 'Select a User.';
-
-            else if (userScope === 'team')
-                placeholder = 'Select a Team.';
-
-            else if (userScope === 'branch')
-                placeholder = 'Select a Branch.';
-
-            else if (userScope === 'project')
-                placeholder = 'Select a Project.';
-
-            setSchedule(prev => ({...prev, users: [], placeholder, loading: false}));
-            return;
-        }
-
-        const fetchData = async () => {
-            let users = new Map();
-
-            if (userScope === 'all')
-                users = await fetchUsers({map: true});
-
-            else if (userScope === 'you')
-                users = await fetchUsers({userId: user.id, map: true});
-
-            else if (userScope === 'user')
-                users = await fetchUsers({userId: scopeId, map: true});
-
-            else if (['manager', 'team', 'branch', 'project'].includes(userScope))
-                users = await fetchUsers({userScope, scopeId, map: true});
-
-            if (!users.size) {
-                placeholder = 'No Users found.';
-                setSchedule(prev => ({ ...prev, users, placeholder, loading: false }));
-                return;
-            }
-            placeholder = null;
-
-            const userIds = Array.from(users.keys());
-
-            const shifts = await fetchShifts({users: userIds, start_date: startDate, end_date: endDate});
-            const leaves = await fetchLeaves({users: userIds, start_date: startDate, end_date: endDate});
-
-            users.forEach((user, userId) => {
-                user.shifts = shifts
-                    .filter(shift => shift.user.id === userId)
-                    .map(shift => ({...shift, user: shift.user.id}));
-                user.leaves = leaves
-                    .filter(leave => leave.user.id === userId)
-                    .map(leave => ({...leave, user: leave.user.id}));
-            });
-
-            users = new Map(
-                [...users.entries()].sort((a, b) => {
-                    const userA = a[1];
-                    const userB = b[1];
-
-                    if (userA.hasOwnProperty('team') && userB.hasOwnProperty('team'))
-                        if (userA.team.id !== userB.team.id)
-                            return userA.team.id < userB.team.id ? -1 : 1;
-                        else
-                            return userA.role.id > userB.role.id ? -1 : 1;
-
-                    else
-                        return (userA.last_name + ' ' + userA.first_name)
-                            .localeCompare(userB.last_name + ' ' + userB.first_name);
-
-                })
-            );
-
-            setSchedule(prev => ({...prev, users, placeholder, loading: false}));
-        };
-
-        fetchData().then();
-
-    }, [schedule.userScope, schedule.scopeId, schedule.fromDate, schedule.toDate,
-        fetchUsers, fetchLeaves, fetchShifts, setSchedule, user.id]);
+    }, [schedule.user_scope, teams, users, managers]);
 
     const handleChange = useCallback((e) => {
         function isValidDate(d) {
@@ -151,7 +65,7 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
 
         const { name, value } = e.target;
 
-        if (['toDate', 'fromDate'].includes(name)) {
+        if (['start_date', 'end_date'].includes(name)) {
             const date = new Date(value);
 
             if (!isValidDate(date))
@@ -161,11 +75,11 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
 
         } else {
             setSchedule(prev => ({...prev, [name]: value }));
-            if (name === 'userScope') {
+            if (name === 'user_scope') {
                 if (value === 'you')
-                    setSchedule(prev => ({...prev, scopeId: user.id }));
+                    setSchedule(prev => ({...prev, scope_id: user.id }));
                 else
-                    setSchedule(prev => ({...prev, scopeId: null }));
+                    setSchedule(prev => ({...prev, scope_id: null }));
             }
         }
     }, [setSchedule, user]);
@@ -184,18 +98,18 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                 <div className={'form-group'} style={{flexDirection: 'row'}}>
                 <ComboBox
                     placeholder={'Pick a group'}
-                    name={'userScope'}
+                    name={'user_scope'}
                     searchable={false}
-                    value={schedule.userScope}
+                    value={schedule.user_scope}
                     options={groupOptions}
                     onChange={handleChange}
                     style={{minWidth: '150px'}}
                 />
-                { schedule.userScope && !['all', 'you'].includes(schedule.userScope) && <ComboBox
-                    placeholder={`Pick a ${schedule.userScope}`}
-                    name={'scopeId'}
+                { schedule.user_scope && !['all', 'you'].includes(schedule.user_scope) && <ComboBox
+                    placeholder={`Pick a ${schedule.user_scope}`}
+                    name={'scope_id'}
                     searchable={true}
-                    value={schedule.scopeId}
+                    value={schedule.scope_id}
                     options={groupIdOptions}
                     style={{minWidth: '150px'}}
                     onChange={handleChange}
@@ -207,10 +121,9 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                 <div className={'form-group'} style={{flexDirection: 'row'}}>
                 <input
                     className={'form-input'}
-                    placeholder={'from date'}
-                    name={'fromDate'}
-                    value={schedule.fromDate.toISOString().split('T')[0]}
-                    max={schedule.toDate.toISOString().split('T')[0]}
+                    name={'start_date'}
+                    value={schedule.start_date.toISOString().split('T')[0]}
+                    max={schedule.end_date.toISOString().split('T')[0]}
                     onChange={handleChange}
                     type={'date'}
                     style={{minWidth: '100px'}}
@@ -218,10 +131,9 @@ const ScheduleSelector = ({ schedule, setSchedule, include_you, include_all, inc
                 <span>-</span>
                 <input
                     className={'form-input'}
-                    placeholder={'to date'}
-                    name={'toDate'}
-                    value={schedule.toDate.toISOString().split('T')[0]}
-                    min={schedule.fromDate.toISOString().split('T')[0]}
+                    name={'end_date'}
+                    value={schedule.end_date.toISOString().split('T')[0]}
+                    min={schedule.start_date.toISOString().split('T')[0]}
                     onChange={handleChange}
                     type={'date'}
                     style={{minWidth: '100px'}}

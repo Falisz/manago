@@ -10,37 +10,34 @@ const useUsers = () => {
     const { appCache } = useAppState();
     const userCache = appCache.current.users;
 
-    const fetchUsers = useCallback(async ({userId = null, userScope = 'all', scopeId = null, group = null,
+    const fetchUsers = useCallback(async ({userId = null, user_scope = 'all', scope_id = null, group = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
         let users;
         setStatus([]);
 
-        if (userId && !reload && userCache[userId]) {
-            setUsers(userCache[userId]);
-            setLoading(false);
-            return userCache[userId];
-        }
+        if (userId && !reload && userCache[userId])
+            users = userCache[userId];
 
-        try {
+        else try {
             setLoading(loading);
 
             let url = '/users';
 
             if (userId) {
                 url = `/users/${userId}`;
-            } else if (userScope !== 'all') {
-                if (userScope === 'manager')
-                    url = `/users/${scopeId}/managed-users`;
+            } else if (user_scope !== 'all' && scope_id) {
+                if (user_scope === 'manager')
+                    url = `/users/${scope_id}/managed-users`;
 
-                else if (userScope === 'team')
-                    url = `/teams/${scopeId}/users?include_subteams=true`;
+                else if (user_scope === 'team')
+                    url = `/teams/${scope_id}/users?include_subteams=true`;
 
-                else if (userScope === 'branch')
-                    url = `/branches/${scopeId}/users`;
+                else if (user_scope === 'branch')
+                    url = `/branches/${scope_id}/users`;
 
-                else if (userScope === 'project')
-                    url = `/projects/${scopeId}/users`;
+                else if (user_scope === 'project')
+                    url = `/projects/${scope_id}/users`;
 
             } else if (group === 'employees' || group === 'managers') {
                 url = `/users?group=${group}`;
@@ -53,19 +50,19 @@ const useUsers = () => {
 
             users = res.data;
 
-            if (map) {
-                if (!Array.isArray(users))
-                    users = [users];
-                users = new Map(
-                    users.map(user => [user.id, user])
-                );
-            }
-
         } catch (err) {
             console.error('fetchUsers error:', err);
 
             const message = 'Error occurred while fetching the User data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
+        }
+
+        if (map) {
+            if (users != null && !Array.isArray(users))
+                users = [users];
+            users = new Map(
+                users.map(user => [user.id, user])
+            );
         }
 
         setUsers(users);

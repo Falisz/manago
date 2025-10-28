@@ -1,6 +1,7 @@
 // FRONTEND/components/WorkPlanner/ScheduleIndex.jsx
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useMemo} from 'react';
 import {useLocation, useNavigate, useSearchParams} from 'react-router-dom';
+import useSchedules from '../../hooks/useSchedules';
 import ComboBox from '../ComboBox';
 import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
@@ -10,43 +11,30 @@ import UserShiftTable from './UserShiftTable';
 import '../../styles/Schedule.css';
 
 const Schedule = () => {
-    const { user } = useAppState();
+    const { schedule, loading, setSchedule, setLoading, fetchUserShifts } = useSchedules();
+    const { setScheduleEditor } = useAppState();
     const { search } = useLocation();
-    const params = new URLSearchParams(search);
+    const params = useMemo(() => new URLSearchParams(search), [search]);
     const setSearchParams = useSearchParams()[1];
     const isMounted = useRef(false);
 
-    const from = params.get('from');
-    const fromDate = from ? new Date(from) : new Date(Date.now() - 86400000);
+    useEffect(() => {
+        const from = params.get('from');
+        if (from && !isNaN(Date.parse(from)))
+            setSchedule(prev => ({...prev, start_date: new Date(from)}));
 
-    const to = params.get('to');
-    const toDate = to ? new Date(to) : new Date(fromDate.getTime() + 6 * 86400000);
+        const to = params.get('to');
+        if (to && !isNaN(Date.parse(to)))
+            setSchedule(prev => ({...prev, end_date: new Date(to)}));
 
-    const [schedule, setSchedule] = useState({
-        type: params.get('schedule') || 'users',
-        loading: true,
-        placeholder: null,
-        fromDate,
-        toDate,
-        month: null,
-        userScope: params.get('scope') || 'you',
-        scopeId: params.get('sid') || user.id,
-        users: []
-    });
+    }, [params, setSchedule]);
 
-    const { setScheduleEditor } = useAppState();
+    const dates = generateDateList(schedule.start_date, schedule.end_date);
 
     const navigate = useNavigate();
 
     const editCurrent = useCallback(() => {
-        setScheduleEditor({
-            type: 'current',
-            fromDate: schedule.fromDate,
-            toDate: schedule.toDate,
-            userScope: schedule.userScope,
-            scopeId: schedule.scopeId,
-            users: schedule.users
-        });
+        setScheduleEditor({...schedule, type: 'current'});
         navigate('/planner/editor');
     }, [setScheduleEditor, navigate, schedule]);
 
@@ -63,13 +51,13 @@ const Schedule = () => {
         else
             newParams.delete('schedule');
 
-        if (schedule.fromDate)
-            newParams.set('from', formatDate(schedule.fromDate));
+        if (schedule.start_date)
+            newParams.set('from', formatDate(schedule.start_date));
         else
             newParams.delete('from');
 
-        if (schedule.toDate)
-            newParams.set('to', formatDate(schedule.toDate));
+        if (schedule.end_date)
+            newParams.set('to', formatDate(schedule.end_date));
         else
             newParams.delete('to');
 
@@ -78,20 +66,22 @@ const Schedule = () => {
         else
             newParams.delete('month');
 
-        if (schedule.userScope)
-            newParams.set('scope', schedule.userScope);
+        if (schedule.user_scope)
+            newParams.set('scope', schedule.user_scope);
         else
             newParams.delete('scope');
 
-        if (schedule.scopeId && schedule.userScope !== 'you')
-            newParams.set('sid', schedule.scopeId);
+        if (schedule.scope_id && schedule.user_scope !== 'you')
+            newParams.set('sid', schedule.scope_id);
         else
             newParams.delete('sid');
 
         setSearchParams(newParams, { replace: true });
     }, [schedule, search, setSearchParams])
 
-    const dates = generateDateList(schedule.fromDate, schedule.toDate);
+    useEffect(() => {
+        fetchUserShifts().then();
+    }, [fetchUserShifts]);
 
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>
@@ -104,7 +94,7 @@ const Schedule = () => {
                     {id: 'jobs', name: 'Jobs Schedule'},
                     {id: 'monthly', name: 'Monthly Schedule'}
                 ]}
-                onChange={(e) => {setSchedule(prev => ({...prev, type: e.target.value }));}}
+                onChange={(e) => setSchedule(prev => ({...prev, type: e.target.value}))}
                 style={{minWidth: 'unset'}}
                 selectedStyle={{background: 'none'}}
                 selectedTextStyle={{fontFamily: 'Roboto Condensed, sans-serif', color: 'var(--text-color)', fontSize: '2rem', margin: 0, padding: 0}}
@@ -112,6 +102,7 @@ const Schedule = () => {
             <ScheduleSelector
                 schedule={schedule}
                 setSchedule={setSchedule}
+                setLoading={setLoading}
                 include_all={schedule.type === 'users'}
                 include_you={schedule.type === 'users'}
                 include_teams={true}
@@ -132,9 +123,9 @@ const Schedule = () => {
         {schedule.type === 'users' &&
             <UserShiftTable
                 dates={dates}
-                users={schedule.users}
+                userShifts={schedule.users}
                 placeholder={schedule.placeholder}
-                loading={schedule.loading}
+                loading={loading}
                 editable={false}
             />
         }
