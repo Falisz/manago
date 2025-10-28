@@ -3,14 +3,14 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useUsers from '../../hooks/useUsers';
 import { useModals } from '../../contexts/ModalContext';
-import Details from "../Details";
+import Details from '../Details';
 
 const UserDetails = ({ userId }) => {
-    const { users: user, loading, fetchUser, deleteUser } = useUsers();
+    const { user, loading, fetchUser, deleteUser } = useUsers();
     const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {
-        const refresh = refreshTriggers?.user?.data === userId;
+        const refresh = refreshTriggers.user?.data === userId;
 
         if (refresh)
             delete refreshTriggers.user;
@@ -175,20 +175,13 @@ const UserDetails = ({ userId }) => {
         }
     };
 
-    if (loading) {
+    if (loading) 
         return <Loader />;
-    }
 
-    if (!user) {
+    if (!user)
         return <h1>User not found!</h1>;
-    }
 
-    if (loading) return <Loader/>;
-
-    return <Details
-        structure={userStructure}
-        data={user}
-    />;
+    return <Details structure={userStructure} data={user} />;
 };
 
 export default UserDetails;

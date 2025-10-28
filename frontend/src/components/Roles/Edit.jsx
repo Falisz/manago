@@ -8,11 +8,11 @@ const RoleEdit = ({ roleId }) => {
     const { role, loading, setLoading, fetchRole, saveRole } = useRoles();
 
     useEffect(() => {
-        if (roleId) {
+        if (roleId)
             fetchRole(roleId).then();
-        } else {
+        else 
             setLoading(false);
-        }
+        
     }, [roleId, setLoading, fetchRole]);
 
     const formStructure = useMemo(() => ({
@@ -54,7 +54,8 @@ const RoleEdit = ({ roleId }) => {
         return role ? role : {};
     }, [role]);
 
-    if (loading) return <Loader />;
+    if (loading) 
+        return <Loader />;
 
     return (
         <EditForm

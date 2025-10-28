@@ -3,11 +3,11 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
 import Loader from '../Loader';
-import EditForm from "../EditForm";
+import EditForm from '../EditForm';
 
 export const TeamUserAssignment = ({team}) => {
     const {saveTeamAssignment} = useTeams();
-    const {users, loading: usersLoading, fetchUsers} = useUsers();
+    const {users, loading, fetchUsers} = useUsers();
     const {users: managers, loading: managersLoading, fetchUsers: fetchManagers} = useUsers();
 
     useEffect(() => {
@@ -65,12 +65,10 @@ export const TeamUserAssignment = ({team}) => {
         }
     }), [team, users, managers, saveTeamAssignment]);
 
-    if (usersLoading || managersLoading) return <Loader/>;
+    if (loading || managersLoading) 
+        return <Loader/>;
 
-    return <EditForm
-        structure={formStructure}
-        presetData={team}
-    />;
+    return <EditForm structure={formStructure} presetData={team} />;
 }
 
 export const TeamUserBulkAssignment = ({teams}) => {
@@ -140,16 +138,14 @@ export const TeamUserBulkAssignment = ({teams}) => {
 
     const presetData = useMemo(() => ({mode: 'add', teams, role: 2}), [teams]);
 
-    if (loading) return <Loader/>;
+    if (loading) 
+        return <Loader/>;
 
-    return <EditForm
-        structure={formStructure}
-        presetData={presetData}
-    />;
+    return <EditForm structure={formStructure} presetData={presetData} />;
 }
 
 const TeamEdit = ({ teamId, parentId }) => {
-    const { teams: team, loading, error, setLoading, fetchTeam, saveTeam } = useTeams();
+    const { team, loading, setLoading, fetchTeam, saveTeam } = useTeams();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -159,36 +155,38 @@ const TeamEdit = ({ teamId, parentId }) => {
         fetchManagers('managers').then();
         fetchTeams({all: true, loading: true}).then();
 
-        if (teamId) {
+        if (teamId)
             fetchTeam({teamId}).then();
-        } else {
+        else
             setLoading(false);
-        }
-
+        
     }, [teamId, setLoading, fetchTeam, fetchUsers, fetchManagers, fetchTeams]);
 
     const getAvailableParentTeams = useCallback(() => {
         const getAllSubTeams = (currentTeam) => {
-            if (!currentTeam) return [];
+            if (!currentTeam) 
+                return [];
+            
             const result = [currentTeam];
-            if (currentTeam.sub_teams && Array.isArray(currentTeam.sub_teams)) {
+            
+            if (currentTeam.sub_teams && Array.isArray(currentTeam.sub_teams))
                 currentTeam.sub_teams.forEach(subteam => {
                     result.push(...getAllSubTeams(subteam));
                 });
-            }
+            
             return result;
         };
-        const nonAvailableParentTeams = new Set();
-        if (teamId !== undefined && teamId !== null) {
-            const parsedTeamId = parseInt(teamId, 10);
-            if (!isNaN(parsedTeamId)) {
-                nonAvailableParentTeams.add(parsedTeamId);
-            }
-        }
-        getAllSubTeams(team)
-            .forEach(t => nonAvailableParentTeams.add(t.id));
 
-        if (!Array.isArray(teams)) return [];
+        const nonAvailableParentTeams = new Set();
+
+        if (teamId != null && !isNaN(teamId)) 
+            nonAvailableParentTeams.add(teamId);
+
+        getAllSubTeams(team).forEach(t => nonAvailableParentTeams.add(t.id));
+
+        if (!Array.isArray(teams)) 
+            return [];
+        
         return teams.filter(t => t && typeof t.id === 'number' && !nonAvailableParentTeams.has(t.id));
     }, [teamId, team, teams]);
 
@@ -271,16 +269,10 @@ const TeamEdit = ({ teamId, parentId }) => {
         };
     }, [team, parentId]);
 
-    if (loading) return <Loader />;
+    if (loading) 
+        return <Loader/>;
 
-    if (error) return <div className='error-message'>{error}</div>;
-
-    return (
-        <EditForm
-            structure={formStructure}
-            presetData={teamData}
-        />
-    );
+    return <EditForm structure={formStructure} presetData={teamData} />;
 }
 
 export default TeamEdit;

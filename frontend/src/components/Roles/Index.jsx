@@ -10,10 +10,13 @@ const RolesIndex = () => {
     const { roles, loading, fetchRoles } = useRoles();
 
     useEffect(() => {
-        if (!roles || refreshTriggers?.roles)
-            fetchRoles({all: true, loading: true}).then();
+        const refresh = refreshTriggers?.roles || false;
 
-        delete refreshTriggers.roles;
+        if (refresh)
+            delete refreshTriggers.roles;
+
+        if (!roles || refresh)
+            fetchRoles({all: true, loading: true}).then();
 
     }, [fetchRoles, roles, refreshTriggers.roles]);
 

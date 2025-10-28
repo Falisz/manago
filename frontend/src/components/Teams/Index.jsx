@@ -10,10 +10,13 @@ const TeamsIndex = () => {
     const { teams, loading, fetchTeams, deleteTeams, deleteTeam } = useTeams();
 
     useEffect(() => {
-        if (!teams || refreshTriggers?.teams)
-            fetchTeams({all: true, loading: true}).then();
+        const refresh = refreshTriggers?.teams || false;
 
-        delete refreshTriggers.teams;
+        if (refresh)
+            delete refreshTriggers.teams;
+        
+        if (!teams || refresh)
+            fetchTeams({all: true, loading: true}).then();
 
     }, [fetchTeams, teams, refreshTriggers.teams]);
 
@@ -127,7 +130,8 @@ const TeamsIndex = () => {
         ],
         }), [handleTeamDelete, handleTeamsDelete, openModal, teams]);
 
-    if (loading) return <Loader />;
+    if (loading) 
+        return <Loader />;
 
     return (
         <Table

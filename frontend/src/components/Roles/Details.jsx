@@ -10,16 +10,15 @@ const RoleDetails = ({ roleId }) => {
     const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
 
     useEffect(() => {
-        if (roleId) {
-            fetchRole(roleId).then();
-        }
-    }, [roleId, fetchRole]);
+        const refresh = refreshTriggers?.role?.data === parseInt(roleId);
 
-    useEffect(() => {
-        if (refreshTriggers?.role?.data === parseInt(roleId)) {
-            fetchRole(roleId, true).then();
-        }
-    }, [roleId, fetchRole, refreshTriggers]);
+        if (refresh)
+            delete refreshTriggers.role;
+
+        if (roleId && (!role || refresh))
+            fetchRole(roleId).then();
+
+    }, [fetchRole, role, roleId, refreshTriggers.role]);
 
     const handleDelete = async (users = 0) => {
         let message = 'Are you sure you want to delete this role? This action cannot be undone.'
@@ -107,7 +106,6 @@ const RoleDetails = ({ roleId }) => {
 
     if (loading)
         return <Loader />;
-
 
     if (!role)
         return <h1>Role not found!</h1>;

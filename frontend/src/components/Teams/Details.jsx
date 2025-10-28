@@ -3,10 +3,10 @@ import React, {useEffect} from 'react';
 import Loader from '../Loader';
 import useTeams from '../../hooks/useTeams';
 import { useModals } from '../../contexts/ModalContext';
-import Details from "../Details";
+import Details from '../Details';
 
 const TeamDetails = ({ teamId }) => {
-    const { teams: team, loading, fetchTeam, deleteTeam } = useTeams();
+    const { team, loading, fetchTeam, deleteTeam } = useTeams();
     const { openModal, refreshTriggers, closeTopModal, refreshData } = useModals();
 
     useEffect(() => {
@@ -27,15 +27,15 @@ const TeamDetails = ({ teamId }) => {
         const membersCount = team.members.length+team.managers.length+team.leaders.length;
         const subteamsCount = team.sub_teams.length;
 
-        if (membersCount > 0) {
+        if (membersCount > 0)
             message += ` There are currently ${membersCount === 1 ? 'a' : membersCount}
              user${membersCount > 1 ? 's' : ''} assigned to this team.`
-        }
-        if (subteamsCount > 0) {
+        
+        if (subteamsCount > 0)
             message += ` This team has currently ${subteamsCount === 1 ? 'a' : subteamsCount} 
             subteam${subteamsCount > 1 ? 's' : ''}. 
             Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned?`
-        }
+        
         openModal({
             content: 'confirm',
             type: 'pop-up',
@@ -55,14 +55,12 @@ const TeamDetails = ({ teamId }) => {
         });
     };
 
-    if (loading) {
+    if (loading)
         return <Loader />;
-    }
-
-    if (!team) {
+    
+    if (!team) 
         return <h1>Team not found!</h1>;
-    }
-
+    
     const userStructure = {
         idField: 'id',
         dataField: ['first_name', 'last_name'],
@@ -80,7 +78,7 @@ const TeamDetails = ({ teamId }) => {
         idField: 'id',
         dataField: 'name',
         onClick: (id) => {openModal({ content: 'teamDetails', contentId: id, type: 'dialog' })}
-    }
+    };
 
     const detailsStructure = {
         header: {
@@ -171,12 +169,9 @@ const TeamDetails = ({ teamId }) => {
                 items: userStructure
             },
         }
-    }
+    };
 
-    return <Details
-        structure={detailsStructure}
-        data={team}
-    />
+    return <Details structure={detailsStructure} data={team} />;
 };
 
 export default TeamDetails;

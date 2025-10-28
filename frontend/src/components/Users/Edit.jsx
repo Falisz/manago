@@ -34,12 +34,10 @@ export const UserRoleAssignment = ({user}) => {
         }
     }), [user, roles, saveUserAssignment]);
 
-    if (loading) return <Loader/>;
+    if (loading) 
+        return <Loader/>;
 
-    return <EditForm
-        structure={formStructure}
-        presetData={user}
-    />;
+    return <EditForm structure={formStructure} presetData={user} />;
 }
 
 export const UserManagerAssignment = ({user}) => {
@@ -71,12 +69,10 @@ export const UserManagerAssignment = ({user}) => {
         }
     }), [user, managers, saveUserAssignment]);
 
-    if (loading) return <Loader/>;
+    if (loading) 
+        return <Loader/>;
 
-    return <EditForm
-        structure={formStructure}
-        presetData={user}
-    />;
+    return <EditForm structure={formStructure} presetData={user} />;
 }
 
 export const UserRoleBulkAssignment = ({users}) => {
@@ -136,12 +132,10 @@ export const UserRoleBulkAssignment = ({users}) => {
 
     const presetData = useMemo(() => ({mode: 'add', users}), [users]);
 
-    if (loading) return <Loader/>;
+    if (loading) 
+        return <Loader/>;
 
-    return <EditForm
-        structure={formStructure}
-        presetData={presetData}
-    />;
+    return <EditForm structure={formStructure} presetData={presetData} />;
 }
 
 export const UserManagerBulkAssignment = ({users}) => {
@@ -201,16 +195,14 @@ export const UserManagerBulkAssignment = ({users}) => {
 
     const presetData = useMemo(() => ({mode: 'add', users}), [users]);
 
-    if (loading) return <Loader/>;
+    if (loading) 
+        return <Loader/>;
 
-    return <EditForm
-        structure={formStructure}
-        presetData={presetData}
-    />;
+    return <EditForm structure={formStructure} presetData={presetData} />;
 }
 
 const UserEdit = ({userId, preset}) => {
-    const {users: user, loading, setLoading, fetchUser, saveUser} = useUsers();
+    const {user, loading, setLoading, fetchUser, saveUser} = useUsers();
     const {users: managers, fetchUsers} = useUsers();
     const {roles, fetchRoles} = useRoles();
 
@@ -323,14 +315,10 @@ const UserEdit = ({userId, preset}) => {
         },
     }), [name, saveUser, user, userId, roles, managers]);
 
-    if (loading) return <Loader/>;
+    if (loading) 
+        return <Loader/>;
 
-    return (
-        <EditForm
-            structure={formStructure}
-            presetData={userData}
-        />
-    );
+    return <EditForm structure={formStructure} presetData={userData} />;
 };
 
 export default UserEdit;
