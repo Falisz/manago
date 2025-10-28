@@ -8,6 +8,7 @@ import '../../styles/Schedule.css';
 import useUsers from "../../hooks/useUsers";
 import Loader from "../Loader";
 
+// TODO: Fix caching issue when switching to Editor.
 const ScheduleEditor = () => {
     const { appCache } = useAppState();
     const { fetchUsers, loading, setLoading } = useUsers();
