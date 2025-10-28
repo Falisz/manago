@@ -141,6 +141,7 @@ const useRoles = () => {
 
     return {
         roles,
+        role: roles,
         loading,
         status, // 4 kinds: info, success, warning, error
         setLoading,

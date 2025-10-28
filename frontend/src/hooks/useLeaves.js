@@ -79,6 +79,7 @@ const useShifts = () => {
 
     return {
         leaves,
+        leave: leaves,
         loading,
         status,
         setLoading,

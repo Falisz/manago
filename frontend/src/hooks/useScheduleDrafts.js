@@ -55,6 +55,7 @@ const useScheduleDrafts = () => {
 
     return {
         scheduleDrafts,
+        scheduleDraft: scheduleDrafts,
         loading,
         status,
         setLoading,

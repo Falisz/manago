@@ -94,6 +94,7 @@ const useShifts = () => {
 
     return {
         shifts,
+        shift: shifts,
         loading,
         status,
         setLoading,

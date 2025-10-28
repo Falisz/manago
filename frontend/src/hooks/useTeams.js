@@ -186,6 +186,7 @@ const useTeams = () => {
 
     return {
         teams,
+        team: teams,
         loading,
         status, // 4 kinds: info, success, warning, error
         setLoading,
