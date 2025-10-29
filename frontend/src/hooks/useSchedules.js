@@ -14,14 +14,14 @@ const useSchedules = () => {
 
     const [ schedule, setSchedule ] = useState({
         id: null,
+        name: 'Current Schedule',
+        description: '',
         type: 'users',
         start_date: new Date(now),
         end_date: new Date(now + 6 * DAY_IN_MS),
         month: null,
         user_scope: 'you',
         user_scope_id: user.id,
-        name: '',
-        description: '',
         shifts: new Map(),
         placeholder: null,
     });
@@ -180,13 +180,25 @@ const useSchedules = () => {
 
     }, [fetchLeaves, fetchShifts, fetchUsers, user.id]);
 
-    const saveScheduleDraft = useCallback( async ({scheduleData}) => {
+    const saveScheduleDraft = useCallback( async () => {
         setStatus([]);
         // Function to save (create, update) schedule drafts - not to publish them.
-    }, []);
+        // It will be only available from the Schedule editor - therefore no params are needed.
+        console.log('saveScheduleDraft called with data:', schedule);
+    }, [schedule]);
 
-    const publishScheduleDraft = useCallback( async ({scheduleId, scheduleData, mode}) => {
+    const publishScheduleDraft = useCallback( async () => {
+        setStatus([]);
         // Function to publish schedule drafts - not to update them.
+        // It will be only available from the Schedule editor - therefore no params are needed.
+        console.log('publishScheduleDraft called with data:', schedule);
+    }, [schedule]);
+
+    const discardScheduleDraft = useCallback( async ({scheduleId}) => {
+        setStatus([]);
+        // Function to discard schedule drafts.
+        // It will be available from both Schedule editor and Schedule drafts list, therefore param included.
+        console.log('discard called for scheduleId:', scheduleId);
     }, []);
 
     return {
@@ -202,7 +214,8 @@ const useSchedules = () => {
         fetchScheduleDraft,
         fetchUserShifts,
         saveScheduleDraft,
-        publishScheduleDraft
+        publishScheduleDraft,
+        discardScheduleDraft
     };
 };
 export default useSchedules;
