@@ -38,17 +38,17 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
     }, [fetchUsers, fetchManagers, fetchTeams]);
 
     useEffect(() => {
-        if (schedule.user_scope === 'team') {
+        if (teams && schedule.user_scope === 'team') {
             const teamOptions = teams.map((team) => (
                 {id: team.id, name: team.name}
             ));
             setGroupIdOptions(teamOptions);
-        } else if (schedule.user_scope === 'user') {
+        } else if (users && schedule.user_scope === 'user') {
             const userOptions = users.map((user) => (
                 {id: user.id, name: user.first_name + ' ' + user.last_name}
             ));
             setGroupIdOptions(userOptions);
-        } else if (schedule.user_scope === 'manager') {
+        } else if (managers && schedule.user_scope === 'manager') {
             const managerOptions = managers.map((manager) => (
                 {id: manager.id, name: manager.first_name + ' ' + manager.last_name}
             ));
@@ -77,9 +77,9 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
             setSchedule(prev => ({...prev, [name]: value }));
             if (name === 'user_scope') {
                 if (value === 'you')
-                    setSchedule(prev => ({...prev, scope_id: user.id }));
+                    setSchedule(prev => ({...prev, user_scope_id: user.id }));
                 else
-                    setSchedule(prev => ({...prev, scope_id: null }));
+                    setSchedule(prev => ({...prev, user_scope_id: null }));
             }
         }
     }, [setSchedule, user]);
@@ -107,9 +107,9 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
                 />
                 { schedule.user_scope && !['all', 'you'].includes(schedule.user_scope) && <ComboBox
                     placeholder={`Pick a ${schedule.user_scope}`}
-                    name={'scope_id'}
+                    name={'user_scope_id'}
                     searchable={true}
-                    value={schedule.scope_id}
+                    value={schedule.user_scope_id}
                     options={groupIdOptions}
                     style={{minWidth: '150px'}}
                     onChange={handleChange}

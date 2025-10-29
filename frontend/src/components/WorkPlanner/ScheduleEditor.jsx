@@ -1,87 +1,87 @@
 // FRONTEND/components/WorkPlanner/ScheduleEditor.jsx
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef} from 'react';
 import useAppState from '../../contexts/AppStateContext';
-import Button from "../Button";
-import UserShiftTable from "./UserShiftTable";
-import {generateDateList} from "../../utils/dates";
+import Button from '../Button';
+import UserShiftTable from './UserShiftTable';
+import {generateDateList} from '../../utils/dates';
 import '../../styles/Schedule.css';
-import useUsers from "../../hooks/useUsers";
-import Loader from "../Loader";
+import useSchedules from '../../hooks/useSchedules';
+import Loader from '../Loader';
 
 // TODO: Fix caching issue when switching to Editor.
 const ScheduleEditor = () => {
     const { appCache } = useAppState();
-    const { fetchUsers, loading, setLoading } = useUsers();
-    const config = useMemo(() => appCache.current.schedule_editor || {}, [appCache]);
+    const { schedule, setSchedule, loading, setLoading, fetchUserShifts } = useSchedules();
+    const isMounted = useRef(false);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
-    const [ userShifts, setUserShifts ] = useState();
-    const [ dateRange, setDateRange ] = useState({
-        start_date: config.start_date,
-        end_date: config.end_date,
-    });
 
     useEffect(() => {
         setLoading(true);
+        
+        if (!isMounted.current) {
+            isMounted.current = true;
+            if(appCache.current.schedule_editor)
+                setSchedule({...appCache.current.schedule_editor});
+            setLoading(false);
+            return;
+        }
 
         const parseDate = (dateStr) => {
-            if (!dateStr) return null;
-            const date = new Date(dateStr);
-            return date instanceof Date && !isNaN(date.getTime()) ? date : null;
-        };
-
-        const fetchData = async () => {
-            if (!config.users) {
-                const userScope = config.user_scope || params.get('user_scope');
-                let scopeId;
-
-                try {
-                    scopeId = parseInt(params.get('sid')) || config.user_scope_id;
-                } catch {
-                    scopeId = config.user_scope_id;
-                }
-
-                if (userScope && scopeId) {
-                    const fetchedUsers = await fetchUsers({ userScope, scopeId, map: true });
-                    setUserShifts(fetchedUsers);
-                }
-
-            } else {
-                setUserShifts(config.users);
-                setLoading(false);
+            if (!dateStr) 
+                return null;
+            try {
+                return new Date(dateStr);
+            } catch {
+                return dateStr;
             }
-
-            const fromDate = parseDate(params.get('from')) || config.fromDate;
-            const toDate = parseDate(params.get('to')) || config.toDate;
-
-            setDateRange({ fromDate, toDate });
         };
 
-        fetchData().then();
+        if (!schedule.user_scope)
+            setSchedule(prev => ({...prev, user_scope: params.get('user_scope') }));
 
-    }, [config, fetchUsers, params, setLoading]);
+        if (!schedule.user_scope_id)
+            setSchedule(prev => ({...prev, user_scope_id: parseInt(params.get('sid')) }));
 
-    if (!dateRange.start_date || !dateRange.end_date)
-        return <span>No time range specified.</span>;
+        if (!schedule.start_date)
+            setSchedule(prev => ({...prev, start_date: parseDate(params.get('from')) }));
+
+        if (!schedule.end_date)
+            setSchedule(prev => ({...prev, end_date: parseDate(params.get('to')) }));
+
+        if (schedule.user_scope && schedule.user_scope_id && schedule.start_date && schedule.end_date &&
+            (!schedule.shifts || !schedule.shifts.size))
+            fetchUserShifts({
+                start_date: new Date(schedule.start_date),
+                end_date: new Date(schedule.end_date),
+                user_scope: schedule.user_scope,
+                user_scope_id: schedule.user_scope_id
+            }).then();
+        setLoading(false);
+
+    }, [isMounted, appCache, schedule.user_scope, schedule.user_scope_id, schedule.start_date, schedule.end_date, schedule.shifts,
+         params, setSchedule, setLoading, fetchUserShifts]);
+
+    if (!schedule.start_date || !schedule.end_date)
+        return <span>`Cannot open Schedule Editor. No time range specified.</span>;
     
-    const dates = generateDateList(dateRange.start_date, dateRange.end_date);
-
-    if (!userShifts)
-        return <span>No users specified.</span>;
+    const dates = generateDateList(schedule.start_date, schedule.end_date);
 
     if (loading)
         return <Loader/>;
 
     const title = () => {
-        if (!config.type)
-            return "Empty Schedule"
+        if (!schedule.type)
+            return 'Empty Schedule'
 
-        switch (config.type) {
+        switch (schedule.type) {
             case 'new':
-                return "New Schedule Draft";
+                return 'New Schedule Draft';
+
             case 'current':
-                return "Editing Published Schedule";
+                return 'Editing Published Schedule';
+
             default:
-                return "Editing Schedule Draft: " + config.name;
+                return 'Editing Schedule Draft: ' + schedule.name;
         }
     }
 
@@ -89,15 +89,16 @@ const ScheduleEditor = () => {
         <div className={'app-schedule seethrough'}>
             <div className={'app-schedule-header'}>
             <span style={{marginRight: 'auto', fontSize: '2rem'}}>{title()}</span>
-            {config && config.type !== 'current' && <Button icon={'publish'} label={'Publish'}/>}
-            {config && config.type === 'current' && <Button icon={'publish'} label={'Re-Publish'}/>}
-            {config && config.type !== 'current' && <Button icon={'save'} label={'Save'}/>}
-            {config && config.type === 'current' && <Button icon={'save'} label={'Save to Drafts'}/>}
+            {schedule && schedule.type !== 'current' && <Button icon={'publish'} label={'Publish'}/>}
+            {schedule && schedule.type === 'current' && <Button icon={'publish'} label={'Re-Publish'}/>}
+            {schedule && schedule.type !== 'current' && <Button icon={'save'} label={'Save'}/>}
+            {schedule && schedule.type === 'current' && <Button icon={'save'} label={'Save to Drafts'}/>}
             </div>
             <UserShiftTable
                 dates={dates}
-                userShifts={userShifts}
-                setUserShifts={setUserShifts}
+                userShifts={schedule.shifts}
+                placeholder={!schedule.shifts || !schedule.shifts.size ? 'No shifts to display.' : null}
+                setUserShifts={(shifts) => setSchedule(prev => ({...prev, users: shifts}))}
                 editable={true}
             />
         </div>

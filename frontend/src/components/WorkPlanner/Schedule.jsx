@@ -14,8 +14,9 @@ const Schedule = () => {
     const { schedule, loading, setSchedule, setLoading, fetchUserShifts } = useSchedules();
     const { setScheduleEditor } = useAppState();
     const { search } = useLocation();
-    const params = useMemo(() => new URLSearchParams(search), [search]);
     const setSearchParams = useSearchParams()[1];
+    const navigate = useNavigate();
+    const params = useMemo(() => new URLSearchParams(search), [search]);
     const isMounted = useRef(false);
 
     useEffect(() => {
@@ -27,16 +28,25 @@ const Schedule = () => {
         if (to && !isNaN(Date.parse(to)))
             setSchedule(prev => ({...prev, end_date: new Date(to)}));
 
+        const user_scope = params.get('scope');
+        if (user_scope)
+            setSchedule(prev => ({...prev, user_scope}));
+
+        const user_scope_id = params.get('sid');
+        if (user_scope_id)
+            setSchedule(prev => ({...prev, user_scope_id}));
+
     }, [params, setSchedule]);
 
-    const dates = generateDateList(schedule.start_date, schedule.end_date);
+    useEffect(() => {
+        fetchUserShifts({
+            start_date: new Date(schedule.start_date),
+            end_date: new Date(schedule.end_date),
+            user_scope: schedule.user_scope,
+            user_scope_id: schedule.user_scope_id
+        }).then();
 
-    const navigate = useNavigate();
-
-    const editCurrent = useCallback(() => {
-        setScheduleEditor({...schedule, type: 'current'});
-        navigate('/planner/editor');
-    }, [setScheduleEditor, navigate, schedule]);
+    }, [fetchUserShifts, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
 
     useEffect(() => {
         if (!isMounted.current) {
@@ -45,7 +55,6 @@ const Schedule = () => {
         }
 
         const newParams = new URLSearchParams(search);
-
         if (schedule.type)
             newParams.set('schedule', schedule.type);
         else
@@ -71,17 +80,20 @@ const Schedule = () => {
         else
             newParams.delete('scope');
 
-        if (schedule.scope_id && schedule.user_scope !== 'you')
-            newParams.set('sid', schedule.scope_id);
+        if (schedule.user_scope_id && schedule.user_scope !== 'you')
+            newParams.set('sid', schedule.user_scope_id);
         else
             newParams.delete('sid');
 
         setSearchParams(newParams, { replace: true });
-    }, [schedule, search, setSearchParams])
+    }, [schedule, search, setSearchParams]);
 
-    useEffect(() => {
-        fetchUserShifts().then();
-    }, [fetchUserShifts]);
+    const editCurrent = useCallback(() => {
+        setScheduleEditor({...schedule, type: 'current'});
+        navigate('/planner/editor');
+    }, [setScheduleEditor, navigate, schedule]);
+
+    const dates = generateDateList(schedule.start_date, schedule.end_date);
 
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>
@@ -123,7 +135,7 @@ const Schedule = () => {
         {schedule.type === 'users' &&
             <UserShiftTable
                 dates={dates}
-                userShifts={schedule.users}
+                userShifts={schedule.shifts}
                 placeholder={schedule.placeholder}
                 loading={loading}
                 editable={false}

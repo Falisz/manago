@@ -296,8 +296,6 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
     if (loading)
         return <Loader/>;
 
-    console.log(userShifts);
-
     return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table'}>
             <thead>

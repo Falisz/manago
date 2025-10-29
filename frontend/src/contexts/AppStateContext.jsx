@@ -42,7 +42,7 @@ export const AppStateProvider = ({ children }) => {
         roles: {},
         teams: {},
         shifts: {},
-        schedule_editor: null
+        schedule_editor: {}
     });
 
     // API Get calls.
