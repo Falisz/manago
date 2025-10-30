@@ -20,6 +20,17 @@
     font-weight: 400;
     font-family: 'Roboto Condensed', sans-serif;
 }
+.app-schedule-header .app-form label {
+    font-size: 0.8rem;
+    text-transform: uppercase;;
+    font-family: 'Roboto Condensed', sans-serif;
+}
+.app-schedule-header .app-form .form-group {
+    gap: 0;
+}
+.app-schedule-header .app-form .form-group.date-range {
+    align-items: center;
+}
 
 .app-schedule-content {
     overflow: auto;
@@ -96,8 +107,18 @@
 .app-schedule-table tr td {
     padding: 0;
 }
+.app-schedule-table tr td.selected {
+    background: var(--highlight-color);
+}
 .app.fluent .app-schedule-table tr td {
-    padding: 10px;
+    padding: 5px;
+}
+.app.fluent .app-schedule-table.editable tr td:hover {
+    background: var(--seethrough-background);
+}
+.app.fluent .app-schedule-table tr td.selected,
+.app.fluent .app-schedule-table tr td:hover.selected {
+    background: var(--seethrough-background-2);
 }
 .app-schedule-table .section-header {
     font-weight: bold;
@@ -121,6 +142,9 @@
     color: var(--text-color-3);
     white-space: nowrap;
 }
+.app-schedule .shift-item+.shift-item {
+    margin-top: 5px;
+}
 .app.fluent .app-schedule-table .shift-item,
 .app.fluent .app-schedule-table .leave-item {
     border-radius: var(--big-border-radius);
@@ -135,4 +159,38 @@
 .app.fluent .app-schedule-table .shift-item .subtitle,
 .app.fluent .app-schedule-table .leave-item .subtitle {
     font-size: 0.7rem;
+}
+
+.app-schedule-table .shift-item .time-range {
+    font-size: 1rem;
+    line-height: 1rem;
+    font-weight: 400;
+    font-family: 'Roboto Condensed', sans-serif;
+    letter-spacing: 0;
+}
+.app-schedule-table .shift-item input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    line-height: inherit;
+    letter-spacing: 0;
+    text-align: inherit;
+    -webkit-font-smoothing: antialiased;
+    border: 0;
+    outline: none;
+    height: 1rem;
+    display: inline-block;
+    vertical-align: baseline;
+}
+[type="time"]::-webkit-inner-spin-button {
+    display: none;
+}
+[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
 }

@@ -1,5 +1,5 @@
 // FRONTEND/components/WorkPlanner/UserShiftTable.jsx
-import React, {useRef} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import { useModals } from '../../contexts/ModalContext';
 import {generateDateList} from '../../utils/dates';
 import { formatDate, sameDay } from '../../utils/dates';
@@ -18,6 +18,8 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
 
     const MENU_ID = 'schedule_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });
+
+    const [ selectedCells, setSelectedCells ] = useState(new Set());
 
     const displayContextMenu = (e, item) => {
         if (!editable) return;
@@ -39,6 +41,76 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
             return `td[data-date='${date}'], th[data-date='${date}']`;
 
         else return null;
+    }
+
+    const handleCellSelection = useCallback((e) => {
+        const data = e.target['dataset'];
+        const cell = `${data.user}-${data.date}`;
+        if (selectedCells.has(cell)) {
+            setSelectedCells(prev => {
+                const newSelectedCells = new Set(prev);
+                newSelectedCells.delete(cell);
+                return newSelectedCells;
+            })
+        } else {
+            setSelectedCells(prev => {
+                const newSelectedCells = new Set(prev);
+                newSelectedCells.add(cell);
+                return newSelectedCells;
+            })
+        }
+    }, [selectedCells, setSelectedCells]);
+
+    const handleShiftUpdate = ({user, shiftData}) => {
+        console.log(user, shiftData);
+
+        if (!user || !shiftData)
+            return;
+
+        setSchedule((prev) => {
+           const shifts = new Map(prev.shifts);
+           const targetUser = shifts.get(user);
+           const shiftId = shiftData.id;
+           const updatedTargetUser = { ...targetUser, shifts: targetUser.shifts.map((s) => {
+               if (s.id === shiftId) {
+                   return {
+                       ...s,
+                       ...shiftData
+                   }
+               } else return s;
+           })}
+           shifts.set(user, updatedTargetUser);
+           return {...prev, shifts};
+        });
+    };
+
+    const handleShiftAdd = ({user, date, newShift}) => {
+        if (!editable || !user || !date)
+            return;
+
+        user = parseInt(user);
+
+        const targetDate = new Date(date);
+        const start_time = new Date(targetDate.setHours(9, 0, 0, 0));
+        const end_time = new Date(targetDate.setHours(17, 0, 0, 0));
+
+        if (!newShift)
+            newShift = {
+                id: `new${Math.floor(Math.random() * 1001)}`,
+                user,
+                start_time: start_time.toISOString(),
+                end_time: end_time.toISOString(),
+                job_location: null,
+                job_post: null,
+            }
+
+        setSchedule((prev) => {
+            const shifts = new Map(prev.shifts);
+            const targetUser = shifts.get(user);
+            const updatedTargetUser = { ...targetUser, shifts: [...targetUser.shifts, newShift] };
+            shifts.set(user, updatedTargetUser);
+            return {...prev, shifts};
+        });
     }
 
     const handleShiftSelection = (shift) => {
@@ -67,6 +139,8 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
     };
 
     const handleMouseEnter = (e) => {
+        if (editable)
+            return;
         const selector = getSelector(e);
 
         if (selector) {
@@ -76,6 +150,8 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
     };
 
     const handleMouseLeave = (e) => {
+        if (editable)
+            return;
         const user = e.currentTarget.getAttribute('data-user');
         const date = e.currentTarget.getAttribute('data-date');
         let selector = '';
@@ -106,10 +182,10 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
 
     const handleShiftClick = (e, shift) => {
         if (!editable) return;
-        e.preventDefault();
 
         if (e.shiftKey) {
             handleShiftSelection(shift)
+            e.preventDefault();
         }
     }
 
@@ -293,14 +369,12 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
         }
     ]
     if (!schedule.start_date || !schedule.end_date)
-            return <span>`Cannot open Schedule Editor. No time range specified.</span>;
+            return <span>Cannot open Schedule {editable ? 'Editor' : 'View'}. No time range specified.</span>;
         
     const dates = generateDateList(schedule.start_date, schedule.end_date);
 
-    console.log(schedule.shifts);
-
     return <div className={'app-schedule-content app-scroll'}>
-        <table className={'app-schedule-table'}>
+        <table className={'app-schedule-table' + (editable ? ' editable' : '')}>
             <thead>
             <tr>
                 <th className={'user-header'}>
@@ -383,14 +457,19 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
 
                         const key = `${user.id}-${formattedDate}`;
 
+                        const selected = selectedCells.has(key);
+
                         return (
                             <td
                                 key={key}
+                                className={(selected ? 'selected' : '')}
                                 data-user={user.id}
                                 data-date={formattedDate}
                                 colSpan={colSpan}
+                                onClick={handleCellSelection}
                                 onMouseEnter={handleMouseEnter}
                                 onMouseLeave={handleMouseLeave}
+                                onDoubleClick={(e) => handleShiftAdd({user: e.target['dataset'].user, date: e.target['dataset'].date})}
                                 onDragOver={editable ? handleCellDragOver(user.id, date) : null}
                                 onDrop={editable ? handleCellDrop(user.id, date) : null}
                             >
@@ -408,7 +487,7 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
                                             onDragEnd={handleShiftDragEnd}
                                             onContextMenu={displayContextMenu}
                                             onClick={handleShiftClick}
-                                            onDoubleClick={() => console.log(s)}
+                                            updateShift={handleShiftUpdate}
                                             selectShift={() => handleShiftSelection(s)}
                                             deleteShift={() => handleShiftDelete(s)}
                                         /> ) : null

@@ -94,7 +94,7 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
             }}
         >
             <div className={'form-group'}>
-                <label>Users</label>
+                <label>User scope</label>
                 <div className={'form-group'} style={{flexDirection: 'row'}}>
                 <ComboBox
                     placeholder={'Pick a group'}
@@ -118,7 +118,7 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
             </div>
             { date_range && <div className={'form-group'}>
                 <label>Date range</label>
-                <div className={'form-group'} style={{flexDirection: 'row'}}>
+                <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
                 <input
                     className={'form-input'}
                     name={'start_date'}

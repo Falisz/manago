@@ -7,7 +7,6 @@ import '../../styles/Schedule.css';
 import useSchedules from '../../hooks/useSchedules';
 import Loader from '../Loader';
 
-// TODO: Fix caching issue when switching to Editor.
 const ScheduleEditor = () => {
     const { appCache } = useAppState();
     const { schedule, setSchedule, loading, setLoading, fetchUserShifts } = useSchedules();
@@ -63,26 +62,16 @@ const ScheduleEditor = () => {
     if (loading)
         return <Loader/>;
 
-    const title = () => {
-        if (!schedule.type)
-            return 'Empty Schedule'
-
-        switch (schedule.type) {
-            case 'new':
-                return 'New Schedule Draft';
-
-            case 'current':
-                return 'Editing Published Schedule';
-
-            default:
-                return 'Editing Schedule Draft: ' + schedule.name;
-        }
-    }
-
     return (
         <div className={'app-schedule seethrough'}>
             <div className={'app-schedule-header'}>
-            <span style={{marginRight: 'auto', fontSize: '2rem'}}>{title()}</span>
+            <span style={{marginRight: 'auto', fontSize: '2rem'}}>Schedule Editor: {
+                schedule.type ==='new' ? 'New Schedule Draft' :
+                    schedule.type === 'current' ? 'Current Draft' :
+                        schedule.name || ''
+            }</span>
+            {schedule && schedule.type !== 'current' && <Button icon={'edit'} label={'Edit Details'}/>}
+
             {schedule && schedule.type !== 'current' && <Button icon={'publish'} label={'Publish'}/>}
             {schedule && schedule.type === 'current' && <Button icon={'publish'} label={'Re-Publish'}/>}
             {schedule && schedule.type !== 'current' && <Button icon={'save'} label={'Save'}/>}

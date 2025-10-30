@@ -186,21 +186,21 @@ const useSchedules = () => {
     const saveScheduleDraft = useCallback( async () => {
         setStatus([]);
         // Function to save (create, update) schedule drafts - not to publish them.
-        // It will be only available from the Schedule editor - therefore no params are needed.
+        // It will be only available from the Schedule editor - therefore, no params are needed.
         console.log('saveScheduleDraft called with data:', schedule);
     }, [schedule]);
 
     const publishScheduleDraft = useCallback( async () => {
         setStatus([]);
         // Function to publish schedule drafts - not to update them.
-        // It will be only available from the Schedule editor - therefore no params are needed.
+        // It will be only available from the Schedule editor - therefore, no params are needed.
         console.log('publishScheduleDraft called with data:', schedule);
     }, [schedule]);
 
     const discardScheduleDraft = useCallback( async ({scheduleId}) => {
         setStatus([]);
         // Function to discard schedule drafts.
-        // It will be available from both Schedule editor and Schedule drafts list, therefore param included.
+        // It will be available from both Schedule editor and Schedule drafts list, therefore, param is included.
         console.log('discard called for scheduleId:', scheduleId);
     }, []);
 

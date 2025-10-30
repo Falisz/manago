@@ -40,7 +40,7 @@
     border-radius: var(--big-border-radius);
 }
 .schedule-draft-item:hover {
-    background: var(--seethrough-background);
+    background: var(--seethrough-background-2);
 }
 .schedule-draft-item h2 {
     font-family: 'Roboto Condensed', sans-serif;
