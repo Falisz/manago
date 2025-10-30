@@ -308,11 +308,11 @@ export async function deleteJobPost({id, delete_shifts=false} = {}) {
  * @param job_post
  * @param schedule
  * @param date
- * @param start_time
- * @param end_time
+ * @param from
+ * @param to
  * @returns {Promise<Object|Object[]|null>} Single Shift, array of Shifts, or null
  */
-export async function getShift({id, user, job_post, schedule, date, start_time, end_time} = {}) {
+export async function getShift({id, user, job_post, schedule, date, from, to} = {}) {
 
     const where = {};
 
@@ -328,19 +328,17 @@ export async function getShift({id, user, job_post, schedule, date, start_time, 
     if (isNumberOrNumberArray(schedule))
         where.schedule = schedule;
 
-    if (date) {
-        const startOfDay = `${date} 00:00:00`;
-        const endOfDay = `${date} 23:59:59`;
-        
-        where.start_time = { [Op.gte]: startOfDay };
-        where.end_time = { [Op.lte]: endOfDay };
-    } else {
-        if (start_time)
-            where.start_time = {[Op.gte]: start_time};
+    if (date)
+        where.date = date;
 
-        if (end_time)
-            where.end_time = {[Op.lte]: end_time};
-    }
+    else if (from && to)
+        where.date = {[Op.between]: [from, to]};
+
+    else if (from)
+        where.date = {[Op.gte]: from};
+
+    else if (to)
+        where.date = {[Op.lte]: to};
 
     const include = [{ model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule ];
 
@@ -368,6 +366,7 @@ export async function getShift({id, user, job_post, schedule, date, start_time, 
  * Creates a new Shift.
  * @param {Object} data - Shift data
  * @param {number} data.user - Shift User ID
+ * @param {number} data.date - Shift date
  * @param {string} data.start_time - Shift start time
  * @param {string} data.end_time - Shift end time
  * @param {number} data.job_post - optional - Shift Job Post ID
@@ -375,40 +374,48 @@ export async function getShift({id, user, job_post, schedule, date, start_time, 
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createShift(data) {
+    // 1. Required fields
     if (!data.user)
-        return { success: false, message: 'User is required to create a new shift.' };
+        return { success: false, message: 'User is required.' };
 
-    if (!(await getUser(data.user)))
-        return { success: false, message: 'Specified Shift User not found.' };
+    if (!data.date)
+        return { success: false, message: 'Date is required.' };
 
     if (!data.start_time)
-        return { success: false, message: 'Start time must be provided.' };
+        return { success: false, message: 'Start time is required.' };
 
-    data.start_time = new Date(data.start_time);
-
-    if (!(data.start_time instanceof Date && isNaN(data.start_time)))
-        return { success: false, message: 'Invalid start time of the shift provided.' };
-        
     if (!data.end_time)
-        return { success: false, message: 'End time must be provided.' };
+        return { success: false, message: 'End time is required.' };
 
-    data.end_time = new Date(data.end_time);
+    // 2. Validate foreign keys (parallel)
+    const [user, jobPost, schedule] = await Promise.all([
+        User.findByPk(data.user),
+        data.job_post ? JobPost.findByPk(data.job_post) : Promise.resolve(null),
+        data.schedule ? Schedule.findByPk(data.schedule) : Promise.resolve(null),
+    ]);
 
-    if (!(data.end_time instanceof Date && isNaN(data.end_time)))
-        return { success: false, message: 'Invalid end time of the shift provided.' };
+    if (!user)
+        return { success: false, message: 'User not found.' };
+    if (data.job_post && !jobPost)
+        return { success: false, message: 'Job Post not found.' };
+    if (data.schedule && !schedule)
+        return { success: false, message: 'Schedule not found.' };
 
-    if (data.start_time > data.end_time)
-        return { success: false, message: 'Start time cannot be greater than an end time.' };
+    // 3. Validate date (DATEONLY)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date))
+        return { success: false, message: 'Invalid date format. Use YYYY-MM-DD.' };
 
-    if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
-        return { success: false, message: 'Job Post with provided ID not found.' };
-        
-    if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
-        return { success: false, message: 'Schedule with provided ID not found.' };
+    // 4. Validate time format (HH:mm or HH:mm:ss)
+    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+    if (!timeRegex.test(data.start_time))
+        return { success: false, message: 'Invalid start time format. Use HH:mm or HH:mm:ss.' };
+    if (!timeRegex.test(data.end_time))
+        return { success: false, message: 'Invalid end time format. Use HH:mm or HH:mm:ss.' };
 
     const shift = Shift.create({
         id: await randomId(Shift),
         user: data.user,
+        date: data.date,
         start_time: data.start_time,
         end_time: data.end_time,
         job_post: data.job_post || null,
@@ -427,43 +434,72 @@ export async function createShift(data) {
 export async function updateShift(id, data) {
     if (!id)
         return { success: false, message: 'Shift ID not provided.' };
-    
-    const shift = await Shift.findOne({ where: { id } });
+
+    const shift = await Shift.findByPk(id);
 
     if (!shift)
         return { success: false, message: 'Shift not found.' };
 
-    await shift.update(data);
+    const updates = {};
 
-    if (data.user && !(await User.findOne({ where: { id: data.user } })))
-        return { success: false, message: 'Provided User not found.' };
+    // === Optional: user ===
+    if (data.user !== undefined) {
+        const user = await User.findByPk(data.user);
+        if (!user) return { success: false, message: 'User not found.' };
+        updates.user = data.user;
+    }
 
-    if (data.start_time)
-        data.start_time = new Date(data.start_time);
-    else
-        data.start_time = new Date(shift.start_time);
+    // === Optional: date ===
+    if (data.date !== undefined) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date))
+            return { success: false, message: 'Invalid date format. Use YYYY-MM-DD.' };
+        updates.date = data.date;
+    }
 
+    // === Optional: start_time ===
+    if (data.start_time !== undefined) {
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+        if (!timeRegex.test(data.start_time))
+            return { success: false, message: 'Invalid start time format.' };
+        updates.start_time = data.start_time;
+    }
 
-    if (!(data.start_time instanceof Date && isNaN(data.start_time)))
-        return { success: false, message: 'Invalid start time of the shift provided.' };
-        
-    if (data.end_time)
-        data.end_time = new Date(data.end_time);
-    else
-        data.end_time = new Date(shift.end_time);
+    // === Optional: end_time ===
+    if (data.end_time !== undefined) {
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/;
+        if (!timeRegex.test(data.end_time))
+            return { success: false, message: 'Invalid end time format.' };
+        updates.end_time = data.end_time;
+    }
 
+    // === Time comparison (only if both times are being updated or one is) ===
+    if (updates.start_time || updates.end_time) {
+        const finalStart = updates.start_time || shift.start_time;
+        const finalEnd = updates.end_time || shift.end_time;
 
-    if (!(data.end_time instanceof Date && isNaN(data.end_time)))
-        return { success: false, message: 'Invalid end time of the shift provided.' };
+        if (finalStart >= finalEnd)
+            return { success: false, message: 'Start time must be before end time.' };
+    }
 
-    if (data.start_time > data.end_time)
-        return { success: false, message: 'Start time cannot be greater than an end time.' };
+    // === Optional: job_post ===
+    if (data.job_post !== undefined) {
+        if (data.job_post !== null) {
+            const jobPost = await JobPost.findByPk(data.job_post);
+            if (!jobPost) return { success: false, message: 'Job Post not found.' };
+        }
+        updates.job_post = data.job_post;
+    }
 
-    if (data.job_post && !(await JobPost.findOne({ where: { id: data.job_post } })))
-        return { success: false, message: 'Provided Job Post not found.' };
+    // === Optional: schedule ===
+    if (data.schedule !== undefined) {
+        if (data.schedule !== null) {
+            const schedule = await Schedule.findByPk(data.schedule);
+            if (!schedule) return { success: false, message: 'Schedule not found.' };
+        }
+        updates.schedule = data.schedule;
+    }
 
-    if (data.schedule && !(await Schedule.findOne({ where: { id: data.schedule } })))
-        return { success: false, message: 'Provided Schedule not found.' };
+    await shift.update(updates);
 
     return { success: true, message: 'Shift updated successfully.' };
 }

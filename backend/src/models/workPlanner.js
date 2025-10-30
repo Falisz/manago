@@ -18,11 +18,11 @@ export const Schedule = sequelize.define('Schedule', {
         allowNull: false
     },
     start_date: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false
     },
     end_date: {
-        type: DataTypes.DATE,
+        type: DataTypes.DATEONLY,
         allowNull: false
     },
     author: {
@@ -65,12 +65,16 @@ export const Shift = sequelize.define('Shift', {
         type: DataTypes.INTEGER,
         references: { model: User, key: 'id' }
     },
+    date: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+    },
     start_time: {
-        type: DataTypes.DATE,
+        type: DataTypes.TIME,
         allowNull: false,
     },
     end_time: {
-        type: DataTypes.DATE,
+        type: DataTypes.TIME,
         allowNull: false,
     },
     job_post: {
@@ -236,6 +240,10 @@ export const WeekendWorking = sequelize.define('WeekendWorking', {
 export const DispositionPreset = sequelize.define('DispositionPreset', {
     name: {
         type: DataTypes.STRING,
+        allowNull: false,
+    },
+    date: {
+        type: DataTypes.DATEONLY,
         allowNull: false,
     },
     start_time: {
