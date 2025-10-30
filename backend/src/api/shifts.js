@@ -46,10 +46,10 @@ const fetchShiftsHandler = async (req, res) => {
         }
         else {
             if (req.body.start_date)
-                query.start_time = req.body.start_date;
+                query.from = req.body.start_date;
 
             if (req.body.end_date)
-                query.end_time = req.body.end_date;
+                query.to = req.body.end_date;
         }
 
     } else {
@@ -73,14 +73,14 @@ const fetchShiftsHandler = async (req, res) => {
                 query.job_post = parseInt(req.query.job_post);
 
             if (req.query.date)
-                query.date = new Date(req.query.date).toISOString().split('T')[0];
+                query.date = req.query.date;
 
             else {
                 if (req.query.start_date)
-                    query.start_time = new Date(req.query.start_date+'T00:00');
+                    query.from = req.query.start_date;
 
                 if (req.query.end_date)
-                    query.end_time = new Date(req.query.end_date+'T23:59');
+                    query.to = req.query.end_date;
             }
         }
     }
