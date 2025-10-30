@@ -59,28 +59,15 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
     }, [schedule.user_scope, teams, users, managers]);
 
     const handleChange = useCallback((e) => {
-        function isValidDate(d) {
-            return d instanceof Date && !Number.isNaN(d.getTime());
-        }
-
         const { name, value } = e.target;
 
-        if (['start_date', 'end_date'].includes(name)) {
-            const date = new Date(value);
-
-            if (!isValidDate(date))
-                return;
-
-            setSchedule(prev => ({...prev, [name]: date }));
-
+        if (name === 'user_scope') {
+            if (value === 'you')
+                setSchedule(prev => ({...prev, [name]: value, user_scope_id: user.id }));
+            else
+                setSchedule(prev => ({...prev, [name]: value, user_scope_id: null }));
         } else {
             setSchedule(prev => ({...prev, [name]: value }));
-            if (name === 'user_scope') {
-                if (value === 'you')
-                    setSchedule(prev => ({...prev, user_scope_id: user.id }));
-                else
-                    setSchedule(prev => ({...prev, user_scope_id: null }));
-            }
         }
     }, [setSchedule, user]);
 
@@ -122,8 +109,8 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
                 <input
                     className={'form-input'}
                     name={'start_date'}
-                    value={schedule.start_date.toISOString().split('T')[0]}
-                    max={schedule.end_date.toISOString().split('T')[0]}
+                    value={schedule.start_date}
+                    max={schedule.end_date}
                     onChange={handleChange}
                     type={'date'}
                     style={{minWidth: '100px'}}
@@ -132,8 +119,8 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
                 <input
                     className={'form-input'}
                     name={'end_date'}
-                    value={schedule.end_date.toISOString().split('T')[0]}
-                    min={schedule.start_date.toISOString().split('T')[0]}
+                    value={schedule.end_date}
+                    min={schedule.start_date}
                     onChange={handleChange}
                     type={'date'}
                     style={{minWidth: '100px'}}

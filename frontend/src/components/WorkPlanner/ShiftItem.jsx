@@ -1,20 +1,18 @@
 // FRONTEND/components/WorkPlanner/ShiftItem.jsx
 import React, {useState} from 'react';
-import {formatTime} from "../../utils/dates";
 import Icon from "../Icon";
 
 const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onClick,
-                       selectShift, updateShift, deleteShift }) => {
+                       selectShift, updateShift }) => {
 
     const [ editMode, setEditMode ] = useState();
 
     if (!shift)
         return null;
 
-    const handleDoubleClick = (e) => {
+    const handleDoubleClick = () => {
         if (!editable)
             return;
-
         setEditMode(prev => !prev);
     }
 
@@ -23,14 +21,8 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
         let newData = {};
 
         if (name === 'start_time' || name === 'end_time') {
-            const time = new Date(shift[name]);
-            time.setHours(value.split(':')[0]);
-            time.setMinutes(value.split(':')[1]);
-            time.setSeconds(0);
-            time.setMilliseconds(0);
-
             newData = {
-                [name]: time
+                [name]: value
             }
         }
 
@@ -55,19 +47,19 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
     >
         <span className={'time-range'}>{editMode ?
             <><input
-                value={formatTime(shift.start_time)}
+                value={shift.start_time.slice(0, 5)}
                 name={'start_time'}
                 type={'time'}
                 step={300}
                 onChange={handleChange}
                 /> - <input
-                value={formatTime(shift.end_time)}
+                value={shift.end_time.slice(0, 5)}
                 name={'end_time'}
                 type={'time'}
                 step={300}
                 onChange={handleChange}
             /></>
-         :`${formatTime(shift.start_time)} - ${formatTime(shift.end_time)}`}</span>
+         :`${shift.start_time.slice(0, 5)} - ${shift.end_time.slice(0, 5)}`}</span>
         {shift.job_post && shift.job_post.name && <span className={'subtitle'}>{shift.job_post.name}</span>}
         {editable &&
             <Icon

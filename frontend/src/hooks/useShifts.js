@@ -30,13 +30,13 @@ const useShifts = () => {
                     payload.users = users;
 
                 if (date)
-                    payload.dates = date;
+                    payload.dates = formatDate(date);
                 
                 else {
                     if (start_date)
-                        payload.start_date = start_date;
+                        payload.start_date = formatDate(start_date);
                     if (end_date)
-                        payload.end_date = new Date(formatDate(end_date) + 'T23:59:59.999Z');
+                        payload.end_date = formatDate(end_date);
                 }
 
                 if (schedule)
@@ -50,13 +50,13 @@ const useShifts = () => {
 
             } else {
                 if (date)
-                    params.date = date;
+                    params.date = formatDate(date);
 
                 else {
                     if (start_date)
-                        params.start_date = start_date;
+                        params.start_date = formatDate(start_date);
                     if (end_date)
-                        params.end_date = end_date;
+                        params.end_date = formatDate(end_date);
                 }
 
                 if (schedule)

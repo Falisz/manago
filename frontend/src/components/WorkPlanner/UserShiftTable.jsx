@@ -62,8 +62,6 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
     }, [selectedCells, setSelectedCells]);
 
     const handleShiftUpdate = ({user, shiftData}) => {
-        console.log(user, shiftData);
-
         if (!user || !shiftData)
             return;
 
@@ -90,16 +88,13 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
 
         user = parseInt(user);
 
-        const targetDate = new Date(date);
-        const start_time = new Date(targetDate.setHours(9, 0, 0, 0));
-        const end_time = new Date(targetDate.setHours(17, 0, 0, 0));
-
         if (!newShift)
             newShift = {
                 id: `new${Math.floor(Math.random() * 1001)}`,
                 user,
-                start_time: start_time.toISOString(),
-                end_time: end_time.toISOString(),
+                date,
+                start_time: '09:00',
+                end_time: '17:00',
                 job_location: null,
                 job_post: null,
             }
@@ -222,9 +217,7 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
         e.preventDefault();
 
         const targetUser = schedule.shifts.get(user);
-        const targetDate = new Date(date);
         const leaves = targetUser ? targetUser['leaves'] : [];
-
         const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
 
         if (hasLeaveOnTargetDay)
@@ -247,35 +240,14 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
 
             newShift.user = user;
 
-            const startTime = new Date(sourceShift.start_time);
+            const isSameUser = sourceShift.user === user;
+            const isSameDay = sourceShift.date === date;
+            const isSameCell = isSameUser && isSameDay;
 
-            const sameCell = sameDay(new Date(sourceShift.start_time), targetDate) && sourceShift.user === user;
-
-            if (sameCell && !isCopy)
+            if (isSameCell && !isCopy)
                 return;
 
-            const endTime = new Date(sourceShift.end_time);
-
-            const isSameDay = sameDay(startTime, endTime);
-
-            startTime.setFullYear(targetDate.getFullYear());
-            startTime.setMonth(targetDate.getMonth());
-            startTime.setDate(targetDate.getDate());
-
-            if (isSameDay) {
-                endTime.setFullYear(targetDate.getFullYear());
-                endTime.setMonth(targetDate.getMonth());
-                endTime.setDate(targetDate.getDate());
-            } else {
-                const nextDay = new Date(targetDate);
-                nextDay.setDate(targetDate.getDate() + 1);
-                endTime.setFullYear(nextDay.getFullYear());
-                endTime.setMonth(nextDay.getMonth());
-                endTime.setDate(nextDay.getDate());
-            }
-
-            newShift.start_time = startTime.toISOString();
-            newShift.end_time = endTime.toISOString();
+            newShift.date = date;
 
             if (isCopy)
                 newShift.id = `new${Math.floor(Math.random() * 1001)}`;
@@ -406,27 +378,27 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
             </thead>
             <tbody>
             {schedule.placeholder && <tr>
-                <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{schedule.placeholder}</td>
+                <td colSpan={3} style={{fontStyle: 'italic', textAlign: 'center'}}>{schedule.placeholder}</td>
             </tr>}
-            {schedule.shifts && schedule.shifts.values && [...schedule.shifts.values()].map((user) => {
-                return <tr key={user.id}>
+            {schedule.shifts && schedule.shifts.values && [...schedule.shifts.values()].map((user) =>
+                <tr key={user.id}>
                     <td
                         className={'user-cell'}
                         data-user={user.id}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     >
-                            <span
-                                className={'app-clickable'}
-                                style={{fontWeight: 'bold'}}
-                                onClick={() =>  openModal({content: 'userDetails', contentId: user.id}) }
-                            >
-                                {user.first_name} {user.last_name}
-                            </span>
+                        <span
+                            className={'app-clickable'}
+                            style={{fontWeight: 'bold'}}
+                            onClick={() =>  openModal({content: 'userDetails', contentId: user.id}) }
+                        >
+                            {user.first_name} {user.last_name}
+                        </span>
                         {user.team && <><br/><small>{user.team.name}: {user.role.name}</small></>}
                     </td>
                     {dates?.map((date, dateIndex) => {
-                        const formattedDate = formatDate(date);
+                        const dateStr = formatDate(date);
 
                         const leave = user.leaves?.find((l) => date >= new Date(l.start_date) && date <= new Date(l.end_date));
 
@@ -435,7 +407,7 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
                         if (leave && !isLeaveStart)
                             return null;
 
-                        const shift = user.shifts?.filter((s) => sameDay(new Date(s.start_time), date)) || [];
+                        const shift = user.shifts?.filter((s) => s.date === dateStr) || [];
 
                         let totalDays;
 
@@ -455,7 +427,7 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
                             colSpan = Math.max(1, Math.min(totalDays, remainingColumns));
                         }
 
-                        const key = `${user.id}-${formattedDate}`;
+                        const key = `${user.id}-${dateStr}`;
 
                         const selected = selectedCells.has(key);
 
@@ -464,14 +436,14 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
                                 key={key}
                                 className={(selected ? 'selected' : '')}
                                 data-user={user.id}
-                                data-date={formattedDate}
+                                data-date={dateStr}
                                 colSpan={colSpan}
                                 onClick={handleCellSelection}
                                 onMouseEnter={handleMouseEnter}
                                 onMouseLeave={handleMouseLeave}
                                 onDoubleClick={(e) => handleShiftAdd({user: e.target['dataset'].user, date: e.target['dataset'].date})}
-                                onDragOver={editable ? handleCellDragOver(user.id, date) : null}
-                                onDrop={editable ? handleCellDrop(user.id, date) : null}
+                                onDragOver={editable ? handleCellDragOver(user.id, dateStr) : null}
+                                onDrop={editable ? handleCellDrop(user.id, dateStr) : null}
                             >
                                 {isLeaveStart ?
                                     <LeaveItem
@@ -495,8 +467,8 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
                             </td>
                         );
                     })}
-                </tr>;
-            })}
+                </tr>
+            )}
             </tbody>
         </table>
         <Menu className={'app-context-menu'} id={MENU_ID}>

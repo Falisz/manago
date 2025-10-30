@@ -11,6 +11,7 @@ import ScheduleSelector from './ScheduleSelector';
 import UserShiftTable from './UserShiftTable';
 import '../../styles/Schedule.css';
 
+// TODO: Fix stability of the schedule loading.
 const Schedule = () => {
     const { schedule, loading, setSchedule, setLoading, fetchUserShifts } = useSchedules();
     const { setScheduleEditor } = useAppState();
@@ -21,13 +22,26 @@ const Schedule = () => {
     const isMounted = useRef(false);
 
     useEffect(() => {
+        console.log("Effect with fetching shift runs");
+        fetchUserShifts({
+            start_date: schedule.start_date,
+            end_date: schedule.end_date,
+            user_scope: schedule.user_scope,
+            user_scope_id: schedule.user_scope_id
+        }).then();
+    }, [fetchUserShifts, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
+
+    useEffect(() => {
+        if (!isMounted.current)
+            return;
+
         const from = params.get('from');
         if (from && !isNaN(Date.parse(from)))
-            setSchedule(prev => ({...prev, start_date: new Date(from)}));
+            setSchedule(prev => ({...prev, start_date: from}));
 
         const to = params.get('to');
         if (to && !isNaN(Date.parse(to)))
-            setSchedule(prev => ({...prev, end_date: new Date(to)}));
+            setSchedule(prev => ({...prev, end_date: to}));
 
         const user_scope = params.get('scope');
         if (user_scope)
@@ -37,23 +51,16 @@ const Schedule = () => {
         if (user_scope_id)
             setSchedule(prev => ({...prev, user_scope_id}));
 
-    }, [params, setSchedule]);
-
-    useEffect(() => {
-        fetchUserShifts({
-            start_date: new Date(schedule.start_date),
-            end_date: new Date(schedule.end_date),
-            user_scope: schedule.user_scope,
-            user_scope_id: schedule.user_scope_id
-        }).then();
-
-    }, [fetchUserShifts, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
+    }, [setSchedule, params]);
 
     useEffect(() => {
         if (!isMounted.current) {
             isMounted.current = true;
+            console.log("Effect with params updating gets blocked.");
             return;
         }
+
+        console.log("Effect with params updating runs.");
 
         const newParams = new URLSearchParams(search);
         if (schedule.type)

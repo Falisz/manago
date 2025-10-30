@@ -5,20 +5,23 @@ import axios from 'axios';
 import useUsers from './useUsers';
 import useShifts from './useShifts';
 import useLeaves from './useLeaves';
+import {formatDate} from "../utils/dates";
 
 const useSchedules = () => {
     const { user } = useAppState();
     
     const DAY_IN_MS = 24 * 60 * 60 * 1000;
     const now = Date.now();
+    const start_date = formatDate(new Date(now));
+    const end_date = formatDate(new Date(now + 6 * DAY_IN_MS));
 
     const [ schedule, setSchedule ] = useState({
         id: null,
         name: 'Current Schedule',
         description: '',
         type: 'users',
-        start_date: new Date(now),
-        end_date: new Date(now + 6 * DAY_IN_MS),
+        start_date,
+        end_date,
         month: null,
         user_scope: 'you',
         user_scope_id: user.id,
@@ -79,7 +82,7 @@ const useSchedules = () => {
 
         const userIds = Array.from(userShifts.keys());
 
-        const shifts = await fetchShifts({users: userIds, start_date, end_date, schedule});
+        const shifts = await fetchShifts({users: userIds, start_date, end_date, schedule, date_map: true});
         
         const leaves = await fetchLeaves({users: userIds, start_date, end_date, schedule});
 

@@ -60,9 +60,11 @@ const useUsers = () => {
         if (map) {
             if (users != null && !Array.isArray(users))
                 users = [users];
-            users = new Map(
-                users.map(user => [user.id, user])
-            );
+
+            if (users != null && Array.isArray(users))
+                users = new Map(
+                    users.map(user => [user.id, user])
+                );
         }
 
         setUsers(users);
