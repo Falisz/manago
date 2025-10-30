@@ -1,7 +1,7 @@
 // FRONTEND/components/WorkPlanner/UserShiftTable.jsx
 import React, {useRef} from 'react';
 import { useModals } from '../../contexts/ModalContext';
-import Loader from '../Loader';
+import {generateDateList} from '../../utils/dates';
 import { formatDate, sameDay } from '../../utils/dates';
 import LeaveItem from './LeaveItem';
 import ShiftItem from './ShiftItem';
@@ -13,7 +13,7 @@ import {Item, Menu, useContextMenu} from 'react-contexify';
 //  the update and delete bins only used for editing current draft schedule, in case of new schedule or editing current one there is only new bin
 //  as the schedule is saved to backend, the bins are cleared
 
-const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading, editable}) => {
+const UserShiftTable = ({schedule, setSchedule, editable}) => {
     const { openModal } = useModals();
 
     const MENU_ID = 'schedule_context_menu';
@@ -44,10 +44,10 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
     const handleShiftSelection = (shift) => {
         const userId = shift.user;
 
-        setUserShifts((prev) => {
-            const newUsers = new Map(prev);
+        setSchedule((prev) => {
+            const shifts = new Map(prev.shifts);
 
-            const user = newUsers.get(userId);
+            const user = shifts.get(userId);
 
             const updatedUser = {
                 ...user,
@@ -60,9 +60,9 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
                     } else return s;
                 })
             }
-            newUsers.set(userId, updatedUser);
+            shifts.set(userId, updatedUser);
 
-            return newUsers;
+            return {...prev, shifts};
         })
     };
 
@@ -145,7 +145,7 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
         if (!editable) return;
         e.preventDefault();
 
-        const targetUser = userShifts.get(user);
+        const targetUser = schedule.shifts.get(user);
         const targetDate = new Date(date);
         const leaves = targetUser ? targetUser['leaves'] : [];
 
@@ -208,15 +208,15 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
             return;
         }
 
-        setUserShifts((prev) => {
+        setSchedule((prev) => {
 
-            const newUsers = new Map(prev);
-            const targetUser = newUsers.get(user);
+            const shifts = new Map(prev.shifts);
+            const targetUser = shifts.get(user);
 
             if (isCopy) {
                 const updatedTargetUser = { ...targetUser, shifts: [...targetUser.shifts, newShift] };
 
-                newUsers.set(user, updatedTargetUser);
+                shifts.set(user, updatedTargetUser);
 
             } else {
 
@@ -226,7 +226,7 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
                         shifts: [...targetUser.shifts.filter((s) => s.id !== sourceShift.id), newShift]
                     };
 
-                    newUsers.set(user, updatedTargetUser);
+                    shifts.set(user, updatedTargetUser);
 
                 } else {
                     const updatedTargetUser = {
@@ -234,27 +234,27 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
                         shifts: [...targetUser.shifts, newShift]
                     };
 
-                    newUsers.set(user, updatedTargetUser);
+                    shifts.set(user, updatedTargetUser);
 
-                    const sourceUser = newUsers.get(sourceShift.user);
+                    const sourceUser = shifts.get(sourceShift.user);
 
                     const updatedSourceUser = {
                         ...sourceUser,
                         shifts: sourceUser.shifts.filter((s) => s.id !== sourceShift.id)
                     };
 
-                    newUsers.set(sourceShift.user, updatedSourceUser);
+                    shifts.set(sourceShift.user, updatedSourceUser);
                 }
             }
 
-            return newUsers;
+            return {...prev, shifts};
         });
     };
 
     const handleCellDragOver = (user, date) => (e) => {
         if (!editable) return;
         e.preventDefault();
-        const targetUser = userShifts.get(user);
+        const targetUser = schedule.shifts.get(user);
         const leaves = targetUser ? targetUser.leaves : [];
 
         const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
@@ -270,14 +270,14 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
 
         const userID = shift.user;
 
-        setUserShifts((prev) => {
-            const newUsers = new Map(prev);
-            const user = newUsers.get(userID);
-            newUsers.set(userID, {
+        setSchedule((prev) => {
+            const shifts = new Map(prev.shifts);
+            const user = shifts.get(userID);
+            shifts.set(userID, {
                 ...user,
                 shifts: user.shifts.filter((s) => s.id !== shift.id)
             });
-            return newUsers;
+            return {...prev, shifts};
 
         })
     }
@@ -292,9 +292,12 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
             name: 'Holiday #1'
         }
     ]
+    if (!schedule.start_date || !schedule.end_date)
+            return <span>`Cannot open Schedule Editor. No time range specified.</span>;
+        
+    const dates = generateDateList(schedule.start_date, schedule.end_date);
 
-    if (loading)
-        return <Loader/>;
+    console.log(schedule.shifts);
 
     return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table'}>
@@ -328,10 +331,10 @@ const UserShiftTable = ({dates, userShifts, setUserShifts, placeholder, loading,
             </tr>
             </thead>
             <tbody>
-            {placeholder && <tr>
-                <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{placeholder}</td>
+            {schedule.placeholder && <tr>
+                <td colSpan={dates.length + 1} style={{fontStyle: 'italic', textAlign: 'center'}}>{schedule.placeholder}</td>
             </tr>}
-            {userShifts && [...userShifts.values()].map((user) => {
+            {schedule.shifts && schedule.shifts.values && [...schedule.shifts.values()].map((user) => {
                 return <tr key={user.id}>
                     <td
                         className={'user-cell'}

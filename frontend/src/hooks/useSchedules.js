@@ -30,71 +30,6 @@ const useSchedules = () => {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState([]);
 
-    const fetchScheduleDrafts = useCallback(async ({scheduleId, include_shifts, include_user_count, loading = true}) => {
-
-        let scheduleDrafts;
-        
-        setLoading(loading);
-        try {
-
-            let url;
-
-            if (scheduleId)
-                url = `/schedules/${scheduleId}`;
-            else
-                url = '/schedules';
-
-            const res = await axios.get(url , { withCredentials: true });
-
-            scheduleDrafts = res.data;
-
-            if (include_shifts) {
-                if (Array.isArray(scheduleDrafts)) {
-                    await Promise.all(scheduleDrafts.map( async (scheduleDraft, index) => {
-                        const shiftsRes = fetchUserShifts({
-                            user_scope: scheduleDraft.user_scope,
-                            user_scope_id: scheduleDraft.user_scope_id,
-                            schedule: scheduleDraft.id, 
-                            loading: false
-                        });
-                        scheduleDrafts[index].shifts = shiftsRes.shifts;
-                        scheduleDrafts[index].shift_count = shiftsRes.shift_count;
-                        scheduleDrafts[index].leave_count = shiftsRes.leave_count;
-                    }));
-                } else {
-                    const shiftsRes = await fetchUserShifts({
-                        user_scope: scheduleDrafts.user_scope,
-                        user_scope_id: scheduleDrafts.user_scope_id,
-                        schedule: scheduleDrafts.id, 
-                        loading: false
-                    });
-                    scheduleDrafts.shifts = shiftsRes.shifts;
-                    scheduleDrafts.shift_count = shiftsRes.shift_count;
-                    scheduleDrafts.leave_count = shiftsRes.leave_count;
-                }
-            }
-
-            // TODO: To be implemented include_user_count
-            // if (include_user_count) 
-            //     iterate over each scheduleDraft and fetch user count based on unique users in .shifts field.
-
-
-        } catch (err) {
-            console.error('fetchScheduleDrafts error:', err);
-
-            const message = 'Error occurred while fetching the Schedule Draft data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
-        }
-
-        setScheduleDrafts(scheduleDrafts);
-        setLoading(false);
-        return scheduleDrafts;
-        
-    }, []);
-
-    const fetchScheduleDraft = useCallback( async ({scheduleId}) =>
-        await fetchScheduleDrafts({scheduleId}), [fetchScheduleDrafts]);
-
     const { fetchUsers } = useUsers();
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
@@ -176,9 +111,77 @@ const useSchedules = () => {
 
         setSchedule(prev => ({...prev, shifts: userShifts, placeholder}));
         setLoading(false);
-        return {shifts: userShifts, user_count: userShifts.size, shift_count: shifts.length, leave_count: leaves.length, placeholder};
+        return {
+            shifts: userShifts, 
+            user_count: userShifts.size, 
+            shift_count: shifts.length, 
+            leave_count: leaves.length, 
+            placeholder
+        };
 
     }, [fetchLeaves, fetchShifts, fetchUsers, user.id]);
+
+    const fetchScheduleDrafts = useCallback(async ({scheduleId, include_shifts, loading = true}) => {
+
+        let scheduleDrafts;
+        
+        setLoading(loading);
+        try {
+
+            let url;
+
+            if (scheduleId)
+                url = `/schedules/${scheduleId}`;
+            else
+                url = '/schedules';
+
+            const res = await axios.get(url , { withCredentials: true });
+
+            scheduleDrafts = res.data;
+
+            if (include_shifts) {
+                if (Array.isArray(scheduleDrafts)) {
+                    await Promise.all(scheduleDrafts.map( async (scheduleDraft, index) => {
+                        const shiftsRes = fetchUserShifts({
+                            user_scope: scheduleDraft.user_scope,
+                            user_scope_id: scheduleDraft.user_scope_id,
+                            schedule: scheduleDraft.id, 
+                            loading: false
+                        });
+                        scheduleDrafts[index].shifts = shiftsRes.shifts;
+                        scheduleDrafts[index].user_count = shiftsRes.user_count;
+                        scheduleDrafts[index].shift_count = shiftsRes.shift_count;
+                        scheduleDrafts[index].leave_count = shiftsRes.leave_count;
+                    }));
+                } else {
+                    const shiftsRes = await fetchUserShifts({
+                        user_scope: scheduleDrafts.user_scope,
+                        user_scope_id: scheduleDrafts.user_scope_id,
+                        schedule: scheduleDrafts.id, 
+                        loading: false
+                    });
+                    scheduleDrafts.shifts = shiftsRes.shifts;
+                    scheduleDrafts.user_count = shiftsRes.user_count;
+                    scheduleDrafts.shift_count = shiftsRes.shift_count;
+                    scheduleDrafts.leave_count = shiftsRes.leave_count;
+                }
+            }
+
+        } catch (err) {
+            console.error('fetchScheduleDrafts error:', err);
+
+            const message = 'Error occurred while fetching the Schedule Draft data.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+        }
+
+        setScheduleDrafts(scheduleDrafts);
+        setLoading(false);
+        return scheduleDrafts;
+        
+    }, [fetchUserShifts]);
+
+    const fetchScheduleDraft = useCallback( async ({scheduleId}) =>
+        await fetchScheduleDrafts({scheduleId}), [fetchScheduleDrafts]);
 
     const saveScheduleDraft = useCallback( async () => {
         setStatus([]);

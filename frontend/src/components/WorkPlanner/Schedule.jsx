@@ -5,7 +5,8 @@ import useSchedules from '../../hooks/useSchedules';
 import ComboBox from '../ComboBox';
 import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
-import {formatDate, generateDateList} from '../../utils/dates';
+import Loader from '../Loader';
+import {formatDate} from '../../utils/dates';
 import ScheduleSelector from './ScheduleSelector';
 import UserShiftTable from './UserShiftTable';
 import '../../styles/Schedule.css';
@@ -93,8 +94,6 @@ const Schedule = () => {
         navigate('/planner/editor');
     }, [setScheduleEditor, navigate, schedule]);
 
-    const dates = generateDateList(schedule.start_date, schedule.end_date);
-
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>
             <ComboBox
@@ -132,20 +131,16 @@ const Schedule = () => {
                 onClick={editCurrent}
             />}
         </div>
-        {schedule.type === 'users' &&
+        {loading ? <Loader/> : 
+        schedule.type === 'users' ?
             <UserShiftTable
-                dates={dates}
-                userShifts={schedule.shifts}
-                placeholder={schedule.placeholder}
-                loading={loading}
+                schedule={schedule}
                 editable={false}
-            />
-        }
-        {schedule.type === 'monthly' &&
-            <div>Monthly calendar will be here. Similarly with below, it allows to set up date and select branch/weekend.</div>
-        }
-        {schedule.type === 'jobs' &&
-            <div>Job Posts schedule will be here. This will be only available if job posts are enabled. It has only branch and project views for specific date-scopes.</div>
+            /> : 
+        schedule.type === 'monthly' ?
+            <div>MonthlyShiftTable - Monthly calendar will be here. Similarly with below, it allows to set up date and select branch/weekend.</div> : 
+        schedule.type === 'jobs' &&
+            <div>JobShiftsTable - Job Posts schedule will be here. This will be only available if job posts are enabled. It has only branch and project views for specific date-scopes.</div>
         }
     </div>
 };

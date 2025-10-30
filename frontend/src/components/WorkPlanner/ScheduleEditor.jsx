@@ -3,7 +3,6 @@ import React, {useEffect, useMemo, useRef} from 'react';
 import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
 import UserShiftTable from './UserShiftTable';
-import {generateDateList} from '../../utils/dates';
 import '../../styles/Schedule.css';
 import useSchedules from '../../hooks/useSchedules';
 import Loader from '../Loader';
@@ -37,7 +36,7 @@ const ScheduleEditor = () => {
         };
 
         if (!schedule.user_scope)
-            setSchedule(prev => ({...prev, user_scope: params.get('user_scope') }));
+            setSchedule(prev => ({...prev, user_scope: params.get('scope') }));
 
         if (!schedule.user_scope_id)
             setSchedule(prev => ({...prev, user_scope_id: parseInt(params.get('sid')) }));
@@ -60,11 +59,6 @@ const ScheduleEditor = () => {
 
     }, [isMounted, appCache, schedule.user_scope, schedule.user_scope_id, schedule.start_date, schedule.end_date, schedule.shifts,
          params, setSchedule, setLoading, fetchUserShifts]);
-
-    if (!schedule.start_date || !schedule.end_date)
-        return <span>`Cannot open Schedule Editor. No time range specified.</span>;
-    
-    const dates = generateDateList(schedule.start_date, schedule.end_date);
 
     if (loading)
         return <Loader/>;
@@ -95,10 +89,8 @@ const ScheduleEditor = () => {
             {schedule && schedule.type === 'current' && <Button icon={'save'} label={'Save to Drafts'}/>}
             </div>
             <UserShiftTable
-                dates={dates}
-                userShifts={schedule.shifts}
-                placeholder={!schedule.shifts || !schedule.shifts.size ? 'No shifts to display.' : null}
-                setUserShifts={(shifts) => setSchedule(prev => ({...prev, users: shifts}))}
+                schedule={schedule}
+                setSchedule={setSchedule}
                 editable={true}
             />
         </div>
