@@ -1,5 +1,5 @@
 // FRONTEND/components/EditForm.jsx
-import React, {useState, useEffect, useMemo} from 'react';
+import React, {useState, useEffect, useMemo, useRef} from 'react';
 import { useModals } from '../contexts/ModalContext';
 import ComboBox from './ComboBox';
 import Button from './Button';
@@ -10,12 +10,13 @@ import '../styles/EditForm.css';
 const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
+    const isMounted = useRef(false);
     
     useEffect(() => {
-        if (structure?.inputs) {
+        if (!isMounted.current && structure?.inputs) {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
-                const fieldType = config.type;
+                const fieldType = config.conditional_type ? config.conditional_type(formData) : config.type;
                 const teamCompliance = config.teamCompliance;
                 let value = presetData[fieldName];
 
@@ -44,8 +45,9 @@ const EditForm = ({ structure, presetData, style, className }) => {
             }, {});
 
             setFormData(newFormData);
+            isMounted.current = true;
         }
-    }, [presetData, structure]);
+    }, [presetData, structure, formData, isMounted]);
 
     const handleChange = (e, mode='set', index) => {
         const {name, value, type, checked} = e.target;
@@ -170,7 +172,8 @@ const EditForm = ({ structure, presetData, style, className }) => {
                     >
                         {section.header && <h2>{section.header}</h2>}
                         {Object.entries(section).map(([key, group], index) => {
-                            if ( ['header', 'style', 'className'].includes(key) || group.type === 'hidden')
+                            if ( ['header', 'style', 'className'].includes(key) || group.type === 'hidden' ||
+                             (group.conditional_type && group.conditional_type(formData) === 'hidden'))
                                 return null;
 
                             let groupContent;
@@ -203,7 +206,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     checked={formData[group.field] || false}
                                     onChange={handleChange}
                                     label={group.inputLabel}
-                                />
+                                />;
 
                             if (group.inputType === 'dropdown')
                                 groupContent = <ComboBox
@@ -211,7 +214,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
                                     value={formData[group.field] || group.default || null}
-                                    options={group.options}
+                                    options={group.conditional_options ? group.conditional_options(formData) : group.options || []}
                                     onChange={handleChange}
                                     searchable={group.searchable}
                                     noneAllowed={group.noneAllowed}

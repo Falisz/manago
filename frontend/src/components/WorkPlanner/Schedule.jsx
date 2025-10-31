@@ -6,100 +6,65 @@ import ComboBox from '../ComboBox';
 import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
 import Loader from '../Loader';
-import {formatDate} from '../../utils/dates';
 import ScheduleSelector from './ScheduleSelector';
 import UserShiftTable from './UserShiftTable';
 import '../../styles/Schedule.css';
 
 // TODO: Fix stability of the schedule loading.
 const Schedule = () => {
-    const { schedule, loading, setSchedule, setLoading, fetchUserShifts } = useSchedules();
+    const { schedule, loading, setSchedule, setLoading } = useSchedules();
     const { setScheduleEditor } = useAppState();
     const { search } = useLocation();
     const setSearchParams = useSearchParams()[1];
+    const isMounted = useRef(false);
     const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
-    const isMounted = useRef(false);
 
     useEffect(() => {
-        console.log("Effect with fetching shift runs");
-        fetchUserShifts({
-            start_date: schedule.start_date,
-            end_date: schedule.end_date,
-            user_scope: schedule.user_scope,
-            user_scope_id: schedule.user_scope_id
-        }).then();
-    }, [fetchUserShifts, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
-
-    useEffect(() => {
-        if (!isMounted.current)
+        if (isMounted.current)
             return;
+
+        console.log("Effect with fetching params runs, with params: ", params.entries());
+
+        const scheduleConfig = {};
 
         const from = params.get('from');
         if (from && !isNaN(Date.parse(from)))
-            setSchedule(prev => ({...prev, start_date: from}));
+            scheduleConfig.start_date = from;
 
         const to = params.get('to');
         if (to && !isNaN(Date.parse(to)))
-            setSchedule(prev => ({...prev, end_date: to}));
+            scheduleConfig.end_date = to;
 
-        const user_scope = params.get('scope');
-        if (user_scope)
-            setSchedule(prev => ({...prev, user_scope}));
+        const scope = params.get('scope');
+        if (scope)
+            scheduleConfig.user_scope = scope;
 
-        const user_scope_id = params.get('sid');
-        if (user_scope_id)
-            setSchedule(prev => ({...prev, user_scope_id}));
+        const sid = params.get('sid');
+        if (sid && !isNaN(parseInt(sid)))
+            scheduleConfig.user_scope_id = sid;
+
+        setSchedule(prev => ({...prev, ...scheduleConfig}));
+        isMounted.current = true;
 
     }, [setSchedule, params]);
 
-    useEffect(() => {
-        if (!isMounted.current) {
-            isMounted.current = true;
-            console.log("Effect with params updating gets blocked.");
-            return;
-        }
+    const handleScheduleChange = useCallback((e) => {
+        const { name, value } = e.target;
 
-        console.log("Effect with params updating runs.");
-
+        setSchedule(prev => ({...prev, [name]: value }));
+        
         const newParams = new URLSearchParams(search);
-        if (schedule.type)
-            newParams.set('schedule', schedule.type);
-        else
-            newParams.delete('schedule');
-
-        if (schedule.start_date)
-            newParams.set('from', formatDate(schedule.start_date));
-        else
-            newParams.delete('from');
-
-        if (schedule.end_date)
-            newParams.set('to', formatDate(schedule.end_date));
-        else
-            newParams.delete('to');
-
-        if (schedule.month)
-            newParams.set('month', schedule.month);
-        else
-            newParams.delete('month');
-
-        if (schedule.user_scope)
-            newParams.set('scope', schedule.user_scope);
-        else
-            newParams.delete('scope');
-
-        if (schedule.user_scope_id && schedule.user_scope !== 'you')
-            newParams.set('sid', schedule.user_scope_id);
-        else
-            newParams.delete('sid');
-
+        newParams.set(name, value);
         setSearchParams(newParams, { replace: true });
-    }, [schedule, search, setSearchParams]);
+    }, [setSchedule, search, setSearchParams]);
 
     const editCurrent = useCallback(() => {
         setScheduleEditor({...schedule, type: 'current'});
         navigate('/planner/editor');
     }, [setScheduleEditor, navigate, schedule]);
+
+    console.log(schedule);
 
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>
@@ -112,8 +77,8 @@ const Schedule = () => {
                     {id: 'jobs', name: 'Jobs Schedule'},
                     {id: 'monthly', name: 'Monthly Schedule'}
                 ]}
-                onChange={(e) => setSchedule(prev => ({...prev, type: e.target.value}))}
                 style={{minWidth: 'unset'}}
+                onChange={handleScheduleChange}
                 selectedStyle={{background: 'none'}}
                 selectedTextStyle={{fontFamily: 'Roboto Condensed, sans-serif', color: 'var(--text-color)', fontSize: '2rem', margin: 0, padding: 0}}
             />
@@ -130,6 +95,7 @@ const Schedule = () => {
                 include_by_manager={schedule.type === 'users'}
                 date_range={schedule.type !== 'monthly'}
                 monthly={schedule.type === 'monthly'}
+                update_url={true}
             />
             {schedule.type === 'users' && <Button
                 label='Edit Schedule'

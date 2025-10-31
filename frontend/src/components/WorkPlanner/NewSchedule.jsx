@@ -1,5 +1,5 @@
 // FRONTEND/components/WorkPlanner/NewSchedule.jsx
-import {useCallback, useEffect} from 'react';
+import {useCallback} from 'react';
 import Button from '../Button';
 import {useNavigate} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
@@ -11,7 +11,7 @@ const NewSchedule = () => {
 
     const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
-    const { schedule, setSchedule, fetchUserShifts } = useSchedules();
+    const { schedule, setSchedule } = useSchedules();
 
     const { closeTopModal } = useModals();
 
@@ -30,10 +30,6 @@ const NewSchedule = () => {
             closeTopModal();
         }, 100);
     }, [setScheduleEditor, navigate, schedule, closeTopModal]);
-
-    useEffect(() => {
-            fetchUserShifts().then();
-    }, [fetchUserShifts]);
 
     const selectedUsers = schedule.users?.size > 0 ? Array.from(schedule.users.values()) : [];
     

@@ -1,4 +1,4 @@
-// FRONTEND/components/WorkPlanner/ScheduleDraftItem.jsx
+// FRONTEND/components/ScheduleDrafts/Item.jsx
 import React, {useCallback, useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
@@ -6,11 +6,10 @@ import {useModals} from '../../contexts/ModalContext';
 import Button from '../Button';
 import {formatDate} from '../../utils/dates';
 
-const ScheduleDraftItem = ({schedule}) => {
-
+const ScheduleDraftItem = ({schedule, deleteDraft}) => {
+    const { openModal, closeTopModal } = useModals();
     const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
-    const { closeTopModal } = useModals();
 
     const start_date = useMemo(() => new Date(schedule.start_date), [schedule.start_date]);
     const end_date = useMemo(() => new Date(schedule.end_date), [schedule.end_date]);
@@ -37,12 +36,19 @@ const ScheduleDraftItem = ({schedule}) => {
                     icon={'edit'}
                     title={'Edit'}
                     transparent={true}
+                    onClick={() => openModal({content: 'scheduleDraftEdit', contentId: schedule.id, type: 'dialog'})}
+                />
+                <Button
+                    icon={'schedule'}
+                    title={'Plan'}
+                    transparent={true}
                     onClick={editSchedule}
                 />
                 <Button
                     icon={'delete'}
                     title={'Delete'}
                     transparent={true}
+                    onClick={deleteDraft}
                 />
             </div>
             <div className={'schedule-draft-item-description'}>

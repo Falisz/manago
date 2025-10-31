@@ -14,6 +14,7 @@ import RoleEdit from '../components/Roles/Edit';
 import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
 import PostDetails from '../components/Posts/Details';
+import ScheduleDraftEdit from '../components/ScheduleDrafts/Edit';
 import InWorks from '../components/InWorks';
 import ConfirmPrompt from '../components/ConfirmPrompt';
 import NewSchedule from "../components/WorkPlanner/NewSchedule";
@@ -161,8 +162,10 @@ export const ModalProvider = ({ children }) => {
                 return <TeamEdit parentId={modal.parentId} />;
             case 'postDetails':
                 return <PostDetails postId={modal.contentId} />;
-            case 'newSchedule':
-                return <NewSchedule />;
+            case 'scheduleDraftNew':
+                return <ScheduleDraftEdit />;
+            case 'scheduleDraftEdit':
+                return <ScheduleDraftEdit scheduleId={modal.contentId}/>;
             case 'confirm':
                 return <ConfirmPrompt
                     message={modal.message}

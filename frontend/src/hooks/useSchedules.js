@@ -1,5 +1,5 @@
 // FRONTEND/hooks/useSchedules.js
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import useAppState from '../contexts/AppStateContext';
 import axios from 'axios';
 import useUsers from './useUsers';
@@ -17,9 +17,9 @@ const useSchedules = () => {
 
     const [ schedule, setSchedule ] = useState({
         id: null,
+        type: 'users',
         name: 'Current Schedule',
         description: '',
-        type: 'users',
         start_date,
         end_date,
         month: null,
@@ -37,7 +37,15 @@ const useSchedules = () => {
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
 
-    const fetchUserShifts = useCallback( async ({start_date, end_date, user_scope, user_scope_id, schedule=null}={}) => {
+    const fetchUserShifts = useCallback( async () => {
+
+        const id = schedule.id;
+        const start_date = schedule.start_date;
+        const end_date = schedule.end_date;
+        const user_scope = schedule.user_scope;
+        const user_scope_id = schedule.user_scope_id;
+
+        console.log("...with parameters: ", {user_scope, user_scope_id, start_date, end_date, id});
 
         setLoading(true);
         
@@ -82,9 +90,9 @@ const useSchedules = () => {
 
         const userIds = Array.from(userShifts.keys());
 
-        const shifts = await fetchShifts({users: userIds, start_date, end_date, schedule, date_map: true});
+        const shifts = await fetchShifts({users: userIds, start_date, end_date, schedule: id, date_map: true});
         
-        const leaves = await fetchLeaves({users: userIds, start_date, end_date, schedule});
+        const leaves = await fetchLeaves({users: userIds, start_date, end_date});
 
         userShifts.forEach((user, userId) => {
             user.shifts = shifts
@@ -114,17 +122,11 @@ const useSchedules = () => {
 
         setSchedule(prev => ({...prev, shifts: userShifts, placeholder}));
         setLoading(false);
-        return {
-            shifts: userShifts, 
-            user_count: userShifts.size, 
-            shift_count: shifts.length, 
-            leave_count: leaves.length, 
-            placeholder
-        };
 
-    }, [fetchLeaves, fetchShifts, fetchUsers, user.id]);
+    }, [fetchLeaves, fetchShifts, fetchUsers, user.id, 
+        schedule.id, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
 
-    const fetchScheduleDrafts = useCallback(async ({scheduleId, include_shifts, loading = true}) => {
+    const fetchScheduleDrafts = useCallback(async ({scheduleId, loading = true} = {}) => {
 
         let scheduleDrafts;
         
@@ -142,34 +144,6 @@ const useSchedules = () => {
 
             scheduleDrafts = res.data;
 
-            if (include_shifts) {
-                if (Array.isArray(scheduleDrafts)) {
-                    await Promise.all(scheduleDrafts.map( async (scheduleDraft, index) => {
-                        const shiftsRes = fetchUserShifts({
-                            user_scope: scheduleDraft.user_scope,
-                            user_scope_id: scheduleDraft.user_scope_id,
-                            schedule: scheduleDraft.id, 
-                            loading: false
-                        });
-                        scheduleDrafts[index].shifts = shiftsRes.shifts;
-                        scheduleDrafts[index].user_count = shiftsRes.user_count;
-                        scheduleDrafts[index].shift_count = shiftsRes.shift_count;
-                        scheduleDrafts[index].leave_count = shiftsRes.leave_count;
-                    }));
-                } else {
-                    const shiftsRes = await fetchUserShifts({
-                        user_scope: scheduleDrafts.user_scope,
-                        user_scope_id: scheduleDrafts.user_scope_id,
-                        schedule: scheduleDrafts.id, 
-                        loading: false
-                    });
-                    scheduleDrafts.shifts = shiftsRes.shifts;
-                    scheduleDrafts.user_count = shiftsRes.user_count;
-                    scheduleDrafts.shift_count = shiftsRes.shift_count;
-                    scheduleDrafts.leave_count = shiftsRes.leave_count;
-                }
-            }
-
         } catch (err) {
             console.error('fetchScheduleDrafts error:', err);
 
@@ -181,19 +155,22 @@ const useSchedules = () => {
         setLoading(false);
         return scheduleDrafts;
         
-    }, [fetchUserShifts]);
+    }, []);
 
     const fetchScheduleDraft = useCallback( async ({scheduleId}) =>
         await fetchScheduleDrafts({scheduleId}), [fetchScheduleDrafts]);
 
-    const saveScheduleDraft = useCallback( async () => {
+    const saveScheduleDraft = useCallback( async ({scheduleId, formData}) => {
         setStatus([]);
         // Function to save (create, update) schedule drafts - not to publish them.
-        // It will be only available from the Schedule editor - therefore, no params are needed.
-        console.log('saveScheduleDraft called with data:', schedule);
-    }, [schedule]);
+        console.log('saveScheduleDraft called with data:', scheduleId, formData);
 
-    const publishScheduleDraft = useCallback( async () => {
+        const data = null;
+
+        return ( data && data.scheduleDraft ) || null;
+    }, []);
+
+    const publishScheduleDraft = useCallback( async ({scheduleId}) => {
         setStatus([]);
         // Function to publish schedule drafts - not to update them.
         // It will be only available from the Schedule editor - therefore, no params are needed.
@@ -207,18 +184,28 @@ const useSchedules = () => {
         console.log('discard called for scheduleId:', scheduleId);
     }, []);
 
+    useEffect( () => {
+        if (schedule.stop_fetch)
+            return;
+
+        if (schedule.type === 'users') {
+            console.log("Effect with fetching user shifts runs...");
+            fetchUserShifts().then();
+        }
+        
+    }, [fetchUserShifts, schedule.stop_fetch, schedule.type]);
+
     return {
         schedule,
-        loading,
-        status,
-        setLoading,
-        setStatus,
-        setSchedule,
         scheduleDrafts,
         scheduleDraft: scheduleDrafts,
+        loading,
+        status,
+        setSchedule,
+        setLoading,
+        setStatus,
         fetchScheduleDrafts,
         fetchScheduleDraft,
-        fetchUserShifts,
         saveScheduleDraft,
         publishScheduleDraft,
         discardScheduleDraft

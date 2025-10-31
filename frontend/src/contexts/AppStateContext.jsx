@@ -7,14 +7,12 @@ import Cookies from 'js-cookie';
 
 const mapPagesToComponents = (pages) => {
     return pages.map(page => {
-        const mappedPage = {
-            ...page,
-            component: componentMap[page.component] || (() => <InWorks title={page.title} icon={page.icon} />)
-        };
+        const component = componentMap[page.component] || (() => <InWorks title={page.title} icon={page.icon} />);
 
-        if (page.subpages && page.subpages.length > 0) {
+        const mappedPage = { ...page, component };
+
+        if (page.subpages && page.subpages.length > 0)
             mappedPage.subpages = mapPagesToComponents(page.subpages);
-        }
 
         return mappedPage;
     });
@@ -28,14 +26,13 @@ export const AppStateProvider = ({ children }) => {
     const [appState, setAppState] = useState({
         is_connected: true,
         loading: true,
-        theme: Cookies.get('theme'),
-        style: Cookies.get('style'),
-        color: Cookies.get('color'),
-        background: Cookies.get('background'),
+        theme: Cookies.get('theme') || null,
+        style: Cookies.get('style') || null,
+        color: Cookies.get('color') || null,
+        background: Cookies.get('background') || null,
         modules: [],
         pages: [],
-        user: null,
-        schedule_editor: null
+        user: null
     });
     const appCache = useRef({
         users: {},
@@ -45,7 +42,7 @@ export const AppStateProvider = ({ children }) => {
         schedule_editor: {}
     });
 
-    // API Get calls.
+    // State and Ref setters
     const setLoading = useCallback((loading) => {
         setAppState(prev => ({ ...prev, loading }));
     }, []);
@@ -54,6 +51,11 @@ export const AppStateProvider = ({ children }) => {
         setAppState(prev => ({ ...prev, user }));
     }, []);
 
+    const setScheduleEditor = useCallback(async (scheduleEditor) => {
+        appCache.current.schedule_editor = scheduleEditor;
+    }, []);
+
+    // API Get calls.
     const getUser = useCallback(async () => {
         const response = await axios.get('/auth', { withCredentials: true });
         return response.data.user;
@@ -223,22 +225,20 @@ export const AppStateProvider = ({ children }) => {
         if (isCheckingUserRef.current) return;
         isCheckingUserRef.current = true;
         try {
-            if (withLoader) setLoading(true);
+            if (withLoader) 
+                setLoading(true);
             setUser(await getUser());
             setLoading(false);
         } catch (err) {
-            if (withLoader) setLoading(false);
+            if (withLoader) 
+                setLoading(false);
             throw new Error(`Authentication failed: ${err.message}`);
         } finally {
             isCheckingUserRef.current = false;
+            await refreshModules();
             await refreshPages();
         }
-    }, [getUser, refreshPages, setLoading, setUser]);
-
-    const setScheduleEditor = useCallback(async (scheduleEditor) => {
-        if (!scheduleEditor) return;
-        appCache.current.schedule_editor = scheduleEditor;
-    }, [appCache]);
+    }, [getUser, refreshPages, refreshModules, setLoading, setUser]);
 
     useEffect(() => {
         checkConnection().then();
@@ -265,9 +265,10 @@ export const AppStateProvider = ({ children }) => {
 
     return (
         <AppStateContext.Provider value={{
-            user: appState.user,
             appState,
             appCache,
+            loading: appState.loading,
+            user: appState.user,
             setLoading,
             authUser,
             logoutUser,

@@ -1,5 +1,6 @@
 // FRONTEND/components/WorkPlanner/ScheduleSelector.jsx
 import React, {useCallback, useEffect, useState} from 'react';
+import {useLocation, useSearchParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
@@ -7,9 +8,11 @@ import ComboBox from '../ComboBox';
 
 const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, include_all, include_teams, include_branches,
                               include_projects, include_specific, include_by_manager, date_range = true,
-                              monthly = false, inRow = true }) => {
+                              monthly = false, inRow = true, update_url = false }) => {
 
     const { appState, user } = useAppState();
+    const { search } = useLocation();
+    const setSearchParams = useSearchParams()[1];
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -58,6 +61,50 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
         }
     }, [schedule.user_scope, teams, users, managers]);
 
+    const updateUrl = useCallback(({name, value}) => {
+        const newParams = new URLSearchParams(search);
+
+        const urlKeys = {
+            start_date: 'from',
+            end_date: 'to',
+            month: 'month',
+            user_scope: 'scope',
+            user_scope_id: 'sid'
+        }
+
+        if (schedule.start_date)
+            newParams.set('from', schedule.start_date);
+        else
+            newParams.delete('from');
+
+        if (schedule.end_date)
+            newParams.set('to', schedule.end_date);
+        else
+            newParams.delete('to');
+
+        if (schedule.month)
+            newParams.set('month', schedule.month);
+        else
+            newParams.delete('month');
+
+        if (schedule.user_scope)
+            newParams.set('scope', schedule.user_scope);
+        else
+            newParams.delete('scope');
+
+        if (schedule.user_scope_id && schedule.user_scope !== 'you')
+            newParams.set('sid', schedule.user_scope_id);
+        else
+            newParams.delete('sid');
+
+        newParams.set(urlKeys[name], value);
+
+        if (name === 'user_scope' && value === 'you')
+            newParams.delete('sid');
+
+        setSearchParams(newParams, { replace: true });
+    }, [search, setSearchParams, schedule]);
+
     const handleChange = useCallback((e) => {
         const { name, value } = e.target;
 
@@ -69,7 +116,11 @@ const ScheduleSelector = ({ schedule, setSchedule, setLoading, include_you, incl
         } else {
             setSchedule(prev => ({...prev, [name]: value }));
         }
-    }, [setSchedule, user]);
+
+        if (update_url) 
+            updateUrl({name, value});           
+        
+    }, [setSchedule, user, updateUrl, update_url]);
 
     return (
         <div

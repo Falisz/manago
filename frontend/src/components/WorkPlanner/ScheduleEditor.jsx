@@ -9,55 +9,47 @@ import Loader from '../Loader';
 
 const ScheduleEditor = () => {
     const { appCache } = useAppState();
-    const { schedule, setSchedule, loading, setLoading, fetchUserShifts } = useSchedules();
+    const { schedule, setSchedule, loading, setLoading } = useSchedules();
     const isMounted = useRef(false);
     const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
     useEffect(() => {
+        if (isMounted.current)
+            return;
+
         setLoading(true);
         
-        if (!isMounted.current) {
+        if(appCache.current.schedule_editor) {
+            setSchedule({...appCache.current.schedule_editor, stop_fetch: true}); 
+            setLoading(false); 
             isMounted.current = true;
-            if(appCache.current.schedule_editor)
-                setSchedule({...appCache.current.schedule_editor});
-            setLoading(false);
             return;
         }
 
-        const parseDate = (dateStr) => {
-            if (!dateStr) 
-                return null;
-            try {
-                return new Date(dateStr);
-            } catch {
-                return dateStr;
-            }
-        };
+        const scheduleConfig = {};
 
-        if (!schedule.user_scope)
-            setSchedule(prev => ({...prev, user_scope: params.get('scope') }));
+        const from = params.get('from');
+        if (from && !isNaN(Date.parse(from)))
+            scheduleConfig.start_date = from;
 
-        if (!schedule.user_scope_id)
-            setSchedule(prev => ({...prev, user_scope_id: parseInt(params.get('sid')) }));
+        const to = params.get('to');
+        if (to && !isNaN(Date.parse(to)))
+            scheduleConfig.end_date = to;
 
-        if (!schedule.start_date)
-            setSchedule(prev => ({...prev, start_date: parseDate(params.get('from')) }));
+        const scope = params.get('scope');
+        if (scope)
+            scheduleConfig.user_scope = scope;
 
-        if (!schedule.end_date)
-            setSchedule(prev => ({...prev, end_date: parseDate(params.get('to')) }));
+        const sid = params.get('sid');
+        if (sid && !isNaN(parseInt(sid)))
+            scheduleConfig.user_scope_id = sid;
 
-        if (schedule.user_scope && schedule.user_scope_id && schedule.start_date && schedule.end_date &&
-            (!schedule.shifts || !schedule.shifts.size))
-            fetchUserShifts({
-                start_date: new Date(schedule.start_date),
-                end_date: new Date(schedule.end_date),
-                user_scope: schedule.user_scope,
-                user_scope_id: schedule.user_scope_id
-            }).then();
+        setSchedule(prev => ({...prev, ...scheduleConfig}));
         setLoading(false);
+        isMounted.current = true;
 
     }, [isMounted, appCache, schedule.user_scope, schedule.user_scope_id, schedule.start_date, schedule.end_date, schedule.shifts,
-         params, setSchedule, setLoading, fetchUserShifts]);
+         params, setSchedule, setLoading]);
 
     if (loading)
         return <Loader/>;
