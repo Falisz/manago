@@ -17,15 +17,18 @@ const ScheduleEditor = () => {
         if (isMounted.current)
             return;
 
+        console.log("Effect to initialize Schedule editor runs.");
         setLoading(true);
         
-        if(appCache.current.schedule_editor) {
-            setSchedule({...appCache.current.schedule_editor, stop_fetch: true}); 
+        if (appCache.current.schedule_editor) {
+            console.log("Initializing schedule editor with cache.");
+            setSchedule({...appCache.current.schedule_editor, fetch_shifts: false});
             setLoading(false); 
             isMounted.current = true;
             return;
         }
 
+        console.log("Initializing schedule editor with URL params.");
         const scheduleConfig = {};
 
         const from = params.get('from');
@@ -44,12 +47,11 @@ const ScheduleEditor = () => {
         if (sid && !isNaN(parseInt(sid)))
             scheduleConfig.user_scope_id = sid;
 
-        setSchedule(prev => ({...prev, ...scheduleConfig}));
+        setSchedule(prev => ({...prev, ...scheduleConfig, fetch_shifts: true}));
         setLoading(false);
         isMounted.current = true;
 
-    }, [isMounted, appCache, schedule.user_scope, schedule.user_scope_id, schedule.start_date, schedule.end_date, schedule.shifts,
-         params, setSchedule, setLoading]);
+    }, [isMounted, appCache, params, setSchedule, setLoading]);
 
     if (loading)
         return <Loader/>;
@@ -63,7 +65,6 @@ const ScheduleEditor = () => {
                         schedule.name || ''
             }</span>
             {schedule && schedule.type !== 'current' && <Button icon={'edit'} label={'Edit Details'}/>}
-
             {schedule && schedule.type !== 'current' && <Button icon={'publish'} label={'Publish'}/>}
             {schedule && schedule.type === 'current' && <Button icon={'publish'} label={'Re-Publish'}/>}
             {schedule && schedule.type !== 'current' && <Button icon={'save'} label={'Save'}/>}

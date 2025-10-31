@@ -17,7 +17,6 @@ import PostDetails from '../components/Posts/Details';
 import ScheduleDraftEdit from '../components/ScheduleDrafts/Edit';
 import InWorks from '../components/InWorks';
 import ConfirmPrompt from '../components/ConfirmPrompt';
-import NewSchedule from "../components/WorkPlanner/NewSchedule";
 
 const ModalContext = createContext();
 

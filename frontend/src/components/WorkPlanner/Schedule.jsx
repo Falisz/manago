@@ -1,5 +1,5 @@
 // FRONTEND/components/WorkPlanner/ScheduleIndex.jsx
-import React, {useCallback, useEffect, useRef, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {useLocation, useNavigate, useSearchParams} from 'react-router-dom';
 import useSchedules from '../../hooks/useSchedules';
 import ComboBox from '../ComboBox';
@@ -10,21 +10,16 @@ import ScheduleSelector from './ScheduleSelector';
 import UserShiftTable from './UserShiftTable';
 import '../../styles/Schedule.css';
 
-// TODO: Fix stability of the schedule loading.
 const Schedule = () => {
     const { schedule, loading, setSchedule, setLoading } = useSchedules();
     const { setScheduleEditor } = useAppState();
     const { search } = useLocation();
     const setSearchParams = useSearchParams()[1];
-    const isMounted = useRef(false);
     const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
 
     useEffect(() => {
-        if (isMounted.current)
-            return;
-
-        console.log("Effect with fetching params runs, with params: ", params.entries());
+        console.log("Schedule component: Fetching URL params to set schedule and turning on fetch_shifts.");
 
         const scheduleConfig = {};
 
@@ -44,8 +39,7 @@ const Schedule = () => {
         if (sid && !isNaN(parseInt(sid)))
             scheduleConfig.user_scope_id = sid;
 
-        setSchedule(prev => ({...prev, ...scheduleConfig}));
-        isMounted.current = true;
+        setSchedule(prev => ({...prev, ...scheduleConfig, fetch_shifts: true}));
 
     }, [setSchedule, params]);
 
@@ -53,7 +47,7 @@ const Schedule = () => {
         const { name, value } = e.target;
 
         setSchedule(prev => ({...prev, [name]: value }));
-        
+
         const newParams = new URLSearchParams(search);
         newParams.set(name, value);
         setSearchParams(newParams, { replace: true });
@@ -63,8 +57,6 @@ const Schedule = () => {
         setScheduleEditor({...schedule, type: 'current'});
         navigate('/planner/editor');
     }, [setScheduleEditor, navigate, schedule]);
-
-    console.log(schedule);
 
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>

@@ -27,6 +27,7 @@ const useSchedules = () => {
         user_scope_id: user.id,
         shifts: new Map(),
         placeholder: null,
+        fetch_shifts: false
     });
 
     const [scheduleDrafts, setScheduleDrafts] = useState(null);
@@ -44,8 +45,6 @@ const useSchedules = () => {
         const end_date = schedule.end_date;
         const user_scope = schedule.user_scope;
         const user_scope_id = schedule.user_scope_id;
-
-        console.log("...with parameters: ", {user_scope, user_scope_id, start_date, end_date, id});
 
         setLoading(true);
         
@@ -163,9 +162,18 @@ const useSchedules = () => {
     const saveScheduleDraft = useCallback( async ({scheduleId, formData}) => {
         setStatus([]);
         // Function to save (create, update) schedule drafts - not to publish them.
-        console.log('saveScheduleDraft called with data:', scheduleId, formData);
 
-        const data = null;
+        let res;
+
+        if (scheduleId)
+            res = await ( axios.put(`/schedules/${scheduleId}`, formData, { withCredentials: true }));
+        else
+            res = await ( axios.post('/schedules', formData, { withCredentials: true }));
+
+        if (!res)
+            return null;
+
+        const { data } = res;
 
         return ( data && data.scheduleDraft ) || null;
     }, []);
@@ -185,15 +193,17 @@ const useSchedules = () => {
     }, []);
 
     useEffect( () => {
-        if (schedule.stop_fetch)
+        if (!schedule.fetch_shifts) {
+            console.log("useSchedule Effect: fetch_shifts is false. Doing nothing.");
             return;
+        }
 
         if (schedule.type === 'users') {
-            console.log("Effect with fetching user shifts runs...");
+            console.log("useSchedule Effect: Fetching user shifts.");
             fetchUserShifts().then();
         }
         
-    }, [fetchUserShifts, schedule.stop_fetch, schedule.type]);
+    }, [fetchUserShifts, schedule.fetch_shifts, schedule.type]);
 
     return {
         schedule,
