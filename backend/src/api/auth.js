@@ -23,7 +23,8 @@ const authHandler = async (req, res) => {
             roles: false,
             managers: false,
             managed_users: false,
-            include_configs: true
+            include_configs: true,
+            permissions: true
         });
 
         if (!user) {
