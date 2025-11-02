@@ -30,7 +30,7 @@ const UserSubMenu = () => {
                 Switch theme
                 <Icon i={`${new_theme_mode}_mode`} />
             </Link>
-            {user.permissions.includes('access-manager-view') || user.permissions.includes('*') &&
+            {(user.permissions.includes('access-manager-view') || user.permissions.includes('*')) &&
                 <Link
                     key='toggle-view'
                     className='sub-menu-link'

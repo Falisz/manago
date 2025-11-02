@@ -12,6 +12,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
     const { appState, setScheduleEditor } = useAppState();
     const navigate = useNavigate();
     const { scheduleDraft, loading, setLoading, fetchScheduleDraft, saveScheduleDraft } = useSchedules();
+    const { fetchUserShifts } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -23,7 +24,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
     
         if (scheduleId) {
             setLoading(true);
-            fetchScheduleDraft({ scheduleId, include_shifts: true })
+            fetchScheduleDraft({ scheduleId, include_shifts: true }).then();
         } else {
             setLoading(false);
         }
@@ -74,6 +75,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
                 inputType: 'date',
                 label: 'Start Date',
                 required: true,
+                conditional_max: (formData) => formData.end_date,
             },
             end_date: {
                 section: 1,
@@ -82,6 +84,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
                 inputType: 'date',
                 label: 'End Date',
                 required: true,
+                conditional_min: (formData) => formData.start_date,
             },
             user_scope: {
                 section: 2,
@@ -91,17 +94,60 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
                 label: 'User Scope',
                 options: scopeOptions.scopes,
                 required: true,
+                disabled: !!scheduleId,
             },
             user_scope_id: {
                 section: 2,
                 field: 'user_scope_id',
                 conditional_type: (formData) => ['you', 'all'].includes(formData.user_scope) ? 'hidden' : 'number',
                 inputType: 'dropdown',
+                label: ' ',
                 options: [],
                 conditional_options: (formData) => formData.user_scope === 'team' ? scopeOptions.teams :
                             formData.user_scope === 'manager' ? scopeOptions.managers :
                             formData.user_scope === 'user' ? scopeOptions.users : [],
                 conditional_required: (formData) => !['you', 'all'].includes(formData.user_scope),
+                disabled: !!scheduleId,
+            },
+            users: {
+                section: 3,
+                field: 'users',
+                type: 'content',
+                async_content: async (formData) => {
+                    if (
+                        !formData.start_date ||
+                        !formData.end_date ||
+                        !formData.user_scope ||
+                        (!['you', 'all'].includes(formData.user_scope) && !formData.user_scope_id)
+                    )
+                        return null;
+
+                    const { users, shifts } = await fetchUserShifts({
+                        id: scheduleId,
+                        start_date: formData.start_date,
+                        end_date: formData.end_date,
+                        user_scope: formData.user_scope,
+                        user_scope_id: formData.user_scope_id
+                    })
+
+                    const userList = Array.from(users.values().map(u => u.first_name + ' ' + u.last_name));
+
+                    return <>
+                        <label className={'form-group-label'}>Users ({userList.length})</label>
+                        <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>
+                        <label className={'form-group-label'}>Shifts In The Scope</label>
+                        <span style={{paddingLeft: '10px'}}>{shifts.length}</span>
+                    </>;
+                },
+                async_content_deps: ['start_date', 'end_date', 'user_scope', 'user_scope_id'],
+                async_content_should_load: (fd) =>
+                    fd.start_date && fd.end_date && fd.user_scope &&
+                    (!['you', 'all'].includes(fd.user_scope) ? fd.user_scope_id : true)
+            }
+        },
+        sections: {
+            2: {
+                style: {alignItems: 'flex-end'}
             }
         },
         onSubmit: {
@@ -117,7 +163,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
             },
             refreshTriggers: [['scheduleDrafts', true], ...(scheduleDraft ? [['scheduleDraft', scheduleDraft.id]] : [])]
         },
-    }), [scheduleDraft, scopeOptions, scheduleId, saveScheduleDraft, setScheduleEditor, navigate]);
+    }), [scheduleDraft, scopeOptions, scheduleId, saveScheduleDraft, setScheduleEditor, navigate, fetchUserShifts]);
 
     const scheduleData = useMemo(() => ({...scheduleDraft}), [scheduleDraft]);
 

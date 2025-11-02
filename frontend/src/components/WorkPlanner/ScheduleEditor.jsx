@@ -17,35 +17,28 @@ const ScheduleEditor = () => {
         if (isMounted.current)
             return;
 
-        console.log("Effect to initialize Schedule editor runs.");
         setLoading(true);
+        let scheduleConfig = {};
         
         if (appCache.current.schedule_editor) {
-            console.log("Initializing schedule editor with cache.");
-            setSchedule({...appCache.current.schedule_editor, fetch_shifts: false});
-            setLoading(false); 
-            isMounted.current = true;
-            return;
+            scheduleConfig = appCache.current.schedule_editor;
+        } else {
+            const from = params.get('from');
+            if (from && !isNaN(Date.parse(from)))
+                scheduleConfig.start_date = from;
+
+            const to = params.get('to');
+            if (to && !isNaN(Date.parse(to)))
+                scheduleConfig.end_date = to;
+
+            const scope = params.get('scope');
+            if (scope)
+                scheduleConfig.user_scope = scope;
+
+            const sid = params.get('sid');
+            if (sid && !isNaN(parseInt(sid)))
+                scheduleConfig.user_scope_id = sid;
         }
-
-        console.log("Initializing schedule editor with URL params.");
-        const scheduleConfig = {};
-
-        const from = params.get('from');
-        if (from && !isNaN(Date.parse(from)))
-            scheduleConfig.start_date = from;
-
-        const to = params.get('to');
-        if (to && !isNaN(Date.parse(to)))
-            scheduleConfig.end_date = to;
-
-        const scope = params.get('scope');
-        if (scope)
-            scheduleConfig.user_scope = scope;
-
-        const sid = params.get('sid');
-        if (sid && !isNaN(parseInt(sid)))
-            scheduleConfig.user_scope_id = sid;
 
         setSchedule(prev => ({...prev, ...scheduleConfig, fetch_shifts: true}));
         setLoading(false);

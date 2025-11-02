@@ -16,7 +16,8 @@ const ComboBox = ({
                       style = null,
                       selectedStyle = null,
                       selectedTextStyle = null,
-                      optionsStyle = null
+                      optionsStyle = null,
+                      disabled = false
                   }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -64,8 +65,11 @@ const ComboBox = ({
     };
 
     const getDisplayText = () => {
-        if (!value) return placeholder || 'Select an option';
-        const isOptionObject = options.length > 0 && typeof options[0] === 'object';
+        if (!value)
+            return placeholder || 'Select an option';
+
+        const isOptionObject = options && options.length > 0 && typeof options[0] === 'object';
+
         if (isOptionObject) {
             const selectedOption = options.find(option => option.id === value);
             return selectedOption ?
@@ -75,32 +79,32 @@ const ComboBox = ({
         return (upperCaseNames ? value.toUpperCase() : value);
     };
 
-    const filteredOptions = options.filter((option) => {
+    const filteredOptions = (options && options.filter((option) => {
         const displayText = typeof option === 'string' ? option : option.name;
         return displayText.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+    })) || options || [];
 
     return (
-        <div className={'app-combo-box ' + className} ref={comboBoxRef} style={style}>
+        <div className={'app-combo-box ' + className + (disabled ? ' disabled' : '')} ref={comboBoxRef} style={style}>
             <div
                 className='combo-box-selected'
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
                 tabIndex={0}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' ) {
-                        setIsOpen(!isOpen);
+                        !disabled && setIsOpen(!isOpen);
                     }
                 }}
                 style={selectedStyle}
             >
-                { searchable ? <input
+                { searchable && !disabled ? <input
                     className='combo-box-search-input'
                     ref={inputRef}
                     type='text'
                     value={searchTerm}
                     onChange={handleSearchChange}
                     placeholder={getDisplayText()}
-                    onClick={(e) => {setIsOpen(!isOpen); e.stopPropagation()}}
+                    onClick={(e) => {!disabled && setIsOpen(!isOpen); e.stopPropagation()}}
                     onKeyDown={(e) => {
                         if (e.key === 'Escape')
                             setIsOpen(false)

@@ -10,7 +10,53 @@ import '../styles/EditForm.css';
 const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
+    const [asyncContents, setAsyncContents] = useState({});
     const isMounted = useRef(false);
+    const prevFormData = useRef({});
+
+    useEffect(() => {
+
+        const loadAsyncContents = async () => {
+            for (const [key, config] of Object.entries(structure.inputs)) {
+                if (config.type !== 'content' || !config.async_content)
+                    continue;
+
+                const contentKey = `${config.section}-${config.field}`;
+                const deps = config.async_content_deps || [];
+
+                const shouldLoad = config.async_content_should_load?.(formData) ?? true;
+
+                if (!shouldLoad) {
+                    setAsyncContents(prev => ({ ...prev, [contentKey]: null }));
+                    continue;
+                }
+
+                const shouldReload = deps.length === 0 || deps.some(dep =>
+                    prevFormData.current[dep] !== formData[dep]
+                );
+
+                if (!shouldReload)
+                    continue;
+
+                try {
+                    const content = await config.async_content(formData);
+                    setAsyncContents(prev => ({ ...prev, [contentKey]: content }));
+                } catch (err) {
+                    console.error(`Async content error [${key}]:`, err);
+                    setAsyncContents(prev => ({
+                        ...prev,
+                        [contentKey]: <div style={{color: 'red'}}>Error loading content</div>
+                    }));
+                }
+            }
+        };
+
+        loadAsyncContents().then();
+    }, [formData, structure.inputs]);
+
+    useEffect(() => {
+        prevFormData.current = formData;
+    }, [formData]);
     
     useEffect(() => {
         if (!isMounted.current && structure?.inputs) {
@@ -115,7 +161,11 @@ const EditForm = ({ structure, presetData, style, className }) => {
             if (!sections[section]) {
                 sections[section] = {};
             }
-            sections[section][key] = {...config };
+            sections[section][key] = { ...config };
+            if (config.type === 'content') {
+                const contentKey = `${section}-${config.field}`;
+                sections[section][key].content = asyncContents[contentKey] || null;
+            }
         });
         if (structure.sections)
         {
@@ -130,7 +180,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
         }
 
         return sections;
-    }, [structure]);
+    }, [structure, asyncContents]);
 
     const header = useMemo(() => {
         const headerModes = {
@@ -178,6 +228,9 @@ const EditForm = ({ structure, presetData, style, className }) => {
 
                             let groupContent;
 
+                            if (group.type === 'content')
+                                groupContent = group.content;
+
                             if (group.inputType === 'input' || group.inputType === 'text')
                                 groupContent = <input
                                     className={'form-input'}
@@ -187,6 +240,21 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     onChange={handleChange}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
+                                    disabled={group.disabled}
+                                />;
+
+                            if (group.inputType === 'date')
+                                groupContent = <input
+                                    className={'form-input'}
+                                    type={'date'}
+                                    name={group.field}
+                                    value={formData[group.field] || ''}
+                                    min={group.conditional_min ? group.conditional_min(formData) : group.min }
+                                    max={group.conditional_max ? group.conditional_max(formData) : group.max }
+                                    onChange={handleChange}
+                                    placeholder={`${group.placeholder || group.label}`}
+                                    required={group.required}
+                                    disabled={group.disabled}
                                 />;
 
                             if (group.inputType === 'textarea')
@@ -197,6 +265,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     onChange={handleChange}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
+                                    disabled={group.disabled}
                                 />;
 
                             if (group.inputType === 'checkbox')
@@ -218,6 +287,8 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     onChange={handleChange}
                                     searchable={group.searchable}
                                     noneAllowed={group.noneAllowed}
+                                    disabled={group.disabled}
+                                    required={group.conditional_required ? group.conditional_required(formData) : group.required}
                                 />;
 
                             if (group.inputType === 'multi-dropdown') {

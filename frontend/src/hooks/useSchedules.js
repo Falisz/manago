@@ -38,15 +38,17 @@ const useSchedules = () => {
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
 
-    const fetchUserShifts = useCallback( async () => {
-
-        const id = schedule.id;
-        const start_date = schedule.start_date;
-        const end_date = schedule.end_date;
-        const user_scope = schedule.user_scope;
-        const user_scope_id = schedule.user_scope_id;
+    const fetchUserShifts = useCallback( async ({
+                                                    id = schedule.id,
+                                                    start_date = schedule.start_date,
+                                                    end_date = schedule.end_date,
+                                                    user_scope = schedule.user_scope,
+                                                    user_scope_id = schedule.user_scope_id
+                                                } = {}) => {
 
         setLoading(true);
+
+        console.log('fetchUserShifts called with params:', {id, start_date, end_date, user_scope, user_scope_id});
         
         let userShifts = new Map();
 
@@ -121,6 +123,7 @@ const useSchedules = () => {
 
         setSchedule(prev => ({...prev, shifts: userShifts, placeholder}));
         setLoading(false);
+        return {users: userShifts, shifts, leaves, placeholder};
 
     }, [fetchLeaves, fetchShifts, fetchUsers, user.id, 
         schedule.id, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
@@ -214,6 +217,7 @@ const useSchedules = () => {
         setSchedule,
         setLoading,
         setStatus,
+        fetchUserShifts,
         fetchScheduleDrafts,
         fetchScheduleDraft,
         saveScheduleDraft,

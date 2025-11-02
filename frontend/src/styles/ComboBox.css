@@ -10,6 +10,10 @@
     min-width: max(200px, 33%);
 }
 
+.app-form .app-combo-box.disabled {
+    opacity: 0.8;
+}
+
 .app-combo-box .combo-box-selected {
     display: flex;
     align-items: center;
@@ -21,6 +25,9 @@
     color: var(--background-color-3);
     cursor: pointer;
     transition: .3s ease-in-out;
+}
+.app-combo-box.disabled .combo-box-selected {
+    cursor: not-allowed;
 }
 .app.fluent .app-combo-box .combo-box-selected {
     color: var(--text-color);
