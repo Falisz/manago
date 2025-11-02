@@ -48,7 +48,7 @@ export const AppStateProvider = ({ children }) => {
     }, []);
 
     const setUser = useCallback((user) => {
-        setAppState(prev => ({ ...prev, user }));
+        setAppState(prev => ({ ...prev, user: {...prev.user, ...user} }));
     }, []);
 
     const setScheduleEditor = useCallback(async (scheduleEditor) => {
@@ -169,8 +169,9 @@ export const AppStateProvider = ({ children }) => {
         try {
             const pages = await getPages();
             setAppState(prev => {
-                if (prev.pages === pages) { return prev; }
-                return {...prev, pages: pages};
+                if (prev.pages === pages)
+                    return prev;
+                return {...prev, pages};
             });
 
         } catch (error) {
@@ -198,7 +199,7 @@ export const AppStateProvider = ({ children }) => {
                 { manager_view: toggleValue },
                 { withCredentials: true }
             );
-            setUser(prev => prev ? { ...prev, manager_view_enabled: result.data?.manager_view } : null);
+            setUser({ manager_view_enabled: result.data?.manager_view });
             await refreshPages();
         } catch (err) {
             console.error('View switching error: ', err);
@@ -215,7 +216,7 @@ export const AppStateProvider = ({ children }) => {
                 { theme_mode },
                 { withCredentials: true }
             );
-            setUser(prev => prev ? { ...prev, theme_mode: result.data?.theme_mode } : null);
+            setUser({ theme_mode: result.data?.theme_mode });
         } catch (err) {
             console.error('Theme switching error: ', err);
         }
