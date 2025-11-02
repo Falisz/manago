@@ -47,8 +47,6 @@ const useSchedules = () => {
                                                 } = {}) => {
 
         setLoading(true);
-
-        console.log('fetchUserShifts called with params:', {id, start_date, end_date, user_scope, user_scope_id});
         
         let userShifts = new Map();
 
@@ -185,7 +183,7 @@ const useSchedules = () => {
         setStatus([]);
         // Function to publish schedule drafts - not to update them.
         // It will be only available from the Schedule editor - therefore, no params are needed.
-        console.log('publishScheduleDraft called with data:', schedule);
+        console.log('publishScheduleDraft called with scheduleId:', scheduleId);
     }, [schedule]);
 
     const discardScheduleDraft = useCallback( async ({scheduleId}) => {

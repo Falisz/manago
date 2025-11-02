@@ -38,7 +38,7 @@ const ScheduleDraftsIndex = () => {
             <Button
                 icon={'add'}
                 label={'Plan new schedule'}
-                onClick={() => openModal({content: 'scheduleDraftNew', type: 'dialog'})}
+                onClick={() => openModal({content: 'scheduleDraftNew', style: {overflow: 'unset'}, type: 'dialog'})}
             />
         </div>
         {scheduleDrafts && scheduleDrafts.length > 0 &&

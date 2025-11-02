@@ -36,7 +36,12 @@ const ScheduleDraftItem = ({schedule, deleteDraft}) => {
                     icon={'edit'}
                     title={'Edit'}
                     transparent={true}
-                    onClick={() => openModal({content: 'scheduleDraftEdit', contentId: schedule.id, type: 'dialog'})}
+                    onClick={() => openModal({
+                        content: 'scheduleDraftEdit',
+                        contentId: schedule.id,
+                        style: {overflow: 'unset'},
+                        type: 'dialog'
+                    })}
                 />
                 <Button
                     icon={'schedule'}

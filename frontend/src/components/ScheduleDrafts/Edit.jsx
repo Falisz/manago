@@ -113,6 +113,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
                 section: 3,
                 field: 'users',
                 type: 'content',
+                style: {flexDirection: 'column'},
                 async_content: async (formData) => {
                     if (
                         !formData.start_date ||
@@ -128,7 +129,7 @@ const ScheduleDraftEdit = ({ scheduleId }) => {
                         end_date: formData.end_date,
                         user_scope: formData.user_scope,
                         user_scope_id: formData.user_scope_id
-                    })
+                    });
 
                     const userList = Array.from(users.values().map(u => u.first_name + ' ' + u.last_name));
 
