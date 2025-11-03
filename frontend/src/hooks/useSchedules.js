@@ -1,5 +1,5 @@
 // FRONTEND/hooks/useSchedules.js
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
 import useAppState from '../contexts/AppStateContext';
 import axios from 'axios';
 import useUsers from './useUsers';
@@ -15,9 +15,9 @@ const useSchedules = () => {
     const start_date = formatDate(new Date(now));
     const end_date = formatDate(new Date(now + 6 * DAY_IN_MS));
 
-    const [ schedule, setSchedule ] = useState({
+    const [ schedules, setSchedules ] = useState([{
         id: null,
-        type: 'users',
+        view: 'users',
         name: 'Current Schedule',
         description: '',
         start_date,
@@ -28,9 +28,17 @@ const useSchedules = () => {
         shifts: new Map(),
         placeholder: null,
         fetch_shifts: false
-    });
+    }]);
+    const schedule = useMemo(() => schedules[0], [schedules]);
 
-    const [scheduleDrafts, setScheduleDrafts] = useState(null);
+    const setSchedule = useCallback((data, set = false) => {
+        setSchedules(prev => {
+            const schedules = [...prev];
+            schedules[0] = set ? data : {...prev[0], ...data};
+            return schedules;
+        });
+    },[]);
+
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState([]);
 
@@ -54,7 +62,7 @@ const useSchedules = () => {
 
         if (user_scope && !user_scope_id && !['all', 'you'].includes(user_scope)) {
             placeholder = `Please select a ${user_scope} first.`;
-            setSchedule(prev => ({...prev, shifts: userShifts, placeholder}));
+            setSchedule({shifts: userShifts, placeholder});
             setLoading(false);
             return {shifts: userShifts, placeholder};
         }
@@ -73,14 +81,14 @@ const useSchedules = () => {
 
         else {
             placeholder = 'Invalid User scope selected.';
-            setSchedule((prev) => ({...prev, shifts: userShifts, placeholder}));
+            setSchedule({shifts: userShifts, placeholder});
             setLoading(false);
             return {shifts: userShifts, placeholder};
         }
 
         if (!userShifts.size) {
             placeholder = 'No Users found.';
-            setSchedule((prev) => ({...prev, shifts: userShifts, placeholder}));
+            setSchedule({shifts: userShifts, placeholder});
             setLoading(false);
             return {shifts: userShifts, placeholder};
         }
@@ -119,16 +127,16 @@ const useSchedules = () => {
             })
         );
 
-        setSchedule(prev => ({...prev, shifts: userShifts, placeholder}));
+        setSchedule({shifts: userShifts, placeholder});
         setLoading(false);
         return {users: userShifts, shifts, leaves, placeholder};
 
-    }, [fetchLeaves, fetchShifts, fetchUsers, user.id, 
+    }, [fetchLeaves, fetchShifts, fetchUsers, setSchedule, user.id, 
         schedule.id, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
 
     const fetchScheduleDrafts = useCallback(async ({scheduleId, loading = true} = {}) => {
 
-        let scheduleDrafts;
+        let schedules;
         
         setLoading(loading);
         try {
@@ -142,7 +150,7 @@ const useSchedules = () => {
 
             const res = await axios.get(url , { withCredentials: true });
 
-            scheduleDrafts = res.data;
+            schedules = res.data;
 
         } catch (err) {
             console.error('fetchScheduleDrafts error:', err);
@@ -151,9 +159,12 @@ const useSchedules = () => {
             setStatus(prev => [...prev, {status: 'error', message}]);
         }
 
-        setScheduleDrafts(scheduleDrafts);
+        if (!Array.isArray(schedules))
+            schedules = [schedules];
+
+        setSchedules(schedules);
         setLoading(false);
-        return scheduleDrafts;
+        return schedules;
         
     }, []);
 
@@ -184,7 +195,7 @@ const useSchedules = () => {
         // Function to publish schedule drafts - not to update them.
         // It will be only available from the Schedule editor - therefore, no params are needed.
         console.log('publishScheduleDraft called with scheduleId:', scheduleId);
-    }, [schedule]);
+    }, []);
 
     const discardScheduleDraft = useCallback( async ({scheduleId}) => {
         setStatus([]);
@@ -194,25 +205,25 @@ const useSchedules = () => {
     }, []);
 
     useEffect( () => {
-        if (!schedule.fetch_shifts) {
-            console.log("useSchedule Effect: fetch_shifts is false. Doing nothing.");
+        if (!schedule.fetch_shifts)
             return;
-        }
 
-        if (schedule.type === 'users') {
-            console.log("useSchedule Effect: Fetching user shifts.");
+        if (schedule.view === 'users')
             fetchUserShifts().then();
-        }
         
-    }, [fetchUserShifts, schedule.fetch_shifts, schedule.type]);
+    }, [fetchUserShifts, schedule.fetch_shifts, schedule.view]);
 
     return {
+        schedules,
         schedule,
-        scheduleDrafts,
-        scheduleDraft: scheduleDrafts,
+        scheduleDrafts: schedules,
+        scheduleDraft: schedule,
         loading,
         status,
+        setSchedules,
         setSchedule,
+        setScheduleDrafts: setSchedules,
+        setScheduleDraft: setSchedules,
         setLoading,
         setStatus,
         fetchUserShifts,

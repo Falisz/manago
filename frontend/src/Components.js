@@ -6,7 +6,7 @@ import PostsIndex from './components/Posts/Index';
 import AppSettings from './components/AppSettings';
 import AppModules from './components/AppModules';
 import WorkPlanner from './components/WorkPlanner/WorkPlanner';
-import Schedule from './components/WorkPlanner/Schedule';
+import ScheduleViewer from './components/WorkPlanner/ScheduleViewer';
 import ScheduleEditor from './components/WorkPlanner/ScheduleEditor';
 
 export const componentMap = {
@@ -16,7 +16,7 @@ export const componentMap = {
     RolesIndex,
     TeamsIndex,
     WorkPlanner,
-    Schedule,
+    ScheduleViewer,
     ScheduleEditor,
     PostsIndex,
     AppSettings,

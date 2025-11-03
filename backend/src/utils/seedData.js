@@ -165,24 +165,40 @@ const appPages = [
                     "subpages": []
                 },
                 {
-                    "path": "planner",
+                    "path": "schedules",
                     "title": "Work Planner",
                     "module": 4,
                     "icon": "edit_calendar",
                     "component": "WorkPlanner",
                     "subpages": [
                         {
-                            "path": "schedule",
+                            "path": "view",
                             "title": "Schedule",
                             "icon": "",
-                            "component": "Schedule"
+                            "component": "ScheduleViewer",
+                            "subpages": [
+                                {
+                                    "path": ":scheduleId",
+                                    "title": "Viewing Schedule",
+                                    "component": "ScheduleViewer",
+                                    "hidden": true
+                                }
+                            ]
                         },
                         {
-                            "path": "editor",
+                            "path": "edit",
                             "title": "Schedule Editor",
                             "icon": "",
                             "component": "ScheduleEditor",
-                            "hidden": true
+                            "hidden": true,
+                            "subpages": [
+                                {
+                                    "path": ":scheduleId",
+                                    "title": "Editing Schedule",
+                                    "component": "ScheduleEditor",
+                                    "hidden": true
+                                }
+                            ]
                         },
                         {
                             "path": "leaves",

@@ -23,6 +23,10 @@ const ScheduleDraftItem = ({schedule, deleteDraft}) => {
         closeTopModal();
     }, [setScheduleEditor, closeTopModal, navigate, schedule]);
 
+    const previewSchedule = useCallback(() => {
+        navigate(`/schedules/view/${schedule.id}`);
+    }, [navigate, schedule.id]);
+
     return (
         <div className={'schedule-draft-item'}>
             <div className={'schedule-draft-item-header'}>
@@ -31,6 +35,7 @@ const ScheduleDraftItem = ({schedule, deleteDraft}) => {
                     icon={'preview'}
                     title={'Preview'}
                     transparent={true}
+                    onClick={previewSchedule}
                 />
                 <Button
                     icon={'edit'}
