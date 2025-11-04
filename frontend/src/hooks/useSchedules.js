@@ -1,46 +1,36 @@
 // FRONTEND/hooks/useSchedules.js
 import { useCallback, useState, useEffect, useMemo } from 'react';
-import useAppState from '../contexts/AppStateContext';
 import axios from 'axios';
 import useUsers from './useUsers';
 import useShifts from './useShifts';
 import useLeaves from './useLeaves';
-import {formatDate} from "../utils/dates";
 
 const useSchedules = () => {
-    const { user } = useAppState();
-    
-    const DAY_IN_MS = 24 * 60 * 60 * 1000;
-    const now = Date.now();
-    const start_date = formatDate(new Date(now));
-    const end_date = formatDate(new Date(now + 6 * DAY_IN_MS));
-
-    const [ schedules, setSchedules ] = useState([{
-        id: null,
-        view: 'users',
-        name: 'Current Schedule',
-        description: '',
-        start_date,
-        end_date,
-        month: null,
-        user_scope: 'you',
-        user_scope_id: user.id,
-        shifts: new Map(),
-        placeholder: null,
-        fetch_shifts: false
-    }]);
-    const schedule = useMemo(() => schedules[0], [schedules]);
-
-    const setSchedule = useCallback((data, set = false) => {
-        setSchedules(prev => {
-            const schedules = [...prev];
-            schedules[0] = set ? data : {...prev[0], ...data};
-            return schedules;
-        });
-    },[]);
-
+    const [ schedules, setSchedules ] = useState(null);
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState([]);
+
+    const schedule = useMemo(() => (schedules && schedules[0]) || {}, [schedules]);
+    const setSchedule = useCallback((updater, set = false) => {
+        setSchedules(prevSchedules => {
+            const prevSchedule = (prevSchedules && prevSchedules[0]) || {};
+
+            let newSchedule;
+
+            if (typeof updater === 'function')
+                newSchedule = updater(prevSchedule);
+            else
+                newSchedule = set ? updater : { ...prevSchedule, ...updater };
+
+            if (!prevSchedules) {
+                return [newSchedule];
+            } else {
+                const newSchedules = [...prevSchedules];
+                newSchedules[0] = newSchedule;
+                return newSchedules;
+            }
+        });
+    },[]);
 
     const { fetchUsers } = useUsers();
     const { fetchShifts } = useShifts();
@@ -70,10 +60,7 @@ const useSchedules = () => {
         if (user_scope === 'all')
             userShifts = await fetchUsers({map: true});
 
-        else if (user_scope === 'you')
-            userShifts = await fetchUsers({userId: user.id, map: true});
-
-        else if (user_scope === 'user')
+        else if (['user', 'you'].includes(user_scope))
             userShifts = await fetchUsers({userId: user_scope_id, map: true});
 
         else if (['manager', 'team', 'branch', 'project'].includes(user_scope))
@@ -131,10 +118,10 @@ const useSchedules = () => {
         setLoading(false);
         return {users: userShifts, shifts, leaves, placeholder};
 
-    }, [fetchLeaves, fetchShifts, fetchUsers, setSchedule, user.id, 
+    }, [fetchLeaves, fetchShifts, fetchUsers, setSchedule,
         schedule.id, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id]);
 
-    const fetchScheduleDrafts = useCallback(async ({scheduleId, loading = true} = {}) => {
+    const fetchScheduleDrafts = useCallback(async ({scheduleId, loading = true, view = 'users'} = {}) => {
 
         let schedules;
         
@@ -159,8 +146,10 @@ const useSchedules = () => {
             setStatus(prev => [...prev, {status: 'error', message}]);
         }
 
-        if (!Array.isArray(schedules))
-            schedules = [schedules];
+        if (Array.isArray(schedules))
+            schedules = schedules.map(schedule => ({...schedule, view, fetch_shifts: true}));
+        else
+            schedules = [{...schedules, view, fetch_shifts: true}];
 
         setSchedules(schedules);
         setLoading(false);
@@ -194,7 +183,9 @@ const useSchedules = () => {
         setStatus([]);
         // Function to publish schedule drafts - not to update them.
         // It will be only available from the Schedule editor - therefore, no params are needed.
-        console.log('publishScheduleDraft called with scheduleId:', scheduleId);
+        const res = await ( axios.put(`/schedules/${scheduleId}`, { publish: true }, { withCredentials: true }));
+        console.log('publishScheduleDraft called with scheduleId:', scheduleId, res);
+
     }, []);
 
     const discardScheduleDraft = useCallback( async ({scheduleId}) => {

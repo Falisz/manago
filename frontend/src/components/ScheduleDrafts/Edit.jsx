@@ -8,7 +8,8 @@ import Loader from '../Loader';
 import EditForm from '../EditForm';
 import useAppState from '../../contexts/AppStateContext';
 
-const ScheduleDraftEdit = ({ scheduleId }) => {
+// TODO: Add scheduleRefs prop (with schedule and saveSchedule in order to be able to edit schedule drafts from schedule editor
+const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
     const { appState, setScheduleEditor } = useAppState();
     const navigate = useNavigate();
     const { scheduleDraft, loading, setLoading, fetchScheduleDraft, saveScheduleDraft } = useSchedules();

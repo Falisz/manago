@@ -40,7 +40,7 @@ const useShifts = () => {
                 }
 
                 if (schedule)
-                    payload.schedules = schedule;
+                    payload.schedule = schedule;
 
                 if (job_post)
                     payload.job_posts = job_post;

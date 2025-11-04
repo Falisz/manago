@@ -1,5 +1,6 @@
 // FRONTEND/components/WorkPlanner/ScheduleEditor.jsx
 import React, {useEffect, useMemo, useRef} from 'react';
+import {useLocation, useParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
 import UserShiftTable from './UserShiftTable';
@@ -9,18 +10,25 @@ import Loader from '../Loader';
 
 const ScheduleEditor = () => {
     const { appCache } = useAppState();
-    const { schedule, setSchedule, loading, setLoading } = useSchedules();
+    const { scheduleId } = useParams();
+    const { schedule, setSchedule, loading, setLoading, fetchScheduleDraft } = useSchedules();
+    const { search } = useLocation();
+    const params = useMemo(() => new URLSearchParams(search), [search]);
     const isMounted = useRef(false);
-    const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
     useEffect(() => {
         if (isMounted.current)
             return;
 
+        isMounted.current = true;
+
         setLoading(true);
         let scheduleConfig = {};
-        
-        if (appCache.current.schedule_editor) {
+
+        if (scheduleId) {
+            fetchScheduleDraft({scheduleId}).then();
+            return;
+        } else if (appCache.current.schedule_editor) {
             scheduleConfig = appCache.current.schedule_editor;
         } else {
             const from = params.get('from');
@@ -40,11 +48,10 @@ const ScheduleEditor = () => {
                 scheduleConfig.user_scope_id = sid;
         }
 
-        setSchedule(prev => ({...prev, ...scheduleConfig, fetch_shifts: true}));
+        setSchedule(scheduleConfig);
         setLoading(false);
-        isMounted.current = true;
 
-    }, [isMounted, appCache, params, setSchedule, setLoading]);
+    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading, fetchScheduleDraft]);
 
     if (loading)
         return <Loader/>;
