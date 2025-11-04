@@ -1,18 +1,19 @@
-// FRONTEND/components/ScheduleDraft/Edit.js
-import React, { useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+// FRONTEND/components/Schedules/Edit.js
+import React, {useEffect, useMemo, useRef, useCallback} from 'react';
+import {useLocation, useParams} from 'react-router-dom';
+import useAppState from '../../contexts/AppStateContext';
+import useModals from '../../contexts/ModalContext';
+import Button from '../Button';
+import UserSchedule from './UserSchedule';
+import '../../styles/Schedule.css';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
 import Loader from '../Loader';
 import EditForm from '../EditForm';
-import useAppState from '../../contexts/AppStateContext';
 
-// TODO: Add scheduleRefs prop (with schedule and saveSchedule in order to be able to edit schedule drafts from schedule editor
-const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
-    const { appState, setScheduleEditor } = useAppState();
-    const navigate = useNavigate();
-    const { scheduleDraft, loading, setLoading, fetchScheduleDraft, saveScheduleDraft } = useSchedules();
+export const ScheduleEditForm = ({ schedule }) => {
+    const { appState } = useAppState();
     const { fetchUserShifts } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
@@ -22,14 +23,7 @@ const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
         fetchUsers().then();
         fetchManagers({ group: 'manager' }).then();
         fetchTeams({ all: true }).then();
-    
-        if (scheduleId) {
-            setLoading(true);
-            fetchScheduleDraft({ scheduleId, include_shifts: true }).then();
-        } else {
-            setLoading(false);
-        }
-    }, [fetchUsers, fetchManagers, fetchTeams, scheduleId, fetchScheduleDraft, setLoading]);
+    }, [fetchUsers, fetchManagers, fetchTeams]);
 
     const scopeOptions = useMemo(() => ({
         scopes: [
@@ -51,7 +45,7 @@ const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
 
     const formStructure = useMemo(() => ({
         header: {
-            title: scheduleId ? `Editing ${scheduleDraft?.name}` : `Creating a new Schedule Draft`,
+            title: schedule.id ? `Editing ${schedule?.name}` : `Creating a new Schedule Draft`,
         },
         inputs: {
             name: {
@@ -95,7 +89,7 @@ const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
                 label: 'User Scope',
                 options: scopeOptions.scopes,
                 required: true,
-                disabled: !!scheduleId,
+                disabled: !!schedule.id,
             },
             user_scope_id: {
                 section: 2,
@@ -108,7 +102,7 @@ const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
                             formData.user_scope === 'manager' ? scopeOptions.managers :
                             formData.user_scope === 'user' ? scopeOptions.users : [],
                 conditional_required: (formData) => !['you', 'all'].includes(formData.user_scope),
-                disabled: !!scheduleId,
+                disabled: !!schedule.id,
             },
             users: {
                 section: 3,
@@ -124,14 +118,14 @@ const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
                     )
                         return null;
 
-                    const { users, shifts } = await fetchUserShifts({
-                        id: scheduleId,
+                    const { users, shifts } = (schedule.start_date && schedule.end_date && schedule.user_scope && await fetchUserShifts({
+                        id: schedule.id,
                         start_date: formData.start_date,
                         end_date: formData.end_date,
                         user_scope: formData.user_scope,
                         user_scope_id: formData.user_scope_id
-                    });
-
+                    })) || { users: new Map(), shifts: []};
+                    
                     const userList = Array.from(users.values().map(u => u.first_name + ' ' + u.last_name));
 
                     return <>
@@ -154,25 +148,104 @@ const ScheduleDraftEdit = ({ scheduleId, scheduleRefs = {} }) => {
         },
         onSubmit: {
             onSave: (formData, id) => { 
-                const schedule = saveScheduleDraft({scheduleId: id, formData});
-                if (schedule) {
-                    setScheduleEditor({
-                        ...schedule,
-                        type: 'new'
-                    });
-                    navigate('/planner/editor');
-                }
+                console.log('On submit logic runs...', formData, id);
             },
-            refreshTriggers: [['scheduleDrafts', true], ...(scheduleDraft ? [['scheduleDraft', scheduleDraft.id]] : [])]
+            refreshTriggers: [['scheduleDrafts', true], ...(schedule ? [['scheduleDraft', schedule.id]] : [])]
         },
-    }), [scheduleDraft, scopeOptions, scheduleId, saveScheduleDraft, setScheduleEditor, navigate, fetchUserShifts]);
+    }), [schedule, scopeOptions, fetchUserShifts]);
 
-    const scheduleData = useMemo(() => ({...scheduleDraft}), [scheduleDraft]);
-
-    if (loading)
-        return <Loader/>;
+    const scheduleData = useMemo(() => ({...schedule}), [schedule]);
     
     return <EditForm structure={formStructure} presetData={scheduleData} />;
 };
 
-export default ScheduleDraftEdit;
+const ScheduleEdit = () => {
+    const { appCache } = useAppState();
+    const { openModal } = useModals();
+    const { scheduleId } = useParams();
+    const { schedule, setSchedule, loading, setLoading, fetchScheduleDraft } = useSchedules();
+    const { search } = useLocation();
+    const params = useMemo(() => new URLSearchParams(search), [search]);
+    const isMounted = useRef(false);
+
+    const editDetails = useCallback(() => {
+        openModal({
+            content: 'component',
+            type: 'dialog',
+            component: <ScheduleEditForm
+                schedule={schedule}
+                setSchedule={setSchedule}
+                fetchScheduleDraft={fetchScheduleDraft}
+            />
+        });
+    }, [fetchScheduleDraft, openModal, schedule, setSchedule]);
+
+    useEffect(() => {
+        if (isMounted.current)
+            return;
+
+        isMounted.current = true;
+
+        setLoading(true);
+        let scheduleConfig = {};
+
+        if (scheduleId) {
+            fetchScheduleDraft({scheduleId}).then();
+            return;
+        } else if (appCache.current.schedule_editor) {
+            scheduleConfig = appCache.current.schedule_editor;
+            if (scheduleConfig.mode === 'new') {
+                editDetails();
+            }
+        } else {
+            const from = params.get('from');
+            if (from && !isNaN(Date.parse(from)))
+                scheduleConfig.start_date = from;
+
+            const to = params.get('to');
+            if (to && !isNaN(Date.parse(to)))
+                scheduleConfig.end_date = to;
+
+            const scope = params.get('scope');
+            if (scope)
+                scheduleConfig.user_scope = scope;
+
+            const sid = params.get('sid');
+            if (sid && !isNaN(parseInt(sid)))
+                scheduleConfig.user_scope_id = sid;
+        }
+
+        setSchedule(scheduleConfig);
+        setLoading(false);
+
+    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading, fetchScheduleDraft, editDetails]);
+
+    if (loading)
+        return <Loader/>;
+
+    return (
+        <div className={'app-schedule seethrough'}>
+            <div className={'app-schedule-header'}>
+                <span style={{marginRight: 'auto', fontSize: '2rem'}}>Schedule Editor: {
+                    schedule.mode ==='new' ? 'New Schedule Draft' :
+                        schedule.mode === 'current' ? 'Current Draft' :
+                            schedule.name || ''
+                }</span>
+                <Button icon={'close'} label={'Discard Changes'}/>
+                {schedule && (
+                    schedule.mode === 'current' ? <>
+                        <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
+                        <Button icon={'publish'} label={'Re-Publish'}/>
+                    </> : <>
+                        <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
+                        <Button icon={'save'} label={'Save'}/>
+                        <Button icon={'publish'} label={'Publish'}/>
+                    </>
+                )}
+            </div>
+            <UserSchedule schedule={schedule} setSchedule={setSchedule} editable={true}/>
+        </div>
+    );
+}
+
+export default ScheduleEdit;

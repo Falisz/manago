@@ -1,11 +1,87 @@
 // FRONTEND/components/WorkPlanner/UserShiftTable.jsx
 import React, {useCallback, useRef, useState} from 'react';
-import { useModals } from '../../contexts/ModalContext';
-import {generateDateList} from '../../utils/dates';
-import { formatDate, sameDay } from '../../utils/dates';
-import LeaveItem from './LeaveItem';
-import ShiftItem from './ShiftItem';
 import {Item, Menu, useContextMenu} from 'react-contexify';
+import { useModals } from '../../contexts/ModalContext';
+import { generateDateList, formatDate, sameDay } from '../../utils/dates';
+import Icon from "../Icon";
+
+
+const LeaveItem = ({ days, type, color }) => (
+    <div className={'leave-item'} style={{background: color+'90'}}>
+        <span>{days || 1}-day{days > 1 ? 's' : ''} Leave</span>
+        <span className={'subtitle'}>{type}</span>
+    </div>
+);
+
+const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onClick,
+                       selectShift, updateShift }) => {
+
+    const [ editMode, setEditMode ] = useState();
+
+    if (!shift)
+        return null;
+
+    const handleDoubleClick = () => {
+        if (!editable)
+            return;
+        setEditMode(prev => !prev);
+    }
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        let newData = {};
+
+        if (name === 'start_time' || name === 'end_time') {
+            newData = {
+                [name]: value
+            }
+        }
+
+        updateShift({
+            user: shift.user,
+            shiftData: {
+                ...shift,
+                ...newData
+            }
+        })
+    }
+
+    return <div
+        className={'shift-item' + (shift.selected ? ' selected' : '')}
+        style={{background: (shift.job_post ? shift.job_post.color+'90' : 'var(--seethrough-background)'), position: 'relative'}}
+        draggable={editable}
+        onDragStart={editable ? (e) => onDragStart(e, shift) : undefined}
+        onDragEnd={editable ? (e) => onDragEnd(e, shift) : undefined}
+        onContextMenu={editable ? (e) => onContextMenu(e, shift) : undefined}
+        onClick={editable ? (e) => onClick(e, shift) : undefined}
+        onDoubleClick={handleDoubleClick}
+    >
+        <span className={'time-range'}>{editMode ?
+            <><input
+                value={shift.start_time.slice(0, 5)}
+                name={'start_time'}
+                type={'time'}
+                step={300}
+                onChange={handleChange}
+                /> - <input
+                value={shift.end_time.slice(0, 5)}
+                name={'end_time'}
+                type={'time'}
+                step={300}
+                onChange={handleChange}
+            /></>
+         :`${shift.start_time.slice(0, 5)} - ${shift.end_time.slice(0, 5)}`}</span>
+        {shift.job_post && shift.job_post.name && <span className={'subtitle'}>{shift.job_post.name}</span>}
+        {editable &&
+            <Icon
+                i={shift.selected ? 'check_circle' : 'circle'}
+                s={true}
+                style={{fontSize: '.7rem', position: 'absolute', right: '5px', bottom: '5px'}}
+                onClick={selectShift}
+            />
+        }
+    </div>
+};
 
 // TODO: add autosaving, discarding changes to the last saved state, displaying user dispos and leaves, and leave requests
 //  double click on a shift to edit it (time and post and location)
@@ -13,7 +89,7 @@ import {Item, Menu, useContextMenu} from 'react-contexify';
 //  the update and delete bins only used for editing current draft schedule, in case of new schedule or editing current one there is only new bin
 //  as the schedule is saved to backend, the bins are cleared
 
-const UserShiftTable = ({schedule, setSchedule, editable}) => {
+const UserSchedule = ({schedule, setSchedule, editable=false}) => {
     const { openModal } = useModals();
 
     const MENU_ID = 'schedule_context_menu';
@@ -481,4 +557,4 @@ const UserShiftTable = ({schedule, setSchedule, editable}) => {
         </Menu>
     </div>
 }
-export default UserShiftTable;
+export default UserSchedule;

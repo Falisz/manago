@@ -1,10 +1,9 @@
-// FRONTEND/components/WorkPlanner/WorkingSchedulesIndex.jsx
+// FRONTEND/components/Schedules/Dashboard.jsx
 import React from 'react';
 import '../../styles/WorkPlanner.css';
-import ScheduleDraftsIndex from '../ScheduleDrafts/Index';
+import SchedulesIndex from './Index';
 
-const WorkPlanner = () => {
-
+const SchedulesDashboard = () => {
     return (
         <div className={'work-planner app-scroll'}>
             <div className={'planner-widget'}>
@@ -16,14 +15,14 @@ const WorkPlanner = () => {
                 <p>Here you can view brief schedule glance of dropdown chosen Team that you are part - next 3 days inc today.</p>
             </div>
             <div className={'planner-widget'}>
-                <ScheduleDraftsIndex />
+                <SchedulesIndex />
             </div>
             <div className={'planner-widget'}>
                 <h1>Pending Leave approvals</h1>
-                <p>Oncoming leaves to approve or reject...</p>
+                <p>Oncoming Leaves to approve or reject...</p>
             </div>
         </div>
     );
 };
 
-export default WorkPlanner;
+export default SchedulesDashboard;

@@ -169,33 +169,40 @@ const appPages = [
                     "title": "Work Planner",
                     "module": 4,
                     "icon": "edit_calendar",
-                    "component": "WorkPlanner",
+                    "component": "ScheduleDashboard",
                     "subpages": [
                         {
                             "path": "view",
                             "title": "Schedule",
                             "icon": "",
-                            "component": "ScheduleViewer",
+                            "component": "ScheduleView",
                             "subpages": [
                                 {
                                     "path": ":scheduleId",
                                     "title": "Viewing Schedule",
-                                    "component": "ScheduleViewer",
+                                    "component": "ScheduleView",
                                     "hidden": true
                                 }
                             ]
                         },
                         {
+                            "path": "new",
+                            "title": "Schedule Editor",
+                            "icon": "",
+                            "component": "ScheduleEdit",
+                            "hidden": true
+                        },
+                        {
                             "path": "edit",
                             "title": "Schedule Editor",
                             "icon": "",
-                            "component": "ScheduleEditor",
+                            "component": "ScheduleEdit",
                             "hidden": true,
                             "subpages": [
                                 {
                                     "path": ":scheduleId",
                                     "title": "Editing Schedule",
-                                    "component": "ScheduleEditor",
+                                    "component": "ScheduleEdit",
                                     "hidden": true
                                 }
                             ]

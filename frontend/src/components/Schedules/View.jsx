@@ -1,6 +1,6 @@
-// FRONTEND/components/WorkPlanner/ScheduleViewer.jsx
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { useLocation, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+// FRONTEND/components/Schedules/View.jsx
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
@@ -8,11 +8,14 @@ import ComboBox from '../ComboBox';
 import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
 import Loader from '../Loader';
-import UserShiftTable from './UserShiftTable';
-import {formatDate} from "../../utils/dates";
+import InWorks from '../InWorks';
+import UserSchedule from './UserSchedule';
+import MonthlySchedule from './MonthlySchedule';
+import JobPostSchedule from './JobPostSchedule';
+import {formatDate} from '../../utils/dates';
 import '../../styles/Schedule.css';
 
-const ScheduleViewer = () => {
+const ScheduleView = () => {
     const { appState, user, setScheduleEditor } = useAppState();
     const { modules } = appState;
     const { scheduleId } = useParams();
@@ -20,9 +23,7 @@ const ScheduleViewer = () => {
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
-    const { search } = useLocation();
-    const params = useMemo(() => new URLSearchParams(search), [search]);
-    const setSearchParams = useSearchParams()[1];
+    const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
     const scopeOptions = [
         { id: 'all', name: 'All Users' }, 
@@ -35,76 +36,54 @@ const ScheduleViewer = () => {
     ];
     const [ scopeIdOptions, setScopeIdOptions ] = useState([{id: null, name: 'None'}]);
     const isMounted = useRef(false);
-
+    
     const DAY_IN_MS = 24 * 60 * 60 * 1000;
     const now = Date.now();
-    const start_date = formatDate(new Date(now));
-    const end_date = formatDate(new Date(now + 6 * DAY_IN_MS));
+    const defaultStartDate = formatDate(new Date(now));
+    const defaultEndDate = formatDate(new Date(now + 6 * DAY_IN_MS));
 
     const handleChange = useCallback((e) => {
         const { name, value } = e.target;
-        const newParams = new URLSearchParams(search);
-        const scheduleConfig = { ...schedule, [name]: value };
 
-        if (name === 'user_scope') {
-            if (value === 'you') {
-                setSchedule({[name]: value, user_scope_id: user.id});
-                scheduleConfig.user_scope_id = user.id;
-            } else {
-                setSchedule({[name]: value, user_scope_id: null});
-                scheduleConfig.user_scope_id = null;
+        setSchedule((prev) => {
+            const newSchedule = { ...prev, [name]: value};
+
+            if (name === 'user_scope') {
+                if (value === 'you')
+                    newSchedule.user_scope_id = user.id;
+                else
+                    newSchedule.user_scope_id = null;
             }
-        } else {
-            setSchedule({ [name]: value });
-        }
-
-
-        // TODO: Rewrite this to be using iteration over urlKeys and scheduleConfig to avoid code duplication.
-        const urlKeys = {
-            view: 'view',
-            start_date: 'from',
-            end_date: 'to',
-            month: 'month',
-            user_scope: 'scope',
-            user_scope_id: 'sid'
-        };
-
-        if (schedule.start_date)
-            newParams.set('from', schedule.start_date);
-        else
-            newParams.delete('from');
-
-        if (schedule.end_date)
-            newParams.set('to', schedule.end_date);
-        else
-            newParams.delete('to');
-
-        if (schedule.month)
-            newParams.set('month', schedule.month);
-        else
-            newParams.delete('month');
-
-        if (schedule.user_scope)
-            newParams.set('scope', schedule.user_scope);
-        else
-            newParams.delete('scope');
-
-        if (schedule.user_scope_id)
-            newParams.set('sid', schedule.user_scope_id);
-        else
-            newParams.delete('sid');
-
-        newParams.set(urlKeys[name], value);
-
-        if (name === 'user_scope' && value === 'you')
-            newParams.delete('sid');
-
-        setSearchParams(newParams, { replace: true });
         
-    }, [setSchedule, setSearchParams, user, search, schedule]);
+            const newParams = new URLSearchParams(searchParams);
+
+            const urlKeys = [
+                { field: 'view', url: 'view' }, 
+                { field: 'start_date', url: 'from'}, 
+                { field: 'end_date', url: 'to'}, 
+                { field: 'month', url: 'month'},
+                { field: 'user_scope', url: 'scope'},
+                { field: 'user_scope_id', url: 'sid'}
+            ];
+
+            urlKeys.forEach(key => {
+                const v = newSchedule[key.field];
+                if (v != null && v!== '')
+                    newParams.set(key.url, String(v))
+                else
+                    newParams.delete(key.url);
+            });
+
+            setSearchParams(newParams, { replace: true });
+
+            return newSchedule;
+        });
+        
+        
+    }, [setSchedule, setSearchParams, user, searchParams]);
 
     const editSchedule = useCallback(() => {
-        setScheduleEditor({...schedule, type: schedule.id ? 'draft' : 'current'});
+        setScheduleEditor({...schedule, mode: schedule.id ? 'draft' : 'current'});
         navigate('/schedules/edit' + (schedule.id ? ('/' + schedule.id) : ''));
     }, [setScheduleEditor, navigate, schedule]);
 
@@ -123,56 +102,47 @@ const ScheduleViewer = () => {
             return;
         }
 
-        const scheduleConfig = {
+        const currentSchedule = {
             name: 'Current Schedule',
-            view: 'users',
-            start_date,
-            end_date,
-            user_scope: 'you',
-            user_scope_id: user.id,
-            fetch_shifts: true
+            view: searchParams.get('view') || 'users',
+            start_date: (() => {
+                const from = searchParams.get('from');
+                return from && !isNaN(Date.parse(from)) ? from : defaultStartDate; 
+            })(),
+            end_date: (() => {
+                const to = searchParams.get('to');
+                return to && !isNaN(Date.parse(to)) ? to : defaultEndDate; 
+            })(),
+            user_scope: searchParams.get('scope') || 'you',
+            user_scope_id: (() => {
+                const sid = searchParams.get('sid');
+                return sid && !isNaN(parseInt(sid)) ? parseInt(sid, 10) : user.id; 
+            })() || user.id
         };
-
-        const view = params.get('view');
-        if (view)
-            scheduleConfig.view = view;
-
-        const from = params.get('from');
-        if (from && !isNaN(Date.parse(from)))
-            scheduleConfig.start_date = from;
-
-        const to = params.get('to');
-        if (to && !isNaN(Date.parse(to)))
-            scheduleConfig.end_date = to;
-
-        const scope = params.get('scope');
-        if (scope)
-            scheduleConfig.user_scope = scope;
-
-        const sid = params.get('sid');
-        if (sid && !isNaN(parseInt(sid)))
-            scheduleConfig.user_scope_id = sid;
         
-        setSchedule(scheduleConfig);
+        setSchedule((prev) => ({...prev, ...currentSchedule}));
 
-    }, [scheduleId, user.id, params, start_date, end_date,
-        fetchScheduleDraft, fetchUsers, fetchManagers, fetchTeams, setSchedule]);
+    }, [scheduleId, user.id, searchParams, defaultStartDate, defaultEndDate, fetchScheduleDraft, 
+        fetchUsers, fetchManagers, fetchTeams, setSchedule]);
 
     useEffect(() => {
-        if (teams && schedule.user_scope === 'team') 
-            setScopeIdOptions(teams['map']((team) =>
+        if (teams && teams.length > 0 && schedule.user_scope === 'team') 
+            setScopeIdOptions(teams.map((team) =>
                 ({id: team.id, name: team.name})
             ));
 
-        else if (users && schedule.user_scope === 'user')
-            setScopeIdOptions(users['map']((user) =>
+        else if (users && users.length > 0 && schedule.user_scope === 'user')
+            setScopeIdOptions(users.map((user) =>
                 ({id: user.id, name: user.first_name + ' ' + user.last_name})
             ));
         
-        else if (managers && schedule.user_scope === 'manager')
-            setScopeIdOptions(managers['map']((manager) =>
+        else if (managers && managers.length > 0 && schedule.user_scope === 'manager')
+            setScopeIdOptions(managers.map((manager) =>
                 ({id: manager.id, name: manager.first_name + ' ' + manager.last_name})
             ));
+        
+        else
+            setScopeIdOptions([{ id: null, name: 'None'}]);
 
     }, [schedule.user_scope, teams, users, managers]);
 
@@ -248,7 +218,7 @@ const ScheduleViewer = () => {
                                 <input
                                     className={'form-input'}
                                     name={'start_date'}
-                                    value={schedule.start_date || start_date}
+                                    value={schedule.start_date || defaultStartDate}
                                     max={schedule.end_date}
                                     onChange={handleChange}
                                     type={'date'}
@@ -259,7 +229,7 @@ const ScheduleViewer = () => {
                                 <input
                                     className={'form-input'}
                                     name={'end_date'}
-                                    value={schedule.end_date || end_date}
+                                    value={schedule.end_date || defaultEndDate}
                                     min={schedule.start_date}
                                     onChange={handleChange}
                                     type={'date'}
@@ -296,16 +266,14 @@ const ScheduleViewer = () => {
         </div>
         { loading ? <Loader/> : 
             schedule.view === 'users' ?
-                <UserShiftTable
-                    schedule={schedule}
-                    editable={false}
-                /> : 
+                <UserSchedule schedule={schedule}/> : 
             schedule.view === 'monthly' ?
-                <div>MonthlyShiftTable - Monthly calendar will be here. Similarly with below, it allows to set up date and select branch/weekend.</div> : 
-            schedule.view === 'jobs' &&
-                <div>JobShiftsTable - Job Posts schedule will be here. This will be only available if job posts are enabled. It has only branch and project views for specific date-scopes.</div>
+                <MonthlySchedule schedule={schedule}/> : 
+            schedule.view === 'jobs' ?
+                <JobPostSchedule schedule={schedule}/> :
+            <InWorks icon={'error'} title={'Cannot view Schedule'} description={'Invalid view type provided'} />
         }
     </div>
 };
 
-export default ScheduleViewer;
+export default ScheduleView;

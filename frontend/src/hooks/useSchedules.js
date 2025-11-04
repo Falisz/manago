@@ -196,9 +196,6 @@ const useSchedules = () => {
     }, []);
 
     useEffect( () => {
-        if (!schedule.fetch_shifts)
-            return;
-
         if (schedule.view === 'users')
             fetchUserShifts().then();
         

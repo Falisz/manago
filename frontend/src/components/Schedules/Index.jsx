@@ -1,16 +1,30 @@
-// FRONTEND/components/ScheduleDrafts/Index.jsx
+// FRONTEND/components/Schedules/Index.jsx
 import React, {useEffect, useCallback} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {useModals} from '../../contexts/ModalContext';
 import Button from '../Button';
 import useSchedules from '../../hooks/useSchedules';
-import {useNavigate} from "react-router-dom";
 import useAppState from "../../contexts/AppStateContext";
 
-const ScheduleDraftsIndex = () => {
+const SchedulesIndex = () => {
     const { openModal, refreshTriggers, refreshData, closeTopModal } = useModals();
     const { scheduleDrafts, fetchScheduleDrafts, discardScheduleDraft  } = useSchedules();
     const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
+
+    const previewSchedule = useCallback((id) => {
+        navigate(`/schedules/view/${id}`);
+    }, [navigate]);
+
+    const editSchedule = useCallback((schedule) => {
+        if (schedule)  {
+            setScheduleEditor({...schedule, mode: 'draft'});
+            navigate('/schedules/edit' + (schedule.id ? ('/' + schedule.id) : ''));
+        } else {
+            setScheduleEditor({mode: 'new'});
+            navigate('/schedules/new');
+        }
+    }, [setScheduleEditor, navigate]);
 
     const deleteSchedule = useCallback((id) => {
         openModal({
@@ -24,28 +38,6 @@ const ScheduleDraftsIndex = () => {
             },
         });
     }, [closeTopModal, discardScheduleDraft, openModal, refreshData]);
-
-    const editSchedule = useCallback((schedule) => {
-        openModal({
-            content: 'scheduleDraftEdit',
-            contentId: schedule.id,
-            style: {overflow: 'unset'},
-            type: 'dialog'
-        })
-    }, []);
-
-    const editScheduleShifts = useCallback((schedule) => {
-        setScheduleEditor({
-            ...schedule,
-            type: 'draft'
-        });
-        navigate(`/schedules/edit/${schedule.id}`);
-        closeTopModal();
-    }, [setScheduleEditor, closeTopModal, navigate]);
-
-    const previewSchedule = useCallback((id) => {
-        navigate(`/schedules/view/${id}`);
-    }, [navigate]);
 
     useEffect(() => {
         const refresh = refreshTriggers?.scheduleDrafts || false;
@@ -62,8 +54,8 @@ const ScheduleDraftsIndex = () => {
             <h1>Schedule Drafts</h1>
             <Button
                 icon={'add'}
-                label={'Plan new schedule'}
-                onClick={() => openModal({content: 'scheduleDraftNew', style: {overflow: 'unset'}, type: 'dialog'})}
+                label={'Plan new Schedule'}
+                onClick={() => editSchedule()}
             />
         </div>
         {scheduleDrafts && scheduleDrafts.length > 0 &&
@@ -84,12 +76,6 @@ const ScheduleDraftsIndex = () => {
                             onClick={() => editSchedule(schedule)}
                         />
                         <Button
-                            icon={'schedule'}
-                            title={'Plan'}
-                            transparent={true}
-                            onClick={() => editScheduleShifts(schedule)}
-                        />
-                        <Button
                             icon={'delete'}
                             title={'Delete'}
                             transparent={true}
@@ -108,4 +94,4 @@ const ScheduleDraftsIndex = () => {
     </>;
 };
 
-export default ScheduleDraftsIndex;
+export default SchedulesIndex;

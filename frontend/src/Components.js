@@ -5,9 +5,9 @@ import TeamsIndex from './components/Teams/Index';
 import PostsIndex from './components/Posts/Index';
 import AppSettings from './components/AppSettings';
 import AppModules from './components/AppModules';
-import WorkPlanner from './components/WorkPlanner/WorkPlanner';
-import ScheduleViewer from './components/WorkPlanner/ScheduleViewer';
-import ScheduleEditor from './components/WorkPlanner/ScheduleEditor';
+import SchedulesDashboard from './components/Schedules/Dashboard';
+import ScheduleView from './components/Schedules/View';
+import ScheduleEdit from './components/Schedules/Edit';
 
 export const componentMap = {
     UsersIndex,
@@ -15,9 +15,9 @@ export const componentMap = {
     ManagersIndex,
     RolesIndex,
     TeamsIndex,
-    WorkPlanner,
-    ScheduleViewer,
-    ScheduleEditor,
+    ScheduleDashboard: SchedulesDashboard,
+    ScheduleView,
+    ScheduleEdit,
     PostsIndex,
     AppSettings,
     AppModules,

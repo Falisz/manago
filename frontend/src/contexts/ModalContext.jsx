@@ -14,7 +14,7 @@ import RoleEdit from '../components/Roles/Edit';
 import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
 import PostDetails from '../components/Posts/Details';
-import ScheduleDraftEdit from '../components/ScheduleDrafts/Edit';
+import {ScheduleEditForm} from '../components/Schedules/Edit';
 import InWorks from '../components/InWorks';
 import ConfirmPrompt from '../components/ConfirmPrompt';
 
@@ -162,9 +162,9 @@ export const ModalProvider = ({ children }) => {
             case 'postDetails':
                 return <PostDetails postId={modal.contentId} />;
             case 'scheduleDraftNew':
-                return <ScheduleDraftEdit />;
+                return <ScheduleEditForm />;
             case 'scheduleDraftEdit':
-                return <ScheduleDraftEdit scheduleId={modal.contentId}/>;
+                return <ScheduleEditForm scheduleId={modal.contentId}/>;
             case 'confirm':
                 return <ConfirmPrompt
                     message={modal.message}
@@ -174,6 +174,8 @@ export const ModalProvider = ({ children }) => {
                     confirmLabel2={modal.confirmLabel2}
                     cancelLabel={modal.cancelLabel}
                 />;
+            case 'component':
+                return modal.component
             default:
                 return <InWorks title={'Unknown Modal'} modal={true} />;
         }
@@ -262,3 +264,4 @@ export const ModalProvider = ({ children }) => {
 };
 
 export const useModals = () => useContext(ModalContext);
+export default useModals;
