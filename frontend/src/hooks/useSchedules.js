@@ -1,5 +1,5 @@
 // FRONTEND/hooks/useSchedules.js
-import { useCallback, useState, useEffect, useMemo } from 'react';
+import {useCallback, useState, useEffect, useMemo, useRef} from 'react';
 import axios from 'axios';
 import useUsers from './useUsers';
 import useShifts from './useShifts';
@@ -7,8 +7,8 @@ import useLeaves from './useLeaves';
 
 const useSchedules = () => {
     const [ schedules, setSchedules ] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState([]);
+    const [ loading, setLoading ] = useState(true);
+    const [ status, setStatus ] = useState([]);
 
     const schedule = useMemo(() => (schedules && schedules[0]) || {}, [schedules]);
     const setSchedule = useCallback((updater, set = false) => {
@@ -36,6 +36,8 @@ const useSchedules = () => {
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
 
+    const schedulesCache = useRef({});
+
     const fetchUserShifts = useCallback( async ({
                                                     id = schedule.id,
                                                     start_date = schedule.start_date,
@@ -44,9 +46,18 @@ const useSchedules = () => {
                                                     user_scope_id = schedule.user_scope_id
                                                 } = {}) => {
 
-        setLoading(true);
+        const cacheKey = `users-${id || 0}-${start_date}-${end_date}-${user_scope}-${user_scope_id}`;
         
         let userShifts = new Map();
+
+        if (schedulesCache.current[cacheKey]) {
+            userShifts = schedulesCache.current[cacheKey];
+            setSchedule({shifts: userShifts});
+            setLoading(false);
+            return {shifts: userShifts};
+        }
+
+        setLoading(true);
 
         let placeholder;
 
@@ -114,6 +125,7 @@ const useSchedules = () => {
             })
         );
 
+        schedulesCache.current[cacheKey] = userShifts;
         setSchedule({shifts: userShifts, placeholder});
         setLoading(false);
         return {users: userShifts, shifts, leaves, placeholder};

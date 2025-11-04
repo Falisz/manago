@@ -5,10 +5,11 @@ import {useModals} from '../../contexts/ModalContext';
 import Button from '../Button';
 import useSchedules from '../../hooks/useSchedules';
 import useAppState from "../../contexts/AppStateContext";
+import Loader from "../Loader";
 
 const SchedulesIndex = () => {
     const { openModal, refreshTriggers, refreshData, closeTopModal } = useModals();
-    const { scheduleDrafts, fetchScheduleDrafts, discardScheduleDraft  } = useSchedules();
+    const { scheduleDrafts, fetchScheduleDrafts, discardScheduleDraft, loading  } = useSchedules();
     const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
 
@@ -58,39 +59,41 @@ const SchedulesIndex = () => {
                 onClick={() => editSchedule()}
             />
         </div>
-        {scheduleDrafts && scheduleDrafts.length > 0 &&
-            scheduleDrafts.map((schedule, idx) =>
-                <div key={idx} className={'schedule-draft-item'}>
-                    <div className={'schedule-draft-item-header'}>
-                        <h2>{schedule.name}</h2>
-                        <Button
-                            icon={'preview'}
-                            title={'Preview'}
-                            transparent={true}
-                            onClick={() => previewSchedule(schedule.id)}
-                        />
-                        <Button
-                            icon={'edit'}
-                            title={'Edit'}
-                            transparent={true}
-                            onClick={() => editSchedule(schedule)}
-                        />
-                        <Button
-                            icon={'delete'}
-                            title={'Delete'}
-                            transparent={true}
-                            onClick={() => deleteSchedule(schedule.id)}
-                        />
+        <div className={'content app-scroll'}>
+            { loading ? <Loader/> :
+                scheduleDrafts && scheduleDrafts.length > 0 && scheduleDrafts.map((schedule, idx) =>
+                    <div key={idx} className={'schedule-draft-item'}>
+                        <div className={'schedule-draft-item-header'}>
+                            <h2>{schedule.name}</h2>
+                            <Button
+                                icon={'preview'}
+                                title={'Preview'}
+                                transparent={true}
+                                onClick={() => previewSchedule(schedule.id)}
+                            />
+                            <Button
+                                icon={'edit'}
+                                title={'Edit'}
+                                transparent={true}
+                                onClick={() => editSchedule(schedule)}
+                            />
+                            <Button
+                                icon={'delete'}
+                                title={'Delete'}
+                                transparent={true}
+                                onClick={() => deleteSchedule(schedule.id)}
+                            />
+                        </div>
+                        <div className={'schedule-draft-item-description'}>
+                            Date range: {schedule.start_date} - {schedule.end_date}<br/>
+                            Shifts: {(schedule.shifts && schedule.shifts.length) || 0}<br/>
+                            Users: {schedule.users_count || 0}<br/>
+                            Note: {schedule.description}
+                        </div>
                     </div>
-                    <div className={'schedule-draft-item-description'}>
-                        Date range: {schedule.start_date} - {schedule.end_date}<br/>
-                        Shifts: {(schedule.shifts && schedule.shifts.length) || 0}<br/>
-                        Users: {schedule.users_count || 0}<br/>
-                        Note: {schedule.description}
-                    </div>
-                </div>
-            )
-        }
+                )
+            }
+        </div>
     </>;
 };
 

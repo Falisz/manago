@@ -25,7 +25,7 @@ const ScheduleView = () => {
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    const scopeOptions = [
+    let scopeOptions = [
         { id: 'all', name: 'All Users' }, 
         { id: 'you', name: 'Yours' },
         ...(modules.find((m) => m.title === 'Teams' && m.enabled) ? [{ id: 'team', name: 'Team' }] : []),
@@ -131,13 +131,13 @@ const ScheduleView = () => {
                 ({id: team.id, name: team.name})
             ));
 
-        else if (users && users.length > 0 && schedule.user_scope === 'user')
-            setScopeIdOptions(users.map((user) =>
+        else if (users && Array.from(users).length > 0 && schedule.user_scope === 'user')
+            setScopeIdOptions(Array.from(users).map((user) =>
                 ({id: user.id, name: user.first_name + ' ' + user.last_name})
             ));
         
-        else if (managers && managers.length > 0 && schedule.user_scope === 'manager')
-            setScopeIdOptions(managers.map((manager) =>
+        else if (managers && Array.from(managers).length > 0 && schedule.user_scope === 'manager')
+            setScopeIdOptions(Array.from(managers).map((manager) =>
                 ({id: manager.id, name: manager.first_name + ' ' + manager.last_name})
             ));
         
@@ -149,6 +149,9 @@ const ScheduleView = () => {
     const userScope = schedule.user_scope && schedule.user_scope[0].toUpperCase() + schedule.user_scope.slice(1);
     const scopeName = (schedule.user_scope !== 'you' && schedule.user_scope !== 'all' && scopeIdOptions &&
         scopeIdOptions.find(option => option.id === schedule.user_scope_id)?.['name']) || null;
+
+    if (['monthly', 'jobs'].includes(schedule.view))
+        scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
 
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>
@@ -172,7 +175,6 @@ const ScheduleView = () => {
                             {id: 'jobs', name: 'Jobs'},
                             {id: 'monthly', name: 'Monthly'}
                         ]}
-                        style={{minWidth: '150px'}}
                         onChange={handleChange}
                     />
                 </div>
@@ -195,9 +197,8 @@ const ScheduleView = () => {
                                     name={'user_scope'}
                                     searchable={false}
                                     value={schedule.user_scope || 'you'}
-                                    options={scopeOptions}
+                                    options={scopeOptions || []}
                                     onChange={handleChange}
-                                    style={{minWidth: '150px'}}
                                     disabled={!!scheduleId}
                                 />
                                 { schedule.user_scope && !['all', 'you'].includes(schedule.user_scope) && <ComboBox
@@ -206,7 +207,6 @@ const ScheduleView = () => {
                                     searchable={true}
                                     value={schedule.user_scope_id || null}
                                     options={scopeIdOptions}
-                                    style={{minWidth: '150px'}}
                                     onChange={handleChange}
                                     disabled={!!scheduleId}
                                 />}
@@ -222,7 +222,6 @@ const ScheduleView = () => {
                                     max={schedule.end_date}
                                     onChange={handleChange}
                                     type={'date'}
-                                    style={{minWidth: '100px'}}
                                     disabled={!!scheduleId}
                                 />
                                 <span>-</span>
@@ -233,7 +232,6 @@ const ScheduleView = () => {
                                     min={schedule.start_date}
                                     onChange={handleChange}
                                     type={'date'}
-                                    style={{minWidth: '100px'}}
                                     disabled={!!scheduleId}
                                 />
                             </div>

@@ -7,7 +7,7 @@ const MonthlySchedule = ({schedule}) => {
     console.log('Provided schedule: ', schedule);
 
     return <InWorks
-        icon={'clock'}
+        icon={'calendar_month'}
         title={'Monthly Schedule'}
         description={'Monthly calendar will be here. Similarly with below, it allows to set up date and select branch/weekend.'}
     />;

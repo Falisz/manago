@@ -4,12 +4,6 @@
     user-select: none;
 }
 
-.app-form .app-combo-box {
-    max-width: 50%;
-    margin: 0 0 0 5px;
-    min-width: max(200px, 33%);
-}
-
 .app-form .app-combo-box.disabled {
     opacity: 0.8;
 }
@@ -84,6 +78,7 @@
     border-radius: 12px;
     box-shadow: var(--weak-shade);
     z-index: 1000;
+    width: fit-content;
     max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;

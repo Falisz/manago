@@ -13,20 +13,30 @@
     gap: 10px;
 }
 .planner-widget {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 400px;
     background: var(--background-gradient);
     border-radius: var(--def-border-radius);
     padding: 20px;
-    flex: 1 1 400px;
+    height: 500px;
+    overflow: hidden;
 }
 .app.fluent .planner-widget {
     background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
 }
-.planner-widget-header {
+.planner-widget .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+}
+.planner-widget .content {
+    overflow-y: auto;
+}
+.planner-widget .content::-webkit-scrollbar-thumb {
+    background-color: var(--text-color);
 }
 .planner-widget h1 {
     margin: 0;
