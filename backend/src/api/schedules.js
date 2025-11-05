@@ -28,12 +28,9 @@ const fetchScheduleHandler = async (req, res) => {
     try {
         const schedules = await getSchedule({
             id: id != null ? parseInt(id) : undefined,
-            author: req.body && req.body.author ? req.body.author :
-                req.query.author != null ? parseInt(req.query.author) : undefined,
-            start_date: req.body && req.body.start_date ? new Date(req.body.start_date) :
-                req.query.start_date ? new Date(req.query.start_date) : undefined,
-            end_date: req.body && req.body.end_date ? new Date(req.body.end_date+'T23:59') :
-                req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
+            author: req.query.author != null ? parseInt(req.query.author) : undefined,
+            start_date: req.query.start_date ? new Date(req.query.start_date) : undefined,
+            end_date: req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
             include_shifts: !!req.query.include_shifts,
         });
 
@@ -123,7 +120,6 @@ export const router = express.Router();
 
 router.get('/', fetchScheduleHandler);
 router.get('/:id', fetchScheduleHandler);
-router.post('/batch', fetchScheduleHandler);
 router.post('/', createScheduleHandler);
 router.put('/', updateScheduleHandler);
 router.put('/:id', checkResourceIdHandler, updateScheduleHandler);

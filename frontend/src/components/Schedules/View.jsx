@@ -153,6 +153,7 @@ const ScheduleView = () => {
     if (['monthly', 'jobs'].includes(schedule.view))
         scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
 
+    console.log(schedule);
     return <div className={'app-schedule seethrough'}>
         <div className={'app-schedule-header'}>
             <h1>{scheduleId ? 'Draft Preview: ' + schedule.name : 'Current Schedule'}</h1>
