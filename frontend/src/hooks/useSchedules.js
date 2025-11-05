@@ -213,6 +213,7 @@ const useSchedules = () => {
             setStatus(prev => [...prev, {status: 'error', message}]);
         }
 
+        // TODO: Add fetchShifts to each schedule draft.
         if (Array.isArray(schedules))
             schedules = schedules.map(schedule => ({...schedule, view}));
         else
@@ -262,9 +263,12 @@ const useSchedules = () => {
         console.log('discard called for scheduleId:', scheduleId);
     }, []);
 
+    // TODO: Move this to both fetchSchedulesDrafts and onChange function in viewer/editor
     useEffect( () => {
         if (schedule.view === 'users')
             fetchShifts({map_to_users: true}).then();
+        else
+            fetchShifts({map_to_dates: true}).then();
         
     }, [fetchShifts, schedule.view]);
 
