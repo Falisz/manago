@@ -5,6 +5,12 @@ import useUsers from './useUsers';
 import useShifts from './useShifts';
 import useLeaves from './useLeaves';
 
+// TODO: Move fetchShifts here
+// TODO: Make schedule fields sepearate as in users: [user{}], shifts: [shift{}], user_shifts: map(id=>user{..., shifts: map(date=>shifts[])});
+// TODO: Add function mapUserShifts that would just mape user_shifts field when needed.
+// TODO: Similar functions for mapDateShifts for monthly and jobposts schedules.
+// TODO: Move fetchUsers logic based on scope and user_id to the backend, so we do not need POST /shifts/batch endpoint
+
 const useSchedules = () => {
     const [ schedules, setSchedules ] = useState(null);
     const [ loading, setLoading ] = useState(true);
