@@ -9,6 +9,7 @@ import {
     updateShift,
     deleteShift
 } from '../controllers/workPlanner.js';
+import {getUsersByScope} from "../controllers/users.js";
 
 // API Handlers
 /**
@@ -20,39 +21,9 @@ import {
 const fetchShiftsHandler = async (req, res) => {
     const { id } = req.params;
     let query = {};
+    let users = [];
 
-    if (req.url.includes('batch')) {
-
-        if (!req.body)
-            return res.status(400).json({message: 'No data provided.'});
-
-        if (req.body.users)
-            query.user = req.body.users;
-
-        if (req.body.job_posts)
-            query.job_post = req.body.job_posts;
-
-        if (req.body.schedules)
-            query.schedule = req.body.schedule;
-
-        if (req.body.dates) {
-            query.date = [];
-            for (const date of req.body.dates) {
-                try {
-                    query.date.push(new Date(date).toISOString().split('T')[0]);
-                } catch {
-                }
-            }
-        }
-        else {
-            if (req.body.start_date)
-                query.from = req.body.start_date;
-
-            if (req.body.end_date)
-                query.to = req.body.end_date;
-        }
-
-    } else {
+    try {
 
         if (id) {
             const { hasAccess } = await checkAccess(req.session.user, 'read', 'shift', id);
@@ -63,36 +34,44 @@ const fetchShiftsHandler = async (req, res) => {
             query.id = id;
         } else {
 
-            if (req.query.user)
+            if (req.query.user) {
                 query.user = parseInt(req.query.user);
+            } else if (req.query.user_scope) {
 
-            if (req.query.schedule)
-                query.schedule = parseInt(req.query.schedule);
+                const scope = req.query.user_scope;
+                const scope_id = scope === 'you' ? req.session.user : req.query.user_scope_id;
 
-            if (req.query.job_post)
-                query.job_post = parseInt(req.query.job_post);
+                users = await getUsersByScope({scope, scope_id});
 
-            if (req.query.date)
+                if (!Array.isArray(users))
+                    users = [users];
+
+                query.user = users.map(user => user.id);
+            }
+
+            if (req.query.date) {
                 query.date = req.query.date;
-
-            else {
+            } else {
                 if (req.query.start_date)
                     query.from = req.query.start_date;
 
                 if (req.query.end_date)
                     query.to = req.query.end_date;
             }
-        }
-    }
 
-    try {
+            if (req.query.schedule)
+                query.schedule = parseInt(req.query.schedule);
+
+            if (req.query.job_post)
+                query.job_post = parseInt(req.query.job_post);
+        }
 
         const shifts = await getShift(query);
 
         if (id && !shifts)
             return res.status(404).json({ message: 'Shift not found.' });
 
-        res.json(shifts);
+        res.json({shifts, users});
 
     } catch (err) {
         console.error(`Error fetching Shift${id ? ' (ID: ' + id + ')' : 's'}:`, err);
@@ -223,14 +202,14 @@ const updateShiftHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteShiftHandler = async (req, res) => deleteResource(req, res, 'Shift', deleteShift);
+const deleteShiftHandler = async (req, res) =>
+    deleteResource(req, res, 'Shift', deleteShift);
 
 // Router definitions
 export const router = express.Router();
 
 router.get('/', fetchShiftsHandler);
 router.get('/:id', fetchShiftsHandler);
-router.post('/batch', fetchShiftsHandler);
 router.post('/', createShiftHandler);
 router.put('/', updateShiftHandler);
 router.put('/:id', checkResourceIdHandler, updateShiftHandler);

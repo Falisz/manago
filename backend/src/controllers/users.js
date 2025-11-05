@@ -6,6 +6,9 @@ import { User, UserManager, Role, UserRole, Permission, UserPermission, RolePerm
 import { TeamUser } from '../models/teams.js';
 import randomId from '../utils/randomId.js';
 import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
+import {getTeamUsers} from "./teams.js";
+import {getBranchUsers} from "./branches.js";
+import {getProjectUsers} from "./projects.js";
 
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.
@@ -769,6 +772,29 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
         await transaction.rollback();
         throw error;
     }
+}
+
+export async function getUsersByScope({scope, scope_id}={}) {
+
+    if (['all', 'you'].includes(scope) && !scope_id)
+        return null;
+
+    if (scope === 'all')
+        return await getUser();
+
+    else if (scope === 'you' || scope === 'user')
+        return await getUser({id: scope_id});
+
+    else if (scope === 'team')
+        return await getTeamUsers({team: scope_id, include_subteams: true});
+
+    else if (scope === 'branch')
+        return await getBranchUsers({branch: scope_id});
+
+    else if (scope === 'project')
+        return await getProjectUsers({project: scope_id});
+
+    return null;
 }
 
 /**

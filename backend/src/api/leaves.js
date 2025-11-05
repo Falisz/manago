@@ -9,6 +9,7 @@ import {
     updateLeave,
     deleteLeave
 } from '../controllers/workPlanner.js';
+import {getUsersByScope} from "../controllers/users.js";
 
 // API Handlers
 /**
@@ -20,63 +21,47 @@ import {
 const fetchLeavesHandler = async (req, res) => {
     const { id } = req.params;
     let query = {};
+    let users = [];
 
+    if (id) {
+        const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave', id);
 
-    if (req.url.includes('batch')) {
-        if (!req.body)
-            return res.status(400).json({message: 'No data provided.'});
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
 
-        if (req.body.users)
-            query.user = req.body.users;
-
-        if (req.body.date) {
-            if (!Array.isArray(req.body.date))
-                req.body.date = [req.body.date];
-
-            query.date = [];
-
-            for (const date of req.body.date) {
-                try {
-                    query.date.push(new Date(date).toISOString().split('T')[0]);
-                } catch {
-                }
-            }
-        }
-        else {
-            if (req.body.start_date)
-                query.start_date = req.body.start_date;
-
-            if (req.body.end_date)
-                query.end_date = req.body.end_date;
-        }
+        query.id = id;
     } else {
 
-        if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave', id);
+        if (req.query.user) {
+            query.user = parseInt(req.query.user);
+        } else if (req.query.user_scope) {
 
-            if (!hasAccess)
-                return res.status(403).json({message: 'Not permitted.'});
+            const scope = req.query.user_scope;
+            const scope_id = scope === 'you' ? req.session.user : req.query.user_scope_id;
 
-            query.id = id;
-        } else {
+            users = await getUsersByScope({scope, scope_id});
 
-            if (req.query.user)
-                query.user = parseInt(req.query.user);
+            if (!users)
+                return res.status(404).json({message: 'Users not found.'});
 
-            if (req.query.approver)
-                query.approver = parseInt(req.query.approver);
+            if (!Array.isArray(users))
+                users = [users];
 
-            if (req.query.date)
-                query.date = new Date(req.query.date).toISOString().split('T')[0];
-
-            else {
-                if (req.query.start_date)
-                    query.start_date = new Date(req.query.start_date+'T00:00');
-
-                if (req.query.end_date)
-                    query.end_date = new Date(req.query.end_date+'T23:59');
-            }
+            query.user = users.map(user => user.id);
         }
+
+        if (req.query.date) {
+            query.date = req.query.date;
+        } else {
+            if (req.query.start_date)
+                query.from = req.query.start_date;
+
+            if (req.query.end_date)
+                query.to = req.query.end_date;
+        }
+
+        if (req.query.approver)
+            query.approver = parseInt(req.query.approver);
     }
 
     try {
@@ -197,14 +182,14 @@ const updateLeaveHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteLeaveHandler = async (req, res) => deleteResource(req, res, 'Leave', deleteLeave);
+const deleteLeaveHandler = async (req, res) =>
+    deleteResource(req, res, 'Leave', deleteLeave);
 
 // Router definitions
 export const router = express.Router();
 
 router.get('/', fetchLeavesHandler);
 router.get('/:id', fetchLeavesHandler);
-router.post('/batch', fetchLeavesHandler);
 router.post('/', createLeaveHandler);
 router.put('/', updateLeaveHandler);
 router.put('/:id', checkResourceIdHandler, updateLeaveHandler);
