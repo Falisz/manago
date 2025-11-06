@@ -71,7 +71,7 @@ const fetchShiftsHandler = async (req, res) => {
         if (id && !shifts)
             return res.status(404).json({ message: 'Shift not found.' });
 
-        res.json({shifts, users});
+        res.json(shifts);
 
     } catch (err) {
         console.error(`Error fetching Shift${id ? ' (ID: ' + id + ')' : 's'}:`, err);

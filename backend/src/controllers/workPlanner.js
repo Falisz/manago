@@ -38,27 +38,25 @@ export async function getSchedule({id, author, start_date, end_date, include_shi
         if (!schedule)
             return null;
 
+        const users = await getUsersByScope({
+            scope: schedule.user_scope,
+            scope_id: schedule.user_scope_id
+        });
+
         if (include_users)
-            schedule.users = await getUsersByScope({
-                scope: schedule.user_scope,
-                scope_id: schedule.user_scope_id
-            });
+            schedule.users = users;
 
         if (include_shifts)
             schedule.shifts = await getShift({
                 schedule: schedule.id,
-                start_date: schedule.start_date,
-                end_date: schedule.end_date,
-                user_scope: schedule.user_scope,
-                user_scope_id: schedule.user_scope_id
+                user: users.map(user => user.id),
+                from: schedule.start_date,
+                to: schedule.end_date,
             });
 
         if (include_leaves)
             schedule.leaves = await getLeave({
-                start_date: schedule.start_date,
-                end_date: schedule.end_date,
-                user_scope: schedule.user_scope,
-                user_scope_id: schedule.user_scope_id
+                user: users.map(user => user.id)
             });
 
         return schedule;
