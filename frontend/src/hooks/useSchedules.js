@@ -32,7 +32,7 @@ const useSchedules = () => {
         });
     },[]);
 
-    const { fetchUsers } = useUsers();
+    const { fetchUsers, fetchUser } = useUsers();
     const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
 
@@ -106,7 +106,7 @@ const useSchedules = () => {
     }, [setSchedule]);
 
     const fetchScheduleDrafts = useCallback(async ({
-                                                       scheduleId,
+                                                       id,
                                                        include_shifts = true,
                                                        include_users = false,
                                                        include_leaves = false,
@@ -118,36 +118,39 @@ const useSchedules = () => {
         
         setLoading(loading);
         try {
-
             let url;
+            let params = {};
 
-            if (scheduleId)
-                url = `/schedules/${scheduleId}`;
-            else
+            if (id) {
+                url = `/schedules/${id}`;
+            } else {
                 url = '/schedules';
 
-            // TODO: Rewrite to using query function.
-            if (include_shifts || include_leaves || include_users)
-                url += '?';
+                if (include_shifts)
+                    params.include_shifts = true;
 
-            if (include_shifts)
-                url += 'include_shifts=true';
+                if (include_users)
+                    params.include_users = true;
 
-            if (include_shifts && include_users)
-                url += '&';
+                if (include_leaves)
+                    params.include_leaves = true;
 
-            if (include_users)
-                url += 'include_users=true';
-
-            if ((include_shifts && include_users) || (include_shifts && include_leaves))
-                url += '&';
-
-            if (include_leaves)
-                url += 'include_leaves=true';
+                if (Object.keys(params).length > 0)
+                    url = '/schedules?' + new URLSearchParams(params).toString();
+            }
 
             const res = await axios.get(url , { withCredentials: true });
 
             schedules = res.data;
+
+            if (Array.isArray(schedules))
+                schedules = schedules.map(schedule => ({...schedule, view}));
+            else
+                schedules = [{...schedules, view}];
+
+            setSchedules(schedules);
+            loading && setLoading(false);
+            return schedules;
 
         } catch (err) {
             console.error('fetchScheduleDrafts error:', err);
@@ -156,19 +159,10 @@ const useSchedules = () => {
             setStatus(prev => [...prev, {status: 'error', message}]);
         }
         
-        if (Array.isArray(schedules))
-            schedules = schedules.map(schedule => ({...schedule, view}));
-        else
-            schedules = [{...schedules, view}];
-
-        setSchedules(schedules);
-        setLoading(false);
-        return schedules;
-        
     }, []);
 
-    const fetchScheduleDraft = useCallback( async ({scheduleId}) =>
-        await fetchScheduleDrafts({scheduleId}), [fetchScheduleDrafts]);
+    const fetchScheduleDraft = useCallback( async (id) =>
+        await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
 
     const saveScheduleDraft = useCallback( async ({scheduleId, formData}) => {
         setStatus([]);
@@ -205,48 +199,111 @@ const useSchedules = () => {
         console.log('discard called for scheduleId:', scheduleId);
     }, []);
 
+    const mapDates = useCallback( (shifts) => {
+        return shifts.reduce((map, shift) => {
+            const date = shift.date;
+
+            if (!map.has(date))
+                map.set(date, []);
+
+            map.get(date).push(shift);
+
+            return map;
+        }, new Map());
+    }, []);
+
+    const mapUsers = useCallback( (shifts, users, leaves) => {
+        const userShifts = new Map(users.map(user => [user.id, user]));
+
+        userShifts.forEach((user, userId) => {
+            user.shifts = shifts
+                .filter(shift => shift.user.id === userId)
+                .map(shift => ({...shift, user: shift.user.id}));
+            user.shifts = mapDates(user.shifts);
+
+            if (leaves)
+                user.leaves = leaves
+                    .filter(leave => leave.user.id === userId)
+                    .map(leave => ({...leave, user: leave.user.id}));
+        });
+
+        return new Map(
+            [...userShifts.entries()].sort((a, b) => {
+                const userA = a[1];
+                const userB = b[1];
+
+                if (userA.hasOwnProperty('team') && userB.hasOwnProperty('team'))
+                    if (userA.team.id !== userB.team.id)
+                        return userA.team.id < userB.team.id ? -1 : 1;
+                    else
+                        return userA.role.id > userB.role.id ? -1 : 1;
+
+                else
+                    return (userA.last_name + ' ' + userA.first_name)
+                        .localeCompare(userB.last_name + ' ' + userB.first_name);
+            })
+        );
+
+    }, [mapDates]);
+
     useEffect( () => {
+        if (schedule.id)
+            return;
+
         setLoading(true);
-        const id = schedule.id;
-        const start_date = schedule.start_date;
-        const end_date = schedule.end_date;
-        const user_scope = schedule.user_scope;
-        const user_scope_id = schedule.user_scope_id;
-        const view = schedule.view;
 
         async function fetchData() {
-            const users = await fetchUsers({
+
+            const start_date = schedule.start_date;
+            const end_date = schedule.end_date;
+            const user_scope = schedule.user_scope;
+            const user_scope_id = schedule.user_scope_id;
+            const view = schedule.view;
+
+            let users = new Map(), shifts = [], leaves = [];
+
+            if (user_scope !== 'all' && !user_scope_id) {
+                const placeholder = `Select ${user_scope}.`;
+                setSchedule(prev => ({...prev, users, shifts, leaves, placeholder}));
+                setLoading(false);
+                return;
+            }
+
+            if (['you', 'user'].includes(user_scope))
+                users = await fetchUser({userId: user_scope_id});
+            else
+                users = await fetchUsers({
+                    user_scope,
+                    user_scope_id
+                });
+
+            if (!Array.isArray(users))
+                users = [users];
+
+            shifts = await fetchShifts({
+                start_date,
+                end_date,
                 user_scope,
                 user_scope_id
             });
 
-            const shifts = await fetchShifts({
-                id,
-                start_date,
-                end_date,
-                user_scope,
-                user_scope_id,
-                map_to_users: view === 'users',
-                map_to_dates: view !== 'dates',
-            });
-            const leaves = await fetchLeaves({
-                id,
+            leaves = await fetchLeaves({
                 start_date,
                 end_date,
                 user_scope,
                 user_scope_id,
             })
 
-            return {users, shifts, leaves};
+            if (view === 'users')
+                users = mapUsers(shifts, users, leaves);
+            else
+                shifts = mapDates(shifts);
+
+            setSchedule(prev => ({...prev, users, shifts, leaves, placeholder: null}));
+            setLoading(false);
         }
 
-        fetchData().then((res) => {
-            const {users, shifts, leaves} = res;
-            console.log(users);
-            const key = view === 'users' ? 'users' : 'dates';
-            setSchedule(prev => ({...prev, [key]: shifts, leaves}));
-            setLoading(false);
-        });
+        fetchData().then();
         
     }, [fetchUsers, fetchShifts, fetchLeaves, setSchedule, schedule.id, schedule.start_date, schedule.end_date,
         schedule.user_scope, schedule.user_scope_id, schedule.view]);

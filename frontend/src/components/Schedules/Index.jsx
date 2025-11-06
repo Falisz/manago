@@ -47,7 +47,7 @@ const SchedulesIndex = () => {
             delete refreshTriggers.scheduleDrafts;
 
         if (!scheduleDrafts || refresh)
-            fetchScheduleDrafts().then();
+            fetchScheduleDrafts({include_users: true, include_leaves: true}).then();
     }, [refreshTriggers.scheduleDrafts, scheduleDrafts, fetchScheduleDrafts]);
 
     return <>

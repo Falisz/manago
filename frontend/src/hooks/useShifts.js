@@ -6,56 +6,8 @@ const useShifts = () => {
     const [ shifts, setShifts ] = useState(null);
     const [ loading, setLoading ] = useState(true);
     const [ status, setStatus ] = useState([]);
-    const shiftsCache = useRef({});
+    const cache = useRef({});
 
-    const mapShiftsToDates = useCallback( (shifts) => {
-        return shifts.reduce((map, shift) => {
-            const date = shift.date;
-
-            if (!map.has(date))
-                map.set(date, []);
-
-            map.get(date).push(shift);
-
-            return map;
-        }, new Map());
-    }, []);
-
-    const mapShiftsToUsers = useCallback( (shifts, users, leaves) => {
-        const userShifts = new Map(users.map(user => [user.id, user]));
-
-        userShifts.forEach((user, userId) => {
-            user.shifts = shifts
-                .filter(shift => shift.user.id === userId)
-                .map(shift => ({...shift, user: shift.user.id}));
-            user.shifts = mapShiftsToDates(user.shifts);
-
-            if (leaves)
-                user.leaves = leaves
-                    .filter(leave => leave.user.id === userId)
-                    .map(leave => ({...leave, user: leave.user.id}));
-        });
-
-        return new Map(
-            [...userShifts.entries()].sort((a, b) => {
-                const userA = a[1];
-                const userB = b[1];
-
-                if (userA.hasOwnProperty('team') && userB.hasOwnProperty('team'))
-                    if (userA.team.id !== userB.team.id)
-                        return userA.team.id < userB.team.id ? -1 : 1;
-                    else
-                        return userA.role.id > userB.role.id ? -1 : 1;
-
-                else
-                    return (userA.last_name + ' ' + userA.first_name)
-                        .localeCompare(userB.last_name + ' ' + userB.first_name);
-            })
-        );
-
-    }, [mapShiftsToDates]);
-
-    // TODO: Change this and API endpoint to only return shifts. While the users are handled by different hook...
     const fetchShifts = useCallback( async ({
                                                 id = null,
                                                 user,
@@ -67,21 +19,18 @@ const useShifts = () => {
                                                 schedule_id,
                                                 job_post,
                                                 location,
-                                                map_to_users = false,
-                                                map_to_dates = false,
                                                 loading = true
                                             } = {}) => {
 
         setLoading(loading);
         setStatus([]);
 
-        const shifts_type = map_to_users ? 'users' : map_to_dates ? 'dates' : 'shifts';
-        const cacheKey = `${shifts_type}-${id || 0}-${start_date}-${end_date}-${user_scope}-${user_scope_id}`;
+        const cacheKey = `shifts-${id || 0}-${start_date}-${end_date}-${user_scope}-${user_scope_id}`;
 
-        let shifts = new Map(), users = [];
+        let shifts = new Map();
 
-        if (shiftsCache.current[cacheKey]) {
-            shifts = shiftsCache.current[cacheKey];
+        if (cache.current[cacheKey]) {
+            shifts = cache.current[cacheKey];
             setShifts(shifts);
             loading && setLoading(false);
             return shifts;
@@ -132,16 +81,9 @@ const useShifts = () => {
 
             const res = await axios.get(url, { withCredentials: true });
 
-            ({shifts, users} = res.data);
+            shifts = res.data;
 
-            // TODO: Mapping to be moved to useSchedules hook.
-            if (map_to_users)
-                shifts = mapShiftsToUsers(shifts, users);
-
-            else if (map_to_dates)
-                shifts = mapShiftsToDates(shifts);
-
-            shiftsCache.current[cacheKey] = shifts;
+            cache.current[cacheKey] = shifts;
             setShifts(shifts);
             loading && setLoading(false);
             return shifts;
@@ -152,7 +94,7 @@ const useShifts = () => {
             setStatus(prev => [...prev, {status: 'error', message}]);
         }
 
-    }, [mapShiftsToUsers, mapShiftsToDates]);
+    }, []);
 
     const fetchShift = useCallback( async (shiftId) =>
         await fetchShifts({shiftId}), [fetchShifts]);

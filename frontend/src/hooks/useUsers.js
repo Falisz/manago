@@ -10,7 +10,7 @@ const useUsers = () => {
     const { appCache } = useAppState();
     const userCache = appCache.current.users;
 
-    const fetchUsers = useCallback(async ({userId = null, user_scope = 'all', scope_id = null, group = null,
+    const fetchUsers = useCallback(async ({userId = null, user_scope = 'all', user_scope_id = null, group = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
         let users;
@@ -26,18 +26,18 @@ const useUsers = () => {
 
             if (userId) {
                 url = `/users/${userId}`;
-            } else if (user_scope !== 'all' && scope_id) {
+            } else if (user_scope !== 'all' && user_scope_id) {
                 if (user_scope === 'manager')
-                    url = `/users/${scope_id}/managed-users`;
+                    url = `/users/${user_scope_id}/managed-users`;
 
                 else if (user_scope === 'team')
-                    url = `/teams/${scope_id}/users?include_subteams=true`;
+                    url = `/teams/${user_scope_id}/users?include_subteams=true`;
 
                 else if (user_scope === 'branch')
-                    url = `/branches/${scope_id}/users`;
+                    url = `/branches/${user_scope_id}/users`;
 
                 else if (user_scope === 'project')
-                    url = `/projects/${scope_id}/users`;
+                    url = `/projects/${user_scope_id}/users`;
 
             } else if (group === 'employees' || group === 'managers') {
                 url = `/users?group=${group}`;
