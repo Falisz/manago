@@ -27,12 +27,9 @@ import sequelize from '../utils/database.js';
  * @param start_date
  * @param end_date
  * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Schedule(s)? False by default.
- * @param include_users
- * @param include_leaves
  * @returns {Promise<Object|Object[]|null>} Single Schedule, array of Schedules, or null
  */
-export async function getSchedule({id, author, start_date, end_date, include_shifts=false,
-                                      include_users=false, include_leaves=false} = {}) {
+export async function getSchedule({id, author, start_date, end_date} = {}) {
 
     async function extendSchedule(schedule) {
         if (!schedule)
@@ -43,21 +40,18 @@ export async function getSchedule({id, author, start_date, end_date, include_shi
             scope_id: schedule.user_scope_id
         });
 
-        if (include_users)
-            schedule.users = users;
+        schedule.users = users;
 
-        if (include_shifts)
-            schedule.shifts = await getShift({
-                schedule: schedule.id,
-                user: users.map(user => user.id),
-                from: schedule.start_date,
-                to: schedule.end_date,
-            });
+        schedule.shifts = await getShift({
+            schedule: schedule.id,
+            user: users.map(user => user.id),
+            from: schedule.start_date,
+            to: schedule.end_date,
+        });
 
-        if (include_leaves)
-            schedule.leaves = await getLeave({
-                user: users.map(user => user.id)
-            });
+        schedule.leaves = await getLeave({
+            user: users.map(user => user.id)
+        });
 
         return schedule;
 
