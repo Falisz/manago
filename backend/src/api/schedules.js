@@ -31,7 +31,9 @@ const fetchScheduleHandler = async (req, res) => {
             author: req.query.author != null ? parseInt(req.query.author) : undefined,
             start_date: req.query.start_date ? new Date(req.query.start_date) : undefined,
             end_date: req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined,
+            include_users: !!req.query.include_users,
             include_shifts: !!req.query.include_shifts,
+            include_leaves: !!req.query.include_leaves
         });
 
         if (id && !schedules)

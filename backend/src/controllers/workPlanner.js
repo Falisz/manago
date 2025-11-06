@@ -13,7 +13,7 @@ import {
     DispositionPreset
 } from '../models/workPlanner.js';
 import { User } from '../models/users.js';
-import { getUser } from './users.js';
+import {getUser, getUsersByScope} from './users.js';
 import { Op } from 'sequelize';
 import randomId from '../utils/randomId.js';
 import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
@@ -27,9 +27,43 @@ import sequelize from '../utils/database.js';
  * @param start_date
  * @param end_date
  * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Schedule(s)? False by default.
+ * @param include_users
+ * @param include_leaves
  * @returns {Promise<Object|Object[]|null>} Single Schedule, array of Schedules, or null
  */
-export async function getSchedule({id, author, start_date, end_date, include_shifts=false} = {}) {
+export async function getSchedule({id, author, start_date, end_date, include_shifts=false,
+                                      include_users=false, include_leaves=false} = {}) {
+
+    async function extendSchedule(schedule) {
+        if (!schedule)
+            return null;
+
+        if (include_users)
+            schedule.users = await getUsersByScope({
+                scope: schedule.user_scope,
+                scope_id: schedule.user_scope_id
+            });
+
+        if (include_shifts)
+            schedule.shifts = await getShift({
+                schedule: schedule.id,
+                start_date: schedule.start_date,
+                end_date: schedule.end_date,
+                user_scope: schedule.user_scope,
+                user_scope_id: schedule.user_scope_id
+            });
+
+        if (include_leaves)
+            schedule.leaves = await getLeave({
+                start_date: schedule.start_date,
+                end_date: schedule.end_date,
+                user_scope: schedule.user_scope,
+                user_scope_id: schedule.user_scope_id
+            });
+
+        return schedule;
+
+    }
         
     // Logic if no ID is provided - fetch all Schedules
     if (!id || isNaN(id)) {
@@ -50,10 +84,9 @@ export async function getSchedule({id, author, start_date, end_date, include_shi
         if (!schedules || schedules.length === 0) 
             return [];
 
-        return await Promise.all(schedules.map(async schedule => {
-            if (include_shifts) schedule.shifts = await getShift({schedule: schedule.id});
-            return schedule;
-        }));
+        return await Promise.all(
+            schedules.map( async (schedule) => await extendSchedule(schedule) )
+        );
     }
 
     // Logic if the ID is provided - fetch a specific Schedule
@@ -62,10 +95,7 @@ export async function getSchedule({id, author, start_date, end_date, include_shi
     if (!schedule) 
         return null;
 
-    if (include_shifts) 
-        schedule.shifts = await getShift({schedule: schedule.id});
-        
-    return schedule;
+    return await extendSchedule(schedule);
 }
 
 /**

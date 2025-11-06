@@ -105,7 +105,14 @@ const useSchedules = () => {
         });
     }, [setSchedule]);
 
-    const fetchScheduleDrafts = useCallback(async ({scheduleId, loading = true, view = 'users'} = {}) => {
+    const fetchScheduleDrafts = useCallback(async ({
+                                                       scheduleId,
+                                                       include_shifts = true,
+                                                       include_users = false,
+                                                       include_leaves = false,
+                                                       loading = true,
+                                                       view = 'users'
+    } = {}) => {
 
         let schedules;
         
@@ -119,6 +126,25 @@ const useSchedules = () => {
             else
                 url = '/schedules';
 
+            // TODO: Rewrite to using query function.
+            if (include_shifts || include_leaves || include_users)
+                url += '?';
+
+            if (include_shifts)
+                url += 'include_shifts=true';
+
+            if (include_shifts && include_users)
+                url += '&';
+
+            if (include_users)
+                url += 'include_users=true';
+
+            if ((include_shifts && include_users) || (include_shifts && include_leaves))
+                url += '&';
+
+            if (include_leaves)
+                url += 'include_leaves=true';
+
             const res = await axios.get(url , { withCredentials: true });
 
             schedules = res.data;
@@ -129,8 +155,7 @@ const useSchedules = () => {
             const message = 'Error occurred while fetching the Schedule Draft data.';
             setStatus(prev => [...prev, {status: 'error', message}]);
         }
-
-        // TODO: Add fetchShifts to each schedule draft.
+        
         if (Array.isArray(schedules))
             schedules = schedules.map(schedule => ({...schedule, view}));
         else
