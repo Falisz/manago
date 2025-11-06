@@ -107,9 +107,6 @@ const useSchedules = () => {
 
     const fetchScheduleDrafts = useCallback(async ({
                                                        id,
-                                                       include_shifts = true,
-                                                       include_users = false,
-                                                       include_leaves = false,
                                                        loading = true,
                                                        view = 'users'
     } = {}) => {
@@ -119,25 +116,11 @@ const useSchedules = () => {
         setLoading(loading);
         try {
             let url;
-            let params = {};
 
-            if (id) {
+            if (id)
                 url = `/schedules/${id}`;
-            } else {
+            else
                 url = '/schedules';
-
-                if (include_shifts)
-                    params.include_shifts = true;
-
-                if (include_users)
-                    params.include_users = true;
-
-                if (include_leaves)
-                    params.include_leaves = true;
-
-                if (Object.keys(params).length > 0)
-                    url = '/schedules?' + new URLSearchParams(params).toString();
-            }
 
             const res = await axios.get(url , { withCredentials: true });
 
@@ -213,12 +196,17 @@ const useSchedules = () => {
     }, []);
 
     const mapUsers = useCallback( (shifts, users, leaves) => {
-        const userShifts = new Map(users.map(user => [user.id, user]));
+        if (!users)
+            return new Map();
 
-        userShifts.forEach((user, userId) => {
+        if (!(users instanceof Map))
+            users = new Map(users.map(user => [user.id, user]));
+
+        users.forEach((user, userId) => {
             user.shifts = shifts
                 .filter(shift => shift.user.id === userId)
                 .map(shift => ({...shift, user: shift.user.id}));
+
             user.shifts = mapDates(user.shifts);
 
             if (leaves)
@@ -228,7 +216,7 @@ const useSchedules = () => {
         });
 
         return new Map(
-            [...userShifts.entries()].sort((a, b) => {
+            [...users.entries()].sort((a, b) => {
                 const userA = a[1];
                 const userB = b[1];
 

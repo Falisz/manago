@@ -14,10 +14,10 @@ import EditForm from '../EditForm';
 
 export const ScheduleEditForm = ({ schedule }) => {
     const { appState } = useAppState();
-    const { fetchUserShifts } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
+    const { fetchUsers: fetchSelectedUsers } = useUsers();
 
     useEffect(() => {
         fetchUsers().then();
@@ -118,21 +118,16 @@ export const ScheduleEditForm = ({ schedule }) => {
                     )
                         return null;
 
-                    const { users, shifts } = (schedule.start_date && schedule.end_date && schedule.user_scope && await fetchUserShifts({
-                        id: schedule.id,
-                        start_date: formData.start_date,
-                        end_date: formData.end_date,
+                    const users = (schedule.user_scope && await fetchSelectedUsers({
                         user_scope: formData.user_scope,
                         user_scope_id: formData.user_scope_id
-                    })) || { users: new Map(), shifts: []};
+                    })) || [];
                     
-                    const userList = Array.from(users.values().map(u => u.first_name + ' ' + u.last_name));
+                    const userList = Array.from(users.map(u => u.first_name + ' ' + u.last_name));
 
                     return <>
                         <label className={'form-group-label'}>Users ({userList.length})</label>
                         <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>
-                        <label className={'form-group-label'}>Shifts In The Scope</label>
-                        <span style={{paddingLeft: '10px'}}>{shifts.length}</span>
                     </>;
                 },
                 async_content_deps: ['start_date', 'end_date', 'user_scope', 'user_scope_id'],
@@ -152,7 +147,7 @@ export const ScheduleEditForm = ({ schedule }) => {
             },
             refreshTriggers: [['scheduleDrafts', true], ...(schedule ? [['scheduleDraft', schedule.id]] : [])]
         },
-    }), [schedule, scopeOptions, fetchUserShifts]);
+    }), [schedule, scopeOptions, fetchSelectedUsers]);
 
     const scheduleData = useMemo(() => ({...schedule}), [schedule]);
     

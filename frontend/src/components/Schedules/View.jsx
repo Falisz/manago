@@ -98,7 +98,7 @@ const ScheduleView = () => {
         fetchTeams({ all: true }).then();
 
         if (scheduleId) {
-            fetchScheduleDraft({scheduleId}).then();
+            fetchScheduleDraft(scheduleId).then();
             return;
         }
 
@@ -122,7 +122,7 @@ const ScheduleView = () => {
         
         setSchedule((prev) => ({...prev, ...currentSchedule}));
 
-    }, [scheduleId, user.id, searchParams, defaultStartDate, defaultEndDate, fetchScheduleDraft, 
+    }, [scheduleId, user.id, searchParams, defaultStartDate, defaultEndDate, fetchScheduleDraft,
         fetchUsers, fetchManagers, fetchTeams, setSchedule]);
 
     useEffect(() => {

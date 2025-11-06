@@ -86,8 +86,8 @@ const SchedulesIndex = () => {
                         </div>
                         <div className={'schedule-draft-item-description'}>
                             Date range: {schedule.start_date} - {schedule.end_date}<br/>
-                            Shifts: {(schedule.shifts && schedule.shifts.length) || 0}<br/>
-                            Users: {schedule.users_count || 0}<br/>
+                            Users: {schedule.users?.length || 0}<br/>
+                            Shifts: {schedule.shifts?.length || 0}<br/>
                             Note: {schedule.description}
                         </div>
                     </div>
