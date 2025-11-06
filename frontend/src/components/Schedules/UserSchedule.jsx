@@ -37,13 +37,7 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
             }
         }
 
-        updateShift({
-            user: shift.user,
-            shiftData: {
-                ...shift,
-                ...newData
-            }
-        })
+        updateShift({ shift: {...shift, ...newData}})
     }
 
     return <div
@@ -84,12 +78,8 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
 };
 
 // TODO: add autosaving, discarding changes to the last saved state, displaying user dispos and leaves, and leave requests
-//  double click on a shift to edit it (time and post and location)
-//  three bins - one for new shifts, one for updated shifts and one for deleted shifts to be properly handled once there is save and sent to backend.
-//  the update and delete bins only used for editing current draft schedule, in case of new schedule or editing current one there is only new bin
-//  as the schedule is saved to backend, the bins are cleared
 
-const UserSchedule = ({schedule, setSchedule, editable=false}) => {
+const UserSchedule = ({schedule, updateUserShift, editable=false}) => {
     const { openModal } = useModals();
 
     const MENU_ID = 'schedule_context_menu';
@@ -137,35 +127,18 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
         }
     }, [selectedCells, setSelectedCells]);
 
-    const handleShiftUpdate = ({user, shiftData}) => {
-        if (!user || !shiftData)
-            return;
-
-        setSchedule((prev) => {
-           const shifts = new Map(prev.shifts);
-           const targetUser = shifts.get(user);
-           const shiftId = shiftData.id;
-           const updatedTargetUser = { ...targetUser, shifts: targetUser.shifts.map((s) => {
-               if (s.id === shiftId) {
-                   return {
-                       ...s,
-                       ...shiftData
-                   }
-               } else return s;
-           })}
-           shifts.set(user, updatedTargetUser);
-           return {...prev, shifts};
-        });
+    const handleShiftUpdate = ({shift}) => {
+        updateUserShift({ shift, action: 'update' });
     };
 
-    const handleShiftAdd = ({user, date, newShift}) => {
+    const handleShiftAdd = ({user, date, shift}) => {
         if (!editable || !user || !date)
             return;
 
         user = parseInt(user);
 
-        if (!newShift)
-            newShift = {
+        if (!shift)
+            shift = {
                 id: `new${Math.floor(Math.random() * 1001)}`,
                 user,
                 date,
@@ -173,51 +146,26 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
                 end_time: '17:00',
                 job_location: null,
                 job_post: null,
-            }
+            };
 
-        setSchedule((prev) => {
-            const shifts = new Map(prev.shifts);
-            const targetUser = shifts.get(user);
-            const updatedTargetUser = { ...targetUser, shifts: [...targetUser.shifts, newShift] };
-            shifts.set(user, updatedTargetUser);
-            return {...prev, shifts};
-        });
-    }
+        updateUserShift({ shift, action: 'add' });
+    };
 
     const handleShiftSelection = (shift) => {
-        const userId = shift.user;
-
-        setSchedule((prev) => {
-            const shifts = new Map(prev.shifts);
-
-            const user = shifts.get(userId);
-
-            const updatedUser = {
-                ...user,
-                shifts: user.shifts.map((s) => {
-                    if (s.id === shift.id) {
-                        return {
-                            ...s,
-                            selected: !s.selected
-                        }
-                    } else return s;
-                })
-            }
-            shifts.set(userId, updatedUser);
-
-            return {...prev, shifts};
-        })
+        updateUserShift({ shift: {...shift, selected: !shift.selected}, action: 'update' });
     };
 
     const handleMouseEnter = (e) => {
         if (editable)
             return;
+
         const selector = getSelector(e);
 
-        if (selector) {
-            document.querySelectorAll(selector)
+        if (selector)
+            document
+                .querySelectorAll(selector)
                 .forEach(cell => cell.classList.add('column-highlight'));
-        }
+
     };
 
     const handleMouseLeave = (e) => {
@@ -233,15 +181,15 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
         } else if (date) {
             selector = `td[data-date='${date}'], th[data-date='${date}']`;
         }
-        if (selector) {
-            document.querySelectorAll(selector)
+        if (selector)
+            document
+                .querySelectorAll(selector)
                 .forEach(cell => cell.classList.remove('column-highlight'));
-        }
     };
 
     const dragPreviewRef = useRef(null);
 
-    const hasLeaveOnTarget = (leaves, targetDate) => leaves.some(
+    const hasLeaveOnTarget = (leaves, targetDate) => leaves?.some(
             (l) => {
                 l.start_date = new Date(l.start_date);
                 l.end_date = new Date(l.end_date);
@@ -252,7 +200,8 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
         );
 
     const handleShiftClick = (e, shift) => {
-        if (!editable) return;
+        if (!editable)
+            return;
 
         if (e.shiftKey) {
             handleShiftSelection(shift)
@@ -261,7 +210,8 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
     }
 
     const handleShiftDragStart = (e, shift) => {
-        if (!editable) return;
+        if (!editable)
+            return;
 
         e.dataTransfer.effectAllowed = 'copyMove';
         const payload = JSON.stringify(shift);
@@ -292,30 +242,23 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
         if (!editable) return;
         e.preventDefault();
 
-        const targetUser = schedule.shifts.get(user);
+        const targetUser = schedule.users.get(user);
         const leaves = targetUser ? targetUser['leaves'] : [];
         const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
 
         if (hasLeaveOnTargetDay)
             return;
 
-        const isCopy = !!(e.ctrlKey || e.metaKey);
-
         const data = e.dataTransfer.getData('application/json');
 
         if (!data)
             return;
 
-        let sourceShift;
-        let newShift;
-
         try {
+            const sourceShift = JSON.parse(data);
+            const newShift = JSON.parse(data);
 
-            sourceShift = JSON.parse(data);
-            newShift = JSON.parse(data);
-
-            newShift.user = user;
-
+            const isCopy = !!(e.ctrlKey || e.metaKey);
             const isSameUser = sourceShift.user === user;
             const isSameDay = sourceShift.date === date;
             const isSameCell = isSameUser && isSameDay;
@@ -324,61 +267,23 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
                 return;
 
             newShift.date = date;
+            newShift.user = user;
 
             if (isCopy)
                 newShift.id = `new${Math.floor(Math.random() * 1001)}`;
 
-        } catch {
-            return;
-        }
+            updateUserShift({ shift: newShift, sourceShift, action: isCopy ? 'copy' : 'move' });
 
-        setSchedule((prev) => {
+        } catch {}
 
-            const shifts = new Map(prev.shifts);
-            const targetUser = shifts.get(user);
-
-            if (isCopy) {
-                const updatedTargetUser = { ...targetUser, shifts: [...targetUser.shifts, newShift] };
-
-                shifts.set(user, updatedTargetUser);
-
-            } else {
-
-                if (sourceShift.user === user) {
-                    const updatedTargetUser = {
-                        ...targetUser,
-                        shifts: [...targetUser.shifts.filter((s) => s.id !== sourceShift.id), newShift]
-                    };
-
-                    shifts.set(user, updatedTargetUser);
-
-                } else {
-                    const updatedTargetUser = {
-                        ...targetUser,
-                        shifts: [...targetUser.shifts, newShift]
-                    };
-
-                    shifts.set(user, updatedTargetUser);
-
-                    const sourceUser = shifts.get(sourceShift.user);
-
-                    const updatedSourceUser = {
-                        ...sourceUser,
-                        shifts: sourceUser.shifts.filter((s) => s.id !== sourceShift.id)
-                    };
-
-                    shifts.set(sourceShift.user, updatedSourceUser);
-                }
-            }
-
-            return {...prev, shifts};
-        });
     };
 
     const handleCellDragOver = (user, date) => (e) => {
-        if (!editable) return;
+        if (!editable)
+            return;
+
         e.preventDefault();
-        const targetUser = schedule.shifts.get(user);
+        const targetUser = schedule.users.get(user);
         const leaves = targetUser ? targetUser.leaves : [];
 
         const hasLeaveOnTargetDay = hasLeaveOnTarget(leaves, new Date(date));
@@ -391,20 +296,10 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
     };
 
     const handleShiftDelete = (shift) => {
-
-        const userID = shift.user;
-
-        setSchedule((prev) => {
-            const shifts = new Map(prev.shifts);
-            const user = shifts.get(userID);
-            shifts.set(userID, {
-                ...user,
-                shifts: user.shifts.filter((s) => s.id !== shift.id)
-            });
-            return {...prev, shifts};
-
-        })
-    }
+        if (!editable)
+            return;
+        updateUserShift({ shift, action: 'delete' });
+    };
 
     const holidays = [
         {
@@ -456,7 +351,7 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
             {schedule.placeholder && <tr>
                 <td colSpan={3} style={{fontStyle: 'italic', textAlign: 'center'}}>{schedule.placeholder}</td>
             </tr>}
-            {schedule.shifts && schedule.shifts.values && [...schedule.shifts.values()].map((user) =>
+            {schedule.users && schedule.users.values && [...schedule.users.values()].map((user) =>
                 <tr key={user.id}>
                     <td
                         className={'user-cell'}
@@ -483,7 +378,7 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
                         if (leave && !isLeaveStart)
                             return null;
 
-                        const shift = user.shifts?.filter((s) => s.date === dateStr) || [];
+                        const shifts = user.shifts?.get(dateStr) || [];
 
                         let totalDays;
 
@@ -517,7 +412,8 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
                                 onClick={handleCellSelection}
                                 onMouseEnter={handleMouseEnter}
                                 onMouseLeave={handleMouseLeave}
-                                onDoubleClick={(e) => handleShiftAdd({user: e.target['dataset'].user, date: e.target['dataset'].date})}
+                                onDoubleClick={(e) =>
+                                    handleShiftAdd({user: e.target['dataset'].user, date: e.target['dataset'].date})}
                                 onDragOver={editable ? handleCellDragOver(user.id, dateStr) : null}
                                 onDrop={editable ? handleCellDrop(user.id, dateStr) : null}
                             >
@@ -526,18 +422,18 @@ const UserSchedule = ({schedule, setSchedule, editable=false}) => {
                                         days={leave.days}
                                         type={leave.type}
                                         color={leave.color}
-                                    /> : shift.length > 0 ? shift.map((s, si) =>
+                                    /> : shifts.length > 0 ? shifts.map((shift, index) =>
                                         <ShiftItem
-                                            key={si}
-                                            shift={s}
+                                            key={index}
+                                            shift={shift}
                                             editable={editable}
                                             onDragStart={handleShiftDragStart}
                                             onDragEnd={handleShiftDragEnd}
                                             onContextMenu={displayContextMenu}
                                             onClick={handleShiftClick}
                                             updateShift={handleShiftUpdate}
-                                            selectShift={() => handleShiftSelection(s)}
-                                            deleteShift={() => handleShiftDelete(s)}
+                                            selectShift={() => handleShiftSelection(shift)}
+                                            deleteShift={() => handleShiftDelete(shift)}
                                         /> ) : null
                                 }
                             </td>

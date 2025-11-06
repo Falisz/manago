@@ -163,7 +163,7 @@ const ScheduleEdit = () => {
     const { appCache } = useAppState();
     const { openModal } = useModals();
     const { scheduleId } = useParams();
-    const { schedule, setSchedule, loading, setLoading, fetchScheduleDraft } = useSchedules();
+    const { schedule, setSchedule, updateUserShift, loading, setLoading, fetchScheduleDraft } = useSchedules();
     const { search } = useLocation();
     const params = useMemo(() => new URLSearchParams(search), [search]);
     const isMounted = useRef(false);
@@ -243,7 +243,12 @@ const ScheduleEdit = () => {
                     </>
                 )}
             </div>
-            <UserSchedule schedule={schedule} setSchedule={setSchedule} editable={true}/>
+            <UserSchedule
+                schedule={schedule}
+                setSchedule={setSchedule}
+                updateUserShift={updateUserShift}
+                editable={true}
+            />
         </div>
     );
 }
