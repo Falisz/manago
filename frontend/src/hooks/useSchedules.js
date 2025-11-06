@@ -305,8 +305,8 @@ const useSchedules = () => {
 
         fetchData().then();
         
-    }, [fetchUsers, fetchShifts, fetchLeaves, setSchedule, schedule.id, schedule.start_date, schedule.end_date,
-        schedule.user_scope, schedule.user_scope_id, schedule.view]);
+    }, [fetchUsers, fetchUser, fetchShifts, fetchLeaves, setSchedule, mapDates, mapUsers, schedule.id,
+        schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id, schedule.view]);
 
     return {
         schedules,
