@@ -8,6 +8,7 @@ import teamsRoutes from './teams.js';
 import projectsRoutes from './projects.js';
 import branchesRoutes from './branches.js'
 import schedulesRoutes from './schedules.js';
+import jobPostsRoutes from './job-posts.js';
 import shiftRoutes from './shifts.js';
 import leaveRoutes from './leaves.js';
 import holidaysRoutes from './holidays.js';
@@ -36,6 +37,7 @@ router.use('/teams', teamsRoutes);
 router.use('/projects', projectsRoutes);
 router.use('/branches', branchesRoutes);
 router.use('/schedules', schedulesRoutes);
+router.use('/job-posts', jobPostsRoutes);
 router.use('/shifts', shiftRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/holidays', holidaysRoutes);
