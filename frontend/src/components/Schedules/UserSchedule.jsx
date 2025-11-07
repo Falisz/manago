@@ -4,6 +4,7 @@ import {Item, Menu, useContextMenu} from 'react-contexify';
 import { useModals } from '../../contexts/ModalContext';
 import { generateDateList, formatDate, sameDay } from '../../utils/dates';
 import Icon from "../Icon";
+import ComboBox from "../ComboBox";
 
 
 const LeaveItem = ({ days, type, color }) => (
@@ -13,19 +14,11 @@ const LeaveItem = ({ days, type, color }) => (
     </div>
 );
 
-const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onClick,
-                       selectShift, updateShift }) => {
-
-    const [ editMode, setEditMode ] = useState();
+const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onClick,
+                       selectShift, updateShift, jobPosts }) => {
 
     if (!shift)
         return null;
-
-    const handleDoubleClick = () => {
-        if (!editable)
-            return;
-        setEditMode(prev => !prev);
-    }
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -37,18 +30,25 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
             }
         }
 
+        if (name === 'job_post') {
+            newData = {
+                job_post: jobPosts.find(jobPost => jobPost.id === parseInt(value))
+            }
+        }
+
         updateShift({ shift: {...shift, ...newData}})
     }
+
+    console.log(jobPosts);
 
     return <div
         className={'shift-item' + (shift.selected ? ' selected' : '')}
         style={{background: (shift.job_post ? shift.job_post.color+'90' : 'var(--seethrough-background)'), position: 'relative'}}
-        draggable={editable}
-        onDragStart={editable ? (e) => onDragStart(e, shift) : undefined}
-        onDragEnd={editable ? (e) => onDragEnd(e, shift) : undefined}
-        onContextMenu={editable ? (e) => onContextMenu(e, shift) : undefined}
-        onClick={editable ? (e) => onClick(e, shift) : undefined}
-        onDoubleClick={handleDoubleClick}
+        draggable={editMode}
+        onDragStart={editMode ? (e) => onDragStart(e, shift) : undefined}
+        onDragEnd={editMode ? (e) => onDragEnd(e, shift) : undefined}
+        onContextMenu={editMode ? (e) => onContextMenu(e, shift) : undefined}
+        onClick={editMode ? (e) => onClick(e, shift) : undefined}
     >
         <span className={'time-range'}>{editMode ?
             <><input
@@ -65,8 +65,21 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
                 onChange={handleChange}
             /></>
          :`${shift.start_time.slice(0, 5)} - ${shift.end_time.slice(0, 5)}`}</span>
-        {shift.job_post && shift.job_post.name && <span className={'subtitle'}>{shift.job_post.name}</span>}
-        {editable &&
+        {<span className={'subtitle'}>{editMode ?
+            <ComboBox
+                name={'job_post'}
+                value={shift.job_post?.id || null}
+                options={jobPosts ? jobPosts.map(jobPost => ({id: jobPost.id, name: jobPost.name})): [{id: null, name: 'None'}]}
+                onChange={handleChange}
+                searchable={false}
+                style={{padding: 0, background: 'none'}}
+                selectedStyle={{padding: 0, background: 'none'}}
+                selectedTextStyle={{padding: 0, color: 'white', fontSize: '.8rem', fontWeight: '600'}}
+            /> :
+            shift.job_post && shift.job_post.name
+        }
+        </span>}
+        {editMode &&
             <Icon
                 i={shift.selected ? 'check_circle' : 'circle'}
                 s={true}
@@ -79,7 +92,7 @@ const ShiftItem = ({ shift, editable, onDragStart, onDragEnd, onContextMenu, onC
 
 // TODO: add autosaving, discarding changes to the last saved state, displaying user dispos and leaves, and leave requests
 
-const UserSchedule = ({schedule, updateUserShift, editable=false}) => {
+const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
     const { openModal } = useModals();
 
     const MENU_ID = 'schedule_context_menu';
@@ -426,7 +439,8 @@ const UserSchedule = ({schedule, updateUserShift, editable=false}) => {
                                         <ShiftItem
                                             key={index}
                                             shift={shift}
-                                            editable={editable}
+                                            editMode={editable}
+                                            jobPosts={jobPosts}
                                             onDragStart={handleShiftDragStart}
                                             onDragEnd={handleShiftDragEnd}
                                             onContextMenu={displayContextMenu}

@@ -3,14 +3,15 @@ import React, {useEffect, useMemo, useRef, useCallback} from 'react';
 import {useLocation, useParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import useModals from '../../contexts/ModalContext';
-import Button from '../Button';
-import UserSchedule from './UserSchedule';
-import '../../styles/Schedule.css';
 import useSchedules from '../../hooks/useSchedules';
+import useJobPosts from '../../hooks/useJobPosts';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
+import Button from '../Button';
+import UserSchedule from './UserSchedule';
 import Loader from '../Loader';
 import EditForm from '../EditForm';
+import '../../styles/Schedule.css';
 
 export const ScheduleEditForm = ({ schedule }) => {
     const { appState } = useAppState();
@@ -159,6 +160,7 @@ const ScheduleEdit = () => {
     const { openModal } = useModals();
     const { scheduleId } = useParams();
     const { schedule, setSchedule, updateUserShift, loading, setLoading, fetchScheduleDraft } = useSchedules();
+    const { jobPosts, fetchJobPosts } = useJobPosts();
     const { search } = useLocation();
     const params = useMemo(() => new URLSearchParams(search), [search]);
     const isMounted = useRef(false);
@@ -182,6 +184,9 @@ const ScheduleEdit = () => {
         isMounted.current = true;
 
         setLoading(true);
+
+        fetchJobPosts().then();
+
         let scheduleConfig = {};
 
         if (scheduleId) {
@@ -213,7 +218,8 @@ const ScheduleEdit = () => {
         setSchedule(scheduleConfig);
         setLoading(false);
 
-    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading, fetchScheduleDraft, editDetails]);
+    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading,
+        fetchScheduleDraft, editDetails, fetchJobPosts]);
 
     if (loading)
         return <Loader/>;
@@ -243,6 +249,7 @@ const ScheduleEdit = () => {
                 setSchedule={setSchedule}
                 updateUserShift={updateUserShift}
                 editable={true}
+                jobPosts={jobPosts}
             />
         </div>
     );
