@@ -163,15 +163,11 @@ const useSchedules = () => {
 
     }, [mapDates]);
 
-    const fetchScheduleDrafts = useCallback(async ({
-                                                       id,
-                                                       loading = true,
-                                                       view = 'users'
-    } = {}) => {
+    const fetchScheduleDrafts = useCallback(async ({ id, loading = true, view = 'users' } = {}) => {
 
         let schedules;
-        
         setLoading(loading);
+
         try {
             let url;
 
@@ -190,6 +186,7 @@ const useSchedules = () => {
                     users: mapUsers(schedule.shifts, schedule.users),
                     view
                 }));
+
             else
                 schedules = [{
                     ...schedules,
@@ -217,15 +214,8 @@ const useSchedules = () => {
         if (!schedule)
             return;
 
-        const shifts = [];
-        schedule.users.values().forEach(user => {
-            user.shifts.values().forEach(dateShifts => {
-                shifts.push(...dateShifts);
-            });
-        })
-        schedule.shifts = shifts;
-        console.log('saveScheduleDraft:', schedule, publish);
-        console.log('shiftUpdates:', shiftUpdates.current);
+        schedule.publish = publish;
+        schedule.shifts = shiftUpdates.current;
 
         setStatus([]);
         return true;
@@ -235,14 +225,9 @@ const useSchedules = () => {
         // let res;
         //
         // if (schedule.id)
-        //     res = await axios.put(
-        //     `/schedules/${schedule.id}`,
-        //     {...schedule, shifts: shiftUpdates.current, publish},
-        //     { withCredentials: true });
+        //     res = await axios.put(`/schedules/${schedule.id}`, schedule, { withCredentials: true });
         // else
-        //     res = await axios.post('/schedules',
-        //     {...schedule, shifts: shiftUpdates.current, publish},
-        //     { withCredentials: true });
+        //     res = await axios.post('/schedules', schedule, { withCredentials: true });
         //
         // if (!res)
         //     return null;
