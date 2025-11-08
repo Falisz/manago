@@ -38,13 +38,13 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
     } = await checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
 
     if (!hasAccess)
-        return res.status(501).json({ message: `You are not premitted to delete ${resourceName}.` });
+        return res.status(501).json({ message: `You are not permitted to delete ${resourceName}.` });
 
     let warning;
 
     if (!hasFullAccess) {
         ids = allowedIds;
-        warning = `You are not premitted to delete ${resourceName + (forbiddenIds.length > 1 ? 's with IDs:' : ' with ID')} ${forbiddenIds.join(', ')}.`
+        warning = `You are not permitted to delete ${resourceName + (forbiddenIds.length > 1 ? 's with IDs:' : ' with ID')} ${forbiddenIds.join(', ')}.`
     }
 
     try {

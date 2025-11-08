@@ -17,7 +17,7 @@ import {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const fetchScheduleHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'read', 'schedule', id);
@@ -50,7 +50,7 @@ const fetchScheduleHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const createScheduleHandler = async (req, res) => {
+const createHandler = async (req, res) => {
 
     const { hasAccess } = await checkAccess(req.session.user, 'create', 'schedule');
 
@@ -81,7 +81,7 @@ const createScheduleHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const updateScheduleHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'update', 'schedule', id);
@@ -90,10 +90,11 @@ const updateScheduleHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
     
     try {
+
         let { schedule } = req.body;
 
         const { success, message } = await updateSchedule(parseInt(id), schedule);
-        
+
         if (!success)
             return res.status(400).json({ message });
 
@@ -112,17 +113,17 @@ const updateScheduleHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteScheduleHandler = async (req, res) => deleteResource(req, res, 'Schedule', deleteSchedule, req.query.delete_shifts === 'true');
+const deleteHandler = async (req, res) =>
+    deleteResource(req, res, 'Schedule', deleteSchedule, req.query.delete_shifts === 'true');
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchScheduleHandler);
-router.get('/:id', fetchScheduleHandler);
-router.post('/', createScheduleHandler);
-router.put('/', updateScheduleHandler);
-router.put('/:id', checkResourceIdHandler, updateScheduleHandler);
-router.delete('/', deleteScheduleHandler);
-router.delete('/:id', deleteScheduleHandler);
+router.get('/', fetchHandler);
+router.get('/:id', fetchHandler);
+router.post('/', createHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/', deleteHandler);
+router.delete('/:id', deleteHandler);
 
 export default router;
