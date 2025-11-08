@@ -40,6 +40,7 @@ const useSchedules = () => {
     //  two bins - one for new and updated shifts and one for deleted shifts to be properly handled once schedule
     //  is to be saved and sent to backend, as the schedule is saved to backend, the bins are cleared
     const shiftUpdates = useRef({
+        new: [],
         updated: [],
         deleted: []
     });
@@ -50,7 +51,7 @@ const useSchedules = () => {
             return;
         }
 
-        const shiftId = sourceShift?.id || shift.id;
+        const shiftId = sourceShift?.id || shift.id || (action === 'copy' && 'new' + Date.now());
         const targetUser = shift.user;
         const targetDate = shift.date;
         const sourceUser = sourceShift && sourceShift.user;
@@ -89,10 +90,13 @@ const useSchedules = () => {
             }
 
             if (action === 'delete') {
-                shiftUpdates.current.deleted.push(shift);
+                if (toString(shiftId).startsWith('new'))
+                    shiftUpdates.current.new.filter(s => s.id !== shiftId);
+                else
+                    shiftUpdates.current.deleted.push(shift);
             } else {
-                shiftUpdates.current.updated.filter(s => s.id !== shiftId);
-                shiftUpdates.current.updated.push(shift);
+                shiftUpdates.current[toString(shiftId).startsWith('new') ? 'new' : 'updated'].filter(s => s.id !== shiftId);
+                shiftUpdates.current[toString(shiftId).startsWith('new') ? 'new' : 'updated'].push(shift);
             }
 
             const updatedTargetUser = {
@@ -105,82 +109,7 @@ const useSchedules = () => {
         });
     }, [setSchedule]);
 
-    const fetchScheduleDrafts = useCallback(async ({
-                                                       id,
-                                                       loading = true,
-                                                       view = 'users'
-    } = {}) => {
 
-        let schedules;
-        
-        setLoading(loading);
-        try {
-            let url;
-
-            if (id)
-                url = `/schedules/${id}`;
-            else
-                url = '/schedules';
-
-            const res = await axios.get(url , { withCredentials: true });
-
-            schedules = res.data;
-
-            if (Array.isArray(schedules))
-                schedules = schedules.map(schedule => ({...schedule, view}));
-            else
-                schedules = [{...schedules, view}];
-
-            setSchedules(schedules);
-            loading && setLoading(false);
-            return schedules;
-
-        } catch (err) {
-            console.error('fetchScheduleDrafts error:', err);
-
-            const message = 'Error occurred while fetching the Schedule Draft data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
-        }
-        
-    }, []);
-
-    const fetchScheduleDraft = useCallback( async (id) =>
-        await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
-
-    const saveScheduleDraft = useCallback( async ({scheduleId, formData}) => {
-        setStatus([]);
-        // Function to save (create, update) schedule drafts - not to publish them.
-
-        let res;
-
-        if (scheduleId)
-            res = await ( axios.put(`/schedules/${scheduleId}`, formData, { withCredentials: true }));
-        else
-            res = await ( axios.post('/schedules', formData, { withCredentials: true }));
-
-        if (!res)
-            return null;
-
-        const { data } = res;
-
-        return ( data && data.scheduleDraft ) || null;
-    }, []);
-
-    const publishScheduleDraft = useCallback( async ({scheduleId}) => {
-        setStatus([]);
-        // Function to publish schedule drafts - not to update them.
-        // It will be only available from the Schedule editor - therefore, no params are needed.
-        const res = await ( axios.put(`/schedules/${scheduleId}`, { publish: true }, { withCredentials: true }));
-        console.log('publishScheduleDraft called with scheduleId:', scheduleId, res);
-
-    }, []);
-
-    const discardScheduleDraft = useCallback( async ({scheduleId}) => {
-        setStatus([]);
-        // Function to discard schedule drafts.
-        // It will be available from both Schedule editor and Schedule drafts list, therefore, param is included.
-        console.log('discard called for scheduleId:', scheduleId);
-    }, []);
 
     const mapDates = useCallback( (shifts) => {
         return shifts.reduce((map, shift) => {
@@ -233,6 +162,102 @@ const useSchedules = () => {
         );
 
     }, [mapDates]);
+
+    const fetchScheduleDrafts = useCallback(async ({
+                                                       id,
+                                                       loading = true,
+                                                       view = 'users'
+    } = {}) => {
+
+        let schedules;
+        
+        setLoading(loading);
+        try {
+            let url;
+
+            if (id)
+                url = `/schedules/${id}`;
+            else
+                url = '/schedules';
+
+            const res = await axios.get(url , { withCredentials: true });
+
+            schedules = res.data;
+
+            if (Array.isArray(schedules))
+                schedules = schedules.map(schedule => ({
+                    ...schedule,
+                    users: mapUsers(schedule.shifts, schedule.users),
+                    view
+                }));
+            else
+                schedules = [{
+                    ...schedules,
+                    users: mapUsers(schedules.shifts, schedules.users),
+                    view
+                }];
+
+            setSchedules(schedules);
+            loading && setLoading(false);
+            return schedules;
+
+        } catch (err) {
+            console.error('fetchScheduleDrafts error:', err);
+
+            const message = 'Error occurred while fetching the Schedule Draft data.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+        }
+        
+    }, [mapUsers]);
+
+    const fetchScheduleDraft = useCallback( async (id) =>
+        await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
+
+    const saveScheduleDraft = useCallback( async ({schedule = null, publish = false} = {}) => {
+        if (!schedule)
+            return;
+
+        const shifts = [];
+        schedule.users.values().forEach(user => {
+            user.shifts.values().forEach(dateShifts => {
+                shifts.push(...dateShifts);
+            });
+        })
+        schedule.shifts = shifts;
+        console.log('saveScheduleDraft:', schedule, publish);
+        console.log('shiftUpdates:', shiftUpdates.current);
+
+        setStatus([]);
+        return true;
+
+        // SHIFT SAVING/PUBLISHING SENT HERE, HANDLED IN THE BACKEND.
+
+        // let res;
+        //
+        // if (schedule.id)
+        //     res = await axios.put(
+        //     `/schedules/${schedule.id}`,
+        //     {...schedule, shifts: shiftUpdates.current, publish},
+        //     { withCredentials: true });
+        // else
+        //     res = await axios.post('/schedules',
+        //     {...schedule, shifts: shiftUpdates.current, publish},
+        //     { withCredentials: true });
+        //
+        // if (!res)
+        //     return null;
+        //
+        // const { data } = res;
+        //
+        // return ( data && data.scheduleDraft ) || null;
+    }, []);
+
+    const discardScheduleDraft = useCallback( async (scheduleId) => {
+        setStatus([]);
+        // Function to discard schedule drafts.
+        // It will be available from both Schedule editor and Schedule drafts list, therefore, param is included.
+        console.log('discard called for scheduleId:', scheduleId);
+    }, []);
 
     useEffect( () => {
         if (schedule.id)
@@ -313,7 +338,6 @@ const useSchedules = () => {
         fetchScheduleDrafts,
         fetchScheduleDraft,
         saveScheduleDraft,
-        publishScheduleDraft,
         discardScheduleDraft
     };
 };

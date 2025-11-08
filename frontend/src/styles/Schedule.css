@@ -168,7 +168,7 @@
     font-family: 'Roboto Condensed', sans-serif;
     letter-spacing: 0;
 }
-.app-schedule-table .shift-item input {
+.app-schedule-table .shift-item .time-range input {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -177,12 +177,14 @@
     margin: 0;
     background: none;
     font: inherit;
+    font-size: 0.9rem;
     color: inherit;
     line-height: inherit;
     letter-spacing: 0;
     text-align: inherit;
     -webkit-font-smoothing: antialiased;
     border: 0;
+    border-bottom: 2px solid white;
     outline: none;
     height: 1rem;
     display: inline-block;
@@ -192,5 +194,8 @@
     display: none;
 }
 [type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+.app-schedule-table .shift-item .app-combo-box  .icon {
     display: none;
 }

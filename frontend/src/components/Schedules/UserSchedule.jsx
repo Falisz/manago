@@ -39,8 +39,6 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
         updateShift({ shift: {...shift, ...newData}})
     }
 
-    console.log(jobPosts);
-
     return <div
         className={'shift-item' + (shift.selected ? ' selected' : '')}
         style={{background: (shift.job_post ? shift.job_post.color+'90' : 'var(--seethrough-background)'), position: 'relative'}}

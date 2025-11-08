@@ -33,7 +33,7 @@ const SchedulesIndex = () => {
             type: 'pop-up',
             message: 'Are you sure you want to discard this Schedule Draft? This action cannot be undone.',
             onConfirm: () => {
-                discardScheduleDraft({scheduleId: id}).then();
+                discardScheduleDraft(id).then();
                 refreshData('scheduleDrafts', true);
                 closeTopModal();
             },

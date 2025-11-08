@@ -1,6 +1,6 @@
 // FRONTEND/components/Schedules/Edit.js
 import React, {useEffect, useMemo, useRef, useCallback} from 'react';
-import {useLocation, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import useModals from '../../contexts/ModalContext';
 import useSchedules from '../../hooks/useSchedules';
@@ -13,7 +13,7 @@ import Loader from '../Loader';
 import EditForm from '../EditForm';
 import '../../styles/Schedule.css';
 
-export const ScheduleEditForm = ({ schedule }) => {
+export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule }) => {
     const { appState } = useAppState();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
@@ -143,12 +143,20 @@ export const ScheduleEditForm = ({ schedule }) => {
             }
         },
         onSubmit: {
-            onSave: (formData, id) => { 
-                console.log('On submit logic runs...', formData, id);
+            onSave: (formData) => {
+                const updates = {
+                    name: formData.name,
+                    description: formData.description,
+                    start_date: formData.start_date,
+                    end_date: formData.end_date,
+                };
+                setSchedule(prev => ({...prev, ...updates}));
+                saveSchedule();
+                return true;
             },
             refreshTriggers: [['scheduleDrafts', true], ...(schedule ? [['scheduleDraft', schedule.id]] : [])]
         },
-    }), [schedule, scopeOptions, fetchSelectedUsers]);
+    }), [schedule, setSchedule, scopeOptions, saveSchedule,fetchSelectedUsers]);
 
     const scheduleData = useMemo(() => ({...schedule}), [schedule]);
     
@@ -159,11 +167,35 @@ const ScheduleEdit = () => {
     const { appCache } = useAppState();
     const { openModal } = useModals();
     const { scheduleId } = useParams();
-    const { schedule, setSchedule, updateUserShift, loading, setLoading, fetchScheduleDraft } = useSchedules();
+    const { schedule,
+        setSchedule,
+        updateUserShift,
+        loading,
+        setLoading,
+        fetchScheduleDraft,
+        saveScheduleDraft,
+    } = useSchedules();
     const { jobPosts, fetchJobPosts } = useJobPosts();
     const { search } = useLocation();
+    const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
     const isMounted = useRef(false);
+
+    const discardChanges = useCallback(() => {
+        navigate(-1);
+    }, [navigate]);
+
+    const saveSchedule = useCallback(() => {
+        saveScheduleDraft({schedule}).then();
+
+    }, [saveScheduleDraft, schedule]);
+
+
+    const publishSchedule = useCallback(() => {
+        //TODO: Create a modal prompt to confirm publishing
+        saveScheduleDraft({schedule, publish: true}).then();
+
+    }, [saveScheduleDraft, schedule]);
 
     const editDetails = useCallback(() => {
         openModal({
@@ -172,10 +204,11 @@ const ScheduleEdit = () => {
             component: <ScheduleEditForm
                 schedule={schedule}
                 setSchedule={setSchedule}
-                fetchScheduleDraft={fetchScheduleDraft}
+                saveSchedule={saveSchedule}
             />
         });
-    }, [fetchScheduleDraft, openModal, schedule, setSchedule]);
+    }, [openModal, schedule, saveSchedule, setSchedule]);
+
 
     useEffect(() => {
         if (isMounted.current)
@@ -190,7 +223,7 @@ const ScheduleEdit = () => {
         let scheduleConfig = {};
 
         if (scheduleId) {
-            fetchScheduleDraft({scheduleId}).then();
+            fetchScheduleDraft(scheduleId).then();
             return;
         } else if (appCache.current.schedule_editor) {
             scheduleConfig = appCache.current.schedule_editor;
@@ -232,21 +265,20 @@ const ScheduleEdit = () => {
                         schedule.mode === 'current' ? 'Current Draft' :
                             schedule.name || ''
                 }</span>
-                <Button icon={'close'} label={'Discard Changes'}/>
+                <Button icon={'close'} label={'Discard Changes'} onClick={discardChanges}/>
                 {schedule && (
                     schedule.mode === 'current' ? <>
                         <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
-                        <Button icon={'publish'} label={'Re-Publish'}/>
+                        <Button icon={'publish'} label={'Re-Publish'} onClick={publishSchedule}/>
                     </> : <>
                         <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
-                        <Button icon={'save'} label={'Save'}/>
-                        <Button icon={'publish'} label={'Publish'}/>
+                        <Button icon={'save'} label={'Save'} onClick={saveSchedule}/>
+                        <Button icon={'publish'} label={'Publish'} onClick={publishSchedule}/>
                     </>
                 )}
             </div>
             <UserSchedule
                 schedule={schedule}
-                setSchedule={setSchedule}
                 updateUserShift={updateUserShift}
                 editable={true}
                 jobPosts={jobPosts}
