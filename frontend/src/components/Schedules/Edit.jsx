@@ -1,6 +1,6 @@
 // FRONTEND/components/Schedules/Edit.js
 import React, {useEffect, useMemo, useRef, useCallback} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import { useLocation, useNavigate, useParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import useModals from '../../contexts/ModalContext';
 import useSchedules from '../../hooks/useSchedules';
@@ -13,7 +13,7 @@ import Loader from '../Loader';
 import EditForm from '../EditForm';
 import '../../styles/Schedule.css';
 
-export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule }) => {
+export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty }) => {
     const { appState } = useAppState();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
@@ -90,7 +90,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule }) => {
                 label: 'User Scope',
                 options: scopeOptions.scopes,
                 required: true,
-                disabled: !!schedule.id,
+                disabled: !isEmpty.current,
             },
             user_scope_id: {
                 section: 2,
@@ -103,7 +103,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule }) => {
                             formData.user_scope === 'manager' ? scopeOptions.managers :
                             formData.user_scope === 'user' ? scopeOptions.users : [],
                 conditional_required: (formData) => !['you', 'all'].includes(formData.user_scope),
-                disabled: !!schedule.id,
+                disabled: !isEmpty.current
             },
             users: {
                 section: 3,
@@ -144,19 +144,16 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule }) => {
         },
         onSubmit: {
             onSave: (formData) => {
-                const updates = {
-                    name: formData.name,
-                    description: formData.description,
-                    start_date: formData.start_date,
-                    end_date: formData.end_date,
-                };
-                setSchedule(prev => ({...prev, ...updates}));
-                saveSchedule();
+                const { users: _, ...updates } = formData;
+                setSchedule(prev => {
+                    saveSchedule({...prev, placeholder: null, ...updates});
+                    return {...prev, placeholder: null, ...updates}
+                });
                 return true;
             },
             refreshTriggers: [['scheduleDrafts', true], ...(schedule ? [['scheduleDraft', schedule.id]] : [])]
         },
-    }), [schedule, setSchedule, scopeOptions, saveSchedule,fetchSelectedUsers]);
+    }), [schedule, setSchedule, scopeOptions, saveSchedule, fetchSelectedUsers, isEmpty]);
 
     const scheduleData = useMemo(() => ({...schedule}), [schedule]);
     
@@ -167,11 +164,14 @@ const ScheduleEdit = () => {
     const { appCache } = useAppState();
     const { openModal } = useModals();
     const { scheduleId } = useParams();
+    const isNew = useRef(!scheduleId);
+    const isEmpty = useRef(true);
     const { schedule,
         setSchedule,
         updateUserShift,
         loading,
         setLoading,
+        fetchSchedule,
         fetchScheduleDraft,
         saveScheduleDraft,
     } = useSchedules();
@@ -185,17 +185,24 @@ const ScheduleEdit = () => {
         navigate(-1);
     }, [navigate]);
 
-    const saveSchedule = useCallback(() => {
-        saveScheduleDraft({schedule}).then();
+    const saveSchedule = useCallback((schedule) => {
+        saveScheduleDraft({ schedule }).then();
 
-    }, [saveScheduleDraft, schedule]);
+        if (isNew.current && isEmpty.current) {
+            const { start_date, end_date, user_scope, user_scope_id } = schedule;
 
+            fetchSchedule({start_date, end_date, user_scope, user_scope_id}).then(
+                res => isEmpty.current = !res
+            );
+        }
 
-    const publishSchedule = useCallback(() => {
+    }, [saveScheduleDraft, fetchSchedule]);
+
+    const publishSchedule = useCallback((schedule) => {
         //TODO: Create a modal prompt to confirm publishing
-        saveScheduleDraft({schedule, publish: true}).then();
+        saveScheduleDraft({ schedule, publish: true}).then();
 
-    }, [saveScheduleDraft, schedule]);
+    }, [saveScheduleDraft]);
 
     const editDetails = useCallback(() => {
         openModal({
@@ -205,6 +212,7 @@ const ScheduleEdit = () => {
                 schedule={schedule}
                 setSchedule={setSchedule}
                 saveSchedule={saveSchedule}
+                isEmpty={isEmpty}
             />
         });
     }, [openModal, schedule, saveSchedule, setSchedule]);
@@ -216,21 +224,31 @@ const ScheduleEdit = () => {
 
         isMounted.current = true;
 
-        setLoading(true);
-
         fetchJobPosts().then();
 
         let scheduleConfig = {};
 
         if (scheduleId) {
+            setLoading(true);
             fetchScheduleDraft(scheduleId).then();
+            isEmpty.current = false;
             return;
+
         } else if (appCache.current.schedule_editor) {
             scheduleConfig = appCache.current.schedule_editor;
+
+            isEmpty.current = !(scheduleConfig.users && scheduleConfig.users.size);
+
             if (scheduleConfig.mode === 'new') {
                 editDetails();
+                isNew.current = true;
+            } else {
+                isNew.current = false;
             }
+
         } else {
+
+            setLoading(true);
             const from = params.get('from');
             if (from && !isNaN(Date.parse(from)))
                 scheduleConfig.start_date = from;
@@ -249,10 +267,14 @@ const ScheduleEdit = () => {
         }
 
         setSchedule(scheduleConfig);
+        isNew.current && isEmpty.current && scheduleConfig.user_scope && fetchSchedule().then();
+
         setLoading(false);
 
-    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading,
+    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading, fetchSchedule,
         fetchScheduleDraft, editDetails, fetchJobPosts]);
+
+    console.log("Current schedule:", schedule);
 
     if (loading)
         return <Loader/>;

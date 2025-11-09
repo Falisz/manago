@@ -19,7 +19,7 @@ const ScheduleView = () => {
     const { appState, user, setScheduleEditor } = useAppState();
     const { modules } = appState;
     const { scheduleId } = useParams();
-    const { schedule, loading, setSchedule, fetchScheduleDraft } = useSchedules();
+    const { schedule, loading, setSchedule, fetchScheduleDraft, fetchSchedule } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -145,6 +145,11 @@ const ScheduleView = () => {
             setScopeIdOptions([{ id: null, name: 'None'}]);
 
     }, [schedule.user_scope, teams, users, managers]);
+
+    useEffect(() => {
+        if (!scheduleId)
+            fetchSchedule().then();
+    }, [fetchSchedule, scheduleId]);
 
     const userScope = schedule.user_scope && schedule.user_scope[0].toUpperCase() + schedule.user_scope.slice(1);
     const scopeName = (schedule.user_scope !== 'you' && schedule.user_scope !== 'all' && scopeIdOptions &&

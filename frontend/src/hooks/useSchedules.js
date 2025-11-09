@@ -1,8 +1,7 @@
 // FRONTEND/hooks/useSchedules.js
-import {useCallback, useState, useEffect, useMemo, useRef} from 'react';
+import {useCallback, useState, useMemo, useRef} from 'react';
 import axios from 'axios';
 import useUsers from './useUsers';
-import useShifts from './useShifts';
 import useLeaves from './useLeaves';
 
 const useSchedules = () => {
@@ -33,17 +32,91 @@ const useSchedules = () => {
     },[]);
 
     const { fetchUsers, fetchUser } = useUsers();
-    const { fetchShifts } = useShifts();
     const { fetchLeaves } = useLeaves();
 
-    // TODO:
-    //  two bins - one for new and updated shifts and one for deleted shifts to be properly handled once schedule
-    //  is to be saved and sent to backend, as the schedule is saved to backend, the bins are cleared
     const shiftUpdates = useRef({
         new: [],
         updated: [],
         deleted: []
     });
+
+    const fetchShifts = useCallback( async ({
+                                                id = null,
+                                                user,
+                                                user_scope,
+                                                user_scope_id,
+                                                date,
+                                                start_date,
+                                                end_date,
+                                                schedule_id,
+                                                job_post,
+                                                location,
+                                                loading = true
+                                            } = {}) => {
+
+        setLoading(loading);
+
+        let shifts = new Map();
+
+        if (user_scope && !user_scope_id && !['all', 'you'].includes(user_scope)) {
+            loading && setLoading(false);
+            return shifts;
+        }
+
+        try {
+            let url;
+            let params = {};
+
+            if (id) {
+                url = `/shifts/${id}`;
+            } else {
+                if (user)
+                    params.user = user;
+                else {
+                    if (user_scope)
+                        params.user_scope = user_scope;
+                    if (user_scope_id)
+                        params.user_scope_id = user_scope_id;
+                }
+
+                if (date)
+                    params.date = date;
+                else {
+                    if (start_date)
+                        params.start_date = start_date;
+                    if (end_date)
+                        params.end_date = end_date;
+                }
+
+                if (schedule_id)
+                    params.schedule = schedule_id;
+
+                if (job_post)
+                    params.job_post = job_post;
+
+                if (location)
+                    params.location = location;
+
+                url = '/shifts?' + new URLSearchParams(params).toString();
+            }
+
+            const res = await axios.get(url, { withCredentials: true });
+
+            shifts = res.data;
+
+            loading && setLoading(false);
+            return shifts;
+
+        } catch (err) {
+            console.error('fetchShifts error:', err);
+            const message = 'Error occurred while fetching the Shift data.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+        }
+
+    }, []);
+
+    const fetchShift = useCallback( async (shiftId) =>
+        await fetchShifts({shiftId}), [fetchShifts]);
 
     const updateUserShift = useCallback(({shift, sourceShift, action = 'update'}) => {
         if ((action === 'move' || action === 'copy') && !sourceShift) {
@@ -51,7 +124,9 @@ const useSchedules = () => {
             return;
         }
 
-        const shiftId = sourceShift?.id || shift.id || (action === 'copy' && 'new' + Date.now());
+        if (action === 'add' || action === 'copy')
+            shift.id = `new${Date.now()}`;
+
         const targetUser = shift.user;
         const targetDate = shift.date;
         const sourceUser = sourceShift && sourceShift.user;
@@ -63,7 +138,7 @@ const useSchedules = () => {
             if (action === 'move' && sourceUser && sourceDate) {
                 const sourceUserObj = users.get(sourceUser) || { id: sourceUser, shifts: new Map() };
                 const sourceDateShifts = sourceUserObj.shifts.get(sourceDate) || [];
-                const filteredSourceShifts = sourceDateShifts.filter(s => s.id !== shiftId);
+                const filteredSourceShifts = sourceDateShifts.filter(s => s.id !== sourceShift.id);
 
                 const updatedSourceUser = {
                     ...sourceUserObj,
@@ -77,26 +152,28 @@ const useSchedules = () => {
 
             let updatedTargetDateShifts = [...targetDateShifts];
 
-            if (action === 'add' || action === 'copy' || action === 'move') {
-                const newShift = {
-                    ...shift,
-                    id: (action === 'copy') ? `new${Date.now()}` : shiftId
-                };
-                updatedTargetDateShifts.push(newShift);
-            } else if (action === 'update') {
-                updatedTargetDateShifts = targetDateShifts.map(s => s.id === shiftId ? { ...s, ...shift } : s);
-            } else if (action === 'delete') {
-                updatedTargetDateShifts = targetDateShifts.filter(s => s.id !== shiftId);
-            }
+            if (['add', 'copy', 'move'].includes(action))
+                updatedTargetDateShifts.push(shift);
+
+            else if (action === 'update')
+                updatedTargetDateShifts = targetDateShifts.map(s => s.id === shift.id ? { ...s, ...shift } : s);
+
+            else if (action === 'delete')
+                updatedTargetDateShifts = targetDateShifts.filter(s => s.id !== shift.id);
+
 
             if (action === 'delete') {
-                if (toString(shiftId).startsWith('new'))
-                    shiftUpdates.current.new.filter(s => s.id !== shiftId);
+                if (toString(shift.id).startsWith('new'))
+                    shiftUpdates.current.new.filter(s => s.id !== shift.id);
                 else
                     shiftUpdates.current.deleted.push(shift);
+
             } else {
-                shiftUpdates.current[toString(shiftId).startsWith('new') ? 'new' : 'updated'].filter(s => s.id !== shiftId);
-                shiftUpdates.current[toString(shiftId).startsWith('new') ? 'new' : 'updated'].push(shift);
+                const isNew = toString(shift.id).startsWith('new');
+                const bin = isNew ? 'new' : 'updated';
+
+                shiftUpdates.current[bin].filter(s => s.id !== shift.id);
+                shiftUpdates.current[bin].push(shift);
             }
 
             const updatedTargetUser = {
@@ -108,8 +185,6 @@ const useSchedules = () => {
             return { ...prev, users };
         });
     }, [setSchedule]);
-
-
 
     const mapDates = useCallback( (shifts) => {
         return shifts.reduce((map, shift) => {
@@ -163,6 +238,62 @@ const useSchedules = () => {
 
     }, [mapDates]);
 
+    const fetchSchedule = useCallback( async ({
+                                                  start_date = schedule.start_date,
+                                                  end_date = schedule.end_date,
+                                                  user_scope = schedule.user_scope,
+                                                  user_scope_id = schedule.user_scope_id,
+                                                  view = schedule.view || 'users',
+                                                  loading = true} = {}) => {
+
+        setLoading(loading);
+
+        let users = new Map(), shifts = [], leaves = [];
+
+        if (user_scope !== 'all' && !user_scope_id) {
+            const placeholder = `Select ${user_scope || 'User scope'}.`;
+            setSchedule(prev => ({...prev, users, shifts, leaves, placeholder}));
+            setLoading(false);
+            return null;
+        }
+
+        if (['you', 'user'].includes(user_scope))
+            users = await fetchUser({userId: user_scope_id});
+        else
+            users = await fetchUsers({
+                user_scope,
+                user_scope_id
+            });
+
+        if (!Array.isArray(users))
+            users = [users];
+
+        shifts = await fetchShifts({
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id
+        });
+
+        leaves = await fetchLeaves({
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id,
+        })
+
+        if (view === 'users')
+            users = mapUsers(shifts, users, leaves);
+        else
+            shifts = mapDates(shifts);
+
+        setSchedule(prev => ({...prev, users, shifts, leaves, placeholder: null}));
+
+        return true;
+
+    }, [fetchUsers, fetchUser, fetchShifts, fetchLeaves, setSchedule, mapDates, mapUsers,
+        schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id, schedule.view]);
+
     const fetchScheduleDrafts = useCallback(async ({ id, loading = true, view = 'users' } = {}) => {
 
         let schedules;
@@ -215,7 +346,7 @@ const useSchedules = () => {
             return;
 
         schedule.publish = publish;
-        schedule.shifts = shiftUpdates.current;
+        schedule.shift_updates = shiftUpdates.current;
 
         setStatus([]);
         return true;
@@ -244,68 +375,6 @@ const useSchedules = () => {
         console.log('discard called for scheduleId:', scheduleId);
     }, []);
 
-    useEffect( () => {
-        if (schedule.id)
-            return;
-
-        setLoading(true);
-
-        async function fetchData() {
-
-            const start_date = schedule.start_date;
-            const end_date = schedule.end_date;
-            const user_scope = schedule.user_scope;
-            const user_scope_id = schedule.user_scope_id;
-            const view = schedule.view;
-
-            let users = new Map(), shifts = [], leaves = [];
-
-            if (user_scope !== 'all' && !user_scope_id) {
-                const placeholder = `Select ${user_scope}.`;
-                setSchedule(prev => ({...prev, users, shifts, leaves, placeholder}));
-                setLoading(false);
-                return;
-            }
-
-            if (['you', 'user'].includes(user_scope))
-                users = await fetchUser({userId: user_scope_id});
-            else
-                users = await fetchUsers({
-                    user_scope,
-                    user_scope_id
-                });
-
-            if (!Array.isArray(users))
-                users = [users];
-
-            shifts = await fetchShifts({
-                start_date,
-                end_date,
-                user_scope,
-                user_scope_id
-            });
-
-            leaves = await fetchLeaves({
-                start_date,
-                end_date,
-                user_scope,
-                user_scope_id,
-            })
-
-            if (view === 'users')
-                users = mapUsers(shifts, users, leaves);
-            else
-                shifts = mapDates(shifts);
-
-            setSchedule(prev => ({...prev, users, shifts, leaves, placeholder: null}));
-            setLoading(false);
-        }
-
-        fetchData().then();
-        
-    }, [fetchUsers, fetchUser, fetchShifts, fetchLeaves, setSchedule, mapDates, mapUsers, schedule.id,
-        schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id, schedule.view]);
-
     return {
         schedules,
         schedule,
@@ -320,6 +389,9 @@ const useSchedules = () => {
         setLoading,
         setStatus,
         updateUserShift,
+        fetchShifts,
+        fetchShift,
+        fetchSchedule,
         fetchScheduleDrafts,
         fetchScheduleDraft,
         saveScheduleDraft,
