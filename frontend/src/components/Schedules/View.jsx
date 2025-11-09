@@ -19,7 +19,7 @@ const ScheduleView = () => {
     const { appState, user, setScheduleEditor } = useAppState();
     const { modules } = appState;
     const { scheduleId } = useParams();
-    const { schedule, loading, setSchedule, fetchScheduleDraft, fetchSchedule } = useSchedules();
+    const { schedule, loading, setLoading, setSchedule, fetchScheduleDraft, fetchSchedule } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -102,6 +102,8 @@ const ScheduleView = () => {
             return;
         }
 
+        setLoading(true);
+
         const currentSchedule = {
             name: 'Current Schedule',
             view: searchParams.get('view') || 'users',
@@ -117,12 +119,13 @@ const ScheduleView = () => {
             user_scope_id: (() => {
                 const sid = searchParams.get('sid');
                 return sid && !isNaN(parseInt(sid)) ? parseInt(sid, 10) : user.id; 
-            })() || user.id
+            })() || user.id,
+            placeholder: null
         };
         
         setSchedule((prev) => ({...prev, ...currentSchedule}));
 
-    }, [scheduleId, user.id, searchParams, defaultStartDate, defaultEndDate, fetchScheduleDraft,
+    }, [scheduleId, user.id, setLoading, searchParams, defaultStartDate, defaultEndDate, fetchScheduleDraft,
         fetchUsers, fetchManagers, fetchTeams, setSchedule]);
 
     useEffect(() => {

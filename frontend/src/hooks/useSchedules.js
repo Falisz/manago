@@ -246,6 +246,9 @@ const useSchedules = () => {
                                                   view = schedule.view || 'users',
                                                   loading = true} = {}) => {
 
+        if (!start_date && !end_date && !user_scope && !user_scope_id)
+            return;
+
         setLoading(loading);
 
         let users = new Map(), shifts = [], leaves = [];
@@ -288,7 +291,7 @@ const useSchedules = () => {
             shifts = mapDates(shifts);
 
         setSchedule(prev => ({...prev, users, shifts, leaves, placeholder: null}));
-
+        loading && setLoading(false);
         return true;
 
     }, [fetchUsers, fetchUser, fetchShifts, fetchLeaves, setSchedule, mapDates, mapUsers,
