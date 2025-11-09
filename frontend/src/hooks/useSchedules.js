@@ -346,7 +346,9 @@ const useSchedules = () => {
             return;
 
         schedule.publish = publish;
-        schedule.shift_updates = shiftUpdates.current;
+        schedule.shift_updates = shiftUpdates.current
+
+        console.log(schedule);
 
         setStatus([]);
         return true;

@@ -13,7 +13,7 @@ import Loader from '../Loader';
 import EditForm from '../EditForm';
 import '../../styles/Schedule.css';
 
-export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty }) => {
+export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
     const { appState } = useAppState();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
@@ -145,15 +145,12 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty 
         onSubmit: {
             onSave: (formData) => {
                 const { users: _, ...updates } = formData;
-                setSchedule(prev => {
-                    saveSchedule({...prev, placeholder: null, ...updates});
-                    return {...prev, placeholder: null, ...updates}
-                });
+                saveSchedule(updates);
                 return true;
             },
             refreshTriggers: [['scheduleDrafts', true], ...(schedule ? [['scheduleDraft', schedule.id]] : [])]
         },
-    }), [schedule, setSchedule, scopeOptions, saveSchedule, fetchSelectedUsers, isEmpty]);
+    }), [schedule, scopeOptions, saveSchedule, fetchSelectedUsers, isEmpty]);
 
     const scheduleData = useMemo(() => ({...schedule}), [schedule]);
     
@@ -186,6 +183,7 @@ const ScheduleEdit = () => {
     }, [navigate]);
 
     const saveSchedule = useCallback((schedule) => {
+        setSchedule(prev => ({...prev, ...schedule}));
         saveScheduleDraft({ schedule }).then();
 
         if (isNew.current && isEmpty.current) {
@@ -196,7 +194,7 @@ const ScheduleEdit = () => {
             );
         }
 
-    }, [saveScheduleDraft, fetchSchedule]);
+    }, [saveScheduleDraft, fetchSchedule, setSchedule]);
 
     const publishSchedule = useCallback((schedule) => {
         //TODO: Create a modal prompt to confirm publishing
@@ -210,12 +208,11 @@ const ScheduleEdit = () => {
             type: 'dialog',
             component: <ScheduleEditForm
                 schedule={schedule}
-                setSchedule={setSchedule}
                 saveSchedule={saveSchedule}
                 isEmpty={isEmpty}
             />
         });
-    }, [openModal, schedule, saveSchedule, setSchedule]);
+    }, [openModal, schedule, saveSchedule]);
 
 
     useEffect(() => {
@@ -274,8 +271,6 @@ const ScheduleEdit = () => {
     }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading, fetchSchedule,
         fetchScheduleDraft, editDetails, fetchJobPosts]);
 
-    console.log("Current schedule:", schedule);
-
     if (loading)
         return <Loader/>;
 
@@ -291,11 +286,11 @@ const ScheduleEdit = () => {
                 {schedule && (
                     schedule.mode === 'current' ? <>
                         <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
-                        <Button icon={'publish'} label={'Re-Publish'} onClick={publishSchedule}/>
+                        <Button icon={'publish'} label={'Re-Publish'} onClick={() => publishSchedule(schedule)}/>
                     </> : <>
                         <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
-                        <Button icon={'save'} label={'Save'} onClick={saveSchedule}/>
-                        <Button icon={'publish'} label={'Publish'} onClick={publishSchedule}/>
+                        <Button icon={'save'} label={'Save'} onClick={() => saveSchedule(schedule)}/>
+                        <Button icon={'publish'} label={'Publish'} onClick={() => publishSchedule(schedule)}/>
                     </>
                 )}
             </div>
