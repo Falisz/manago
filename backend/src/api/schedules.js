@@ -58,16 +58,17 @@ const createHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        let { schedule } = req.body;
-        
-        const { success, message, id } = await createSchedule(schedule);
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        schedule = await getSchedule({ id });
-
-        res.status(201).json({ message, schedule });
+        console.log(req.body);
+        // let { schedule } = req.body;
+        //
+        // const { success, message, id } = await createSchedule(schedule);
+        //
+        // if (!success)
+        //     return res.status(400).json({ message });
+        //
+        // schedule = await getSchedule({ id });
+        //
+        // res.status(201).json({ message, schedule });
 
     } catch (err) {
         console.error('Error creating a Working Schedule:', err, 'Provided data: ', req.body);
@@ -90,17 +91,18 @@ const updateHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
     
     try {
+        console.log(req.body);
 
-        let { schedule } = req.body;
-
-        const { success, message } = await updateSchedule(parseInt(id), schedule);
-
-        if (!success)
-            return res.status(400).json({ message });
-
-        schedule = await getSchedule({id});
-
-        res.json({ message, schedule });
+        // let { schedule } = req.body;
+        //
+        // const { success, message } = await updateSchedule(parseInt(id), schedule);
+        //
+        // if (!success)
+        //     return res.status(400).json({ message });
+        //
+        // schedule = await getSchedule({id});
+        //
+        // res.json({ message, schedule });
         
     } catch (err) {
         console.error('Error updating a Schedule:', err, 'Provided data: ', req.body);

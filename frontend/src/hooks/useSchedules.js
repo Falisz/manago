@@ -346,28 +346,23 @@ const useSchedules = () => {
             return;
 
         schedule.publish = publish;
-        schedule.shift_updates = shiftUpdates.current
-
-        console.log(schedule);
+        schedule.shift_updates = shiftUpdates.current;
 
         setStatus([]);
-        return true;
 
-        // SHIFT SAVING/PUBLISHING SENT HERE, HANDLED IN THE BACKEND.
+        let res;
 
-        // let res;
-        //
-        // if (schedule.id)
-        //     res = await axios.put(`/schedules/${schedule.id}`, schedule, { withCredentials: true });
-        // else
-        //     res = await axios.post('/schedules', schedule, { withCredentials: true });
-        //
-        // if (!res)
-        //     return null;
-        //
-        // const { data } = res;
-        //
-        // return ( data && data.scheduleDraft ) || null;
+        if (schedule.id)
+            res = await axios.put(`/schedules/${schedule.id}`, schedule, { withCredentials: true });
+        else
+            res = await axios.post('/schedules', schedule, { withCredentials: true });
+
+        if (!res)
+            return null;
+
+        const { data } = res;
+
+        return ( data && data.scheduleDraft ) || null;
     }, []);
 
     const discardScheduleDraft = useCallback( async (scheduleId) => {
