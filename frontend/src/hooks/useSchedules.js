@@ -348,8 +348,10 @@ const useSchedules = () => {
         if (!schedule)
             return;
 
+        for (var field in ['mode','leaves','users','view','placeholder'])
+            delete schedule[field];
+        schedule.shifts = shiftUpdates.current;
         schedule.publish = publish;
-        schedule.shift_updates = shiftUpdates.current;
 
         setStatus([]);
 

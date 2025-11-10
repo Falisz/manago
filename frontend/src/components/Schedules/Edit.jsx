@@ -158,9 +158,10 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
 };
 
 const ScheduleEdit = () => {
-    const { appCache } = useAppState();
+    const { appCache, user } = useAppState();
     const { openModal } = useModals();
     const { scheduleId } = useParams();
+    // TODO: To be determined by the URL
     const isNew = useRef(!scheduleId);
     const isEmpty = useRef(true);
     const { schedule,
@@ -183,6 +184,8 @@ const ScheduleEdit = () => {
     }, [navigate]);
 
     const saveSchedule = useCallback((schedule) => {
+        if (isNew.current)
+            schedule.author = user.id;
         setSchedule(prev => ({...prev, ...schedule}));
         saveScheduleDraft({ schedule }).then();
 
@@ -194,7 +197,7 @@ const ScheduleEdit = () => {
             );
         }
 
-    }, [saveScheduleDraft, fetchSchedule, setSchedule]);
+    }, [user, saveScheduleDraft, fetchSchedule, setSchedule]);
 
     const publishSchedule = useCallback((schedule) => {
         //TODO: Create a modal prompt to confirm publishing
@@ -202,10 +205,12 @@ const ScheduleEdit = () => {
 
     }, [saveScheduleDraft]);
 
+    // TODO: Implement forced state of modal - it cannot be closed until filled properly.
     const editDetails = useCallback(() => {
         openModal({
             content: 'component',
             type: 'dialog',
+            closable: isNew.current,
             component: <ScheduleEditForm
                 schedule={schedule}
                 saveSchedule={saveSchedule}
@@ -225,6 +230,7 @@ const ScheduleEdit = () => {
 
         let scheduleConfig = {};
 
+        // TODO: No more schedule editor. If no params provided for /schedules/edit it will atomatically navigate to schedule/new to make editForm popup forced
         if (scheduleId) {
             setLoading(true);
             fetchScheduleDraft(scheduleId).then();
