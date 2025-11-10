@@ -7,7 +7,9 @@ import {
     getSchedule,
     createSchedule,
     updateSchedule,
-    deleteSchedule
+    deleteSchedule,
+    updateShift,
+    deleteShift
 } from '../controllers/workPlanner.js';
 
 // API Handlers
@@ -51,24 +53,51 @@ const fetchHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
+    
+    const { publish, shifts, ...schedule } = req.body;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'schedule');
+    const { hasAccess } = await checkAccess(req.session.user, publish ? 'publish' : 'create', 'schedule');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        console.log(req.body);
-        // let { schedule } = req.body;
-        //
-        // const { success, message, id } = await createSchedule(schedule);
-        //
-        // if (!success)
-        //     return res.status(400).json({ message });
-        //
-        // schedule = await getSchedule({ id });
-        //
-        // res.status(201).json({ message, schedule });
+        console.log(new Date(Date.now()), publish, shifts, schedule);
+
+        if (publish) {
+            console.log('Republishing current schedule:', schedule);
+        } else {
+            console.log('Saving new schedule:', schedule);
+
+            const { success, message, id } = await createSchedule(schedule);
+
+            if (!success)
+                return res.status(400).json({ message });
+            
+            if (success && shifts) {
+                if (shifts.new?.length)
+                    await Promise.all(shifts.new.map(async shift => {
+                        delete shift.id;
+                        shift.schedule = id;
+                        await createShift(shift);
+                    }));
+
+                if (shifts.updated?.length)
+                    await Promise.all(shifts.updated.map(async shift => {
+                        const shiftId = shift.id;
+                        delete shift.id;
+                        shift.schedule = id;
+                        await updateShift(shiftId, shift);
+                    }));
+
+                if (shifts.deleted?.length)
+                    await deleteShift(shifts.deleted);
+            }
+        
+            schedule = await getSchedule({ id });
+            
+            res.status(201).json({ message, schedule });
+        }
 
     } catch (err) {
         console.error('Error creating a Working Schedule:', err, 'Provided data: ', req.body);
