@@ -112,13 +112,21 @@ export async function createSchedule(data) {
 
     if (!(await getUser(data.author))) 
         return { success: false, message: 'Specified Author User not found.' };
+    
+    if (!data.user_scope) 
+        return { success: false, message: 'Schedule User Scope not provided.' };
+    
+    if (!data.user_scope_id || isNaN(data.user_scope_id)) 
+        return { success: false, message: 'Schedule User Scope ID not provided.' };
 
     const schedule = Schedule.create({
         id: await randomId(Schedule),
         name: data.name || null,
         description: data.description || null,
-        start_date: new Date(data.start_date),
-        end_date: new Date(data.end_date),
+        start_date: data.start_date,
+        end_date: data.end_date,
+        user_scope: data.user_scope,
+        user_scope_id: data.user_scope_id,
         author: data.author
     });
 
