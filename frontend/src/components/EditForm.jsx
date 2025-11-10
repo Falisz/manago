@@ -7,6 +7,8 @@ import MultiComboBox from './MultiComboBox';
 import CheckBox from './CheckBox';
 import '../styles/EditForm.css';
 
+//TODO: Rewrite the logic to either work on formData nad presetData, or solely on source and setSource if provided as props.
+// SO THE STATE IS NOT LOCALIZED
 const EditForm = ({ structure, presetData, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
