@@ -119,7 +119,7 @@ export async function createSchedule(data) {
     if (!data.user_scope_id || isNaN(data.user_scope_id)) 
         return { success: false, message: 'Schedule User Scope ID not provided.' };
 
-    const schedule = Schedule.create({
+    const schedule = await Schedule.create({
         id: await randomId(Schedule),
         name: data.name || null,
         description: data.description || null,
@@ -420,7 +420,7 @@ export async function createShift(data) {
     // 2. Validate foreign keys (parallel)
     const [user, jobPost, schedule] = await Promise.all([
         User.findByPk(data.user),
-        data.job_post ? JobPost.findByPk(data.job_post) : Promise.resolve(null),
+        data.job_post ? JobPost.findByPk(data.job_post.id || data.job_post) : Promise.resolve(null),
         data.schedule ? Schedule.findByPk(data.schedule) : Promise.resolve(null),
     ]);
 
@@ -448,7 +448,7 @@ export async function createShift(data) {
         date: data.date,
         start_time: data.start_time,
         end_time: data.end_time,
-        job_post: data.job_post || null,
+        job_post: data.job_post?.id || data.job_post || null,
         schedule: data.schedule || null
     });
 
@@ -514,10 +514,11 @@ export async function updateShift(id, data) {
     // === Optional: job_post ===
     if (data.job_post !== undefined) {
         if (data.job_post !== null) {
-            const jobPost = await JobPost.findByPk(data.job_post);
-            if (!jobPost) return { success: false, message: 'Job Post not found.' };
+            const jobPost = await JobPost.findByPk(data.job_post.id || data.job_post);
+            if (!jobPost)
+                return { success: false, message: 'Job Post not found.' };
         }
-        updates.job_post = data.job_post;
+        updates.job_post = data.job_post?.id || data.job_post || null;
     }
 
     // === Optional: schedule ===

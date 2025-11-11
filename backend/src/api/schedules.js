@@ -8,6 +8,7 @@ import {
     createSchedule,
     updateSchedule,
     deleteSchedule,
+    createShift,
     updateShift,
     deleteShift
 } from '../controllers/workPlanner.js';
@@ -53,7 +54,6 @@ const fetchHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
-    
     const { publish, shifts, ...schedule } = req.body;
 
     const { hasAccess } = await checkAccess(req.session.user, publish ? 'publish' : 'create', 'schedule');
@@ -62,41 +62,22 @@ const createHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        console.log(new Date(Date.now()), publish, shifts, schedule);
+        schedule.author = req.session.user;
 
         if (publish) {
             console.log('Republishing current schedule:', schedule);
         } else {
-            console.log('Saving new schedule:', schedule);
-
             const { success, message, id } = await createSchedule(schedule);
 
             if (!success)
                 return res.status(400).json({ message });
-            
-            if (success && shifts) {
-                if (shifts.new?.length)
-                    await Promise.all(shifts.new.map(async shift => {
-                        delete shift.id;
-                        shift.schedule = id;
-                        await createShift(shift);
-                    }));
 
-                if (shifts.updated?.length)
-                    await Promise.all(shifts.updated.map(async shift => {
-                        const shiftId = shift.id;
-                        delete shift.id;
-                        shift.schedule = id;
-                        await updateShift(shiftId, shift);
-                    }));
+            if (shifts)
+                await updateScheduleShifts(id, shifts);
 
-                if (shifts.deleted?.length)
-                    await deleteShift(shifts.deleted);
-            }
-        
-            schedule = await getSchedule({ id });
-            
-            res.status(201).json({ message, schedule });
+            const newSchedule = await getSchedule({ id });
+
+            res.status(201).json({ message, schedule: newSchedule });
         }
 
     } catch (err) {
@@ -113,25 +94,30 @@ const createHandler = async (req, res) => {
  */
 const updateHandler = async (req, res) => {
     const { id } = req.params;
+    const { publish, shifts, ...schedule } = req.body;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'update', 'schedule', id);
+    const { hasAccess } = await checkAccess(req.session.user, publish ? 'publish' : 'update', 'schedule', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
     
     try {
-        console.log(req.body);
 
-        // let { schedule } = req.body;
-        //
-        // const { success, message } = await updateSchedule(parseInt(id), schedule);
-        //
-        // if (!success)
-        //     return res.status(400).json({ message });
-        //
-        // schedule = await getSchedule({id});
-        //
-        // res.json({ message, schedule });
+        if (publish) {
+            console.log('Publishing schedule draft:', schedule);
+        } else {
+            const { success, message } = await updateSchedule(parseInt(id), schedule);
+
+            if (!success)
+                return res.status(400).json({ message });
+
+            if (shifts)
+                await updateScheduleShifts(id, shifts);
+
+            const updatedSchedule = await getSchedule({id});
+
+            res.json({ message, schedule: updatedSchedule });
+        }
         
     } catch (err) {
         console.error('Error updating a Schedule:', err, 'Provided data: ', req.body);
@@ -146,6 +132,36 @@ const updateHandler = async (req, res) => {
  */
 const deleteHandler = async (req, res) =>
     deleteResource(req, res, 'Schedule', deleteSchedule, req.query.delete_shifts === 'true');
+
+// Auxiliary functions
+async function updateScheduleShifts(schedule, shifts) {
+
+    if (!shifts)
+        return;
+
+    if (shifts.new?.length)
+        await Promise.all(shifts.new.map(async shift => {
+            delete shift.id;
+
+            shift.schedule = schedule;
+
+            await createShift(shift);
+        }));
+
+    if (shifts.updated?.length)
+        await Promise.all(shifts.updated.map(async shift => {
+            const shiftId = shift.id;
+
+            delete shift.id;
+
+            shift.schedule = schedule;
+
+            await updateShift(shiftId, shift);
+        }));
+
+    if (shifts.deleted?.length)
+        await deleteShift(shifts.deleted.map(shift => shift.id));
+}
 
 // Router definitions
 export const router = express.Router();
