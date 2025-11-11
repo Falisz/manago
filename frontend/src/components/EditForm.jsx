@@ -6,6 +6,7 @@ import Button from './Button';
 import MultiComboBox from './MultiComboBox';
 import CheckBox from './CheckBox';
 import '../styles/EditForm.css';
+import Icon from "./Icon";
 
 // TODO: Add support for background picker.
 // TODO: Change structure.inputs into structure.fields.
@@ -315,6 +316,36 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                     label={group.inputLabel}
                                 />;
 
+                            if (group.inputType === 'radio')
+                                groupContent = <div
+                                    className={'form-radio-group' + (group.className ? ' ' + group.className : '')}
+                                    style={group.style}
+                                >
+                                    {group.options.map((option, index) => (
+                                        <label key={index} className={'radio-label'}>
+                                            <input
+                                                type='radio'
+                                                name={group.field}
+                                                value={option}
+                                                checked={(source[group.field] || formData[group.field]) === option.id}
+                                                onChange={handleChange}
+                                                disabled={typeof group.disabled === 'function' ? group.disabled(formData) : group.disabled}
+                                            />
+                                            {option.label &&
+                                                <span className={'radio-label-text'}>{option.label}</span>
+                                            }
+                                            {option.image &&
+                                                <img
+                                                    className={'radio-label-image'}
+                                                    src={option.image}
+                                                    alt={option.id}
+                                                />
+                                            }
+                                        </label>
+                                    ))}
+
+                                </div>
+
                             if (group.inputType === 'dropdown')
                                 groupContent = <ComboBox
                                     className={getComponentClassName(group)}
@@ -375,7 +406,10 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                     className={'form-group' + (group.className ? ' ' + group.className : '')}
                                     style={group.style}
                                 >
-                                    {group.label && <h3 className={'form-group-label'}>{group.label}</h3>}
+                                    {group.label && <h3 className={'form-group-label'}>
+                                        {group.icon && <Icon i={group.icon} s={true}/>}
+                                        {group.label}
+                                    </h3>}
                                     {groupContent}
                                 </div>
                             );
