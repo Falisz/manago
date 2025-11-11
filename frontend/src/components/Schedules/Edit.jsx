@@ -1,6 +1,6 @@
 // FRONTEND/components/Schedules/Edit.js
-import React, {useEffect, useMemo, useRef, useCallback} from 'react';
-import { useLocation, useNavigate, useParams} from 'react-router-dom';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import useModals from '../../contexts/ModalContext';
 import useSchedules from '../../hooks/useSchedules';
@@ -13,12 +13,12 @@ import Loader from '../Loader';
 import EditForm from '../EditForm';
 import '../../styles/Schedule.css';
 
-export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
+export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty }) => {
     const { appState } = useAppState();
+    const { closeTopModal } = useModals();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
-    const { fetchUsers: fetchSelectedUsers } = useUsers();
 
     useEffect(() => {
         fetchUsers().then();
@@ -36,12 +36,14 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
                 [{ id: 'project', name: 'Project' }] : []),
             ...[{ id: 'manager', name: 'Users by Manager' }, { id: 'user', name: 'User' }],
         ],
-        teams: teams && teams.map(team => 
-            ({ id: team.id, name: team.name })),
-        users: users && users.map(user => 
-            ({ id: user.id, name: `${user.first_name} ${user.last_name}` })),
-        managers: managers && managers.map(manager => 
-            ({ id: manager.id, name: `${manager.first_name} ${manager.last_name}` })),
+        teams: (teams?.length && teams?.map(team => ({ id: team.id, name: team.name })))
+            || [{id: null, name: 'None'}],
+        users: (users?.length && users?.map(user => ({ id: user.id, name: `${user.first_name} ${user.last_name}` })))
+            || [{id: null, name: 'None'}],
+        managers: (managers?.length && managers?.map(mgr => ({ id: mgr.id, name: `${mgr.first_name} ${mgr.last_name}` })))
+            || [{id: null, name: 'None'}],
+        projects: [{id: null, name: 'None'}],
+        branches: [{id: null, name: 'None'}]
     }), [appState.modules, teams, users, managers]);
 
     const formStructure = useMemo(() => ({
@@ -71,7 +73,7 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
                 inputType: 'date',
                 label: 'Start Date',
                 required: true,
-                conditional_max: (formData) => formData.end_date,
+                conditional_max: () => schedule.end_date,
             },
             end_date: {
                 section: 1,
@@ -80,7 +82,7 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
                 inputType: 'date',
                 label: 'End Date',
                 required: true,
-                conditional_min: (formData) => formData.start_date,
+                conditional_min: () => schedule.start_date,
             },
             user_scope: {
                 section: 2,
@@ -91,18 +93,18 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
                 options: scopeOptions.scopes,
                 required: true,
                 disabled: !isEmpty.current,
+                onChange: () => setSchedule(prev => ({...prev, user_scope_id: null})),
             },
             user_scope_id: {
                 section: 2,
                 field: 'user_scope_id',
-                conditional_type: (formData) => ['you', 'all'].includes(formData.user_scope) ? 'hidden' : 'number',
+                type: () => (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
                 inputType: 'dropdown',
                 label: ' ',
-                options: [],
-                conditional_options: (formData) => formData.user_scope === 'team' ? scopeOptions.teams :
-                            formData.user_scope === 'manager' ? scopeOptions.managers :
-                            formData.user_scope === 'user' ? scopeOptions.users : [],
-                conditional_required: (formData) => !['you', 'all'].includes(formData.user_scope),
+                options: () => schedule.user_scope === 'team' ? scopeOptions.teams :
+                    schedule.user_scope === 'manager' ? scopeOptions.managers :
+                    schedule.user_scope === 'user' ? scopeOptions.users : [],
+                required: () => !['you', 'all'].includes(schedule.user_scope),
                 disabled: !isEmpty.current
             },
             users: {
@@ -110,31 +112,14 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
                 field: 'users',
                 type: 'content',
                 style: {flexDirection: 'column'},
-                async_content: async (formData) => {
-                    if (
-                        !formData.start_date ||
-                        !formData.end_date ||
-                        !formData.user_scope ||
-                        (!['you', 'all'].includes(formData.user_scope) && !formData.user_scope_id)
-                    )
-                        return null;
-
-                    const users = (schedule.user_scope && await fetchSelectedUsers({
-                        user_scope: formData.user_scope,
-                        user_scope_id: formData.user_scope_id
-                    })) || [];
-                    
+                content: (() => {
+                    const users = schedule.users?.values() || [];
                     const userList = Array.from(users.map(u => u.first_name + ' ' + u.last_name));
-
                     return <>
                         <label className={'form-group-label'}>Users ({userList.length})</label>
                         <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>
                     </>;
-                },
-                async_content_deps: ['start_date', 'end_date', 'user_scope', 'user_scope_id'],
-                async_content_should_load: (fd) =>
-                    fd.start_date && fd.end_date && fd.user_scope &&
-                    (!['you', 'all'].includes(fd.user_scope) ? fd.user_scope_id : true)
+                })()
             }
         },
         sections: {
@@ -143,23 +128,26 @@ export const ScheduleEditForm = ({ schedule, saveSchedule, isEmpty }) => {
             }
         },
         onSubmit: {
-            onSave: (formData) => {
-                const { users: _, ...updates } = formData;
-                saveSchedule(updates);
+            onSave: () => {
+                saveSchedule();
                 return true;
             },
-            refreshTriggers: [['scheduleDrafts', true], ...(schedule ? [['scheduleDraft', schedule.id]] : [])]
+            refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
+            label: 'Start planning'
         },
-    }), [schedule, scopeOptions, saveSchedule, fetchSelectedUsers, isEmpty]);
-
-    const scheduleData = useMemo(() => ({...schedule}), [schedule]);
+        onCancel: {
+            action: () => {
+                closeTopModal();
+            }
+        }
+    }), [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isEmpty]);
     
-    return <EditForm structure={formStructure} presetData={scheduleData} />;
+    return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
 };
 
 const ScheduleEdit = () => {
     const { appCache, user } = useAppState();
-    const { openModal } = useModals();
+    const { openModal, updateModalProps } = useModals();
     const { scheduleId } = useParams();
     // TODO: To be determined by the URL
     const isNew = useRef(!scheduleId);
@@ -178,26 +166,22 @@ const ScheduleEdit = () => {
     const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
     const isMounted = useRef(false);
+    const modalIdRef = useRef(null);
 
     const discardChanges = useCallback(() => {
         navigate(-1);
     }, [navigate]);
 
-    const saveSchedule = useCallback((schedule) => {
+    const saveSchedule = useCallback(() => {
         if (isNew.current)
             schedule.author = user.id;
-        setSchedule(prev => ({...prev, ...schedule}));
-        saveScheduleDraft({ schedule }).then();
 
-        if (isNew.current && isEmpty.current) {
-            const { start_date, end_date, user_scope, user_scope_id } = schedule;
+        saveScheduleDraft({ schedule }).then(() => {
+            if (isNew.current && isEmpty.current)
+                isEmpty.current = false;
+        });
 
-            fetchSchedule({start_date, end_date, user_scope, user_scope_id}).then(
-                res => isEmpty.current = !res
-            );
-        }
-
-    }, [user, saveScheduleDraft, fetchSchedule, setSchedule]);
+    }, [user, schedule, saveScheduleDraft]);
 
     const publishSchedule = useCallback((schedule) => {
         //TODO: Create a modal prompt to confirm publishing
@@ -206,18 +190,16 @@ const ScheduleEdit = () => {
     }, [saveScheduleDraft]);
 
     // TODO: Implement forced state of modal - it cannot be closed until filled properly.
+
     const editDetails = useCallback(() => {
-        openModal({
+        modalIdRef.current = openModal({
             content: 'component',
             type: 'dialog',
             closable: isNew.current,
-            component: <ScheduleEditForm
-                schedule={schedule}
-                saveSchedule={saveSchedule}
-                isEmpty={isEmpty}
-            />
+            component: ScheduleEditForm,
+            props: {schedule, setSchedule, saveSchedule, isEmpty}
         });
-    }, [openModal, schedule, saveSchedule]);
+    }, [openModal, schedule, setSchedule, saveSchedule, isEmpty]);
 
 
     useEffect(() => {
@@ -270,12 +252,20 @@ const ScheduleEdit = () => {
         }
 
         setSchedule(scheduleConfig);
-        isNew.current && isEmpty.current && scheduleConfig.user_scope && fetchSchedule().then();
-
         setLoading(false);
 
-    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading, fetchSchedule,
+    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading,
         fetchScheduleDraft, editDetails, fetchJobPosts]);
+
+    useEffect(() => {
+        if (modalIdRef.current !== null) {
+            updateModalProps(modalIdRef.current, { schedule });
+        }
+    }, [schedule, updateModalProps]);
+
+    useEffect(() => {
+        isNew.current && isEmpty.current && fetchSchedule().then();
+    }, [fetchSchedule])
 
     if (loading)
         return <Loader/>;

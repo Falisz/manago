@@ -23,79 +23,81 @@ const ModalContext = createContext();
 const ANIMATION_DURATION = 300;
 
 export const ModalProvider = ({ children }) => {
-    const [modalStack, setModalStack] = useState([]);
+    const [modals, setModals] = useState({});
+    const nextModalId = useRef(0);
     const [searchParams, setSearchParams] = useSearchParams();
     const [refreshTriggers, setRefreshTriggers] = useState({});
-    const modalStackRef = useRef([]);
+    const modalsRef = useRef({});
 
     useEffect(() => {
-        modalStackRef.current = modalStack;
-    }, [modalStack]);
+        modalsRef.current = modals;
+    }, [modals]);
 
-    const openModal = useCallback((modal) => {
-        setModalStack((prev) => {
-            const isDuplicate = prev.some(
+    const openModal = useCallback((modalConfig) => {
+        const id = nextModalId.current++;
+
+        setModals((prev) => {
+            const isDuplicate = Object.values(prev).some(
                 (existing) =>
-                    existing.content === modal.content &&
-                    existing.contentId === modal.contentId
+                    existing.content === modalConfig.content &&
+                    existing.contentId === modalConfig.contentId
             );
             if (isDuplicate) {
                 return prev;
             }
-            return [...prev, { ...modal, isVisible: false }];
+            return {
+                ...prev,
+                [id]: {
+                    ...modalConfig,
+                    props: modalConfig.props || {},
+                    isVisible: false,
+                    discardWarning: false
+                }
+            };
         });
 
         setTimeout(() => {
-            setModalStack((prev) => {
-                const newStack = [...prev];
-                if (newStack.length > 0) {
-                    newStack[newStack.length - 1] = {
-                        ...newStack[newStack.length - 1],
-                        isVisible: true,
-                    };
-                }
-                return newStack;
+            setModals((prev) => ({
+                ...prev,
+                [id]: { ...prev[id], isVisible: true },
+            }));
+        }, ANIMATION_DURATION);
+
+        return id;
+    }, []);
+
+    const setDiscardWarning = useCallback((id, value) => {
+        setModals((prev) => {
+            if (!prev[id]) return prev;
+            return {
+                ...prev,
+                [id]: { ...prev[id], discardWarning: value },
+            };
+        });
+    }, []);
+
+    const closeModal = useCallback((id) => {
+        setModals((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], isVisible: false },
+        }));
+
+        setTimeout(() => {
+            setModals((prev) => {
+                const { [id]: _, ...rest } = prev;
+                return rest;
             });
         }, ANIMATION_DURATION);
     }, []);
 
-    const setDiscardWarning = useCallback((value) => {
-        setModalStack((prev) => {
-            if (prev.length === 0) return prev;
-            const top = prev[prev.length - 1];
-            if (top.discardWarning === value) return prev;
-            const newStack = [...prev];
-            newStack[newStack.length - 1] = {
-                ...newStack[newStack.length - 1],
-                discardWarning: value,
-            };
-            return newStack;
-        });
-    }, []);
-
-    const closeModal = useCallback(() => {
-        setModalStack((prev) => {
-            const newStack = [...prev];
-
-            newStack[newStack.length - 1] = {
-                ...newStack[newStack.length - 1],
-                isVisible: false,
-            };
-
-            return newStack;
-        });
-
-        setTimeout(() => {
-            setModalStack((prev) => prev.slice(0, -1));
-        }, ANIMATION_DURATION);
-    }, []);
-
     const closeTopModal = useCallback(() => {
-        const currentStack = modalStackRef.current;
-        if (currentStack.length === 0) {
+        const currentModals = modalsRef.current;
+        const ids = Object.keys(currentModals).sort((a, b) => a - b);
+        if (ids.length === 0)
             return;
-        }
-        const topModal = currentStack[currentStack.length - 1];
+
+        const topId = ids[ids.length - 1];
+        const topModal = currentModals[topId];
 
         if (topModal?.discardWarning) {
             openModal({
@@ -103,16 +105,29 @@ export const ModalProvider = ({ children }) => {
                 type: 'pop-up',
                 message: 'Changes were made. Are you sure you want to discard them?',
                 onConfirm: () => {
-                    setDiscardWarning(false);
-                    closeModal();
+                    setDiscardWarning(topId, false);
+                    closeModal(topId);
                 },
             });
             return; // Escaping this callback - new pop-up confirmation modal will handle closing from now on.
         }
 
-        closeModal(); // Closing the topModal if there is no discardWarning on it.
+        closeModal(topId); // Closing the topModal if there is no discardWarning on it.
 
     }, [closeModal, openModal, setDiscardWarning]);
+
+    const updateModalProps = useCallback((id, newProps) => {
+        setModals((prev) => {
+            if (!prev[id]) return prev;
+            return {
+                ...prev,
+                [id]: {
+                    ...prev[id],
+                    props: { ...prev[id].props, ...newProps },
+                },
+            };
+        });
+    }, []);
 
     const refreshData = useCallback((content, data) => {
         setRefreshTriggers((prev) => ({
@@ -175,7 +190,7 @@ export const ModalProvider = ({ children }) => {
                     cancelLabel={modal.cancelLabel}
                 />;
             case 'component':
-                return modal.component
+                return React.createElement(modal.component, modal.props);
             default:
                 return <InWorks title={'Unknown Modal'} modal={true} />;
         }
@@ -226,7 +241,7 @@ export const ModalProvider = ({ children }) => {
     const { search } = useLocation();
     useEffect(() => {
         const newParams = new URLSearchParams(search);
-        modalStack.forEach((modal) => {
+        Object.values(modals).forEach((modal) => {
             if (modal.content === 'userNew') newParams.set('new', 'user');
             if (modal.content === 'managerNew') newParams.set('new', 'manager');
             if (modal.content === 'employeeNew') newParams.set('new', 'employee');
@@ -242,13 +257,15 @@ export const ModalProvider = ({ children }) => {
             if (modal.content === 'postDetails') newParams.set('post', modal.contentId);
         });
         setSearchParams(newParams, { replace: true });
-    }, [modalStack, setSearchParams, search]);
+    }, [modals, setSearchParams, search]);
 
+    const sortedModalIds = Object.keys(modals).sort((a, b) => a - b);
     return (
-        <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal, refreshData, refreshTriggers }}>
+        <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal, refreshData, updateModalProps, refreshTriggers }}>
             {children}
-            {modalStack.map((modal, index) => (
-                <Modal
+            {sortedModalIds.map((id, index) => {
+                const modal = modals[id];
+                return <Modal
                     key={index}
                     type={modal.type}
                     isVisible={modal.isVisible}
@@ -257,8 +274,8 @@ export const ModalProvider = ({ children }) => {
                     onClose={closeTopModal}
                 >
                     {renderModalContent(modal)}
-                </Modal>
-            ))}
+                </Modal>;
+            })}
         </ModalContext.Provider>
     );
 };

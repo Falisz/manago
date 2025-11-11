@@ -276,14 +276,14 @@ const useSchedules = () => {
             end_date,
             user_scope,
             user_scope_id
-        });
+        }) || [];
 
         leaves = await fetchLeaves({
             start_date,
             end_date,
             user_scope,
             user_scope_id,
-        })
+        }) || [];
 
         if (view === 'users')
             users = mapUsers(shifts, users, leaves);
@@ -348,7 +348,7 @@ const useSchedules = () => {
         if (!schedule)
             return;
 
-        for (var field in ['mode','leaves','users','view','placeholder'])
+        for (const field in ['mode','leaves','users','view','placeholder'])
             delete schedule[field];
         schedule.shifts = shiftUpdates.current;
         schedule.publish = publish;

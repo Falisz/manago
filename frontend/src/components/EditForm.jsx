@@ -7,64 +7,23 @@ import MultiComboBox from './MultiComboBox';
 import CheckBox from './CheckBox';
 import '../styles/EditForm.css';
 
-//TODO: Rewrite the logic to either work on formData nad presetData, or solely on source and setSource if provided as props.
-// SO THE STATE IS NOT LOCALIZED
-const EditForm = ({ structure, presetData, style, className }) => {
+const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
-    const [asyncContents, setAsyncContents] = useState({});
+    const initialSource = useRef(null);
     const isMounted = useRef(false);
-    const prevFormData = useRef({});
-
-    useEffect(() => {
-
-        const loadAsyncContents = async () => {
-            for (const [key, config] of Object.entries(structure.inputs)) {
-                if (config.type !== 'content' || !config.async_content)
-                    continue;
-
-                const contentKey = `${config.section}-${config.field}`;
-                const deps = config.async_content_deps || [];
-
-                const shouldLoad = config.async_content_should_load?.(formData) ?? true;
-
-                if (!shouldLoad) {
-                    setAsyncContents(prev => ({ ...prev, [contentKey]: null }));
-                    continue;
-                }
-
-                const shouldReload = deps.length === 0 || deps.some(dep =>
-                    prevFormData.current[dep] !== formData[dep]
-                );
-
-                if (!shouldReload)
-                    continue;
-
-                try {
-                    const content = await config.async_content(formData);
-                    setAsyncContents(prev => ({ ...prev, [contentKey]: content }));
-                } catch (err) {
-                    console.error(`Async content error [${key}]:`, err);
-                    setAsyncContents(prev => ({
-                        ...prev,
-                        [contentKey]: <div style={{color: 'red'}}>Error loading content</div>
-                    }));
-                }
-            }
-        };
-
-        loadAsyncContents().then();
-    }, [formData, structure.inputs]);
-
-    useEffect(() => {
-        prevFormData.current = formData;
-    }, [formData]);
     
     useEffect(() => {
+        // Initialization of localized data into formData
+        if (source) {
+            initialSource.current = JSON.parse(JSON.stringify(source));
+            isMounted.current = true;
+        }
+
         if (!isMounted.current && structure?.inputs) {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
-                const fieldType = config.conditional_type ? config.conditional_type(formData) : config.type;
+                const fieldType = typeof config.type === 'function' ? config.type(formData) : config.type;
                 const teamCompliance = config.teamCompliance;
                 let value = presetData[fieldName];
 
@@ -92,15 +51,15 @@ const EditForm = ({ structure, presetData, style, className }) => {
                 return acc;
             }, {});
 
-            setFormData(newFormData);
             isMounted.current = true;
+            setFormData(newFormData);
         }
-    }, [presetData, structure, formData, isMounted]);
+    }, [structure, presetData, source, formData, isMounted]);
 
     const handleChange = (e, mode='set', index) => {
         const {name, value, type, checked} = e.target;
 
-        setFormData(prev => ({
+        const setter = (prev) => ({
             ...prev,
             [name]: (() => {
                 if (type === 'dropdown') {
@@ -132,9 +91,14 @@ const EditForm = ({ structure, presetData, style, className }) => {
                     return type === 'checkbox' ? checked : value;
                 }
             })()
-        }));
+        });
 
-        setDiscardWarning(true);
+        if (setSource) {
+            setSource(prev => setter(prev));
+        } else {
+            setFormData(prev => setter(prev));
+            setDiscardWarning(true);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -156,7 +120,14 @@ const EditForm = ({ structure, presetData, style, className }) => {
         }
     };
 
-    const inputSections = useMemo(() => {
+    const handleDiscard = async (e) => {
+        e.preventDefault();
+        if (source)
+            setSource(initialSource.current);
+        closeTopModal();
+    };
+
+    const formSections = useMemo(() => {
         const sections = {};
         Object.entries(structure.inputs).forEach(([key, config]) => {
             const { section } = config;
@@ -164,10 +135,6 @@ const EditForm = ({ structure, presetData, style, className }) => {
                 sections[section] = {};
             }
             sections[section][key] = { ...config };
-            if (config.type === 'content') {
-                const contentKey = `${section}-${config.field}`;
-                sections[section][key].content = asyncContents[contentKey] || null;
-            }
         });
         if (structure.sections)
         {
@@ -182,7 +149,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
         }
 
         return sections;
-    }, [structure, asyncContents]);
+    }, [structure]);
 
     const header = useMemo(() => {
         const headerModes = {
@@ -216,7 +183,7 @@ const EditForm = ({ structure, presetData, style, className }) => {
             >
                 {header && <h1 className={'app-form-header'}>{header}</h1>}
 
-                {Object.values(inputSections).map((section, key) => {
+                {Object.values(formSections).map((section, key) => {
                     return <div
                         key={key}
                         className={'form-section' + (section.className ? ' ' + section.className : '')}
@@ -224,8 +191,10 @@ const EditForm = ({ structure, presetData, style, className }) => {
                     >
                         {section.header && <h2>{section.header}</h2>}
                         {Object.entries(section).map(([key, group], index) => {
-                            if ( ['header', 'style', 'className'].includes(key) || group.type === 'hidden' ||
-                             (group.conditional_type && group.conditional_type(formData) === 'hidden'))
+
+                            const type = typeof group.type === 'function' ? group.type(formData) : group.type;
+
+                            if ( ['header', 'style', 'className'].includes(key) || type === 'hidden')
                                 return null;
 
                             let groupContent;
@@ -238,8 +207,8 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     className={'form-input'}
                                     type={'text'}
                                     name={group.field}
-                                    value={formData[group.field] || ''}
-                                    onChange={handleChange}
+                                    value={source[group.field] || formData[group.field] || ''}
+                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
                                     disabled={group.disabled}
@@ -250,10 +219,10 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     className={'form-input'}
                                     type={'date'}
                                     name={group.field}
-                                    value={formData[group.field] || ''}
+                                    value={source[group.field] || formData[group.field] || ''}
                                     min={group.conditional_min ? group.conditional_min(formData) : group.min }
                                     max={group.conditional_max ? group.conditional_max(formData) : group.max }
-                                    onChange={handleChange}
+                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
                                     disabled={group.disabled}
@@ -263,8 +232,8 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                 groupContent = <textarea
                                     className={'form-textarea'}
                                     name={group.field}
-                                    value={formData[group.field] || ''}
-                                    onChange={handleChange}
+                                    value={source[group.field] || formData[group.field] || ''}
+                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
                                     disabled={group.disabled}
@@ -274,8 +243,8 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                 groupContent = <CheckBox
                                     id={group.field}
                                     name={group.field}
-                                    checked={formData[group.field] || false}
-                                    onChange={handleChange}
+                                    checked={source[group.field] || formData[group.field] || false}
+                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     label={group.inputLabel}
                                 />;
 
@@ -284,13 +253,14 @@ const EditForm = ({ structure, presetData, style, className }) => {
                                     className={group.className}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
-                                    value={formData[group.field] || group.default || null}
-                                    options={group.conditional_options ? group.conditional_options(formData) : group.options || []}
-                                    onChange={handleChange}
+                                    value={source[group.field] || formData[group.field] || group.default || null}
+                                    options={typeof group.options === 'function' ? group.options(source || formData) :
+                                        group.options || [{id: null, name: 'None'}]}
+                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     searchable={group.searchable}
                                     noneAllowed={group.noneAllowed}
                                     disabled={group.disabled}
-                                    required={group.conditional_required ? group.conditional_required(formData) : group.required}
+                                    required={typeof group.required === 'function' ? group.required(formData) : group.required}
                                 />;
 
                             if (group.inputType === 'multi-dropdown') {
@@ -347,19 +317,19 @@ const EditForm = ({ structure, presetData, style, className }) => {
                     </div>
                 })}
                 <div className='form-section align-center'>
-                    <Button
+                    {!structure.onSubmit?.hidden && <Button
                         className={'save-button'}
                         type={'submit'}
-                        label={'Save changes'}
+                        label={structure.onSubmit.label || 'Save changes'}
                         icon={'save'}
-                    />
-                    <Button
+                    />}
+                    {!structure.onCancel?.hidden && <Button
                         className={'discard-button'}
                         type={'button'}
-                        label={'Discard'}
+                        label={structure.onCancel.label || 'Discard'}
                         icon={'close'}
                         onClick={closeTopModal}
-                    />
+                    />}
                 </div>
             </form>
 };
