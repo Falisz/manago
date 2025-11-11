@@ -141,7 +141,7 @@ const useTeams = () => {
             if (batchMode)
                 res = await axios.delete(
                     `/teams${cascade ? '?cascade=true' : ''}`,
-                    {data: {teamIds: Array.from(teamIds)}},
+                    {data: {id: Array.from(teamIds)}},
                     { withCredentials: true }
                 );
 

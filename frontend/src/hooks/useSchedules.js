@@ -162,24 +162,25 @@ const useSchedules = () => {
                 updatedTargetDateShifts = targetDateShifts.filter(s => s.id !== shift.id);
 
 
+            const updatedTargetUser = {
+                ...targetUserObj,
+                shifts: new Map(targetUserObj.shifts).set(targetDate, updatedTargetDateShifts)
+            };
+
+            const isNew = typeof shift.id === 'string' && shift.id.startsWith('new');
+
             if (action === 'delete') {
-                if (toString(shift.id).startsWith('new'))
+                if (isNew)
                     shiftUpdates.current.new.filter(s => s.id !== shift.id);
                 else
                     shiftUpdates.current.deleted.push(shift);
 
             } else {
-                const isNew = toString(shift.id).startsWith('new');
                 const bin = isNew ? 'new' : 'updated';
 
                 shiftUpdates.current[bin].filter(s => s.id !== shift.id);
                 shiftUpdates.current[bin].push(shift);
             }
-
-            const updatedTargetUser = {
-                ...targetUserObj,
-                shifts: new Map(targetUserObj.shifts).set(targetDate, updatedTargetDateShifts)
-            };
             users.set(targetUser, updatedTargetUser);
 
             return { ...prev, users };
@@ -344,45 +345,79 @@ const useSchedules = () => {
     const fetchScheduleDraft = useCallback( async (id) =>
         await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
 
-    const saveScheduleDraft = useCallback( async ({schedule = null, publish = false} = {}) => {
+    const saveScheduleDraft = useCallback( async ({publish = false} = {}) => {
 
-        console.log('saveScheduleDraft:', schedule);
-        if (!schedule)
-            return;
+        const { id, name, description, start_date, end_date, user_scope, user_scope_id } = schedule;
 
-        for (const field in ['mode','leaves','users','view','placeholder'])
-            delete schedule[field];
-        schedule.shifts = shiftUpdates.current;
-        schedule.publish = publish;
+        const scheduleData = structuredClone({
+            id, name, description, start_date, end_date, user_scope, user_scope_id, publish,
+            shifts: shiftUpdates.current
+        });
 
-        console.log('saveScheduleDraft2:', schedule);
+        console.log('saveScheduleDraft called with scheduleData:', scheduleData);
 
         setStatus([]);
-        // try {
-        //     let res;
-        //
-        //     if (schedule.id)
-        //         res = await axios.put(`/schedules/${schedule.id}`, schedule, {withCredentials: true});
-        //     else
-        //         res = await axios.post('/schedules', schedule, {withCredentials: true});
-        //
-        //     if (!res)
-        //         return null;
-        //
-        //     const {data} = res;
-        //
-        //     return (data && data.scheduleDraft) || null;
-        //
-        // } catch (err) {
-        //     console.log('saveScheduleDraft error:', err);
-        // }
-    }, []);
+        try {
+            let res;
+
+            if (scheduleData.id)
+                res = await axios.put(`/schedules/${scheduleData.id}`, scheduleData, {withCredentials: true});
+            else
+                res = await axios.post('/schedules', scheduleData, {withCredentials: true});
+
+            if (!res)
+                return null;
+
+            const { data } = res;
+
+            if (!data)
+                return null;
+
+            const { schedule, message } = data;
+
+            schedule.users = mapUsers(schedule.shifts, schedule.users);
+
+            console.log('saveScheduleDraft:', message, schedule);
+            setSchedule(schedule);
+            return schedule || null;
+
+        } catch (err) {
+            console.log('saveScheduleDraft error:', err);
+        }
+    }, [schedule, setSchedule, mapUsers]);
 
     const discardScheduleDraft = useCallback( async (scheduleId) => {
-        setStatus([]);
-        // Function to discard schedule drafts.
-        // It will be available from both Schedule editor and Schedule drafts list, therefore, param is included.
-        console.log('discard called for scheduleId:', scheduleId);
+        try {
+            setLoading(true);
+            setStatus([]);
+
+            const res = await axios.delete(
+                `/schedules/${scheduleId}`,
+                { withCredentials: true }
+            );
+
+            const { data } = res;
+
+            if (!data)
+                return null;
+
+            if (data.warning)
+                setStatus(prev => [...prev, {status: 'warning', message: data.warning}]);
+
+            if (data.message)
+                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+
+            return true;
+        } catch (err) {
+            console.error('deleteTeams error:', err);
+
+            const message = 'Failed to delete Role. Please try again.';
+            setStatus(prev => [...prev, {status: 'error', message}]);
+
+            return null;
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     return {

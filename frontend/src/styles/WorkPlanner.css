@@ -70,7 +70,20 @@
 .schedule-draft-item-header .app-button .icon {
     font-size: 1.5rem;
 }
-.schedule-draft-item-description {
-    padding-left: 20px;
-    font-style: italic;
+.schedule-draft-item-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.schedule-draft-item .group {
+    display: flex;
+    flex-direction: column;
+}
+.schedule-draft-item .group .label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.schedule-draft-item .group .data {
+    padding-left: 5px;
+    font-size: 0.8rem;
 }

@@ -132,9 +132,15 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
         },
         onSubmit: {
             onSave: () => {
+                for (const field of ['start_date', 'end_date', 'user_scope', 'user_scope_id'])
+                    if (schedule[field] == null)
+                        return false;
+
                 saveSchedule();
+
                 if (schedule.user_scope && schedule.user_scope_id)
                     isEmpty.current = false;
+
                 return true;
             },
             refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
@@ -153,7 +159,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
 };
 
 const ScheduleEdit = () => {
-    const { appCache, user } = useAppState();
+    const { appCache } = useAppState();
     const { openModal, updateModalProps } = useModals();
     const { scheduleId } = useParams();
     const { schedule,
@@ -179,9 +185,10 @@ const ScheduleEdit = () => {
         navigate(-1);
     }, [navigate]);
 
-    const saveSchedule = useCallback(() =>
-        saveScheduleDraft({ schedule: { ...schedule, author: isNew.current ? user.id : schedule.author } }).then()
-    , [user, schedule, saveScheduleDraft]);
+    const saveSchedule = useCallback(() => {
+            saveScheduleDraft().then();
+        }
+    , [saveScheduleDraft]);
 
     const publishSchedule = useCallback((schedule) => {
         //TODO: Create a modal prompt to confirm publishing
@@ -202,14 +209,17 @@ const ScheduleEdit = () => {
         if (isMounted.current)
             return;
 
+        console.log('initializer effect runs...');
+
         fetchJobPosts().then();
         setLoading(true);
 
         // TODO: No more schedule editor cache. If no params provided for /schedules/edit it will automatically navigate to schedule/new to make editForm popup forced
         if (scheduleId) {
             fetchScheduleDraft(scheduleId).then();
-            isEmpty.current = false;
             setLoading(false);
+            isEmpty.current = false;
+            isMounted.current = true;
             return;
 
         } else {
@@ -219,6 +229,8 @@ const ScheduleEdit = () => {
             const current = params.get('current');
             if (current)
                 scheduleConfig.mode = 'current';
+            else
+                scheduleConfig.mode = 'new';
 
             const from = params.get('from');
             if (from && !isNaN(Date.parse(from)))
@@ -246,8 +258,10 @@ const ScheduleEdit = () => {
 
             setSchedule(scheduleConfig);
 
-            if (paramMissing)
+            if (paramMissing) {
                 editDetails();
+                setLoading(false);
+            }
         }
 
         isMounted.current = true;
@@ -257,12 +271,16 @@ const ScheduleEdit = () => {
 
     useEffect(() => {
         if (modalIdRef.current !== null) {
-            updateModalProps(modalIdRef.current, { schedule });
+            console.log('updateModalProps effect runs...');
+            updateModalProps(modalIdRef.current, { schedule, saveSchedule });
         }
-    }, [schedule, updateModalProps]);
+    }, [schedule, saveSchedule, updateModalProps]);
 
     useEffect(() => {
-        isNew.current && isEmpty.current && fetchSchedule().then();
+        if (isNew.current && isEmpty.current) {
+            console.log('fetchSchedule effect runs...');
+            fetchSchedule().then();
+        }
     }, [fetchSchedule]);
 
     if (loading)

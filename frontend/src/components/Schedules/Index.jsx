@@ -46,6 +46,8 @@ const SchedulesIndex = () => {
             fetchScheduleDrafts({include_users: true, include_leaves: true}).then();
     }, [refreshTriggers.scheduleDrafts, scheduleDrafts, fetchScheduleDrafts]);
 
+    console.log(scheduleDrafts);
+
     return <>
         <div className={'header'}>
             <h1>Schedule Drafts</h1>
@@ -80,11 +82,22 @@ const SchedulesIndex = () => {
                                 onClick={() => deleteSchedule(schedule.id)}
                             />
                         </div>
-                        <div className={'schedule-draft-item-description'}>
-                            Date range: {schedule.start_date} - {schedule.end_date}<br/>
-                            Users: {schedule.users?.length || 0}<br/>
-                            Shifts: {schedule.shifts?.length || 0}<br/>
-                            Note: {schedule.description}
+                        <div className={'schedule-draft-item-content'}>
+                            <div className={'group'} style={{width: '100%'}}>
+                                <span className={'data'}>{schedule.description}</span>
+                            </div>
+                            <div className={'group'} style={{width: '100%'}}>
+                                <span className={'label'}>Date range</span>
+                                <span className={'data'}>{schedule.start_date} - {schedule.end_date}</span>
+                            </div>
+                            <div className={'group'}>
+                                <span className={'label'}>Users</span>
+                                <span className={'data'}>{Array.from(schedule.users?.keys() || []).length}</span>
+                            </div>
+                            <div className={'group'}>
+                                <span className={'label'}>Shifts</span>
+                                <span className={'data'}>{schedule.shifts?.length || 0}</span>
+                            </div>
                         </div>
                     </div>
                 )

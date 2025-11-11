@@ -9,6 +9,7 @@ import '../styles/EditForm.css';
 
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
+    const [ errors, setErrors ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     const initialSource = useRef(null);
     const isMounted = useRef(false);
@@ -59,6 +60,30 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
         }
     }, [structure, presetData, source, formData, isMounted]);
 
+    const validateField = (field, value, config, data) => {
+        const required = typeof config.required === 'function' ? config.required(data) : config.required;
+        if (!required)
+            return false; // Not invalid if not required
+
+        let invalid;
+
+        if (['input', 'text', 'date', 'textarea'].includes(config.inputType)) {
+            invalid = value == null || value === '';
+        } else if (config.inputType === 'checkbox') {
+            invalid = !value;
+        } else if (['dropdown', 'multi-dropdown'].includes(config.inputType)) {
+            if (Array.isArray(value)) {
+                invalid = value.filter(v => v != null).length === 0;
+            } else {
+                invalid = value == null;
+            }
+        } else {
+            invalid = value == null || (Array.isArray(value) && value.length === 0);
+        }
+
+        return invalid;
+    };
+
     const handleChange = (e, mode='set', index) => {
         const {name, value, type, checked} = e.target;
 
@@ -106,6 +131,25 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const data = source || formData;
+        const newErrors = {};
+
+        setErrors(newErrors);
+
+        Object.values(structure.inputs).forEach(config => {
+            const field = config.field;
+            if (!field || !config.inputType)
+                return;
+
+            const invalid = validateField(field, data[field], config, data);
+            if (invalid) {
+                newErrors[field] = true;
+            }
+        });
+
+        setErrors(newErrors);
+
         const savedItem = await structure.onSubmit.onSave(formData, presetData?.id || null);
         if (savedItem) {
             setDiscardWarning(false);
@@ -189,6 +233,14 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
         return header;
     }, [structure, formData]);
 
+    const getInputClassName = (baseClass, group) => {
+        return `${baseClass}${errors[group.field] ? ' error' : ''}`;
+    };
+
+    const getComponentClassName = (group) => {
+        return `${group.className || ''}${errors[group.field] ? ' error' : ''}`;
+    };
+
     return <form
                 className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}
@@ -217,7 +269,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'input' || group.inputType === 'text')
                                 groupContent = <input
-                                    className={'form-input'}
+                                    className={getInputClassName('form-input', group)}
                                     type={'text'}
                                     name={group.field}
                                     value={source[group.field] || formData[group.field] || ''}
@@ -229,7 +281,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'date')
                                 groupContent = <input
-                                    className={'form-input'}
+                                    className={getInputClassName('form-input', group)}
                                     type={'date'}
                                     name={group.field}
                                     value={source[group.field] || formData[group.field] || ''}
@@ -243,7 +295,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'textarea')
                                 groupContent = <textarea
-                                    className={'form-textarea'}
+                                    className={getInputClassName('form-textarea', group)}
                                     name={group.field}
                                     value={source[group.field] || formData[group.field] || ''}
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
@@ -254,6 +306,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'checkbox')
                                 groupContent = <CheckBox
+                                    className={getComponentClassName(group)}
                                     id={group.field}
                                     name={group.field}
                                     checked={source[group.field] || formData[group.field] || false}
@@ -263,7 +316,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'dropdown')
                                 groupContent = <ComboBox
-                                    className={group.className}
+                                    className={getComponentClassName(group)}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
                                     value={source[group.field] || formData[group.field] || group.default || null}
