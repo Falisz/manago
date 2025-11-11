@@ -24,9 +24,9 @@ const ANIMATION_DURATION = 300;
 
 export const ModalProvider = ({ children }) => {
     const [modals, setModals] = useState({});
-    const nextModalId = useRef(0);
     const [searchParams, setSearchParams] = useSearchParams();
     const [refreshTriggers, setRefreshTriggers] = useState({});
+    const nextModalId = useRef(0);
     const modalsRef = useRef({});
 
     useEffect(() => {
@@ -42,17 +42,13 @@ export const ModalProvider = ({ children }) => {
                     existing.content === modalConfig.content &&
                     existing.contentId === modalConfig.contentId
             );
-            if (isDuplicate) {
+
+            if (isDuplicate)
                 return prev;
-            }
+
             return {
                 ...prev,
-                [id]: {
-                    ...modalConfig,
-                    props: modalConfig.props || {},
-                    isVisible: false,
-                    discardWarning: false
-                }
+                [id]: { ...modalConfig, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
             };
         });
 
@@ -161,7 +157,7 @@ export const ModalProvider = ({ children }) => {
             case 'roleEdit':
                 return <RoleEdit roleId={modal.contentId} />;
             case 'roleNew':
-                return <RoleEdit/>;
+                return <RoleEdit />;
             case 'teamDetails':
                 return <TeamDetails teamId={modal.contentId} />;
             case 'teamEdit':
@@ -179,16 +175,16 @@ export const ModalProvider = ({ children }) => {
             case 'scheduleDraftNew':
                 return <ScheduleEditForm />;
             case 'scheduleDraftEdit':
-                return <ScheduleEditForm scheduleId={modal.contentId}/>;
+                return <ScheduleEditForm scheduleId={modal.contentId} />;
             case 'confirm':
                 return <ConfirmPrompt
-                    message={modal.message}
-                    onConfirm={modal.onConfirm}
-                    onConfirm2={modal.onConfirm2}
-                    confirmLabel={modal.confirmLabel}
-                    confirmLabel2={modal.confirmLabel2}
-                    cancelLabel={modal.cancelLabel}
-                />;
+                            message={modal.message}
+                            onConfirm={modal.onConfirm}
+                            onConfirm2={modal.onConfirm2}
+                            confirmLabel={modal.confirmLabel}
+                            confirmLabel2={modal.confirmLabel2}
+                            cancelLabel={modal.cancelLabel}
+                        />;
             case 'component':
                 return React.createElement(modal.component, modal.props);
             default:
@@ -261,7 +257,14 @@ export const ModalProvider = ({ children }) => {
 
     const sortedModalIds = Object.keys(modals).sort((a, b) => a - b);
     return (
-        <ModalContext.Provider value={{ openModal, setDiscardWarning, closeTopModal, refreshData, updateModalProps, refreshTriggers }}>
+        <ModalContext.Provider value={{
+            openModal,
+            setDiscardWarning,
+            closeTopModal,
+            refreshData,
+            updateModalProps,
+            refreshTriggers
+        }}>
             {children}
             {sortedModalIds.map((id, index) => {
                 const modal = modals[id];

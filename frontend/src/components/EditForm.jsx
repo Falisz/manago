@@ -97,16 +97,14 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                     if (index !== null && index !== undefined) {
                         switch (mode) {
                             case 'set':
-                                return [
-                                    ...prev[name].slice(0, index),
-                                    value || null,
-                                    ...prev[name].slice(index + 1),
-                                ];
+                                return [...prev[name].slice(0, index), value || null, ...prev[name].slice(index + 1)];
+
                             case 'del':
                                 if (index === 0) {
                                     return [null, ...prev[name].slice(1)];
                                 }
                                 return prev[name].filter((_, i) => i !== index);
+
                             default:
                                 return prev[name];
                         }

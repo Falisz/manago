@@ -245,7 +245,8 @@ const useSchedules = () => {
                                                   user_scope = schedule.user_scope,
                                                   user_scope_id = schedule.user_scope_id,
                                                   view = schedule.view || 'users',
-                                                  loading = true} = {}) => {
+                                                  loading = true
+                                                } = {}) => {
 
         if (!start_date && !end_date && !user_scope && !user_scope_id)
             return;
@@ -354,8 +355,6 @@ const useSchedules = () => {
             shifts: shiftUpdates.current
         });
 
-        console.log('saveScheduleDraft called with scheduleData:', scheduleData);
-
         setStatus([]);
         try {
             let res;
@@ -379,6 +378,7 @@ const useSchedules = () => {
 
             console.log('saveScheduleDraft:', message, schedule);
             setSchedule(schedule);
+            ['new', 'updated', 'deleted'].forEach(bin => shiftUpdates.current[bin] = []);
             return schedule || null;
 
         } catch (err) {
