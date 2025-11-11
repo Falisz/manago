@@ -14,15 +14,18 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
     const isMounted = useRef(false);
     
     useEffect(() => {
-        // Initialization of localized data into formData
         if (source) {
             initialSource.current = JSON.parse(JSON.stringify(source));
             isMounted.current = true;
         }
 
+        // Initialization of localized data into formData, if the mounting is not yet done and there is structure inputs.
         if (!isMounted.current && structure?.inputs) {
             const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
                 const fieldName = config.field;
+                if (!fieldName)
+                    return acc;
+
                 const fieldType = typeof config.type === 'function' ? config.type(formData) : config.type;
                 const teamCompliance = config.teamCompliance;
                 let value = presetData[fieldName];
@@ -108,7 +111,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
             setDiscardWarning(false);
             setTimeout(() => {
                 closeTopModal();
-                if (!presetData && structure.onSubmit.openIfNew) {
+                if (!presetData?.id && structure.onSubmit.openIfNew) {
                     setTimeout(() => {
                         openModal({content: structure.onSubmit.openIfNew , contentId: savedItem.id});
                     }, 350);
@@ -120,11 +123,21 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
         }
     };
 
-    const handleDiscard = async (e) => {
+    const handleCancel = async (e) => {
         e.preventDefault();
-        if (source)
-            setSource(initialSource.current);
-        closeTopModal();
+        const onCancel = structure.onCancel?.action;
+        if (typeof onCancel === 'function') {
+            if (onCancel.constructor === (async () => {}).constructor)
+                await onCancel();
+            else
+                onCancel();
+        }
+
+        const closeModal = !structure.onCancel?.keepOpen;
+        if (closeModal) {
+            setDiscardWarning(false);
+            closeTopModal();
+        }
     };
 
     const formSections = useMemo(() => {
@@ -220,8 +233,8 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                     type={'date'}
                                     name={group.field}
                                     value={source[group.field] || formData[group.field] || ''}
-                                    min={group.conditional_min ? group.conditional_min(formData) : group.min }
-                                    max={group.conditional_max ? group.conditional_max(formData) : group.max }
+                                    min={typeof group.min === 'function' ? group.min(formData) : group.min }
+                                    max={typeof group.max === 'function' ? group.max(formData) : group.max }
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
@@ -328,7 +341,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                         type={'button'}
                         label={structure.onCancel.label || 'Discard'}
                         icon={'close'}
-                        onClick={closeTopModal}
+                        onClick={handleCancel}
                     />}
                 </div>
             </form>

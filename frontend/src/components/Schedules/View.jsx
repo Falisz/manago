@@ -16,7 +16,7 @@ import {formatDate} from '../../utils/dates';
 import '../../styles/Schedule.css';
 
 const ScheduleView = () => {
-    const { appState, user, setScheduleEditor } = useAppState();
+    const { appState, user } = useAppState();
     const { modules } = appState;
     const { scheduleId } = useParams();
     const { schedule, loading, setLoading, setSchedule, fetchScheduleDraft, fetchSchedule } = useSchedules();
@@ -83,9 +83,15 @@ const ScheduleView = () => {
     }, [setSchedule, setSearchParams, user, searchParams]);
 
     const editSchedule = useCallback(() => {
-        setScheduleEditor({...schedule, mode: schedule.id ? 'draft' : 'current'});
-        navigate('/schedules/edit' + (schedule.id ? ('/' + schedule.id) : ''));
-    }, [setScheduleEditor, navigate, schedule]);
+        if (schedule.id)
+            navigate('/schedules/edit/' + schedule.id);
+
+        else
+            navigate('/schedules/edit?current=true' +
+                `&from=${schedule.start_date}&to=${schedule.end_date}` +
+                `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`);
+
+    }, [schedule, navigate]);
 
     useEffect(() => {
         if (isMounted.current)

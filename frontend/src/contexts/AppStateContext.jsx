@@ -38,8 +38,7 @@ export const AppStateProvider = ({ children }) => {
         users: {},
         roles: {},
         teams: {},
-        shifts: {},
-        schedule_editor: {}
+        shifts: {}
     });
 
     // State and Ref setters
@@ -49,10 +48,6 @@ export const AppStateProvider = ({ children }) => {
 
     const setUser = useCallback((user) => {
         setAppState(prev => ({ ...prev, user: {...prev.user, ...user} }));
-    }, []);
-
-    const setScheduleEditor = useCallback(async (scheduleEditor) => {
-        appCache.current.schedule_editor = scheduleEditor;
     }, []);
 
     // API Get calls.
@@ -274,7 +269,6 @@ export const AppStateProvider = ({ children }) => {
             authUser,
             logoutUser,
             getConfigOptions,
-            setScheduleEditor,
             refreshConfig,
             checkConnection,
             refreshModules,

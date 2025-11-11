@@ -13,8 +13,9 @@ import Loader from '../Loader';
 import EditForm from '../EditForm';
 import '../../styles/Schedule.css';
 
-export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty }) => {
+export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
     const { appState } = useAppState();
+    const navigate = useNavigate();
     const { closeTopModal } = useModals();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
@@ -73,7 +74,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty 
                 inputType: 'date',
                 label: 'Start Date',
                 required: true,
-                conditional_max: () => schedule.end_date,
+                max: schedule.end_date,
             },
             end_date: {
                 section: 1,
@@ -82,7 +83,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty 
                 inputType: 'date',
                 label: 'End Date',
                 required: true,
-                conditional_min: () => schedule.start_date,
+                min: schedule.start_date,
             },
             user_scope: {
                 section: 2,
@@ -98,18 +99,20 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty 
             user_scope_id: {
                 section: 2,
                 field: 'user_scope_id',
-                type: () => (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
+                type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
                 inputType: 'dropdown',
                 label: ' ',
-                options: () => schedule.user_scope === 'team' ? scopeOptions.teams :
+                options: schedule.user_scope === 'team' ? scopeOptions.teams :
                     schedule.user_scope === 'manager' ? scopeOptions.managers :
-                    schedule.user_scope === 'user' ? scopeOptions.users : [],
-                required: () => !['you', 'all'].includes(schedule.user_scope),
+                    schedule.user_scope === 'user' ? scopeOptions.users :
+                    schedule.user_scope === 'project' ? scopeOptions.projects :
+                    schedule.user_scope === 'branch' ? scopeOptions.branches :
+                    [{ id: null, name: 'None'}],
+                required: !['you', 'all'].includes(schedule.user_scope),
                 disabled: !isEmpty.current
             },
             users: {
                 section: 3,
-                field: 'users',
                 type: 'content',
                 style: {flexDirection: 'column'},
                 content: (() => {
@@ -130,6 +133,8 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty 
         onSubmit: {
             onSave: () => {
                 saveSchedule();
+                if (schedule.user_scope && schedule.user_scope_id)
+                    isEmpty.current = false;
                 return true;
             },
             refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
@@ -138,9 +143,11 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isEmpty 
         onCancel: {
             action: () => {
                 closeTopModal();
-            }
+                if (isNew.current)
+                    navigate(-1);
+            },
         }
-    }), [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isEmpty]);
+    }), [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
     
     return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
 };
@@ -149,9 +156,6 @@ const ScheduleEdit = () => {
     const { appCache, user } = useAppState();
     const { openModal, updateModalProps } = useModals();
     const { scheduleId } = useParams();
-    // TODO: To be determined by the URL
-    const isNew = useRef(!scheduleId);
-    const isEmpty = useRef(true);
     const { schedule,
         setSchedule,
         updateUserShift,
@@ -165,6 +169,9 @@ const ScheduleEdit = () => {
     const { search } = useLocation();
     const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
+
+    const isNew = useRef(!scheduleId);
+    const isEmpty = useRef(true);
     const isMounted = useRef(false);
     const modalIdRef = useRef(null);
 
@@ -172,16 +179,9 @@ const ScheduleEdit = () => {
         navigate(-1);
     }, [navigate]);
 
-    const saveSchedule = useCallback(() => {
-        if (isNew.current)
-            schedule.author = user.id;
-
-        saveScheduleDraft({ schedule }).then(() => {
-            if (isNew.current && isEmpty.current)
-                isEmpty.current = false;
-        });
-
-    }, [user, schedule, saveScheduleDraft]);
+    const saveSchedule = useCallback(() =>
+        saveScheduleDraft({ schedule: { ...schedule, author: isNew.current ? user.id : schedule.author } }).then()
+    , [user, schedule, saveScheduleDraft]);
 
     const publishSchedule = useCallback((schedule) => {
         //TODO: Create a modal prompt to confirm publishing
@@ -189,70 +189,68 @@ const ScheduleEdit = () => {
 
     }, [saveScheduleDraft]);
 
-    // TODO: Implement forced state of modal - it cannot be closed until filled properly.
-
     const editDetails = useCallback(() => {
         modalIdRef.current = openModal({
             content: 'component',
             type: 'dialog',
-            closable: isNew.current,
             component: ScheduleEditForm,
-            props: {schedule, setSchedule, saveSchedule, isEmpty}
+            props: {schedule, setSchedule, saveSchedule, isNew, isEmpty}
         });
-    }, [openModal, schedule, setSchedule, saveSchedule, isEmpty]);
-
+    }, [openModal, schedule, setSchedule, saveSchedule]);
 
     useEffect(() => {
         if (isMounted.current)
             return;
 
-        isMounted.current = true;
-
         fetchJobPosts().then();
+        setLoading(true);
 
-        let scheduleConfig = {};
-
-        // TODO: No more schedule editor. If no params provided for /schedules/edit it will atomatically navigate to schedule/new to make editForm popup forced
+        // TODO: No more schedule editor cache. If no params provided for /schedules/edit it will automatically navigate to schedule/new to make editForm popup forced
         if (scheduleId) {
-            setLoading(true);
             fetchScheduleDraft(scheduleId).then();
             isEmpty.current = false;
+            setLoading(false);
             return;
 
-        } else if (appCache.current.schedule_editor) {
-            scheduleConfig = appCache.current.schedule_editor;
-
-            isEmpty.current = !(scheduleConfig.users && scheduleConfig.users.size);
-
-            if (scheduleConfig.mode === 'new') {
-                editDetails();
-                isNew.current = true;
-            } else {
-                isNew.current = false;
-            }
-
         } else {
+            const scheduleConfig = {};
+            let paramMissing = false;
 
-            setLoading(true);
+            const current = params.get('current');
+            if (current)
+                scheduleConfig.mode = 'current';
+
             const from = params.get('from');
             if (from && !isNaN(Date.parse(from)))
                 scheduleConfig.start_date = from;
+            else
+                paramMissing = true;
 
             const to = params.get('to');
             if (to && !isNaN(Date.parse(to)))
                 scheduleConfig.end_date = to;
+            else
+                paramMissing = true;
 
             const scope = params.get('scope');
             if (scope)
                 scheduleConfig.user_scope = scope;
+            else
+                paramMissing = true;
 
             const sid = params.get('sid');
             if (sid && !isNaN(parseInt(sid)))
                 scheduleConfig.user_scope_id = sid;
+            else
+                paramMissing = true;
+
+            setSchedule(scheduleConfig);
+
+            if (paramMissing)
+                editDetails();
         }
 
-        setSchedule(scheduleConfig);
-        setLoading(false);
+        isMounted.current = true;
 
     }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading,
         fetchScheduleDraft, editDetails, fetchJobPosts]);
@@ -265,7 +263,7 @@ const ScheduleEdit = () => {
 
     useEffect(() => {
         isNew.current && isEmpty.current && fetchSchedule().then();
-    }, [fetchSchedule])
+    }, [fetchSchedule]);
 
     if (loading)
         return <Loader/>;

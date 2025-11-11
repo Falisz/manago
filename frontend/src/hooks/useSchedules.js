@@ -345,6 +345,8 @@ const useSchedules = () => {
         await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
 
     const saveScheduleDraft = useCallback( async ({schedule = null, publish = false} = {}) => {
+
+        console.log('saveScheduleDraft:', schedule);
         if (!schedule)
             return;
 
@@ -353,21 +355,27 @@ const useSchedules = () => {
         schedule.shifts = shiftUpdates.current;
         schedule.publish = publish;
 
+        console.log('saveScheduleDraft2:', schedule);
+
         setStatus([]);
-
-        let res;
-
-        if (schedule.id)
-            res = await axios.put(`/schedules/${schedule.id}`, schedule, { withCredentials: true });
-        else
-            res = await axios.post('/schedules', schedule, { withCredentials: true });
-
-        if (!res)
-            return null;
-
-        const { data } = res;
-
-        return ( data && data.scheduleDraft ) || null;
+        // try {
+        //     let res;
+        //
+        //     if (schedule.id)
+        //         res = await axios.put(`/schedules/${schedule.id}`, schedule, {withCredentials: true});
+        //     else
+        //         res = await axios.post('/schedules', schedule, {withCredentials: true});
+        //
+        //     if (!res)
+        //         return null;
+        //
+        //     const {data} = res;
+        //
+        //     return (data && data.scheduleDraft) || null;
+        //
+        // } catch (err) {
+        //     console.log('saveScheduleDraft error:', err);
+        // }
     }, []);
 
     const discardScheduleDraft = useCallback( async (scheduleId) => {

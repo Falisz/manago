@@ -4,13 +4,11 @@ import {useNavigate} from 'react-router-dom';
 import {useModals} from '../../contexts/ModalContext';
 import Button from '../Button';
 import useSchedules from '../../hooks/useSchedules';
-import useAppState from "../../contexts/AppStateContext";
 import Loader from "../Loader";
 
 const SchedulesIndex = () => {
     const { openModal, refreshTriggers, refreshData, closeTopModal } = useModals();
     const { scheduleDrafts, fetchScheduleDrafts, discardScheduleDraft, loading  } = useSchedules();
-    const { setScheduleEditor } = useAppState();
     const navigate = useNavigate();
 
     const previewSchedule = useCallback((id) => {
@@ -19,13 +17,11 @@ const SchedulesIndex = () => {
 
     const editSchedule = useCallback((schedule) => {
         if (schedule)  {
-            setScheduleEditor({...schedule, mode: 'draft'});
             navigate('/schedules/edit' + (schedule.id ? ('/' + schedule.id) : ''));
         } else {
-            setScheduleEditor({mode: 'new'});
             navigate('/schedules/new');
         }
-    }, [setScheduleEditor, navigate]);
+    }, [navigate]);
 
     const deleteSchedule = useCallback((id) => {
         openModal({
