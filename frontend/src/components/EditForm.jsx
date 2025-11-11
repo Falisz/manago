@@ -7,6 +7,9 @@ import MultiComboBox from './MultiComboBox';
 import CheckBox from './CheckBox';
 import '../styles/EditForm.css';
 
+// TODO: Add support for background picker.
+// TODO: Change structure.inputs into structure.fields.
+
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
@@ -169,7 +172,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
     const handleCancel = async (e) => {
         e.preventDefault();
-        const onCancel = structure.onCancel?.action;
+        const onCancel = structure.onCancel?.handler;
         if (typeof onCancel === 'function') {
             if (onCancel.constructor === (async () => {}).constructor)
                 await onCancel();

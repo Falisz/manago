@@ -47,113 +47,114 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
         branches: [{id: null, name: 'None'}]
     }), [appState.modules, teams, users, managers]);
 
-    const formStructure = useMemo(() => ({
-        header: {
-            title: schedule.id ? `Editing ${schedule?.name}` : `Creating a new Schedule Draft`,
-        },
-        inputs: {
-            name: {
-                section: 0,
-                field: 'name',
-                type: 'string',
-                inputType: 'input',
-                label: 'Name',
-                required: true,
+    const formStructure = useMemo(() => {
+        const users = schedule.users?.values() || [];
+        const userList = Array.from(users.map(u => u.first_name + ' ' + u.last_name));
+
+        return {
+            header: {
+                title: schedule.id ? `Editing ${schedule?.name}` : `Creating a new Schedule Draft`,
             },
-            description: {
-                section: 0,
-                field: 'description',
-                type: 'string',
-                inputType: 'textarea',
-                label: 'Description',
+            inputs: {
+                name: {
+                    section: 0,
+                        field: 'name',
+                        type: 'string',
+                        inputType: 'input',
+                        label: 'Name',
+                        required: true,
+                },
+                description: {
+                    section: 0,
+                        field: 'description',
+                        type: 'string',
+                        inputType: 'textarea',
+                        label: 'Description',
+                },
+                start_date: {
+                    section: 1,
+                        field: 'start_date',
+                        type: 'date',
+                        inputType: 'date',
+                        label: 'Start Date',
+                        required: true,
+                        max: schedule.end_date,
+                },
+                end_date: {
+                    section: 1,
+                        field: 'end_date',
+                        type: 'date',
+                        inputType: 'date',
+                        label: 'End Date',
+                        required: true,
+                        min: schedule.start_date,
+                },
+                user_scope: {
+                    section: 2,
+                        field: 'user_scope',
+                        type: 'string',
+                        inputType: 'dropdown',
+                        label: 'User Scope',
+                        options: scopeOptions.scopes,
+                        required: true,
+                        disabled: !isEmpty.current,
+                        onChange: () => setSchedule(prev => ({...prev, user_scope_id: null})),
+                },
+                user_scope_id: {
+                    section: 2,
+                        field: 'user_scope_id',
+                        type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
+                        inputType: 'dropdown',
+                        label: ' ',
+                        options: schedule.user_scope === 'team' ? scopeOptions.teams :
+                        schedule.user_scope === 'manager' ? scopeOptions.managers :
+                            schedule.user_scope === 'user' ? scopeOptions.users :
+                                schedule.user_scope === 'project' ? scopeOptions.projects :
+                                    schedule.user_scope === 'branch' ? scopeOptions.branches :
+                                        [{ id: null, name: 'None'}],
+                        required: !['you', 'all'].includes(schedule.user_scope),
+                        disabled: !isEmpty.current
+                },
+                users: {
+                    section: 3,
+                        type: 'content',
+                        style: {flexDirection: 'column'},
+                    content: <>
+                                <label className={'form-group-label'}>Users ({userList.length})</label>
+                                <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>
+                            </>
+                }
             },
-            start_date: {
-                section: 1,
-                field: 'start_date',
-                type: 'date',
-                inputType: 'date',
-                label: 'Start Date',
-                required: true,
-                max: schedule.end_date,
+            sections: {
+                2: {
+                    style: {alignItems: 'flex-end'}
+                }
             },
-            end_date: {
-                section: 1,
-                field: 'end_date',
-                type: 'date',
-                inputType: 'date',
-                label: 'End Date',
-                required: true,
-                min: schedule.start_date,
+            onSubmit: {
+                onSave: () => {
+                    for (const field of ['start_date', 'end_date', 'user_scope', 'user_scope_id'])
+                        if (schedule[field] == null)
+                            return false;
+
+                    saveSchedule();
+
+                    if (schedule.user_scope && schedule.user_scope_id)
+                        isEmpty.current = false;
+
+                    return true;
+                },
+                    refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
+                    label: 'Start planning'
             },
-            user_scope: {
-                section: 2,
-                field: 'user_scope',
-                type: 'string',
-                inputType: 'dropdown',
-                label: 'User Scope',
-                options: scopeOptions.scopes,
-                required: true,
-                disabled: !isEmpty.current,
-                onChange: () => setSchedule(prev => ({...prev, user_scope_id: null})),
-            },
-            user_scope_id: {
-                section: 2,
-                field: 'user_scope_id',
-                type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
-                inputType: 'dropdown',
-                label: ' ',
-                options: schedule.user_scope === 'team' ? scopeOptions.teams :
-                    schedule.user_scope === 'manager' ? scopeOptions.managers :
-                    schedule.user_scope === 'user' ? scopeOptions.users :
-                    schedule.user_scope === 'project' ? scopeOptions.projects :
-                    schedule.user_scope === 'branch' ? scopeOptions.branches :
-                    [{ id: null, name: 'None'}],
-                required: !['you', 'all'].includes(schedule.user_scope),
-                disabled: !isEmpty.current
-            },
-            users: {
-                section: 3,
-                type: 'content',
-                style: {flexDirection: 'column'},
-                content: (() => {
-                    const users = schedule.users?.values() || [];
-                    const userList = Array.from(users.map(u => u.first_name + ' ' + u.last_name));
-                    return <>
-                        <label className={'form-group-label'}>Users ({userList.length})</label>
-                        <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>
-                    </>;
-                })()
+            onCancel: {
+                handler: () => {
+                    closeTopModal();
+                    if (isNew.current)
+                        navigate(-1);
+                },
             }
-        },
-        sections: {
-            2: {
-                style: {alignItems: 'flex-end'}
-            }
-        },
-        onSubmit: {
-            onSave: () => {
-                for (const field of ['start_date', 'end_date', 'user_scope', 'user_scope_id'])
-                    if (schedule[field] == null)
-                        return false;
-
-                saveSchedule();
-
-                if (schedule.user_scope && schedule.user_scope_id)
-                    isEmpty.current = false;
-
-                return true;
-            },
-            refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
-            label: 'Start planning'
-        },
-        onCancel: {
-            action: () => {
-                closeTopModal();
-                if (isNew.current)
-                    navigate(-1);
-            },
-        }
-    }), [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
+        };
+    }, [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
     
     return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
 };
@@ -162,7 +163,8 @@ const ScheduleEdit = () => {
     const { appCache } = useAppState();
     const { openModal, updateModalProps } = useModals();
     const { scheduleId } = useParams();
-    const { schedule,
+    const {
+        schedule,
         setSchedule,
         updateUserShift,
         loading,
@@ -209,12 +211,9 @@ const ScheduleEdit = () => {
         if (isMounted.current)
             return;
 
-        console.log('initializer effect runs...');
-
         fetchJobPosts().then();
         setLoading(true);
 
-        // TODO: No more schedule editor cache. If no params provided for /schedules/edit it will automatically navigate to schedule/new to make editForm popup forced
         if (scheduleId) {
             fetchScheduleDraft(scheduleId).then();
             setLoading(false);
@@ -270,17 +269,13 @@ const ScheduleEdit = () => {
         fetchScheduleDraft, editDetails, fetchJobPosts]);
 
     useEffect(() => {
-        if (modalIdRef.current !== null) {
-            console.log('updateModalProps effect runs...');
+        if (modalIdRef.current !== null)
             updateModalProps(modalIdRef.current, { schedule, saveSchedule });
-        }
     }, [schedule, saveSchedule, updateModalProps]);
 
     useEffect(() => {
-        if (isNew.current && isEmpty.current) {
-            console.log('fetchSchedule effect runs...');
+        if (isNew.current && isEmpty.current)
             fetchSchedule().then();
-        }
     }, [fetchSchedule]);
 
     if (loading)
