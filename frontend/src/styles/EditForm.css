@@ -143,6 +143,33 @@
     color: orangered;
 }
 
+.app-form .form-radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.app-form .form-radio-group .radio-label {
+    margin: 0;
+    position: relative;
+}
+.app-form .form-radio-group .radio-label input {
+    position: absolute;
+    opacity: 0;
+}
+.app-form .form-radio-group .radio-label-image {
+    width: 200px;
+    height: auto;
+    border-radius: 12px;
+    opacity: 0.6;
+    border: 3px solid transparent;
+    transition: 0.3s ease-in-out;
+    cursor: pointer;
+}
+.app-form .form-radio-group input:checked+.radio-label-image {
+    opacity: 1;
+    border-color: white;
+}
+
 .form-input.error,
 .app-combo-box.error .combo-box-selected {
     animation: shake 0.5s, flash 0.5s;

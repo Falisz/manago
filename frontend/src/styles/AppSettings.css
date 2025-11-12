@@ -141,3 +141,8 @@
 .app-settings .form-group.disabled .background-thumbnail {
     cursor: not-allowed;
 }
+
+.app-settings .app-background .radio-label-image {
+    aspect-ratio: 16/9;
+    object-fit: cover;
+}

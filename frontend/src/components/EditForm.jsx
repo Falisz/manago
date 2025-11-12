@@ -189,11 +189,11 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
     const formSections = useMemo(() => {
         const sections = {};
         Object.entries(structure.inputs).forEach(([key, config]) => {
-            const { section } = config;
+            const { section, ...field } = config;
             if (!sections[section]) {
-                sections[section] = {};
+                sections[section] = { inputs: {} };
             }
-            sections[section][key] = { ...config };
+            sections[section].inputs[key] = { ...field };
         });
         if (structure.sections)
         {
@@ -257,11 +257,11 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                         style={section.style}
                     >
                         {section.header && <h2>{section.header}</h2>}
-                        {Object.entries(section).map(([key, group], index) => {
+                        {Object.entries(section.inputs).map(([key, group], index) => {
 
                             const type = typeof group.type === 'function' ? group.type(formData) : group.type;
 
-                            if ( ['header', 'style', 'className'].includes(key) || type === 'hidden')
+                            if ( type === 'hidden')
                                 return null;
 
                             let groupContent;
@@ -316,7 +316,9 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                     label={group.inputLabel}
                                 />;
 
-                            if (group.inputType === 'radio')
+                            
+
+                            if (group.inputType === 'radio'){
                                 groupContent = <div
                                     className={'form-radio-group' + (group.className ? ' ' + group.className : '')}
                                     style={group.style}
@@ -326,7 +328,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                             <input
                                                 type='radio'
                                                 name={group.field}
-                                                value={option}
+                                                value={option.id}
                                                 checked={(source[group.field] || formData[group.field]) === option.id}
                                                 onChange={handleChange}
                                                 disabled={typeof group.disabled === 'function' ? group.disabled(formData) : group.disabled}
@@ -344,7 +346,8 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                         </label>
                                     ))}
 
-                                </div>
+                                </div>;
+                            }
 
                             if (group.inputType === 'dropdown')
                                 groupContent = <ComboBox
@@ -406,8 +409,8 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                     className={'form-group' + (group.className ? ' ' + group.className : '')}
                                     style={group.style}
                                 >
-                                    {group.label && <h3 className={'form-group-label'}>
-                                        {group.icon && <Icon i={group.icon} s={true}/>}
+                                    {group.label && <h3 className={'form-group-label'} style={group.labelStyle}>
+                                        {group.icon && <Icon i={group.icon} s={true} style={group.iconStyle}/>}
                                         {group.label}
                                     </h3>}
                                     {groupContent}
