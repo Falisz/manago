@@ -355,7 +355,7 @@ export async function getShift({id, user, job_post, schedule, date, from, to} = 
     if (isNumberOrNumberArray(job_post))
         where.job_post = job_post;
 
-    if (isNumberOrNumberArray(schedule))
+    if (isNumberOrNumberArray(schedule) || schedule === null)
         where.schedule = schedule;
 
     if (date)

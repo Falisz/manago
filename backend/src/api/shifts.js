@@ -34,6 +34,8 @@ const fetchShiftsHandler = async (req, res) => {
             query.id = id;
         } else {
 
+            console.log(req.query);
+
             if (req.query.user) {
                 query.user = parseInt(req.query.user);
             } else if (req.query.user_scope) {
@@ -59,7 +61,9 @@ const fetchShiftsHandler = async (req, res) => {
                     query.to = req.query.end_date;
             }
 
-            if (req.query.schedule)
+            if (req.query.schedule === 'null')
+                query.schedule = null;
+            else if (req.query.schedule)
                 query.schedule = parseInt(req.query.schedule);
 
             if (req.query.job_post)

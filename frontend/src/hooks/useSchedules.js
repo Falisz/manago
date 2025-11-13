@@ -88,7 +88,7 @@ const useSchedules = () => {
                         params.end_date = end_date;
                 }
 
-                if (schedule_id)
+                if (schedule_id !== undefined)
                     params.schedule = schedule_id;
 
                 if (job_post)
@@ -277,7 +277,8 @@ const useSchedules = () => {
             start_date,
             end_date,
             user_scope,
-            user_scope_id
+            user_scope_id,
+            schedule_id: null
         }) || [];
 
         leaves = await fetchLeaves({
