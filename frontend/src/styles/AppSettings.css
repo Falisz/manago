@@ -13,6 +13,9 @@
 .app-settings .app-form {
     padding: 10px 20px;
 }
+.app.fluent .app-settings .app-form {
+    padding: 20px;
+}
 
 .app-settings .form-label {
     display: flex;

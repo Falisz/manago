@@ -1,19 +1,70 @@
 // FRONTEND/Components/AppSettings.jsx
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useRef, useState, useMemo} from 'react';
 import useAppState from '../contexts/AppStateContext';
-import axios from 'axios';
+import useModals from '../contexts/ModalContext';
+import Loader from './Loader';
+import EditForm from './EditForm';
+import Table from './Table';
 import '../styles/AppSettings.css';
 import '../styles/EditForm.css';
-import Loader from './Loader';
-import AppModules from './AppModules';
-import ComboBox from './ComboBox';
-import Icon from './Icon';
-import Button from './Button';
 
-// TODO: Move AppStyle to different component that will utilize EditForm - implement background selection in EditForm component instead.
-const AppSettings = () => {
-    const { appState, getConfigOptions, refreshConfig } = useAppState();
-    const [configOptions, setConfigOptions] = useState(null);
+const AppModules = () => {
+    const { appState, toggleModule } = useAppState();
+    const { openModal } = useModals();
+
+    const handleToggleConfirm = (id, value) => {
+        openModal({
+            content: 'confirm',
+            type: 'dialog',
+            message: `Are you sure you want to ${!value ? 'enable' : 'disable'} this app module?` + (value ? ' All the data related to it will not be ' +
+                'accessible within the app until its reactivation.' : ''),
+            onConfirm: () => toggleModule(id, value).then(),
+        });
+    }
+
+    const tableStructure = {
+        pageHeader: {
+            title: 'App Modules',
+            itemName: 'Module',
+        },
+        tableFields: {
+            icon: {
+                display: true,
+                type: 'icon',
+                style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'},
+                iconStyle: {fontSize: '2rem' }
+            },
+            title: {
+                display: true,
+                type: 'string',
+                style: {fontSize: '1.5rem', cursor: 'default', paddingLeft: '20px', textTransform: 'uppercase', fontFamily: 'var(--font-family-condensed)' },
+            },
+            enabled: {
+                display: true,
+                type: 'toggleSwitch',
+                style: {textAlign: 'right', maxWidth: '200px'},
+                checked: (data) => data.enabled,
+                onChange: (data) => handleToggleConfirm(data.id, data.enabled),
+                disabled: (data) => data.id === 0,
+            },
+        },
+        descriptionField: 'description',
+    }
+
+    return (
+        <Table
+            dataSource={appState.modules}
+            tableStructure={tableStructure}
+            dataPlaceholder={'No Modules found.'}
+        />
+    );
+};
+
+const AppStyles = () => {
+    const { appState, getConfigOptions, saveConfig } = useAppState();
+    const [configOptions, setConfigOptions] = useState({});
+    const [loading, setLoading] = useState(true);
+    const isMounted = useRef(false);
     const [formConfig, setFormConfig] = useState({
         style: appState.style,
         theme: appState.theme,
@@ -22,136 +73,135 @@ const AppSettings = () => {
     });
 
     useEffect(() => {
-        const fetchConfigOptions = async () => {
-            const options = await getConfigOptions();
-            setConfigOptions(options);
-        };
-        fetchConfigOptions().then();
+        if (isMounted.current)
+            return;
+
+        const fetchConfigs = async () => setConfigOptions(await getConfigOptions());
+
+        fetchConfigs().then();
+
+        setLoading(false);
+
+        isMounted.current = true;
     }, [getConfigOptions]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormConfig((prev) => ({
-            ...prev,
-            [name]: value,
-            ...(name === 'style' && value !== 'fluent' ? { background: null } : {})
-        }));
-    };
+    const backgroundOptions = useMemo(() => {
+        const opts = configOptions?.background;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            // Filter out null/undefined values
-            const payload = Object.fromEntries(
-                Object.entries(formConfig).filter(([, v]) => v != null)
-            );
-            await axios.put('/config', payload, { withCredentials: true });
-            await refreshConfig();
-        } catch (err) {
-            console.error('Error saving config:', err);
-        }
-    };
+        if (!opts)
+            return [];
 
-    if (!configOptions) {
+        return opts.map( opt => ({id: opt, image: `./assets/background-${opt.toLowerCase()}.jpg`}) );
+    }, [configOptions.background]);
+
+    const formStructure = useMemo(() => {
+        const labelStyle = {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            textTransform: 'uppercase',
+            fontSize: '1.5rem',
+            fontFamily: "'Roboto Condensed', sans-serif",
+            fontWeight: 400
+        };
+
+        const iconStyle = {
+            fontSize: '2rem',
+        };
+
+        const upperCase = {
+            textTransform: 'uppercase',
+        };
+
+        return {
+            inputs: {
+                style: {
+                    section: 0,
+                    style: {
+                        flex: '1 1 30%'
+                    },
+                    label: 'Style',
+                    labelStyle,
+                    icon: 'type_specimen',
+                    iconStyle,
+                    field: 'style',
+                    inputType: 'dropdown',
+                    selectedStyle: upperCase,
+                    optionsStyle: upperCase,
+                    options: configOptions.style
+                },
+                theme: {
+                    section: 0,
+                    style: {
+                        flex: '1 1 30%'
+                    },
+                    label: 'Theme',
+                    labelStyle,
+                    icon: 'routine',
+                    iconStyle,
+                    field: 'theme',
+                    inputType: 'dropdown',
+                    selectedStyle: upperCase,
+                    optionsStyle: upperCase,
+                    options: configOptions.theme
+                },
+                color: {
+                    section: 0,
+                    style: {
+                        flex: '1 1 30%'
+                    },
+                    label: 'Color',
+                    labelStyle,
+                    icon: 'palette',
+                    iconStyle,
+                    field: 'color',
+                    inputType: 'dropdown',
+                    selectedStyle: upperCase,
+                    optionsStyle: upperCase,
+                    options: configOptions.color
+                },
+                background: {
+                    section: 1,
+                    className: 'app-background',
+                    label: 'Background',
+                    labelStyle,
+                    icon: 'wallpaper',
+                    iconStyle,
+                    field: 'background',
+                    inputType: 'radio',
+                    options: backgroundOptions,
+                    disabled: formConfig.style !== 'fluent'
+                }
+            },
+            onSubmit: {
+                onSave: async () => await saveConfig(formConfig)
+            },
+            onCancel: {
+                hidden: true
+            }
+        };
+    }, [backgroundOptions, configOptions.color, configOptions.style, configOptions.theme, formConfig, saveConfig]);
+
+    if (loading)
         return <Loader/>;
-    }
 
+    return <EditForm
+        className={'seethrough app-scroll app-overflow-y'}
+        structure={formStructure}
+        source={formConfig}
+        setSource={setFormConfig}
+    />;
+
+}
+
+const AppSettings = () => {
     return (
         <>
             <div className='page-section'>
                 <div className='page-header'>
                     <h1 className={'page-title'}> App Style</h1>
                 </div>
-                <form
-                    className={'app-form seethrough app-scroll app-overflow-y'}
-                    onSubmit={handleSubmit}
-                >
-                    <div className={'form-section'}>
-                        <div className={'form-group'}>
-                            <label
-                                className={'form-label'}
-                            >
-                                <Icon i={'type_specimen'} s={true}/>
-                                Style
-                            </label>
-                            <ComboBox
-                                name='style'
-                                value={formConfig.style}
-                                options={configOptions.style}
-                                onChange={handleChange}
-                                upperCaseNames={true}
-                                searchable={false}
-                            />
-                        </div>
-                        <div className={'form-group'}>
-                            <label
-                                className={'form-label'}
-                            >
-                                <Icon i={'routine'} s={true}/>
-                                Theme
-                            </label>
-                            <ComboBox
-                                name='theme'
-                                value={formConfig.theme}
-                                options={configOptions.theme}
-                                onChange={handleChange}
-                                upperCaseNames={true}
-                                searchable={false}
-                            />
-                        </div>
-                        <div className={'form-group'}>
-                            <label
-                                className={'form-label'}
-                            >
-                                <Icon i={'palette'} s={true}/>
-                                Color
-                            </label>
-                            <ComboBox
-                                className={'palette'}
-                                name='color'
-                                value={formConfig.color}
-                                options={configOptions.color}
-                                onChange={handleChange}
-                                upperCaseNames={true}
-                            />
-                        </div>
-                    </div>
-                    <div
-                        className={'form-group ' + (formConfig.style !== 'fluent' ? 'disabled' : '') }
-                    >
-                        <div
-                            className={'form-label'}
-                        >
-                            <Icon i={'wallpaper'} s={true}/>
-                            Background
-                        </div>
-                        <div className='background-gallery'>
-                            {configOptions.background.map((opt) => (
-                                <label key={opt} className='radio-label'>
-                                    <input
-                                        type='radio'
-                                        name='background'
-                                        value={opt}
-                                        checked={formConfig.background === opt}
-                                        onChange={handleChange}
-                                        disabled={formConfig.style !== 'fluent'}
-                                    />
-                                    <img
-                                        className={'background-thumbnail'}
-                                        src={`./assets/background-${opt.toLowerCase()}.jpg`}
-                                        alt={opt}
-                                    />
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-                    <Button
-                        className={'submit'}
-                        type={'submit'}
-                        label={'Save Changes'}
-                        icon={'save'}
-                    />
-                </form>
+                <AppStyles/>
             </div>
             <div className={'page-section'}>
                 <AppModules/>

@@ -148,6 +148,10 @@
     flex-wrap: wrap;
     gap: 10px;
 }
+.app-form .form-radio-group.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
 .app-form .form-radio-group .radio-label {
     margin: 0;
     position: relative;
@@ -165,7 +169,7 @@
     transition: 0.3s ease-in-out;
     cursor: pointer;
 }
-.app-form .form-radio-group input:checked+.radio-label-image {
+.app-form .form-radio-group:not(.disabled) input:checked+.radio-label-image {
     opacity: 1;
     border-color: white;
 }

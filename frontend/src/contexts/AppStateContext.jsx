@@ -135,6 +135,17 @@ export const AppStateProvider = ({ children }) => {
         }
     }, [getConfig, setLoading]);
 
+    const saveConfig = useCallback(async (config) => {
+        try {
+            await axios.put('/config', config, { withCredentials: true });
+            await refreshConfig();
+            return true;
+        } catch (err) {
+            console.error('Error saving config:', err);
+            return false;
+        }
+    }, [refreshConfig])
+
     const checkConnection = useCallback(async () => {
         try {
             const config = await getConfig();
@@ -269,6 +280,7 @@ export const AppStateProvider = ({ children }) => {
             authUser,
             logoutUser,
             getConfigOptions,
+            saveConfig,
             refreshConfig,
             checkConnection,
             refreshModules,

@@ -4,7 +4,6 @@ import RolesIndex from './components/Roles/Index';
 import TeamsIndex from './components/Teams/Index';
 import PostsIndex from './components/Posts/Index';
 import AppSettings from './components/AppSettings';
-import AppModules from './components/AppModules';
 import SchedulesDashboard from './components/Schedules/Dashboard';
 import ScheduleView from './components/Schedules/View';
 import ScheduleEdit from './components/Schedules/Edit';
@@ -19,8 +18,7 @@ export const componentMap = {
     ScheduleView,
     ScheduleEdit,
     PostsIndex,
-    AppSettings,
-    AppModules,
+    AppSettings
 };
 
 export default componentMap;

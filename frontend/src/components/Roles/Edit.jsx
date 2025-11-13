@@ -57,12 +57,7 @@ const RoleEdit = ({ roleId }) => {
     if (loading) 
         return <Loader />;
 
-    return (
-        <EditForm
-            structure={formStructure}
-            presetData={roleData}
-        />
-    );
+    return <EditForm structure={formStructure} presetData={roleData} />;
 };
 
 export default RoleEdit;

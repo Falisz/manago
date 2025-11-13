@@ -8,7 +8,6 @@ import CheckBox from './CheckBox';
 import '../styles/EditForm.css';
 import Icon from "./Icon";
 
-// TODO: Add support for background picker.
 // TODO: Change structure.inputs into structure.fields.
 
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
@@ -320,7 +319,9 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'radio'){
                                 groupContent = <div
-                                    className={'form-radio-group' + (group.className ? ' ' + group.className : '')}
+                                    className={'form-radio-group'
+                                        + (group.className ? ' ' + group.className : '')
+                                        + (group.disabled ? ' disabled' : '')}
                                     style={group.style}
                                 >
                                     {group.options.map((option, index) => (
@@ -349,9 +350,12 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                 </div>;
                             }
 
-                            if (group.inputType === 'dropdown')
+                            if (['dropdown', 'combobox'].includes(group.inputType))
                                 groupContent = <ComboBox
                                     className={getComponentClassName(group)}
+                                    style={group.inputStyle}
+                                    selectedStyle={group.selectedStyle}
+                                    optionsStyle={group.optionsStyle}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
                                     name={group.field}
                                     value={source[group.field] || formData[group.field] || group.default || null}
@@ -406,7 +410,10 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                             return (
                                 <div
                                     key={index}
-                                    className={'form-group' + (group.className ? ' ' + group.className : '')}
+                                    className={'form-group' +
+                                        (group.className ? ' ' + group.className : '') +
+                                        (group.disabled ? ' disabled' : '')
+                                    }
                                     style={group.style}
                                 >
                                     {group.label && <h3 className={'form-group-label'} style={group.labelStyle}>
