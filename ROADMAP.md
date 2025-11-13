@@ -39,18 +39,17 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - [ ] Breaks tracking.
 - [ ] Payroll planning.
 - [ ] Task entry.
+- ## Projects
+- [ ] Project Roles - different from company-wide user roles.
+- [ ] Access to different resources.
 ## Branches
 - [ ] Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
 - [ ] Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
 - [ ] Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
-## Projects
-- [ ] Project Roles - different from company-wide user roles.
-- [ ] Access to different resources.
+# MVP ENDS HERE
 ## Tasks
 - [ ] per Users, Shift, Branches, Project, company-wide.
 - [ ] typical tasks, motivation KPI contests for branches/teams/projects/users, etc.
-
-# MVP ENDS HERE
 ## Posts and channels
 - [ ] Posts-Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 ## Skills, Trainings and Assesments
