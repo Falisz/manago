@@ -13,7 +13,7 @@ import UserSchedule from './UserSchedule';
 import MonthlySchedule from './MonthlySchedule';
 import JobPostSchedule from './JobPostSchedule';
 import {formatDate} from '../../utils/dates';
-import '../../styles/Schedule.css';
+import '../../styles/Schedules.css';
 
 const ScheduleView = () => {
     const { appState, user } = useAppState();

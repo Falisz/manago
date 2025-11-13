@@ -4,9 +4,9 @@ import axios from 'axios';
 import useAppState from '../contexts/AppStateContext';
 
 const useUsers = () => {
-    const [users, setUsers] = useState();
-    const [loading, setLoading] = useState();
-    const [status, setStatus] = useState([]);
+    const [ users, setUsers ] = useState();
+    const [ loading, setLoading ] = useState();
+    const [ status, setStatus ] = useState([]);
     const { appCache } = useAppState();
     const userCache = appCache.current.users;
 

@@ -234,6 +234,7 @@ export const ModalProvider = ({ children }) => {
         // eslint-disable-next-line
     }, []);
 
+    // TODO: Troubleshoot and fix - remove params from URL when modal gets closed.
     const { search } = useLocation();
     useEffect(() => {
         const newParams = new URLSearchParams(search);

@@ -1,6 +1,6 @@
 // FRONTEND/components/Schedules/Dashboard.jsx
 import React from 'react';
-import '../../styles/WorkPlanner.css';
+import '../../styles/Schedules.css';
 import SchedulesIndex from './Index';
 
 const SchedulesDashboard = () => {

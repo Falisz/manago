@@ -120,12 +120,13 @@ const AppStyles = () => {
                     style: {
                         flex: '1 1 30%'
                     },
-                    label: 'Style',
+                    label: 'UI Style',
                     labelStyle,
                     icon: 'type_specimen',
                     iconStyle,
                     field: 'style',
                     inputType: 'dropdown',
+                    searchable: false,
                     selectedStyle: upperCase,
                     optionsStyle: upperCase,
                     options: configOptions.style
@@ -141,11 +142,13 @@ const AppStyles = () => {
                     iconStyle,
                     field: 'theme',
                     inputType: 'dropdown',
+                    searchable: false,
                     selectedStyle: upperCase,
                     optionsStyle: upperCase,
                     options: configOptions.theme
                 },
                 color: {
+                    className: 'app-color',
                     section: 0,
                     style: {
                         flex: '1 1 30%'
@@ -156,6 +159,7 @@ const AppStyles = () => {
                     iconStyle,
                     field: 'color',
                     inputType: 'dropdown',
+                    searchable: false,
                     selectedStyle: upperCase,
                     optionsStyle: upperCase,
                     options: configOptions.color

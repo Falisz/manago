@@ -104,23 +104,12 @@ export const AppStateProvider = ({ children }) => {
     }, [setLoading, setUser]);
 
     const refreshConfig = useCallback(async (hasRetried = false) => {
+        setLoading(true);
         try {
-            setLoading(true);
             const config = await getConfig();
             setAppState(prev => {
-                if (
-                    prev.is_connected === config.is_connected &&
-                    prev.theme === config.theme &&
-                    prev.color === config.color &&
-                    prev.style === config.style &&
-                    prev.background === config.background
-                ) {
-                    return prev;
-                }
-                return {
-                    ...prev,
-                    ...config
-                };
+                const hasChanged = Object.keys(config).some(key => prev[key] !== config[key]);
+                return hasChanged ? { ...prev, ...config } : prev;
             });
         } catch (error) {
             if (!hasRetried) {
@@ -130,9 +119,8 @@ export const AppStateProvider = ({ children }) => {
             } else {
                 console.error('Refreshing app config error', error);
             }
-        } finally {
-            setLoading(false);
         }
+        setLoading(false);
     }, [getConfig, setLoading]);
 
     const saveConfig = useCallback(async (config) => {

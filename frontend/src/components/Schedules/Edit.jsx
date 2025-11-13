@@ -11,7 +11,7 @@ import Button from '../Button';
 import UserSchedule from './UserSchedule';
 import Loader from '../Loader';
 import EditForm from '../EditForm';
-import '../../styles/Schedule.css';
+import '../../styles/Schedules.css';
 
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
     const { appState } = useAppState();
@@ -113,10 +113,8 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                     section: 3,
                     type: 'content',
                     style: {flexDirection: 'column'},
-                    content: <>
-                                <label className={'form-group-label'}>Users ({userList.length})</label>
-                                <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>
-                            </>
+                    label: `Users (${userList.length})`,
+                    content: <span style={{paddingLeft: '10px'}}>{userList.join(', ')}</span>
                 }
             },
             sections: {

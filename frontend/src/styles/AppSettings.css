@@ -33,11 +33,11 @@
     margin: 0 15px 0 5px;
 }
 
-.app-settings .app-combo-box.palette .dropdown-option {
+.app-settings .app-color .combo-box-option {
     padding-left: 30px;
     position: relative;
 }
-.app-settings .app-combo-box.palette .dropdown-option:before {
+.app-settings .app-color .combo-box-option:before {
     content: '';
     position: absolute;
     left: 10px;
@@ -48,101 +48,62 @@
     border-radius: 20px;
     background: var(--text-color-2);
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-mono:hover {
+.app-settings .app-color .combo-box-option.opt-mono:hover {
     background: #777;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-red:before {
+.app-settings .app-color .combo-box-option.opt-red:before {
     background: #ba0606;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-red:hover {
+.app-settings .app-color .combo-box-option.opt-red:hover {
     background: #f87171;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-green:before {
+.app-settings .app-color .combo-box-option.opt-green:before {
     background: #12ba06;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-green:hover {
+.app-settings .app-color .combo-box-option.opt-green:hover {
     background: #84f772;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-blue:before {
+.app-settings .app-color .combo-box-option.opt-blue:before {
     background: #0671ba;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-blue:hover {
+.app-settings .app-color .combo-box-option.opt-blue:hover {
     background: #71c2f8;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-cyan:before {
+.app-settings .app-color .combo-box-option.opt-cyan:before {
     background: #04c7c7;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-cyan:hover {
+.app-settings .app-color .combo-box-option.opt-cyan:hover {
     background: #72f7f7;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-magenta:before {
+.app-settings .app-color .combo-box-option.opt-magenta:before {
     background: #c704c7;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-magenta:hover {
+.app-settings .app-color .combo-box-option.opt-magenta:hover {
     background: #f772f7;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-yellow:before {
+.app-settings .app-color .combo-box-option.opt-yellow:before {
     background: #c7c704;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-yellow:hover {
+.app-settings .app-color .combo-box-option.opt-yellow:hover {
     background: #f7f772;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-pink:before {
+.app-settings .app-color .combo-box-option.opt-pink:before {
     background: #e6007e;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-pink:hover {
+.app-settings .app-color .combo-box-option.opt-pink:hover {
     background: #f4a3cc;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-lime:before {
+.app-settings .app-color .combo-box-option.opt-lime:before {
     background: #7fe600;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-lime:hover {
+.app-settings .app-color .combo-box-option.opt-lime:hover {
     background: #d0f5a4;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-orange:before {
+.app-settings .app-color .combo-box-option.opt-orange:before {
     background: #e67300;
 }
-.app-settings .app-combo-box.palette .dropdown-option.opt-orange:hover {
+.app-settings .app-color .combo-box-option.opt-orange:hover {
     background: #f5cca4;
-}
-.app-settings .background-gallery {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-content: center;
-    gap: 10px;
-    transition: 0.3s ease-in-out;
-    padding: 10px 0;
-}
-.app-settings .background-thumbnail {
-    width: 200px;
-    height: auto;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    border-radius: 12px;
-    opacity: 0.6;
-    border: 3px solid transparent;
-    transition: 0.3s ease-in-out;
-    cursor: pointer;
-}
-.app-settings .background-gallery .radio-label {
-    margin: 0;
-    position: relative;
-}
-.app-settings .background-gallery .radio-label input {
-    position: absolute;
-    opacity: 0;
-}
-.app-settings .background-gallery .radio-label input:checked+.background-thumbnail {
-    opacity: 1;
-    border-color: white;
-}
-.app-settings .form-group.disabled .background-gallery {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-.app-settings .form-group.disabled .background-thumbnail {
-    cursor: not-allowed;
 }
 
 .app-settings .app-background .radio-label-image {
