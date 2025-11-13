@@ -53,9 +53,21 @@ export const TeamUserAssignment = ({team}) => {
         },
         onSubmit: {
             onSave: (data) => {
-                saveTeamAssignment('user', data['members'], [team.id], 1).then();
-                saveTeamAssignment('user', data['leaders'], [team.id], 2).then();
-                saveTeamAssignment('user', data['managers'], [team.id], 3).then();
+                saveTeamAssignment({
+                    teamIds: [team.id],
+                    resource: 'member',
+                    resourceIds: data['members']
+                }).then();
+                saveTeamAssignment({
+                    teamIds: [team.id],
+                    resource: 'leader',
+                    resourceIds: data['leaders']
+                }).then();
+                saveTeamAssignment({
+                    teamIds: [team.id],
+                    resource: 'manager',
+                    resourceIds: data['managers']
+                }).then();
                 return true;
             },
             refreshTriggers: [['teams', true], ['team', team.id]]
@@ -118,13 +130,12 @@ export const TeamUserBulkAssignment = ({teams}) => {
           2: {style: {flexDirection: 'row'}}
         },
         onSubmit: {
-            onSave: (data) => saveTeamAssignment(
-                'user',
-                [data.user],
-                teams.map(team => team.id),
-                data.role,
-                data.mode
-            ),
+            onSave: (data) => saveTeamAssignment({
+                teamIds: teams.map(team => team.id),
+                resource: data.role === 3 ? 'manager' : data.role === 2 ? 'leader' : 'member',
+                resourceIds: [data.user],
+                mode: data.mode
+            }),
             refreshTriggers: [['teams', true]]
         }
     }), [teams, users, saveTeamAssignment]);

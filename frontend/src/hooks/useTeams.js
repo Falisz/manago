@@ -111,12 +111,27 @@ const useTeams = () => {
         }
     }, []);
 
-    // TODO: To refactor
-    const saveTeamAssignment = useCallback( async (resource, resourceIds, teamIds, role=2, mode='set') => {
+    const saveTeamAssignment = useCallback( async ({ teamIds, resource, resourceIds, mode = 'set'}) => {
+        if (!teamIds || !resourceIds || !resource)
+            return null;
+
+        if (!Array.isArray(teamIds))
+            teamIds = Array.from(teamIds);
+
+        if (!Array.isArray(resourceIds))
+            resourceIds = Array.from(resourceIds);
+
+        if (!teamIds.length || !resourceIds.length)
+            return null;
+
         try {
             setStatus([]);
 
-            return await axios.post('/teams/assignments', {resource, resourceIds, role, teamIds, mode}, { withCredentials: true });
+            return await axios.post(
+                '/teams/assignments',
+                {teamIds, resource, resourceIds, mode},
+                { withCredentials: true }
+            );
 
         } catch (err) {
             console.error('Error saving new team assignments:', err);

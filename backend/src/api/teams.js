@@ -169,7 +169,7 @@ const updateTeamHandler = async (req, res) => {
 const updateAssignmentsHandler = async(req, res) => {
 
     try {
-        const {resource, resourceIds, teamIds, role, mode} = req.body;
+        const {resource, resourceIds, teamIds, mode} = req.body;
     
         if (!teamIds || !teamIds.length)
             return res.status(400).json({ message: 'Team IDs are missing.' });
@@ -181,8 +181,11 @@ const updateAssignmentsHandler = async(req, res) => {
 
         let success, message;
 
-        if (resource === 'user')
+        if (['user', 'member', 'leader', 'manager'].includes(resource)) {
+            const role = resource === 'manager' ? 3 :
+                            resource === 'leader' ? 2 : 1;
             ({success, message} = await updateTeamUsers(teamIds, resourceIds, role, mode));
+        }
         else
             return res.status(400).json({message: 'Unknown Resource type provided.'});
 

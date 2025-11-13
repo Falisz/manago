@@ -123,12 +123,27 @@ const useUsers = () => {
         }
     }, []);
 
-    // TODO: To refactor
-    const saveUserAssignment = useCallback(async (resource, resourceIds, userIds, mode='set') => {
+    const saveUserAssignment = useCallback(async ({ userIds, resource, resourceIds, mode = 'set' }) => {
+        if (!userIds || !resourceIds || !resource)
+            return null;
+
+        if (!Array.isArray(userIds))
+            userIds = Array.from(userIds);
+
+        if (!Array.isArray(resourceIds))
+            resourceIds = Array.from(resourceIds);
+
+        if (!userIds.length || !resourceIds.length)
+            return null;
+
         try {
             setStatus([]);
 
-            return await axios.post('/users/assignments', {resource, resourceIds, userIds, mode}, { withCredentials: true });
+            return await axios.post(
+                '/users/assignments',
+                {userIds, resource, resourceIds, mode},
+                { withCredentials: true }
+            );
 
         } catch (err) {
             console.error('saveUserAssignment error:', err);

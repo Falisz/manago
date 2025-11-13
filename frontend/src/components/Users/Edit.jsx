@@ -28,7 +28,11 @@ export const UserRoleAssignment = ({user}) => {
             }
         },
         onSubmit: {
-            onSave: (data) => saveUserAssignment('role', data['roles'], [user.id]),
+            onSave: (data) => saveUserAssignment({
+                userIds: [user.id],
+                resource: 'role',
+                resourceIds: data['roles']
+            }),
             refreshTriggers: [['users', true], ['user', user.id]]
         }
     }), [user, roles, saveUserAssignment]);
@@ -62,7 +66,11 @@ export const UserManagerAssignment = ({user}) => {
             }
         },
         onSubmit: {
-            onSave: (data) => saveUserAssignment('manager', data['managers'], [user.id]),
+            onSave: (data) => saveUserAssignment({
+                userIds: [user.id],
+                resource: 'manager',
+                resourceIds: data['managers']
+            }),
             refreshTriggers: [['users', true], ['user', user.id]]
         }
     }), [user, managers, saveUserAssignment]);
@@ -115,12 +123,12 @@ export const UserRoleBulkAssignment = ({users}) => {
             1: {style: {flexDirection: 'row'}}
         },
         onSubmit: {
-            onSave: (data) => saveUserAssignment(
-                'role',
-                [data.role],
-                users.map(user => user.id),
-                data.mode
-            ),
+            onSave: (data) => saveUserAssignment({
+                userIds: users.map(user => user.id),
+                resource: 'role',
+                resourceIds: [data.role],
+                mode: data.mode
+            }),
             refreshTriggers: [['users', true]]
         }
     }), [users, roles, saveUserAssignment]);
@@ -175,12 +183,12 @@ export const UserManagerBulkAssignment = ({users}) => {
             1: {style: {flexDirection: 'row'}}
         },
         onSubmit: {
-            onSave: (data) => saveUserAssignment(
-                'manager',
-                [data.manager],
-                users.map(user => user.id),
-                data.mode
-            ),
+            onSave: (data) => saveUserAssignment({
+                userIds: users.map(user => user.id),
+                resource: 'manager',
+                resourceIds: [data.manager],
+                mode: data.mode
+            }),
             refreshTriggers: [['users', true]]
         }
     }), [users, managers, saveUserAssignment]);
