@@ -79,7 +79,7 @@ const useRoles = () => {
                     { withCredentials: true }
                 );
             else
-                await axios.put(
+                res = await axios.put(
                     `/roles/${roleId}`,
                     formData,
                     { withCredentials: true }

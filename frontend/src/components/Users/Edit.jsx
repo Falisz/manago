@@ -17,10 +17,9 @@ export const UserRoleAssignment = ({user}) => {
         header: {
             title: `Editing Roles of ${user?.first_name} ${user?.last_name}`,
         },
-        inputs: {
+        fields: {
             roles: {
                 section: 0,
-                field: 'roles',
                 type: 'id-list',
                 inputType: 'multi-dropdown',
                 itemSource: roles,
@@ -51,10 +50,9 @@ export const UserManagerAssignment = ({user}) => {
         header: {
             title: `Editing Managers of ${user?.first_name} ${user?.last_name}`,
         },
-        inputs: {
-            roles: {
+        fields: {
+            managers: {
                 section: 0,
-                field: 'managers',
                 type: 'id-list',
                 inputType: 'multi-dropdown',
                 itemSource: managers,
@@ -88,18 +86,16 @@ export const UserRoleBulkAssignment = ({users}) => {
             title: `%m Role %m ${users.length} User${users.length > 1 ? 's' : ''}`,
             modes: true
         },
-        inputs: {
-            selectedUsers: {
+        fields: {
+            users: {
                 section: 0,
                 label: 'Selected Users',
-                field: 'users',
                 nameField: ['first_name', 'last_name'],
                 type: 'listing'
             },
             mode: {
                 section: 1,
                 label: 'Mode',
-                field: 'mode',
                 type: 'string',
                 inputType: 'dropdown',
                 options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
@@ -109,7 +105,6 @@ export const UserRoleBulkAssignment = ({users}) => {
             role: {
                 section: 1,
                 label: 'Role',
-                field: 'role',
                 type: 'number',
                 inputType: 'dropdown',
                 options: roles?.map(role => ({id: role.id, name: role.name})),
@@ -150,18 +145,16 @@ export const UserManagerBulkAssignment = ({users}) => {
             title: `%m Manager %m ${users.length} User${users.length > 1 ? 's' : ''}`,
             modes: true
         },
-        inputs: {
-            selectedUsers: {
+        fields: {
+            users: {
                 section: 0,
                 label: 'Selected Users',
-                field: 'users',
                 nameField: ['first_name', 'last_name'],
                 type: 'listing'
             },
             mode: {
                 section: 1,
                 label: 'Mode',
-                field: 'mode',
                 type: 'string',
                 inputType: 'dropdown',
                 options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
@@ -171,7 +164,6 @@ export const UserManagerBulkAssignment = ({users}) => {
             manager: {
                 section: 1,
                 label: 'Manager',
-                field: 'manager',
                 type: 'manager',
                 inputType: 'dropdown',
                 options: managers?.filter(mgr => !users.find(user => user.id === mgr.id) )
@@ -236,19 +228,17 @@ const UserEdit = ({userId, preset}) => {
         header: {
             title: userId ? `Editing ${user?.first_name} ${user?.last_name}` : `Creating new ${name}`,
         },
-        inputs: {
-            firstName: {
+        fields: {
+            first_name: {
                 section: 0,
-                field: 'first_name',
                 type: 'string',
                 inputType: 'input',
                 label: 'First Name',
                 required: true
             },
-            lastName: {
+            last_name: {
                 section: 0,
                 label: 'Last Name',
-                field: 'last_name',
                 type: 'string',
                 inputType: 'input',
                 required: true
@@ -256,7 +246,6 @@ const UserEdit = ({userId, preset}) => {
             email: {
                 section: 1,
                 label: 'Email Address',
-                field: 'email',
                 type: 'string',
                 inputType: 'input',
                 required: true
@@ -264,23 +253,20 @@ const UserEdit = ({userId, preset}) => {
             login: {
                 section: 1,
                 label: 'Login Alias',
-                field: 'login',
                 type: 'string',
                 inputType: 'input'
             },
             active: {
                 section: 2,
                 label: 'Active',
-                field: 'active',
                 type: 'boolean',
                 inputType: 'checkbox',
                 inputLabel: 'Should user be active',
                 style: {alignItems: 'flex-start'}
             },
-            mgrViewAccess: {
+            manager_view_access: {
                 section: 2,
                 label: 'Manager View Access',
-                field: 'manager_view_access',
                 type: 'boolean',
                 inputType: 'checkbox',
                 inputLabel: 'Should user has access to the Manager Portal',
@@ -289,7 +275,6 @@ const UserEdit = ({userId, preset}) => {
             roles: {
                 section: 3,
                 label: 'Roles',
-                field: 'roles',
                 type: 'id-list',
                 inputType: 'multi-dropdown',
                 itemSource: roles,
@@ -299,7 +284,6 @@ const UserEdit = ({userId, preset}) => {
             managers: {
                 section: 4,
                 label: 'Managers',
-                field: 'managers',
                 type: 'id-list',
                 inputType: 'multi-dropdown',
                 itemSource: managers,

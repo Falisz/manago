@@ -114,7 +114,7 @@ const AppStyles = () => {
         };
 
         return {
-            inputs: {
+            fields: {
                 style: {
                     section: 0,
                     style: {

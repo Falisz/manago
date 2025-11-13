@@ -9,7 +9,7 @@ const RoleEdit = ({ roleId }) => {
 
     useEffect(() => {
         if (roleId)
-            fetchRole(roleId).then();
+            fetchRole({roleId}).then();
         else 
             setLoading(false);
         
@@ -19,10 +19,9 @@ const RoleEdit = ({ roleId }) => {
         header: {
             title: roleId ? `Editing ${role?.name}` : 'Creating new Role',
         },
-        inputs: {
+        fields: {
             name: {
                 section: 0,
-                field: 'name',
                 type: 'string',
                 inputType: 'input',
                 label: 'Name',
@@ -30,21 +29,19 @@ const RoleEdit = ({ roleId }) => {
             },
             icon: {
                 section: 0,
-                field: 'icon',
                 type: 'string',
                 inputType: 'input',
                 label: 'Icon',
             },
             description: {
                 section: 1,
-                field: 'description',
                 type: 'string',
                 inputType: 'textarea',
                 label: 'Description',
             }
         },
         onSubmit: {
-            onSave: (data, id) => saveRole(data, id),
+            onSave: (formData, roleId) => saveRole({roleId, formData}),
             refreshTriggers: [['roles', true], ...(role ? [['role', role.id]] : [])],
             openIfNew: 'userDetails'
         },

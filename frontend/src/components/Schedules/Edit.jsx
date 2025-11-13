@@ -55,70 +55,64 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
             header: {
                 title: schedule.id ? `Editing ${schedule?.name}` : `Creating a new Schedule Draft`,
             },
-            inputs: {
+            fields: {
                 name: {
                     section: 0,
-                        field: 'name',
-                        type: 'string',
-                        inputType: 'input',
-                        label: 'Name',
-                        required: true,
+                    type: 'string',
+                    inputType: 'input',
+                    label: 'Name',
+                    required: true,
                 },
                 description: {
                     section: 0,
-                        field: 'description',
-                        type: 'string',
-                        inputType: 'textarea',
-                        label: 'Description',
+                    type: 'string',
+                    inputType: 'textarea',
+                    label: 'Description',
                 },
                 start_date: {
                     section: 1,
-                        field: 'start_date',
-                        type: 'date',
-                        inputType: 'date',
-                        label: 'Start Date',
-                        required: true,
-                        max: schedule.end_date,
+                    type: 'date',
+                    inputType: 'date',
+                    label: 'Start Date',
+                    required: true,
+                    max: schedule.end_date,
                 },
                 end_date: {
                     section: 1,
-                        field: 'end_date',
-                        type: 'date',
-                        inputType: 'date',
-                        label: 'End Date',
-                        required: true,
-                        min: schedule.start_date,
+                    type: 'date',
+                    inputType: 'date',
+                    label: 'End Date',
+                    required: true,
+                    min: schedule.start_date,
                 },
                 user_scope: {
                     section: 2,
-                        field: 'user_scope',
-                        type: 'string',
-                        inputType: 'dropdown',
-                        label: 'User Scope',
-                        options: scopeOptions.scopes,
-                        required: true,
-                        disabled: !isEmpty.current,
-                        onChange: () => setSchedule(prev => ({...prev, user_scope_id: null})),
+                    type: 'string',
+                    inputType: 'dropdown',
+                    label: 'User Scope',
+                    options: scopeOptions.scopes,
+                    required: true,
+                    disabled: !isEmpty.current,
+                    onChange: () => setSchedule(prev => ({...prev, user_scope_id: null})),
                 },
                 user_scope_id: {
                     section: 2,
-                        field: 'user_scope_id',
-                        type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
-                        inputType: 'dropdown',
-                        label: ' ',
-                        options: schedule.user_scope === 'team' ? scopeOptions.teams :
-                        schedule.user_scope === 'manager' ? scopeOptions.managers :
-                            schedule.user_scope === 'user' ? scopeOptions.users :
-                                schedule.user_scope === 'project' ? scopeOptions.projects :
-                                    schedule.user_scope === 'branch' ? scopeOptions.branches :
-                                        [{ id: null, name: 'None'}],
-                        required: !['you', 'all'].includes(schedule.user_scope),
-                        disabled: !isEmpty.current
+                    type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
+                    inputType: 'dropdown',
+                    label: ' ',
+                    options: schedule.user_scope === 'team' ? scopeOptions.teams :
+                    schedule.user_scope === 'manager' ? scopeOptions.managers :
+                        schedule.user_scope === 'user' ? scopeOptions.users :
+                            schedule.user_scope === 'project' ? scopeOptions.projects :
+                                schedule.user_scope === 'branch' ? scopeOptions.branches :
+                                    [{ id: null, name: 'None'}],
+                    required: !['you', 'all'].includes(schedule.user_scope),
+                    disabled: !isEmpty.current
                 },
                 users: {
                     section: 3,
-                        type: 'content',
-                        style: {flexDirection: 'column'},
+                    type: 'content',
+                    style: {flexDirection: 'column'},
                     content: <>
                                 <label className={'form-group-label'}>Users ({userList.length})</label>
                                 <span style={{paddingLeft: '10px'}}> {userList.join(', ')}</span>

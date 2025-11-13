@@ -19,10 +19,9 @@ export const TeamUserAssignment = ({team}) => {
         header: {
             title: `Editing Members of ${team?.name}`,
         },
-        inputs: {
+        fields: {
             managers: {
                 section: 0,
-                field: 'managers',
                 type: 'id-list',
                 teamCompliance: true,
                 inputType: 'multi-dropdown',
@@ -33,7 +32,6 @@ export const TeamUserAssignment = ({team}) => {
             },
             leaders: {
                 section: 1,
-                field: 'leaders',
                 type: 'id-list',
                 teamCompliance: true,
                 inputType: 'multi-dropdown',
@@ -44,7 +42,6 @@ export const TeamUserAssignment = ({team}) => {
             },
             members: {
                 section: 2,
-                field: 'members',
                 type: 'id-list',
                 teamCompliance: true,
                 inputType: 'multi-dropdown',
@@ -86,35 +83,31 @@ export const TeamUserBulkAssignment = ({teams}) => {
             variantField: 'role',
             variantOptions: {1: 'Member', 2: 'Leader', 3: 'Manager'}
         },
-        inputs: {
-            selectedUsers: {
+        fields: {
+            teams: {
                 section: 0,
                 label: 'Selected Teams',
-                field: 'teams',
                 nameField: 'name',
                 type: 'listing'
             },
             mode: {
                 section: 1,
                 label: 'Mode',
-                field: 'mode',
                 type: 'string',
                 inputType: 'dropdown',
                 options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
                 searchable: false
             },
-            teamUser: {
+            user: {
                 section: 2,
                 label: 'User',
-                field: 'user',
                 type: 'number',
                 inputType: 'dropdown',
                 options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
             },
-            teamRole: {
+            role: {
                 section: 2,
                 label: 'Role',
-                field: 'role',
                 type: 'number',
                 inputType: 'dropdown',
                 options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
@@ -152,7 +145,7 @@ const TeamEdit = ({ teamId, parentId }) => {
 
     useEffect(() => {
         fetchUsers().then();
-        fetchManagers('managers').then();
+        fetchManagers({group: 'managers'}).then();
         fetchTeams({all: true, loading: true}).then();
 
         if (teamId)
@@ -194,26 +187,23 @@ const TeamEdit = ({ teamId, parentId }) => {
         header: {
             title: teamId ? `Editing ${team?.name}` : `Creating new ${parentId ? 'SubTeam' : 'Team'}`,
         },
-        inputs: {
+        fields: {
             name: {
                 section: 0,
-                field: 'name',
                 type: 'string',
                 inputType: 'input',
                 label: 'Name',
                 required: true,
             },
-            codename: {
+            code_name: {
                 section: 0,
-                field: 'code_name',
                 type: 'string',
                 inputType: 'input',
                 label: 'Codename',
                 required: true,
             },
-            parentTeam: {
+            parent_team: {
                 section: 1,
-                field: 'parent_team',
                 type: 'item',
                 inputType: 'dropdown',
                 label: 'Parent Team',
@@ -222,7 +212,6 @@ const TeamEdit = ({ teamId, parentId }) => {
             },
             managers: {
                 section: 2,
-                field: 'managers',
                 type: 'id-list',
                 teamCompliance: true,
                 inputType: 'multi-dropdown',
@@ -233,7 +222,6 @@ const TeamEdit = ({ teamId, parentId }) => {
             },
             leaders: {
                 section: 3,
-                field: 'leaders',
                 type: 'id-list',
                 teamCompliance: true,
                 inputType: 'multi-dropdown',
@@ -244,7 +232,6 @@ const TeamEdit = ({ teamId, parentId }) => {
             },
             members: {
                 section: 4,
-                field: 'members',
                 type: 'id-list',
                 teamCompliance: true,
                 inputType: 'multi-dropdown',

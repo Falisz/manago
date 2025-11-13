@@ -46,8 +46,6 @@ const SchedulesIndex = () => {
             fetchScheduleDrafts({include_users: true, include_leaves: true}).then();
     }, [refreshTriggers.scheduleDrafts, scheduleDrafts, fetchScheduleDrafts]);
 
-    console.log(scheduleDrafts);
-
     return <>
         <div className={'header'}>
             <h1>Schedule Drafts</h1>

@@ -8,31 +8,28 @@ import CheckBox from './CheckBox';
 import '../styles/EditForm.css';
 import Icon from "./Icon";
 
-// TODO: Change structure.inputs into structure.fields.
 
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
     const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
     const initialSource = useRef(null);
-    const isMounted = useRef(false);
     
     useEffect(() => {
         if (source) {
             initialSource.current = JSON.parse(JSON.stringify(source));
-            isMounted.current = true;
+            return;
         }
 
         // Initialization of localized data into formData, if the mounting is not yet done and there is structure inputs.
-        if (!isMounted.current && structure?.inputs) {
-            const newFormData = Object.values(structure.inputs).reduce((acc, config) => {
-                const fieldName = config.field;
-                if (!fieldName)
+        if (structure?.fields) {
+            const newFormData = Object.entries(structure.fields).reduce((acc, [name, config]) => {
+                if (!name)
                     return acc;
 
-                const fieldType = typeof config.type === 'function' ? config.type(formData) : config.type;
+                const fieldType = config.type;
                 const teamCompliance = config.teamCompliance;
-                let value = presetData[fieldName];
+                let value = presetData[name];
 
                 if (presetData && value !== undefined) {
                     if (fieldType === 'id-list' && Array.isArray(value)) {
@@ -46,22 +43,20 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                             return item.id;
                         });
                     }
-                    acc[fieldName] = value;
+                    acc[name] = value;
                 } else {
                     if (fieldType.includes('list')) {
-                        acc[fieldName] = [null];
+                        acc[name] = [null];
                     } else {
-                        acc[fieldName] = null;
+                        acc[name] = null;
                     }
                 }
 
                 return acc;
             }, {});
-
-            isMounted.current = true;
             setFormData(newFormData);
         }
-    }, [structure, presetData, source, formData, isMounted]);
+    }, [structure, presetData, source]);
 
     const validateField = (field, value, config, data) => {
         const required = typeof config.required === 'function' ? config.required(data) : config.required;
@@ -138,14 +133,13 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
         setErrors(newErrors);
 
-        Object.values(structure.inputs).forEach(config => {
-            const field = config.field;
-            if (!field || !config.inputType)
+        Object.entries(structure.fields).forEach(([name, config]) => {
+            if (!name || !config.inputType)
                 return;
 
-            const invalid = validateField(field, data[field], config, data);
+            const invalid = validateField(name, data[name], config, data);
             if (invalid) {
-                newErrors[field] = true;
+                newErrors[name] = true;
             }
         });
 
@@ -186,26 +180,22 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
     };
 
     const formSections = useMemo(() => {
-        const sections = {};
-        Object.entries(structure.inputs).forEach(([key, config]) => {
+        const sections = structuredClone(structure.sections || {});
+        Object.entries(structure.fields).forEach(([name, config]) => {
             const { section, ...field } = config;
-            if (!sections[section]) {
-                sections[section] = { inputs: {} };
-            }
-            sections[section].inputs[key] = { ...field };
-        });
-        if (structure.sections)
-        {
-            Object.entries(structure.sections).forEach(([key, config]) => {
-                if (config.header)
-                    sections[key].header = config.header;
-                if (config.style)
-                    sections[key].style = config.style;
-                if (config.className)
-                    sections[key].className = config.className;
-            })
-        }
 
+            if (!sections[section])
+                sections[section] = { fields: {} };
+
+            else if (!sections[section].fields)
+                sections[section].fields = {};
+
+            sections[section].fields[name] = { ...field };
+        });
+        Object.keys(sections).forEach(key => {
+            if (!sections[key].fields || Object.keys(sections[key].fields).length === 0)
+                delete sections[key];
+        });
         return sections;
     }, [structure]);
 
@@ -234,13 +224,15 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
         return header;
     }, [structure, formData]);
 
-    const getInputClassName = (baseClass, group) => {
-        return `${baseClass}${errors[group.field] ? ' error' : ''}`;
+    const getInputClassName = (baseClass, name) => {
+        return `${baseClass}${errors[name] ? ' error' : ''}`;
     };
 
-    const getComponentClassName = (group) => {
-        return `${group.className || ''}${errors[group.field] ? ' error' : ''}`;
+    const getComponentClassName = (name, group) => {
+        return `${group.className || ''}${errors[name] ? ' error' : ''}`;
     };
+
+    console.log(formData);
 
     return <form
                 className={'app-form' + (className ? ' ' + className : '')}
@@ -256,7 +248,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                         style={section.style}
                     >
                         {section.header && <h2>{section.header}</h2>}
-                        {Object.entries(section.inputs).map(([key, group], index) => {
+                        {Object.entries(section.fields).map(([name, group], index) => {
 
                             const type = typeof group.type === 'function' ? group.type(formData) : group.type;
 
@@ -270,10 +262,10 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'input' || group.inputType === 'text')
                                 groupContent = <input
-                                    className={getInputClassName('form-input', group)}
+                                    className={getInputClassName('form-input', name)}
                                     type={'text'}
-                                    name={group.field}
-                                    value={source[group.field] || formData[group.field] || ''}
+                                    name={name}
+                                    value={source?.[name] || formData?.[name] || ''}
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
@@ -282,10 +274,10 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'date')
                                 groupContent = <input
-                                    className={getInputClassName('form-input', group)}
+                                    className={getInputClassName('form-input', name)}
                                     type={'date'}
-                                    name={group.field}
-                                    value={source[group.field] || formData[group.field] || ''}
+                                    name={name}
+                                    value={source?.[name] || formData?.[name] || ''}
                                     min={typeof group.min === 'function' ? group.min(formData) : group.min }
                                     max={typeof group.max === 'function' ? group.max(formData) : group.max }
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
@@ -296,9 +288,9 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'textarea')
                                 groupContent = <textarea
-                                    className={getInputClassName('form-textarea', group)}
-                                    name={group.field}
-                                    value={source[group.field] || formData[group.field] || ''}
+                                    className={getInputClassName('form-textarea', name)}
+                                    name={name}
+                                    value={source?.[name] || formData?.[name] || ''}
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     placeholder={`${group.placeholder || group.label}`}
                                     required={group.required}
@@ -307,15 +299,13 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.inputType === 'checkbox')
                                 groupContent = <CheckBox
-                                    className={getComponentClassName(group)}
-                                    id={group.field}
-                                    name={group.field}
-                                    checked={source[group.field] || formData[group.field] || false}
+                                    className={getComponentClassName(name, group)}
+                                    id={name}
+                                    name={name}
+                                    checked={source?.[name] || formData?.[name] || false}
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
                                     label={group.inputLabel}
                                 />;
-
-                            
 
                             if (group.inputType === 'radio'){
                                 groupContent = <div
@@ -328,9 +318,9 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                                         <label key={index} className={'radio-label'}>
                                             <input
                                                 type='radio'
-                                                name={group.field}
+                                                name={name}
                                                 value={option.id}
-                                                checked={(source[group.field] || formData[group.field]) === option.id}
+                                                checked={(source?.[name] || formData?.[name]) === option.id}
                                                 onChange={handleChange}
                                                 disabled={typeof group.disabled === 'function' ? group.disabled(formData) : group.disabled}
                                             />
@@ -352,13 +342,13 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (['dropdown', 'combobox'].includes(group.inputType))
                                 groupContent = <ComboBox
-                                    className={getComponentClassName(group)}
+                                    className={getComponentClassName(name, group)}
                                     style={group.inputStyle}
                                     selectedStyle={group.selectedStyle}
                                     optionsStyle={group.optionsStyle}
                                     placeholder={`${group.placeholder || 'Select ' + group.label}`}
-                                    name={group.field}
-                                    value={source[group.field] || formData[group.field] || group.default || null}
+                                    name={name}
+                                    value={source?.[name] || formData?.[name] || group.default || null}
                                     options={typeof group.options === 'function' ? group.options(source || formData) :
                                         group.options || [{id: null, name: 'None'}]}
                                     onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
@@ -387,7 +377,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                                 groupContent = <MultiComboBox
                                     formData={formData}
-                                    dataField={group.field}
+                                    dataField={name}
                                     onChange={handleChange}
                                     itemSource={group.itemSource}
                                     itemNameField={group.itemNameField}
@@ -398,13 +388,13 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
                             if (group.type === 'listing')
                                 groupContent = <div>{
-                                    formData[group.field]?.map((item, index) => {
+                                    formData[name]?.map((item) => {
                                         let name = item[group.nameField];
                                         if (Array.isArray(group.nameField)) {
                                             name = group.nameField.map(field => item[field]).join(' ');
                                         }
-                                        return <span key={index}>{name}{index !== (formData[group.field].length - 1) && ', ' }</span>
-                                    })
+                                        return name;
+                                    }).join(', ')
                                 }</div>;
 
                             return (
@@ -431,13 +421,13 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                     {!structure.onSubmit?.hidden && <Button
                         className={'save-button'}
                         type={'submit'}
-                        label={structure.onSubmit.label || 'Save changes'}
+                        label={structure.onSubmit?.label || 'Save changes'}
                         icon={'save'}
                     />}
                     {!structure.onCancel?.hidden && <Button
                         className={'discard-button'}
                         type={'button'}
-                        label={structure.onCancel.label || 'Discard'}
+                        label={structure.onCancel?.label || 'Discard'}
                         icon={'close'}
                         onClick={handleCancel}
                     />}
