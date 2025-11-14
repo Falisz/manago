@@ -26,12 +26,35 @@ export const ModalProvider = ({ children }) => {
     const [modals, setModals] = useState({});
     const [searchParams, setSearchParams] = useSearchParams();
     const [refreshTriggers, setRefreshTriggers] = useState({});
+    const { search } = useLocation();
     const nextModalId = useRef(0);
     const modalsRef = useRef({});
+    const isMounted = useRef(false);
 
-    useEffect(() => {
-        modalsRef.current = modals;
-    }, [modals]);
+    const syncUrlWithModals = useCallback((modalsOverride) => {
+        const currentModals = modalsOverride || modalsRef.current || {};
+
+        const newParams = new URLSearchParams(search);
+        const modalKeys = ['new', 'user', 'editUser', 'role', 'editRole', 'team', 'editTeam', 'post'];
+        modalKeys.forEach((k) => newParams.delete(k));
+
+        Object.values(currentModals).forEach((modal) => {
+            if (modal.content === 'userNew') newParams.set('new', 'user');
+            if (modal.content === 'managerNew') newParams.set('new', 'manager');
+            if (modal.content === 'employeeNew') newParams.set('new', 'employee');
+            if (modal.content === 'roleNew') newParams.set('new', 'role');
+            if (modal.content === 'teamNew') newParams.set('new', 'team');
+            if (modal.content === 'test') newParams.set('new', 'test');
+            if (modal.content === 'userDetails') newParams.set('user', modal.contentId);
+            if (modal.content === 'userEdit') newParams.set('editUser', modal.contentId);
+            if (modal.content === 'roleDetails') newParams.set('role', modal.contentId);
+            if (modal.content === 'roleEdit') newParams.set('editRole', modal.contentId);
+            if (modal.content === 'teamDetails') newParams.set('team', modal.contentId);
+            if (modal.content === 'teamEdit') newParams.set('editTeam', modal.contentId);
+            if (modal.content === 'postDetails') newParams.set('post', modal.contentId);
+        });
+        setSearchParams(newParams, { replace: true });
+    }, [search, setSearchParams]);
 
     const openModal = useCallback((modalConfig) => {
         const id = nextModalId.current++;
@@ -46,10 +69,13 @@ export const ModalProvider = ({ children }) => {
             if (isDuplicate)
                 return prev;
 
-            return {
+            const next = {
                 ...prev,
                 [id]: { ...modalConfig, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
             };
+            // Sync URL with the upcoming state
+            syncUrlWithModals(next);
+            return next;
         });
 
         setTimeout(() => {
@@ -60,7 +86,7 @@ export const ModalProvider = ({ children }) => {
         }, ANIMATION_DURATION);
 
         return id;
-    }, []);
+    }, [syncUrlWithModals]);
 
     const setDiscardWarning = useCallback((id, value) => {
         setModals((prev) => {
@@ -81,10 +107,12 @@ export const ModalProvider = ({ children }) => {
         setTimeout(() => {
             setModals((prev) => {
                 const { [id]: _, ...rest } = prev;
+                // Sync URL after removal
+                syncUrlWithModals(rest);
                 return rest;
             });
         }, ANIMATION_DURATION);
-    }, []);
+    }, [syncUrlWithModals]);
 
     const closeTopModal = useCallback(() => {
         const currentModals = modalsRef.current;
@@ -192,7 +220,7 @@ export const ModalProvider = ({ children }) => {
         }
     };
 
-    useEffect(() => {
+    const parseUrlParams = useCallback(() => {
         const newResource = searchParams.get('new');
         if (newResource === 'manager')
             openModal({ content: 'managerNew' });
@@ -230,31 +258,16 @@ export const ModalProvider = ({ children }) => {
 
         const postDetails = searchParams.get('post');
         if (postDetails) openModal({ content: 'postDetails', contentId: postDetails, type: 'dialog' });
+    }, [openModal, searchParams]);
 
-        // eslint-disable-next-line
-    }, []);
-
-    // TODO: Troubleshoot and fix - remove params from URL when modal gets closed.
-    const { search } = useLocation();
     useEffect(() => {
-        const newParams = new URLSearchParams(search);
-        Object.values(modals).forEach((modal) => {
-            if (modal.content === 'userNew') newParams.set('new', 'user');
-            if (modal.content === 'managerNew') newParams.set('new', 'manager');
-            if (modal.content === 'employeeNew') newParams.set('new', 'employee');
-            if (modal.content === 'roleNew') newParams.set('new', 'role');
-            if (modal.content === 'teamNew') newParams.set('new', 'team');
-            if (modal.content === 'test') newParams.set('new', 'test');
-            if (modal.content === 'userDetails') newParams.set('user', modal.contentId);
-            if (modal.content === 'userEdit') newParams.set('editUser', modal.contentId);
-            if (modal.content === 'roleDetails') newParams.set('role', modal.contentId);
-            if (modal.content === 'roleEdit') newParams.set('editRole', modal.contentId);
-            if (modal.content === 'teamDetails') newParams.set('team', modal.contentId);
-            if (modal.content === 'teamEdit') newParams.set('editTeam', modal.contentId);
-            if (modal.content === 'postDetails') newParams.set('post', modal.contentId);
-        });
-        setSearchParams(newParams, { replace: true });
-    }, [modals, setSearchParams, search]);
+        modalsRef.current = modals;
+
+        if (!isMounted.current) {
+            isMounted.current = true;
+            parseUrlParams();
+        }
+    }, [modals, parseUrlParams]);
 
     const sortedModalIds = Object.keys(modals).sort((a, b) => a - b);
     return (
