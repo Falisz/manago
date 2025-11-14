@@ -1,17 +1,14 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General
-- Combine AppState and Modal global contexts into one AppContext and move it into the Router
-### Users
-- Users have contractual data added - time joined company, contract types, start and end-dates.
-### Permissions 
-- Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
-- Implement Roles and/or Permission based restrictions over the UI.
+- Add blocker to get back or refresh if there are changes made on the page.
+- Add response/message/status stack to the bottom left corner of the page, with any errors or success messages from backend.
 ### Work Planner
-- Planning annual leaves, holidays, dispos and leave requests, comp-offs, sick leaves, etc.
+- Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
+- Dispo Planner - yet separate editor.
+- Holidays
 - Job Posts and Job Locations separate models (both optionals - i.e. gastronomy or entertainment staff)
 - App Settings with configs like enabling job locations and job posts.
-- Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval.
 - Each Shift to be also opened in a Detailed mode, when clicked in Schedule Viewer. It can be edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored).
 ## Timesheets
 - Recorded efforts and labor - to help bill the projects.
@@ -24,6 +21,11 @@ Following roadmap and tasks to-do as of 2025-10-02:
 ## Projects
 - Project Roles - different from company-wide user roles.
 - Access to different resources.
+### Users
+- Users have contractual data added - time joined company, contract types, start and end-dates.
+### Permissions
+- Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
+- Implement Roles and/or Permission based restrictions over the UI.
 ## Branches
 - Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
 - Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
