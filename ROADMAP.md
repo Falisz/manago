@@ -1,57 +1,47 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-## Users
-- [ ] Users have contractual data added - time joined compoany, contract types, start and end-dates.
-## Permissions
-- [ ] Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
-- [ ] Implement Roles and/or Permission based restrictions over the UI.
-## Work Planner
-- [ ] Planning roster and/or shift schedules. (Excel importable - provided downloadable template)
-- [ ] Planning annual leaves, holidays, comp-offs, sick leaves, etc.
-- [ ] Shifts data model (user, startTime, endTime, post)
-- [ ] Schedule available for Users/Teams/Branches/Project.
-- [ ] Disposition and Leave requests
-- [ ] Job Posts data model (optional - i.e. gastronomy or entertainment staff)
-- [ ] Many configs related to it
-### DESIGN NOTES
-- Two subpages in Work Planner:
-  - a Schedule page with currently published schedule
-  - a Workings Schedules with all WIP schedules authored or available by a given Manager.
-- Edit button in the Schedule page creates a copy of the given schedule scope in the frontend and allows a user to edit it - It's only in the frontend and can be either:
-  - Published - instantly sends new revision of the shifts to the server replacing the old ones - for given days;
-  - Saved - meaning it is saved as a Working Schedule to be later on access from the backend.
-- On the Working Schedules there is an option to create a new empty schedule for a given scope of dates and people or edit any existing ones,
-- Editing the Published Schedule can be either saved (to a Working Schedule), discarded or published. (Publishing the Working Schedule to replace edited dates.)
-- Working Schedule has a set date range, but this can be altered. If shrinking it and reducing dates that already have shifts planned, those shifts will be removed once Schedule is saved.
-- Each Working Schedule can be further saved, deleted or published.
-- Publishing essentially means the Working Schedules to be deleted and shift in it being 'freed' from Schedule ID to be treated as published - viewable to respectively targeted users.
-- In case of conflict in publishing working schedule because there already are some shifts for the specific day published, there are two options:
-  - replace - grabs IDs of already existing shifts from conflicting days in scope, and they get removed. Then the shifts get posted.
-  - skip - skips the days that currently have existing shifts.
-- Performance limits in place - no larger scope than 31 days and 100 users.
-- It will also require a new component - Leave Planner - that will be aside an option from Shift schedules and Dispositions just for scheduling eventual Leaves. Leave requests should have one aditional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave.
-- Each Shift can also be opened in a detailed mode - and edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored).
+### General
+- Combine AppState and Modal global contexts into one AppContext and move it into the <Router>
+### Users
+- Users have contractual data added - time joined company, contract types, start and end-dates.
+### Permissions 
+- Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
+- Implement Roles and/or Permission based restrictions over the UI.
+### Work Planner
+- Planning annual leaves, holidays, dispos and leave requests, comp-offs, sick leaves, etc.
+- Job Posts and Job Locations separate models (both optionals - i.e. gastronomy or entertainment staff)
+- App Settings with configs like enabling job locations and job posts.
+- Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval.
+- Each Shift to be also opened in a Detailed mode, when clicked in Schedule Viewer. It can be edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored).
 ## Timesheets
-- [ ] Recorded efforts.
-- [ ] Timesheets, work reporting, late reporting.
-- [ ] Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
-- [ ] Clocking-in and out.
-- [ ] Breaks tracking.
-- [ ] Payroll planning.
-- [ ] Task entry.
-- ## Projects
-- [ ] Project Roles - different from company-wide user roles.
-- [ ] Access to different resources.
+- Recorded efforts and labor - to help bill the projects.
+- Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
+- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
+- Clocking-in and out, and breaks tracking,  work reporting, tardiness reporting.
+- Payroll planning.
+- Timesheet approval and rejection.
+- Option for both employees and managers to autofill the timesheet based on published schedule.
+## Projects
+- Project Roles - different from company-wide user roles.
+- Access to different resources.
 ## Branches
-- [ ] Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
-- [ ] Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
-- [ ] Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
+- Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
+- Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
+- Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
 # MVP ENDS HERE
+## Work Planner
+- Shift Templates - for example, a shift template for a full-time employee.
+- Schedule exporting and importing to Excel
+- AutoSaving in the Schedule Editor
+- Shifts Palette in the Schedule Editor
+- If shrinking date range in currently defined schedule draft with shifts planned, those shifts will be removed once Schedule is saved. Respective warning in UI.
+- When Publishing schedule two verifications check, first for the labor law, define in module's config and the second for existing shifts for the given users and dates in scope. Only then the option with "overwriting" to show up.
+- Performance limits in place - no larger scope than 31 days and 100 users.
 ## Tasks
-- [ ] per Users, Shift, Branches, Project, company-wide.
-- [ ] typical tasks, motivation KPI contests for branches/teams/projects/users, etc.
+- per Users, Shift, Branches, Project, company-wide.
+- typical tasks, motivation KPI contests for branches/teams/projects/users, etc.
 ## Posts and channels
-- [ ] Posts-Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
-## Skills, Trainings and Assesments
+- Posts-Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
+## Skills, Trainings and Assessments
 ## Blogs
 ## Goals and KPIs
