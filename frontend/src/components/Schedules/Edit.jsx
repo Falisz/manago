@@ -153,7 +153,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
 
 const ScheduleEdit = () => {
     const { appCache } = useAppState();
-    const { openModal, updateModalProps } = useModals();
+    const { openModal, updateModalProps, closeTopModal } = useModals();
     const { scheduleId } = useParams();
     const {
         schedule,
@@ -185,10 +185,30 @@ const ScheduleEdit = () => {
     , [saveScheduleDraft]);
 
     const publishSchedule = useCallback((schedule) => {
-        //TODO: Create a modal prompt to confirm publishing
-        saveScheduleDraft({ schedule, publish: true}).then();
 
-    }, [saveScheduleDraft]);
+        const viewPath = `/schedules/view?from=${schedule.start_date}&to=${schedule.end_date}` +
+            `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`;
+
+        openModal({
+            content: 'confirm',
+            type: 'pop-up',
+            message: `Are you sure you want to publish the Schedule? Publishing posts all the shifts in the draft to 
+            the official Schedule. This action cannot be undone.`,
+            onConfirm: () => {
+                saveScheduleDraft({ schedule, publish: true}).then();
+                closeTopModal();
+                navigate(viewPath);
+            },
+            confirmLabel: 'Publish without overwriting',
+            onConfirm2: () => {
+                saveScheduleDraft({ schedule, publish: true, overwrite: true}).then();
+                closeTopModal();
+                navigate(viewPath);
+            },
+            confirmLabel2: 'Publish overwriting current Schedule',
+        });
+    }, [saveScheduleDraft, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id,
+        closeTopModal, navigate]);
 
     const editDetails = useCallback(() => {
         modalIdRef.current = openModal({

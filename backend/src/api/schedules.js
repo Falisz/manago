@@ -65,6 +65,8 @@ const createHandler = async (req, res) => {
         schedule.author = req.session.user;
 
         if (publish) {
+            // In case of re-publishing, we do not use overwrite flag from the schedule, as republishing itself is meant
+            //  to overwrite the current schedule.
             console.log('Republishing current schedule:', schedule);
         } else {
             const { success, message, id } = await createSchedule(schedule);
@@ -94,7 +96,7 @@ const createHandler = async (req, res) => {
  */
 const updateHandler = async (req, res) => {
     const { id } = req.params;
-    const { publish, shifts, ...schedule } = req.body;
+    const { publish, overwrite, shifts, ...schedule } = req.body;
 
     const { hasAccess } = await checkAccess(req.session.user, publish ? 'publish' : 'update', 'schedule', id);
 
@@ -104,7 +106,9 @@ const updateHandler = async (req, res) => {
     try {
 
         if (publish) {
-            console.log('Publishing schedule draft:', schedule);
+            // In case of shift publishing, we use overwrite flag from the schedule,
+            //  if we want to overwrite the shifts from currently published scopes of users and dates in prev schedule.
+            console.log('Publishing schedule draft:', schedule, overwrite);
         } else {
             const { success, message } = await updateSchedule(parseInt(id), schedule);
 

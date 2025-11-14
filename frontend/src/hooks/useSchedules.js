@@ -347,14 +347,14 @@ const useSchedules = () => {
     const fetchScheduleDraft = useCallback( async (id) =>
         await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
 
-    const saveScheduleDraft = useCallback( async ({publish = false} = {}) => {
+    const saveScheduleDraft = useCallback( async ({publish = false, overwrite = false} = {}) => {
 
         const { id, name, description, start_date, end_date, user_scope, user_scope_id } = schedule;
 
-        const scheduleData = structuredClone({
-            id, name, description, start_date, end_date, user_scope, user_scope_id, publish,
+        const scheduleData = {
+            id, name, description, start_date, end_date, user_scope, user_scope_id, publish, overwrite,
             shifts: shiftUpdates.current
-        });
+        };
 
         setStatus([]);
         try {

@@ -89,8 +89,6 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
     </div>
 };
 
-// TODO: add autosaving, discarding changes to the last saved state, displaying user dispos and leaves, and leave requests
-
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
     const { openModal } = useModals();
 
