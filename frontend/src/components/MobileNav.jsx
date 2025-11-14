@@ -1,14 +1,14 @@
 // FRONTEND/Components/MobileNav.jsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import '../styles/MobileNav.css';
-import { ReactComponent as SiteLogoMobile } from '../assets/app-logo-m.svg';
-import useAppState from '../contexts/AppStateContext';
+import React, {useState} from 'react';
+import {Link} from 'react-router-dom';
+import useApp from '../contexts/AppContext';
 import Icon from './Icon';
+import '../styles/MobileNav.css';
+import {ReactComponent as SiteLogoMobile} from '../assets/app-logo-m.svg';
 
 const MobileNav = ({ logoText, currentView, currentPath }) => {
     const [mobileNavExpanded, setMobileNavExpanded] = useState(false);
-    const { user, appState, toggleView } = useAppState();
+    const { user, appState, toggleView } = useApp();
 
     return (
         <nav className={`app-mobile-nav ${mobileNavExpanded ? 'expanded' : ''}`}>

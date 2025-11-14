@@ -1,7 +1,7 @@
 // FRONTEND/components/Schedules/View.jsx
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import useAppState from '../../contexts/AppStateContext';
+import useApp from '../../contexts/AppContext';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
@@ -16,7 +16,7 @@ import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
 const ScheduleView = () => {
-    const { appState, user } = useAppState();
+    const { appState, user } = useApp();
     const { modules } = appState;
     const { scheduleId } = useParams();
     const { schedule, loading, setLoading, setSchedule, fetchScheduleDraft, fetchSchedule } = useSchedules();

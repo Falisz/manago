@@ -1,15 +1,15 @@
 // FRONTEND/components/Posts/Index.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Loader } from '../Loader';
-import { useModals } from '../../contexts/ModalContext';
+import useApp from '../../contexts/AppContext';
+import Loader from '../Loader';
 import '../../styles/Posts.css';
 
 const PostIndex = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { openModal } = useModals();
+    const { openModal } = useApp();
 
     useEffect(() => {
         const fetchPosts = async () => {

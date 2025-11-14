@@ -1,13 +1,13 @@
 // FRONTEND/components/Teams/Details.js
 import React, {useEffect} from 'react';
-import Loader from '../Loader';
+import useApp from '../../contexts/AppContext';
 import useTeams from '../../hooks/useTeams';
-import { useModals } from '../../contexts/ModalContext';
 import Details from '../Details';
+import Loader from '../Loader';
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam, deleteTeam } = useTeams();
-    const { openModal, refreshTriggers, closeTopModal, refreshData } = useModals();
+    const { openModal, refreshTriggers, closeTopModal, refreshData } = useApp();
 
     useEffect(() => {
 

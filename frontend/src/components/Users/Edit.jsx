@@ -1,9 +1,9 @@
 // FRONTEND/components/Users/Edit.js
 import React, {useEffect, useMemo} from 'react';
-import useUsers from '../../hooks/useUsers';
 import useRoles from '../../hooks/useRoles';
-import Loader from '../Loader';
+import useUsers from '../../hooks/useUsers';
 import EditForm from '../EditForm';
+import Loader from '../Loader';
 
 export const UserRoleAssignment = ({user}) => {
     const {saveUserAssignment} = useUsers();

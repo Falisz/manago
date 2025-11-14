@@ -1,13 +1,13 @@
 // FRONTEND/hooks/useRoles.js
 import { useCallback, useState } from 'react';
 import axios from 'axios';
-import useAppState from '../contexts/AppStateContext';
+import useApp from '../contexts/AppContext';
 
 const useRoles = () => {
     const [roles, setRoles] = useState(null);
     const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState();
-    const { appCache } = useAppState();
+    const { appCache } = useApp();
     const roleCache = appCache.current.roles;
 
     const fetchRoles = useCallback(async ({roleId = null,

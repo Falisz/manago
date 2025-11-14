@@ -1,14 +1,15 @@
 // FRONTEND/Components/ConnectivityPopup.jsx
 import React from 'react';
-import useAppState from '../contexts/AppStateContext';
-import '../styles/ConnectivityPopup.css';
+import useApp from '../contexts/AppContext';
 import Button from './Button';
 import Icon from './Icon';
+import '../styles/ConnectivityPopup.css';
 
 const ConnectivityPopup = () => {
-    const { appState } = useAppState();
+    const { isConnected } = useApp();
 
-    if (appState?.is_connected) return null;
+    if (isConnected)
+        return null;
 
     return (
         <div className='connectivity-popup'>

@@ -1,16 +1,14 @@
 // FRONTEND/Components/AppSettings.jsx
 import React, {useEffect, useRef, useState, useMemo} from 'react';
-import useAppState from '../contexts/AppStateContext';
-import useModals from '../contexts/ModalContext';
-import Loader from './Loader';
+import useApp from '../contexts/AppContext';
 import EditForm from './EditForm';
+import Loader from './Loader';
 import Table from './Table';
 import '../styles/AppSettings.css';
 import '../styles/EditForm.css';
 
 const AppModules = () => {
-    const { appState, toggleModule } = useAppState();
-    const { openModal } = useModals();
+    const { appState, toggleModule, openModal } = useApp();
 
     const handleToggleConfirm = (id, value) => {
         openModal({
@@ -61,7 +59,7 @@ const AppModules = () => {
 };
 
 const AppStyles = () => {
-    const { appState, getConfigOptions, saveConfig } = useAppState();
+    const { appState, getConfigOptions, saveConfig } = useApp();
     const [configOptions, setConfigOptions] = useState({});
     const [loading, setLoading] = useState(true);
     const isMounted = useRef(false);

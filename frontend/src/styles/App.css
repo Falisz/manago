@@ -141,11 +141,11 @@ button .material-symbols-rounded {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transition: 0.3s;
 }
 .app.light {
     --link-color: var(--color);
 }
-
 
 .app.bg-blue-galaxy {
     background: linear-gradient(45deg, rgba(0, 0, 0, .05), rgba(0, 0, 0, .05)),

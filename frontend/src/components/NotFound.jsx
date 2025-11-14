@@ -1,5 +1,5 @@
 // FRONTEND/components/NotFound.jsx
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 import Icon from './Icon';
 
 export const NotFound = () => 

@@ -1,18 +1,18 @@
 // FRONTEND/components/EditForm.jsx
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import { useModals } from '../contexts/ModalContext';
-import ComboBox from './ComboBox';
+import useApp from '../contexts/AppContext';
 import Button from './Button';
-import MultiComboBox from './MultiComboBox';
 import CheckBox from './CheckBox';
-import '../styles/EditForm.css';
+import ComboBox from './ComboBox';
 import Icon from "./Icon";
+import MultiComboBox from './MultiComboBox';
+import '../styles/EditForm.css';
 
 
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
-    const { openModal, setDiscardWarning, refreshData, closeTopModal } = useModals();
+    const { openModal, setDiscardWarning, refreshData, closeTopModal } = useApp();
     const initialSource = useRef(null);
     
     useEffect(() => {
@@ -231,8 +231,6 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
     const getComponentClassName = (name, group) => {
         return `${group.className || ''}${errors[name] ? ' error' : ''}`;
     };
-
-    console.log(formData);
 
     return <form
                 className={'app-form' + (className ? ' ' + className : '')}

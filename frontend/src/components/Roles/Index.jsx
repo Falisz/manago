@@ -1,12 +1,12 @@
 // FRONTEND/components/Roles/Index.js
 import React, { useEffect, useMemo } from 'react';
-import { useModals } from '../../contexts/ModalContext';
+import useApp from '../../contexts/AppContext';
 import useRoles from '../../hooks/useRoles';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const RolesIndex = () => {
-    const { refreshTriggers } = useModals();
+    const { refreshTriggers } = useApp();
     const { roles, loading, fetchRoles } = useRoles();
 
     useEffect(() => {

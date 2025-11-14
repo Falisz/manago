@@ -1,17 +1,17 @@
 // FRONTEND/ManagerView.jsx
-import '../styles/ManagerView.css';
 import React, {useState} from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ReactComponent as SiteLogo } from '../assets/manager-logo.svg';
-import { ReactComponent as SiteLogoSmall } from '../assets/app-logo-s.svg';
+import {Link, Outlet, useLocation} from 'react-router-dom';
 import axios from 'axios';
-import MobileNav from './MobileNav';
-import useAppState from '../contexts/AppStateContext';
-import UserSubMenu from './UserSubMenu';
+import useApp from '../contexts/AppContext';
 import Icon from './Icon';
+import MobileNav from './MobileNav';
+import UserSubMenu from './UserSubMenu';
+import '../styles/ManagerView.css';
+import {ReactComponent as SiteLogo} from '../assets/manager-logo.svg';
+import {ReactComponent as SiteLogoSmall} from '../assets/app-logo-s.svg';
 
 const MainNav = () => {
-    const { user, appState } = useAppState();
+    const { user, appState } = useApp();
     const location = useLocation();
     const [navCollapsed, setNavCollapsed] = useState(user.manager_nav_collapsed);
 
@@ -70,7 +70,7 @@ const MainNav = () => {
 }
 
 const SubNav = ({currentMainPage, location}) => {
-    const { user } = useAppState();
+    const { user } = useApp();
 
     return (
         <nav className={`app-sub-nav ${currentMainPage?.subpages?.length > 0 ? '' : 'no-subpages'}`}>
@@ -105,7 +105,7 @@ const SubNav = ({currentMainPage, location}) => {
 }
 
 const ManagerView = () => {
-    const { appState } = useAppState();
+    const { appState } = useApp();
     const location = useLocation();
 
     const currentMainPage = appState.pages?.find((page) =>

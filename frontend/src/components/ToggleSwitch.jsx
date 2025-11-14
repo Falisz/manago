@@ -1,3 +1,4 @@
+// FRONTEND/components/ToggleSwitch.jsx
 import React from 'react';
 import '../styles/ToggleSwitch.css';
 

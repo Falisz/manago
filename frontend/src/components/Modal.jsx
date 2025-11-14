@@ -1,7 +1,7 @@
 // FRONTEND/components/Modal.jsx
 import React, {useEffect, useRef} from 'react';
-import '../styles/Modal.css';
 import Button from './Button';
+import '../styles/Modal.css';
 
 const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton = true, zIndex = 1000, style={} }) => {
     const modalRef = useRef(null);

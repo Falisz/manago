@@ -1,12 +1,12 @@
 // FRONTEND/components/Table.jsx
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo} from 'react';
 import {Item, Menu, RightSlot, useContextMenu} from 'react-contexify';
-import '../styles/Table.css';
-import 'react-contexify/dist/ReactContexify.css';
-import {useModals} from '../contexts/ModalContext';
+import useApp from '../contexts/AppContext';
 import Button from './Button';
 import Icon from './Icon';
 import ToggleSwitch from './ToggleSwitch';
+import 'react-contexify/dist/ReactContexify.css';
+import '../styles/Table.css';
 
 const TableHeader = ({
                          fields,
@@ -226,7 +226,7 @@ const Table = ({
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [selectedItems, setSelectedItems] = useState(new Set());
     const { show } = useContextMenu({ id: MENU_ID, });
-    const { openModal } = useModals();
+    const { openModal } = useApp();
 
     const displayContextMenu = (e, item) => {
         e.preventDefault();
@@ -382,11 +382,10 @@ const Table = ({
 
     }, [dataSource, tableStructure, filters, sortConfig]);
 
-    if (!dataSource)
-        return <div>Table cannot be rendered without Data Source.</div>;
-    
-    if (!tableStructure)
-        return <div>Table cannot be rendered without properly defined Table Structure.</div>;
+    if (!tableStructure) {
+        console.error('Table cannot be render without properly defined Table Structure.');
+        return null;
+    }
 
     const selectionMode = selectedItems?.size > 0;
     const hasHeader = tableStructure.hasHeader;
@@ -428,7 +427,8 @@ const Table = ({
                     }
                 </div>
             }
-            <div className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`} style={style}>
+            <div className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`+
+                `${className? ' ' + className : ''}`} style={style}>
                 {hasHeader && (
                     <TableHeader
                         fields={tableFields}

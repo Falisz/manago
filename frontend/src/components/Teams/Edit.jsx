@@ -2,8 +2,8 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
-import Loader from '../Loader';
 import EditForm from '../EditForm';
+import Loader from '../Loader';
 
 export const TeamUserAssignment = ({team}) => {
     const {saveTeamAssignment} = useTeams();

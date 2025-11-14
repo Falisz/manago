@@ -1,8 +1,7 @@
 // FRONTEND/components/Schedules/Edit.js
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
-import useAppState from '../../contexts/AppStateContext';
-import useModals from '../../contexts/ModalContext';
+import useApp from '../../contexts/AppContext';
 import useJobPosts from '../../hooks/useJobPosts';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
@@ -14,12 +13,12 @@ import UserSchedule from './UserSchedule';
 import '../../styles/Schedules.css';
 
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
-    const { appState } = useAppState();
+    const { appState } = useApp();
     const navigate = useNavigate();
-    const { closeTopModal } = useModals();
+    const { closeTopModal } = useApp();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
-    const { users: managers, fetchUsers: fetchManagers } = useUsers();
+    const { users: managers, fetchUsers: fetchManagers } = useApp();
 
     useEffect(() => {
         fetchUsers().then();
@@ -152,8 +151,8 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
 };
 
 const ScheduleEdit = () => {
-    const { appCache } = useAppState();
-    const { openModal, updateModalProps, closeTopModal } = useModals();
+    const { appCache } = useApp();
+    const { openModal, updateModalProps, closeTopModal } = useApp();
     const { scheduleId } = useParams();
     const {
         schedule,

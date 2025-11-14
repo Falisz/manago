@@ -1,5 +1,5 @@
 // FRONTEND/components/ComboBox.jsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import Icon from './Icon';
 import '../styles/ComboBox.css';
 

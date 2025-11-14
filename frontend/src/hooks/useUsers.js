@@ -1,13 +1,13 @@
 // FRONTEND/hooks/useUser.js
 import { useCallback, useState } from 'react';
 import axios from 'axios';
-import useAppState from '../contexts/AppStateContext';
+import useApp from '../contexts/AppContext';
 
 const useUsers = () => {
     const [ users, setUsers ] = useState();
     const [ loading, setLoading ] = useState();
     const [ status, setStatus ] = useState([]);
-    const { appCache } = useAppState();
+    const { appCache } = useApp();
     const userCache = appCache.current.users;
 
     const fetchUsers = useCallback(async ({userId = null, user_scope = 'all', user_scope_id = null, group = null,

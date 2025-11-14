@@ -1,13 +1,13 @@
 // FRONTEND/hooks/useTeams.js
 import { useCallback, useState } from 'react';
 import axios from 'axios';
-import useAppState from '../contexts/AppStateContext';
+import useApp from '../contexts/AppContext';
 
 const useTeams = () => {
     const [teams, setTeams] = useState(null);
     const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState();
-    const { appCache } = useAppState();
+    const { appCache } = useApp();
     const teamCache = appCache.current.teams;
 
     const fetchTeams = useCallback(async ({teamId = null, all = false,

@@ -1,7 +1,7 @@
 // FRONTEND/components/Schedules/UserShiftTable.jsx
 import React, {useCallback, useRef, useState} from 'react';
-import {Item, Menu, useContextMenu} from 'react-contexify';
-import {useModals} from '../../contexts/ModalContext';
+import {Item, Menu, useContextMenu} from 'react-contexify'
+import useApp from '../../contexts/AppContext';
 import Icon from '../Icon';
 import ComboBox from '../ComboBox';
 import {generateDateList, formatDate, sameDay} from '../../utils/dates';
@@ -90,7 +90,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
 };
 
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
-    const { openModal } = useModals();
+    const { openModal } = useApp();
 
     const MENU_ID = 'schedule_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });

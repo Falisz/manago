@@ -1,11 +1,11 @@
 // FRONTEND/components/UserSubMenu.jsx
 import React from 'react';
-import useAppState from '../contexts/AppStateContext';
 import {Link} from 'react-router-dom';
+import useApp from '../contexts/AppContext';
 import Icon from './Icon';
 
 const UserSubMenu = () => {
-    const { user, toggleView, toggleTheme } = useAppState();
+    const { user, toggleView, toggleTheme } = useApp();
 
     const new_theme_mode = user?.theme_mode === 'dark' ? 'light' : 'dark';
 

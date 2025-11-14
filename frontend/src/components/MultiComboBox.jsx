@@ -1,7 +1,7 @@
 // FRONTEND/components/MultiComboBox.jsx
-import React, { useCallback } from 'react';
-import ComboBox from './ComboBox';
+import React, {useCallback} from 'react';
 import Button from './Button';
+import ComboBox from './ComboBox';
 import '../styles/MultiComboBox.css';
 
 const MultiComboBox = ({

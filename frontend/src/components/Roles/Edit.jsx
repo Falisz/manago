@@ -1,8 +1,8 @@
 // FRONTEND/components/Roles/Edit.js
 import React, { useEffect, useMemo } from 'react';
 import useRoles from '../../hooks/useRoles';
-import Loader from '../Loader';
 import EditForm from '../EditForm';
+import Loader from '../Loader';
 
 const RoleEdit = ({ roleId }) => {
     const { role, loading, setLoading, fetchRole, saveRole } = useRoles();

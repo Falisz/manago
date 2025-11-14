@@ -1,13 +1,13 @@
 // FRONTEND/components/Users/Details.js
 import React, {useEffect} from 'react';
-import Loader from '../Loader';
+import useApp from '../../contexts/AppContext';
 import useUsers from '../../hooks/useUsers';
-import { useModals } from '../../contexts/ModalContext';
 import Details from '../Details';
+import Loader from '../Loader';
 
 const UserDetails = ({ userId }) => {
     const { user, loading, fetchUser, deleteUser } = useUsers();
-    const { openModal, closeTopModal, refreshData, refreshTriggers } = useModals();
+    const { openModal, closeTopModal, refreshData, refreshTriggers } = useApp();
 
     useEffect(() => {
         const refresh = refreshTriggers.user?.data === userId;
