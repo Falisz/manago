@@ -1,7 +1,7 @@
 // FRONTEND/App.jsx
 import React from 'react';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import useApp, { AppProvider } from './contexts/AppContext';
+import {BrowserRouter as AppRouter, Routes, Route} from 'react-router-dom';
+import useApp, { AppProvider as AppContext } from './contexts/AppContext';
 import Login from './components/Login';
 import Logout from './components/Logout';
 import NotFound from './components/NotFound';
@@ -75,11 +75,11 @@ const AppRoutes = () => {
 
 const App = () => {
     return (
-        <Router>
-            <AppProvider>
-                <AppRoutes />
-            </AppProvider>
-        </Router>
+        <AppRouter>
+            <AppContext>
+                <AppRoutes/>
+            </AppContext>
+        </AppRouter>
     );
 };
 

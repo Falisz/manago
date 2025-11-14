@@ -561,37 +561,39 @@ export const AppProvider = ({ children }) => {
         return ['app', ...classes].join(' ');
     }, [appState]);
 
+
+    const exportObject = {
+        appState,
+        appCache,
+        isConnected: appState.is_connected,
+        loading: appState.loading,
+        user: appState.user,
+        pages: appState.pages,
+        modules: appState.modules,
+        setLoading,
+        authUser,
+        logoutUser,
+        getConfigOptions,
+        saveConfig,
+        refreshConfig,
+        checkConnection,
+        refreshModules,
+        toggleModule,
+        refreshPages,
+        toggleView,
+        toggleTheme,
+        openModal,
+        setDiscardWarning,
+        closeModal,
+        closeTopModal,
+        refreshData,
+        updateModalProps,
+        refreshTriggers
+    };
     const sortedModalIds = Object.keys(modals).sort((a, b) => a - b);
 
     return (
-        <AppContext.Provider value={{
-            appState,
-            appCache,
-            isConnected: appState.is_connected,
-            loading: appState.loading,
-            user: appState.user,
-            pages: appState.pages,
-            modules: appState.modules,
-            setLoading,
-            authUser,
-            logoutUser,
-            getConfigOptions,
-            saveConfig,
-            refreshConfig,
-            checkConnection,
-            refreshModules,
-            toggleModule,
-            refreshPages,
-            toggleView,
-            toggleTheme,
-            openModal,
-            setDiscardWarning,
-            closeModal,
-            closeTopModal,
-            refreshData,
-            updateModalProps,
-            refreshTriggers
-        }}>
+        <AppContext.Provider value={exportObject}>
             <div className={appClasses}>
                 {children}
                 {sortedModalIds.map((id, index) => {
