@@ -46,7 +46,7 @@ const fetchShiftsHandler = async (req, res) => {
                 if (!Array.isArray(users))
                     users = [users];
 
-                query.user = users.map(user => user.id);
+                query.user = users.map(user => user?.id);
             }
 
             if (req.query.date) {
