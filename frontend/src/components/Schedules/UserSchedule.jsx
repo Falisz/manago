@@ -1,10 +1,11 @@
-// FRONTEND/components/WorkPlanner/UserShiftTable.jsx
+// FRONTEND/components/Schedules/UserShiftTable.jsx
 import React, {useCallback, useRef, useState} from 'react';
 import {Item, Menu, useContextMenu} from 'react-contexify';
-import { useModals } from '../../contexts/ModalContext';
-import { generateDateList, formatDate, sameDay } from '../../utils/dates';
-import Icon from "../Icon";
-import ComboBox from "../ComboBox";
+import {useModals} from '../../contexts/ModalContext';
+import Icon from '../Icon';
+import ComboBox from '../ComboBox';
+import {generateDateList, formatDate, sameDay} from '../../utils/dates';
+import '../../styles/UserSchedule.css';
 
 
 const LeaveItem = ({ days, type, color }) => (

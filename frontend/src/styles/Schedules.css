@@ -1,7 +1,5 @@
-/* TODO: refactor this to a cleaner structure. This file should be used for these components in Schedules dir:
-    Dashboard.jsx, Edit.jsx, Index.jsx, View.jsx. While the rest should be moved to a separate .css per component.jsx */
-
-.work-planner {
+/* Schedules/Dashboard.jsx */
+.schedules-dashboard {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
@@ -10,12 +8,12 @@
     height: calc(100% - 40px);
     overflow-y: scroll;
 }
-.app.fluent .work-planner {
+.app.fluent .schedules-dashboard {
     margin: 0;
     height: 100%;
     gap: 10px;
 }
-.planner-widget {
+.schedules-dashboard-widget {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -26,28 +24,29 @@
     height: 500px;
     overflow: hidden;
 }
-.app.fluent .planner-widget {
+.app.fluent .schedules-dashboard-widget {
     background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
 }
-.planner-widget .header {
+.schedules-dashboard-widget .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.planner-widget .content {
+.schedules-dashboard-widget .content {
     overflow-y: auto;
 }
-.planner-widget .content::-webkit-scrollbar-thumb {
+.schedules-dashboard-widget .content::-webkit-scrollbar-thumb {
     background-color: var(--text-color);
 }
-.planner-widget h1 {
+.schedules-dashboard-widget h1 {
     margin: 0;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
     font-size: 2rem;
 }
 
+/* Schedules/Index.jsx */
 .schedule-draft-item {
     padding: 15px 10px;
     border-radius: var(--big-border-radius);
@@ -89,6 +88,8 @@
     padding-left: 5px;
     font-size: 0.8rem;
 }
+
+/* Schedules/View.jsx, Schedules/Edit.jsx */
 .app-schedule {
     padding: 20px;
     width: calc(100% - 40px);
@@ -122,171 +123,6 @@
 .app-schedule-header .app-form .form-group.date-range {
     align-items: center;
 }
-
 .app-schedule-content {
     overflow: auto;
-}
-.app-schedule-table {
-    min-width: 100%;
-    border-collapse: collapse;
-}
-
-.app-schedule-table tr:not(:last-child) td {
-    border-bottom: 1px solid var(--text-color-3);
-}
-.app-schedule-table .user-header,
-.app-schedule-table .day-header {
-    padding: 8px 12px;
-    width: fit-content;
-    white-space: nowrap;
-    text-align: center;
-    border: 0;
-}
-.app-schedule-table .user-header,
-.app-schedule-table .user-cell {
-    width: max(100px, fit-content);
-    text-align: left;
-}
-.app-schedule-table .day-header {
-    border-radius: var(--big-border-radius) var(--big-border-radius) 0 0;
-    font-weight: 300;
-}
-.app-schedule-table .day-header .date {
-    padding: 5px 0;
-}
-.app-schedule-table .day-header.weekend .date {
-    color: var(--color);
-}
-.app-schedule-table .day-header.holiday .date {
-    color: #ff0000;
-}
-.app-schedule-table .day-header .short-day {
-    display: inline-block;
-    width: fit-content;
-    font-size: 0.8em;
-    font-weight: 700;
-    padding: 3px 12px;
-    border-radius: var(--def-border-radius);
-    color: var(--text-color-3);
-}
-.app-schedule-table .day-header.weekend .short-day,
-.app-schedule-table .day-header.holiday .short-day {
-    color: white;
-    font-weight: 500;
-    cursor: help;
-}
-.app-schedule-table .day-header.weekend .short-day {
-    background: var(--color);
-}
-.app-schedule-table .day-header.holiday .short-day {
-    background: #770000;
-}
-
-.app-schedule-table .user-cell {
-    padding: 8px 12px;
-    white-space: nowrap;
-    transition: .1s ease-in-out;
-}
-.app-schedule-table .column-highlight {
-    background: var(--background-color-3);
-    transition: .1s ease-in-out;
-}
-.app.fluent .app-schedule-table .column-highlight {
-    background: var(--seethrough-background);
-    transition: .1s ease-in-out;
-}
-.app-schedule-table tr td {
-    padding: 0;
-}
-.app-schedule-table tr td.selected {
-    background: var(--highlight-color);
-}
-.app.fluent .app-schedule-table tr td {
-    padding: 5px;
-}
-.app.fluent .app-schedule-table.editable tr td:hover {
-    background: var(--seethrough-background);
-}
-.app.fluent .app-schedule-table tr td.selected,
-.app.fluent .app-schedule-table tr td:hover.selected {
-    background: var(--seethrough-background-2);
-}
-.app-schedule-table .section-header {
-    font-weight: bold;
-    font-family: var(--font-family-condensed), sans-serif;
-    font-size: 1.2em;
-    padding: 10px;
-    text-align: center;
-}
-.app-schedule-table .shift-item,
-.app-schedule-table .leave-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 0;
-    height: 2.5rem;
-    transition: 0.3s ease-in-out;
-    border: 0;
-    border-radius: 0;
-    font-size: 0.9rem;
-    color: var(--text-color-3);
-    white-space: nowrap;
-}
-.app-schedule .shift-item+.shift-item {
-    margin-top: 5px;
-}
-.app.fluent .app-schedule-table .shift-item,
-.app.fluent .app-schedule-table .leave-item {
-    border-radius: var(--big-border-radius);
-    font-size: 0.8rem;
-}
-.app-schedule-table .shift-item .subtitle,
-.app-schedule-table .leave-item .subtitle {
-    font-style: italic;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-.app.fluent .app-schedule-table .shift-item .subtitle,
-.app.fluent .app-schedule-table .leave-item .subtitle {
-    font-size: 0.7rem;
-}
-
-.app-schedule-table .shift-item .time-range {
-    font-size: 1rem;
-    line-height: 1rem;
-    font-weight: 400;
-    font-family: 'Roboto Condensed', sans-serif;
-    letter-spacing: 0;
-}
-.app-schedule-table .shift-item .time-range input {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    background: none;
-    font: inherit;
-    font-size: 0.9rem;
-    color: inherit;
-    line-height: inherit;
-    letter-spacing: 0;
-    text-align: inherit;
-    -webkit-font-smoothing: antialiased;
-    border: 0;
-    border-bottom: 2px solid white;
-    outline: none;
-    height: 1rem;
-    display: inline-block;
-    vertical-align: baseline;
-}
-[type="time"]::-webkit-inner-spin-button {
-    display: none;
-}
-[type="time"]::-webkit-calendar-picker-indicator {
-    display: none;
-}
-.app-schedule-table .shift-item .app-combo-box  .icon {
-    display: none;
 }

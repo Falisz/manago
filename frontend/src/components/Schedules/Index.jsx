@@ -2,9 +2,10 @@
 import React, {useEffect, useCallback} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useModals} from '../../contexts/ModalContext';
-import Button from '../Button';
 import useSchedules from '../../hooks/useSchedules';
-import Loader from "../Loader";
+import Button from '../Button';
+import Loader from '../Loader';
+import '../../styles/Schedules.css';
 
 const SchedulesIndex = () => {
     const { openModal, refreshTriggers, refreshData, closeTopModal } = useModals();

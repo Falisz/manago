@@ -1,17 +1,17 @@
 // FRONTEND/components/Schedules/View.jsx
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import useAppState from '../../contexts/AppStateContext';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
-import ComboBox from '../ComboBox';
-import useAppState from '../../contexts/AppStateContext';
 import Button from '../Button';
-import Loader from '../Loader';
+import ComboBox from '../ComboBox';
 import InWorks from '../InWorks';
-import UserSchedule from './UserSchedule';
-import MonthlySchedule from './MonthlySchedule';
 import JobPostSchedule from './JobPostSchedule';
+import Loader from '../Loader';
+import MonthlySchedule from './MonthlySchedule';
+import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 

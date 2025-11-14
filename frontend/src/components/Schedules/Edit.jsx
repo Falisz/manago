@@ -3,14 +3,14 @@ import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import useAppState from '../../contexts/AppStateContext';
 import useModals from '../../contexts/ModalContext';
-import useSchedules from '../../hooks/useSchedules';
 import useJobPosts from '../../hooks/useJobPosts';
+import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
 import useUsers from '../../hooks/useUsers';
 import Button from '../Button';
-import UserSchedule from './UserSchedule';
-import Loader from '../Loader';
 import EditForm from '../EditForm';
+import Loader from '../Loader';
+import UserSchedule from './UserSchedule';
 import '../../styles/Schedules.css';
 
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {

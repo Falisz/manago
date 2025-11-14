@@ -1,0 +1,166 @@
+
+/* User Schedule table */
+.app-schedule-table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+.app-schedule-table tr:not(:last-child) td {
+    border-bottom: 1px solid var(--text-color-3);
+}
+.app-schedule-table .user-header,
+.app-schedule-table .day-header {
+    padding: 8px 12px;
+    width: fit-content;
+    white-space: nowrap;
+    text-align: center;
+    border: 0;
+}
+.app-schedule-table .user-header,
+.app-schedule-table .user-cell {
+    width: max(100px, fit-content);
+    text-align: left;
+}
+.app-schedule-table .day-header {
+    border-radius: var(--big-border-radius) var(--big-border-radius) 0 0;
+    font-weight: 300;
+}
+.app-schedule-table .day-header .date {
+    padding: 5px 0;
+}
+.app-schedule-table .day-header.weekend .date {
+    color: var(--color);
+}
+.app-schedule-table .day-header.holiday .date {
+    color: #ff0000;
+}
+.app-schedule-table .day-header .short-day {
+    display: inline-block;
+    width: fit-content;
+    font-size: 0.8em;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: var(--def-border-radius);
+    color: var(--text-color-3);
+}
+.app-schedule-table .day-header.weekend .short-day,
+.app-schedule-table .day-header.holiday .short-day {
+    color: white;
+    font-weight: 500;
+    cursor: help;
+}
+.app-schedule-table .day-header.weekend .short-day {
+    background: var(--color);
+}
+.app-schedule-table .day-header.holiday .short-day {
+    background: #770000;
+}
+
+.app-schedule-table .user-cell {
+    padding: 8px 12px;
+    white-space: nowrap;
+    transition: .1s ease-in-out;
+}
+.app-schedule-table .column-highlight {
+    background: var(--background-color-3);
+    transition: .1s ease-in-out;
+}
+.app.fluent .app-schedule-table .column-highlight {
+    background: var(--seethrough-background);
+    transition: .1s ease-in-out;
+}
+.app-schedule-table tr td {
+    padding: 0;
+}
+.app-schedule-table tr td.selected {
+    background: var(--highlight-color);
+}
+.app.fluent .app-schedule-table tr td {
+    padding: 5px;
+}
+.app.fluent .app-schedule-table.editable tr td:hover {
+    background: var(--seethrough-background);
+}
+.app.fluent .app-schedule-table tr td.selected,
+.app.fluent .app-schedule-table tr td:hover.selected {
+    background: var(--seethrough-background-2);
+}
+.app-schedule-table .section-header {
+    font-weight: bold;
+    font-family: var(--font-family-condensed), sans-serif;
+    font-size: 1.2em;
+    padding: 10px;
+    text-align: center;
+}
+
+/* Shift and Leave items */
+.shift-item,
+.leave-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+    height: 2.5rem;
+    transition: 0.3s ease-in-out;
+    border: 0;
+    border-radius: 0;
+    font-size: 0.9rem;
+    color: var(--text-color-3);
+    white-space: nowrap;
+}
+.shift-item+.shift-item {
+    margin-top: 5px;
+}
+.app.fluent .shift-item,
+.app.fluent .leave-item {
+    border-radius: var(--big-border-radius);
+    font-size: 0.8rem;
+}
+.shift-item .subtitle,
+.leave-item .subtitle {
+    font-style: italic;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.app.fluent .shift-item .subtitle,
+.app.fluent .leave-item .subtitle {
+    font-size: 0.7rem;
+}
+
+.shift-item .time-range {
+    font-size: 1rem;
+    line-height: 1rem;
+    font-weight: 400;
+    font-family: 'Roboto Condensed', sans-serif;
+    letter-spacing: 0;
+}
+.shift-item .time-range input {
+    -webkit-appearance: none;
+    appearance: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.9rem;
+    color: inherit;
+    line-height: inherit;
+    letter-spacing: 0;
+    text-align: inherit;
+    -webkit-font-smoothing: antialiased;
+    border: 0;
+    border-bottom: 2px solid white;
+    outline: none;
+    height: 1rem;
+    display: inline-block;
+    vertical-align: baseline;
+}
+[type="time"]::-webkit-inner-spin-button {
+    display: none;
+}
+[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+}
+.app-schedule-table .shift-item .app-combo-box .icon {
+    display: none;
+}
