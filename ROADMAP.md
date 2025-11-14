@@ -21,7 +21,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 ### Projects
 - Project Roles - different from company-wide user roles.
 - Access to different resources.
-#### Users
+### Users
 - Users have contractual data added - time joined company, contract types, start and end-dates.
 ### Permissions
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
