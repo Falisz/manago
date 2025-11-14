@@ -34,8 +34,6 @@ const fetchShiftsHandler = async (req, res) => {
             query.id = id;
         } else {
 
-            console.log(req.query);
-
             if (req.query.user) {
                 query.user = parseInt(req.query.user);
             } else if (req.query.user_scope) {

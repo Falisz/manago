@@ -15,8 +15,6 @@ const RoleDetails = ({ roleId }) => {
         if (refresh)
             delete refreshTriggers.role;
 
-        console.log(roleId && (!role || refresh));
-
         if (roleId && (!role || refresh))
             fetchRole({roleId, reload: refresh}).then();
 
