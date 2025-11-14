@@ -1,7 +1,7 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General
-- Combine AppState and Modal global contexts into one AppContext and move it into the <Router>
+- Combine AppState and Modal global contexts into one AppContext and move it into the Router
 ### Users
 - Users have contractual data added - time joined company, contract types, start and end-dates.
 ### Permissions 
