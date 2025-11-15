@@ -37,7 +37,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
             }
         }
 
-        updateShift({ shift: {...shift, ...newData}})
+        updateShift({ shift: {...shift, ...newData}});
     }
 
     return <div
@@ -90,7 +90,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
 };
 
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
-    const { openModal } = useApp();
+    const { openModal, addUnsavedChange } = useApp();
 
     const MENU_ID = 'schedule_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });
@@ -137,9 +137,10 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         }
     }, [selectedCells, setSelectedCells]);
 
-    const handleShiftUpdate = ({shift}) => {
+    const handleShiftUpdate = useCallback(({shift}) => {
+        addUnsavedChange('scheduleEdit');
         updateUserShift({ shift, action: 'update' });
-    };
+    }, [addUnsavedChange, updateUserShift]);
 
     const handleShiftAdd = ({user, date, shift}) => {
         if (!editable || !user || !date)
@@ -158,6 +159,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                 job_post: null,
             };
 
+        addUnsavedChange('scheduleEdit');
         updateUserShift({ shift, action: 'add' });
     };
 
@@ -282,6 +284,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
             if (isCopy)
                 newShift.id = `new${Math.floor(Math.random() * 1001)}`;
 
+            addUnsavedChange('scheduleEdit');
             updateUserShift({ shift: newShift, sourceShift, action: isCopy ? 'copy' : 'move' });
 
         } catch {}
@@ -308,6 +311,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
     const handleShiftDelete = (shift) => {
         if (!editable)
             return;
+        addUnsavedChange('scheduleEdit');
         updateUserShift({ shift, action: 'delete' });
     };
 

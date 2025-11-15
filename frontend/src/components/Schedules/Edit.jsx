@@ -13,12 +13,12 @@ import UserSchedule from './UserSchedule';
 import '../../styles/Schedules.css';
 
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
-    const { appState } = useApp();
+    const { appState, addUnsavedChange } = useApp();
     const navigate = useNavigate();
     const { closeTopModal } = useApp();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
-    const { users: managers, fetchUsers: fetchManagers } = useApp();
+    const { users: managers, fetchUsers: fetchManagers } = useUsers();
 
     useEffect(() => {
         fetchUsers().then();
@@ -137,6 +137,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                     refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
                     label: 'Start planning'
             },
+            onChange: () => addUnsavedChange('scheduleEdit'),
             onCancel: {
                 handler: () => {
                     closeTopModal();
@@ -145,13 +146,13 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                 },
             }
         };
-    }, [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
+    }, [schedule, setSchedule, addUnsavedChange, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
     
     return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
 };
 
 const ScheduleEdit = () => {
-    const { appCache } = useApp();
+    const { appCache, removeUnsavedChange } = useApp();
     const { openModal, updateModalProps, closeTopModal } = useApp();
     const { scheduleId } = useParams();
     const {
@@ -175,15 +176,16 @@ const ScheduleEdit = () => {
     const modalIdRef = useRef(null);
 
     const discardChanges = useCallback(() => {
+        removeUnsavedChange('scheduleEdit');
         navigate(-1);
-    }, [navigate]);
+    }, [navigate, removeUnsavedChange]);
 
     const saveSchedule = useCallback(() => {
-            saveScheduleDraft().then();
-        }
-    , [saveScheduleDraft]);
+        removeUnsavedChange('scheduleEdit');
+        saveScheduleDraft().then();
+    }, [saveScheduleDraft, removeUnsavedChange]);
 
-    const publishSchedule = useCallback((schedule) => {
+    const publishSchedule = useCallback(() => {
 
         const viewPath = `/schedules/view?from=${schedule.start_date}&to=${schedule.end_date}` +
             `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`;
@@ -195,19 +197,20 @@ const ScheduleEdit = () => {
             the official Schedule. This action cannot be undone.`,
             onConfirm: () => {
                 saveScheduleDraft({ schedule, publish: true}).then();
+                removeUnsavedChange('scheduleEdit');
                 closeTopModal();
                 navigate(viewPath);
             },
             confirmLabel: 'Publish without overwriting',
             onConfirm2: () => {
                 saveScheduleDraft({ schedule, publish: true, overwrite: true}).then();
+                removeUnsavedChange('scheduleEdit');
                 closeTopModal();
                 navigate(viewPath);
             },
             confirmLabel2: 'Publish overwriting current Schedule',
         });
-    }, [saveScheduleDraft, schedule.start_date, schedule.end_date, schedule.user_scope, schedule.user_scope_id,
-        closeTopModal, navigate]);
+    }, [saveScheduleDraft, openModal, removeUnsavedChange, schedule, closeTopModal, navigate]);
 
     const editDetails = useCallback(() => {
         modalIdRef.current = openModal({
@@ -304,11 +307,11 @@ const ScheduleEdit = () => {
                 {schedule && (
                     schedule.mode === 'current' ? <>
                         <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
-                        <Button icon={'publish'} label={'Re-Publish'} onClick={() => publishSchedule(schedule)}/>
+                        <Button icon={'publish'} label={'Re-Publish'} onClick={publishSchedule}/>
                     </> : <>
                         <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
                         <Button icon={'save'} label={'Save'} onClick={() => saveSchedule(schedule)}/>
-                        <Button icon={'publish'} label={'Publish'} onClick={() => publishSchedule(schedule)}/>
+                        <Button icon={'publish'} label={'Publish'} onClick={publishSchedule}/>
                     </>
                 )}
             </div>

@@ -117,6 +117,9 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
             })()
         });
 
+        if (structure.onChange && typeof structure.onChange === 'function')
+            structure.onChange();
+
         if (setSource) {
             setSource(prev => setter(prev));
         } else {

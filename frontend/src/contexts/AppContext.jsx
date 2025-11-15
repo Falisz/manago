@@ -1,4 +1,4 @@
-// FRONTEND/contexts/AppStatusContext.jsx
+// FRONTEND/contexts/AppContext.jsx
 import React, { createContext, useContext, useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -78,6 +78,7 @@ export const AppProvider = ({ children }) => {
     });
     const [modals, setModals] = useState({});
     const [refreshTriggers, setRefreshTriggers] = useState({});
+    const [unsavedChanges, setUnsavedChanges] = useState(new Set());
     const [searchParams, setSearchParams] = useSearchParams();
     const { search } = useLocation();
     const isMounted = useRef(false);
@@ -93,6 +94,27 @@ export const AppProvider = ({ children }) => {
     const setUser = useCallback((user) => {
         setAppState(prev => ({ ...prev, user: {...prev.user, ...user} }));
     }, []);
+
+    // unsavedChanges state management
+    const addUnsavedChange = useCallback((id) => {
+        console.log('Adding unsaved change:', id);
+        setUnsavedChanges(prev => {
+            const next = new Set(prev);
+            next.add(id);
+            return next;
+        });
+    }, []);
+
+    const removeUnsavedChange = useCallback((id) => {
+        console.log('Removing unsaved change:', id);
+        setUnsavedChanges(prev => {
+            const next = new Set(prev);
+            next.delete(id);
+            return next;
+        });
+    }, []);
+
+    const hasUnsavedChanges = unsavedChanges.size > 0;
 
     // API Get calls.
     const getUser = useCallback(async () => {
@@ -538,6 +560,20 @@ export const AppProvider = ({ children }) => {
 
     }, [appState, modals, parseUrlParams]);
 
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            if (hasUnsavedChanges) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [hasUnsavedChanges]);
+
     const appClasses = useMemo(() => {
         let classes = [];
 
@@ -588,7 +624,9 @@ export const AppProvider = ({ children }) => {
         closeTopModal,
         refreshData,
         updateModalProps,
-        refreshTriggers
+        refreshTriggers,
+        addUnsavedChange,
+        removeUnsavedChange
     };
     const sortedModalIds = Object.keys(modals).sort((a, b) => a - b);
 
