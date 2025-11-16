@@ -1,6 +1,7 @@
 // FRONTEND/Components/AppSettings.jsx
 import React, {useEffect, useRef, useState, useMemo} from 'react';
 import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 import EditForm from './EditForm';
 import Loader from './Loader';
 import Table from './Table';
@@ -8,7 +9,8 @@ import '../styles/AppSettings.css';
 import '../styles/EditForm.css';
 
 const AppModules = () => {
-    const { appState, toggleModule, openModal } = useApp();
+    const { appState, toggleModule } = useApp();
+    const { openModal } = useNav();
 
     const handleToggleConfirm = (id, value) => {
         openModal({

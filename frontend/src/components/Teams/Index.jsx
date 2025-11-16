@@ -1,12 +1,12 @@
 // FRONTEND/components/Teams/Index.js
 import React, { useEffect, useCallback, useMemo } from 'react';
-import useApp from '../../contexts/AppContext';
+import useNav from '../../contexts/NavContext';
 import useTeams from '../../hooks/useTeams';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const TeamsIndex = () => {
-    const { openModal, refreshData, refreshTriggers, closeTopModal } = useApp();
+    const { openModal, refreshData, refreshTriggers, closeTopModal } = useNav();
     const { teams, loading, fetchTeams, deleteTeams, deleteTeam } = useTeams();
 
     useEffect(() => {

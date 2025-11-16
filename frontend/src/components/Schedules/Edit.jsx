@@ -2,6 +2,7 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import useApp from '../../contexts/AppContext';
+import useNav from '../../contexts/NavContext';
 import useJobPosts from '../../hooks/useJobPosts';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
@@ -13,7 +14,8 @@ import UserSchedule from './UserSchedule';
 import '../../styles/Schedules.css';
 
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
-    const { appState, addUnsavedChange } = useApp();
+    const { appState } = useApp();
+    const { setUnsavedChanges } = useNav();
     const navigate = useNavigate();
     const { closeTopModal } = useApp();
     const { teams, fetchTeams } = useTeams();
@@ -137,7 +139,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                     refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
                     label: 'Start planning'
             },
-            onChange: () => addUnsavedChange('scheduleEdit'),
+            onChange: () => setUnsavedChanges(true),
             onCancel: {
                 handler: () => {
                     closeTopModal();
@@ -146,14 +148,14 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                 },
             }
         };
-    }, [schedule, setSchedule, addUnsavedChange, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
+    }, [schedule, setSchedule, setUnsavedChanges, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
     
     return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
 };
 
 const ScheduleEdit = () => {
-    const { appCache, removeUnsavedChange } = useApp();
-    const { openModal, updateModalProps, closeTopModal } = useApp();
+    const { appCache } = useApp();
+    const { openModal, updateModalProps, closeTopModal, setUnsavedChanges } = useNav();
     const { scheduleId } = useParams();
     const {
         schedule,
@@ -176,14 +178,14 @@ const ScheduleEdit = () => {
     const modalIdRef = useRef(null);
 
     const discardChanges = useCallback(() => {
-        removeUnsavedChange('scheduleEdit');
+        setUnsavedChanges(false);
         navigate(-1);
-    }, [navigate, removeUnsavedChange]);
+    }, [navigate, setUnsavedChanges]);
 
     const saveSchedule = useCallback(() => {
-        removeUnsavedChange('scheduleEdit');
+        setUnsavedChanges(false);
         saveScheduleDraft().then();
-    }, [saveScheduleDraft, removeUnsavedChange]);
+    }, [saveScheduleDraft, setUnsavedChanges]);
 
     const publishSchedule = useCallback(() => {
 
@@ -197,20 +199,20 @@ const ScheduleEdit = () => {
             the official Schedule. This action cannot be undone.`,
             onConfirm: () => {
                 saveScheduleDraft({ schedule, publish: true}).then();
-                removeUnsavedChange('scheduleEdit');
+                setUnsavedChanges(false);
                 closeTopModal();
                 navigate(viewPath);
             },
             confirmLabel: 'Publish without overwriting',
             onConfirm2: () => {
                 saveScheduleDraft({ schedule, publish: true, overwrite: true}).then();
-                removeUnsavedChange('scheduleEdit');
+                setUnsavedChanges(false);
                 closeTopModal();
                 navigate(viewPath);
             },
             confirmLabel2: 'Publish overwriting current Schedule',
         });
-    }, [saveScheduleDraft, openModal, removeUnsavedChange, schedule, closeTopModal, navigate]);
+    }, [saveScheduleDraft, openModal, setUnsavedChanges, schedule, closeTopModal, navigate]);
 
     const editDetails = useCallback(() => {
         modalIdRef.current = openModal({

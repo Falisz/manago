@@ -1,14 +1,14 @@
 // FRONTEND/components/Schedules/Index.jsx
 import React, {useEffect, useCallback} from 'react';
 import {useNavigate} from 'react-router-dom';
-import useApp from '../../contexts/AppContext';
+import useNav from '../../contexts/NavContext';
 import useSchedules from '../../hooks/useSchedules';
 import Button from '../Button';
 import Loader from '../Loader';
 import '../../styles/Schedules.css';
 
 const SchedulesIndex = () => {
-    const { openModal, refreshTriggers, refreshData, closeTopModal } = useApp();
+    const { openModal, refreshTriggers, refreshData, closeTopModal } = useNav();
     const { scheduleDrafts, fetchScheduleDrafts, discardScheduleDraft, loading  } = useSchedules();
     const navigate = useNavigate();
 

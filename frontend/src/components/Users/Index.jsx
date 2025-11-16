@@ -1,12 +1,12 @@
 // FRONTEND/Components/Users/Index.jsx
 import React, { useCallback, useEffect, useMemo } from 'react';
-import useApp from '../../contexts/AppContext';
+import useNav from '../../contexts/NavContext';
 import useUsers from '../../hooks/useUsers';
 import Loader from '../Loader';
 import Table from '../Table';
 
 const UsersIndexPage = ({content='users'}) => {
-    const { openModal, refreshData, closeTopModal, refreshTriggers } = useApp();
+    const { openModal, refreshData, closeTopModal, refreshTriggers } = useNav();
     const { users, loading, fetchUsers, deleteUser, deleteUsers } = useUsers();
 
     useEffect(() => {

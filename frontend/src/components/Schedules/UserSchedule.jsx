@@ -1,7 +1,7 @@
 // FRONTEND/components/Schedules/UserShiftTable.jsx
 import React, {useCallback, useRef, useState} from 'react';
 import {Item, Menu, useContextMenu} from 'react-contexify'
-import useApp from '../../contexts/AppContext';
+import useNav from '../../contexts/NavContext';
 import Icon from '../Icon';
 import ComboBox from '../ComboBox';
 import {generateDateList, formatDate, sameDay} from '../../utils/dates';
@@ -90,7 +90,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
 };
 
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
-    const { openModal, addUnsavedChange } = useApp();
+    const { openModal, setUnsavedChanges } = useNav();
 
     const MENU_ID = 'schedule_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });
@@ -138,9 +138,9 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
     }, [selectedCells, setSelectedCells]);
 
     const handleShiftUpdate = useCallback(({shift}) => {
-        addUnsavedChange('scheduleEdit');
+        setUnsavedChanges(true);
         updateUserShift({ shift, action: 'update' });
-    }, [addUnsavedChange, updateUserShift]);
+    }, [setUnsavedChanges, updateUserShift]);
 
     const handleShiftAdd = ({user, date, shift}) => {
         if (!editable || !user || !date)
@@ -159,7 +159,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                 job_post: null,
             };
 
-        addUnsavedChange('scheduleEdit');
+        setUnsavedChanges(true);
         updateUserShift({ shift, action: 'add' });
     };
 
@@ -284,7 +284,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
             if (isCopy)
                 newShift.id = `new${Math.floor(Math.random() * 1001)}`;
 
-            addUnsavedChange('scheduleEdit');
+            setUnsavedChanges(true);
             updateUserShift({ shift: newShift, sourceShift, action: isCopy ? 'copy' : 'move' });
 
         } catch {}
@@ -311,7 +311,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
     const handleShiftDelete = (shift) => {
         if (!editable)
             return;
-        addUnsavedChange('scheduleEdit');
+        setUnsavedChanges(true);
         updateUserShift({ shift, action: 'delete' });
     };
 

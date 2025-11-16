@@ -1,6 +1,6 @@
 // FRONTEND/Components/ConfirmPrompt.jsx
 import React from 'react';
-import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 import Button from './Button';
 import '../styles/ConfirmPrompt.css';
 
@@ -12,7 +12,7 @@ const ConfirmPrompt = ({
                     confirmLabel2 = 'Confirm2',
                     cancelLabel = 'Cancel',
                 }) => {
-    const { closeTopModal } = useApp();
+    const { closeTopModal } = useNav();
 
     const confirmAction = () => {
         closeTopModal();

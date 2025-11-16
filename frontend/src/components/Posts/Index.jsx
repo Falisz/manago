@@ -1,7 +1,7 @@
 // FRONTEND/components/Posts/Index.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import useApp from '../../contexts/AppContext';
+import useNav from '../../contexts/NavContext';
 import Loader from '../Loader';
 import '../../styles/Posts.css';
 
@@ -9,7 +9,7 @@ const PostIndex = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { openModal } = useApp();
+    const { openModal } = useNav();
 
     useEffect(() => {
         const fetchPosts = async () => {

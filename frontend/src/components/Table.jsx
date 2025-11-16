@@ -1,7 +1,7 @@
 // FRONTEND/components/Table.jsx
 import React, {useState, useMemo} from 'react';
 import {Item, Menu, RightSlot, useContextMenu} from 'react-contexify';
-import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 import Button from './Button';
 import Icon from './Icon';
 import ToggleSwitch from './ToggleSwitch';
@@ -226,7 +226,7 @@ const Table = ({
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [selectedItems, setSelectedItems] = useState(new Set());
     const { show } = useContextMenu({ id: MENU_ID, });
-    const { openModal } = useApp();
+    const { openModal } = useNav();
 
     const displayContextMenu = (e, item) => {
         e.preventDefault();
