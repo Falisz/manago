@@ -5,7 +5,7 @@ import useUsers from '../../hooks/useUsers';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-export const UserRoleAssignment = ({user}) => {
+export const UserRoleAssignment = ({user, modal}) => {
     const {saveUserAssignment} = useUsers();
     const {roles, loading, fetchRoles} = useRoles();
 
@@ -34,8 +34,8 @@ export const UserRoleAssignment = ({user}) => {
                 resourceIds: data['roles']
             }),
             refreshTriggers: [['users', true], ['user', user.id]]
-        }
-    }), [user, roles, saveUserAssignment]);
+        }, modal
+    }), [user, modal, roles, saveUserAssignment]);
 
     if (loading) 
         return <Loader/>;
@@ -43,7 +43,7 @@ export const UserRoleAssignment = ({user}) => {
     return <EditForm structure={formStructure} presetData={user} />;
 }
 
-export const UserManagerAssignment = ({user}) => {
+export const UserManagerAssignment = ({user, modal}) => {
     const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
 
     useEffect(() => {
@@ -72,8 +72,8 @@ export const UserManagerAssignment = ({user}) => {
                 resourceIds: data['managers']
             }),
             refreshTriggers: [['users', true], ['user', user.id]]
-        }
-    }), [user, managers, saveUserAssignment]);
+        }, modal
+    }), [user, modal, managers, saveUserAssignment]);
 
     if (loading) 
         return <Loader/>;
@@ -81,7 +81,7 @@ export const UserManagerAssignment = ({user}) => {
     return <EditForm structure={formStructure} presetData={user} />;
 }
 
-export const UserRoleBulkAssignment = ({users}) => {
+export const UserRoleBulkAssignment = ({users, modal}) => {
     const { saveUserAssignment } = useUsers();
     const { roles, loading, fetchRoles } = useRoles();
 
@@ -130,8 +130,8 @@ export const UserRoleBulkAssignment = ({users}) => {
                 mode: data.mode
             }),
             refreshTriggers: [['users', true]]
-        }
-    }), [users, roles, saveUserAssignment]);
+        }, modal
+    }), [users, modal, roles, saveUserAssignment]);
 
     const presetData = useMemo(() => ({mode: 'add', users}), [users]);
 
@@ -141,7 +141,7 @@ export const UserRoleBulkAssignment = ({users}) => {
     return <EditForm structure={formStructure} presetData={presetData} />;
 }
 
-export const UserManagerBulkAssignment = ({users}) => {
+export const UserManagerBulkAssignment = ({users, modal}) => {
     const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
 
     useEffect(() => {
@@ -190,8 +190,8 @@ export const UserManagerBulkAssignment = ({users}) => {
                 mode: data.mode
             }),
             refreshTriggers: [['users', true]]
-        }
-    }), [users, managers, saveUserAssignment]);
+        }, modal
+    }), [users, modal, managers, saveUserAssignment]);
 
     const presetData = useMemo(() => ({mode: 'add', users}), [users]);
 
@@ -201,7 +201,7 @@ export const UserManagerBulkAssignment = ({users}) => {
     return <EditForm structure={formStructure} presetData={presetData} />;
 }
 
-const UserEdit = ({userId, preset}) => {
+const UserEdit = ({userId, preset, modal}) => {
     const {user, loading, setLoading, fetchUser, saveUser} = useUsers();
     const {users: managers, fetchUsers} = useUsers();
     const {roles, fetchRoles} = useRoles();
@@ -305,7 +305,8 @@ const UserEdit = ({userId, preset}) => {
             refreshTriggers: [['users', true], ...(user ? [['user', user['id']]] : [])],
             openIfNew: 'userDetails'
         },
-    }), [name, saveUser, user, userId, roles, managers]);
+        modal
+    }), [name, modal, saveUser, user, userId, roles, managers]);
 
     if (loading) 
         return <Loader/>;

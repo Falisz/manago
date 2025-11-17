@@ -73,7 +73,7 @@ export const NavProvider = ({ children }) => {
 
             const next = {
                 ...prev,
-                [id]: { ...modalConfig, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
+                [id]: { ...modalConfig, id, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
             };
             // Sync URL with the upcoming state
             if (blocker.state !== 'blocked')
@@ -166,43 +166,43 @@ export const NavProvider = ({ children }) => {
     const renderModalContent = (modal) => {
         switch (modal.content) {
             case 'userDetails':
-                return <UserDetails userId={modal.contentId} />;
+                return <UserDetails userId={modal.contentId} modal={modal.id} />;
             case 'userEdit':
-                return <UserEdit userId={modal.contentId} />;
+                return <UserEdit userId={modal.contentId} modal={modal.id} />;
             case 'userRoleAssignment':
-                return <UserRoleAssignment user={modal.data} />;
+                return <UserRoleAssignment user={modal.data} modal={modal.id} />;
             case 'userRoleBulkAssignment':
-                return <UserRoleBulkAssignment users={modal.data} />;
+                return <UserRoleBulkAssignment users={modal.data} modal={modal.id} />;
             case 'userManagerAssignment':
-                return <UserManagerAssignment user={modal.data} />;
+                return <UserManagerAssignment user={modal.data} modal={modal.id} />;
             case 'userManagerBulkAssignment':
-                return <UserManagerBulkAssignment users={modal.data} />;
+                return <UserManagerBulkAssignment users={modal.data} modal={modal.id} />;
             case 'userNew':
-                return <UserEdit />;
+                return <UserEdit modal={modal.id} />;
             case 'employeeNew':
-                return <UserEdit preset={'employee'} />;
+                return <UserEdit preset={'employee'} modal={modal.id} />;
             case 'managerNew':
-                return <UserEdit preset={'manager'} />;
+                return <UserEdit preset={'manager'} modal={modal.id} />;
             case 'roleDetails':
-                return <RoleDetails roleId={modal.contentId} />;
+                return <RoleDetails roleId={modal.contentId} modal={modal.id} />;
             case 'roleEdit':
-                return <RoleEdit roleId={modal.contentId} />;
+                return <RoleEdit roleId={modal.contentId} modal={modal.id} />;
             case 'roleNew':
                 return <RoleEdit />;
             case 'teamDetails':
-                return <TeamDetails teamId={modal.contentId} />;
+                return <TeamDetails teamId={modal.contentId} modal={modal.id} />;
             case 'teamEdit':
-                return <TeamEdit teamId={modal.contentId} />;
+                return <TeamEdit teamId={modal.contentId} modal={modal.id} />;
             case 'TeamUserAssignment':
-                return <TeamUserAssignment team={modal.data} />;
+                return <TeamUserAssignment team={modal.data} modal={modal.id} />;
             case 'teamUserBulkAssignment':
-                return <TeamUserBulkAssignment teams={modal.data} />;
+                return <TeamUserBulkAssignment teams={modal.data} modal={modal.id} />;
             case 'teamNew':
                 return <TeamEdit />;
             case 'subteamNew':
-                return <TeamEdit parentId={modal.parentId} />;
+                return <TeamEdit parentId={modal.parentId} modal={modal.id} />;
             case 'postDetails':
-                return <PostDetails postId={modal.contentId} />;
+                return <PostDetails postId={modal.contentId} modal={modal.id} />;
             case 'confirm':
                 return <ConfirmPrompt
                     message={modal.message}
@@ -212,11 +212,12 @@ export const NavProvider = ({ children }) => {
                     confirmLabel2={modal.confirmLabel2}
                     cancelLabel={modal.cancelLabel}
                     onCancel={modal.onCancel}
+                    modal={modal.id}
                 />;
             case 'component':
                 return React.createElement(modal.component, modal.props);
             default:
-                return <InWorks title={'Unknown Modal'} modal={true} />;
+                return <InWorks title={'Unknown Modal'} modal={modal.id} />;
         }
     };
 

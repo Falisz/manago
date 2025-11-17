@@ -5,7 +5,7 @@ import useUsers from '../../hooks/useUsers';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-export const TeamUserAssignment = ({team}) => {
+export const TeamUserAssignment = ({team, modal}) => {
     const {saveTeamAssignment} = useTeams();
     const {users, loading, fetchUsers} = useUsers();
     const {users: managers, loading: managersLoading, fetchUsers: fetchManagers} = useUsers();
@@ -71,8 +71,9 @@ export const TeamUserAssignment = ({team}) => {
                 return true;
             },
             refreshTriggers: [['teams', true], ['team', team.id]]
-        }
-    }), [team, users, managers, saveTeamAssignment]);
+        },
+        modal
+    }), [team, modal, users, managers, saveTeamAssignment]);
 
     if (loading || managersLoading) 
         return <Loader/>;
@@ -80,7 +81,7 @@ export const TeamUserAssignment = ({team}) => {
     return <EditForm structure={formStructure} presetData={team} />;
 }
 
-export const TeamUserBulkAssignment = ({teams}) => {
+export const TeamUserBulkAssignment = ({teams, modal}) => {
     const {users, usersLoading: loading, fetchUsers} = useUsers();
     const { saveTeamAssignment } = useTeams();
 
@@ -137,8 +138,8 @@ export const TeamUserBulkAssignment = ({teams}) => {
                 mode: data.mode
             }),
             refreshTriggers: [['teams', true]]
-        }
-    }), [teams, users, saveTeamAssignment]);
+        }, modal
+    }), [teams, modal, users, saveTeamAssignment]);
 
     const presetData = useMemo(() => ({mode: 'add', teams, role: 2}), [teams]);
 
@@ -148,7 +149,7 @@ export const TeamUserBulkAssignment = ({teams}) => {
     return <EditForm structure={formStructure} presetData={presetData} />;
 }
 
-const TeamEdit = ({ teamId, parentId }) => {
+const TeamEdit = ({ teamId, parentId, modal }) => {
     const { team, loading, setLoading, fetchTeam, saveTeam } = useTeams();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
@@ -256,8 +257,8 @@ const TeamEdit = ({ teamId, parentId }) => {
             onSave: (formData, id) => saveTeam({teamId: id, formData}),
             refreshTriggers: [['teams', true], ...(team ? [['team', team.id]] : [])],
             openIfNew: 'userDetails'
-        },
-    }), [saveTeam, team, teamId, parentId, getAvailableParentTeams, managers, users]);
+        }, modal
+    }), [saveTeam, team, modal, teamId, parentId, getAvailableParentTeams, managers, users]);
 
     const teamData = useMemo(() => {
         const baseData = team ? team : {};

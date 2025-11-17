@@ -8,18 +8,21 @@ import Icon from "./Icon";
 import MultiComboBox from './MultiComboBox';
 import '../styles/EditForm.css';
 
-
+// TODO: Replace "structure" prop with header, fields, sections, onChange, onSubmit, onCancel, modal and buttons props.
+// TODO: Move RefreshTriggers to the respective save functions in custom hooks
+// TODO: Move OpenIfNew to the save functions as well - but instead of opening a new it should just open a pop up that can be clicked to open details modal.
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
-    const { openModal, setDiscardWarning, refreshData, closeTopModal } = useNav();
+    const { openModal, setDiscardWarning, refreshData, closeTopModal, setUnsavedChanges } = useNav();
     const initialSource = useRef(null);
     
     useEffect(() => {
-        if (source) {
+        if (source && initialSource.current == null)
             initialSource.current = JSON.parse(JSON.stringify(source));
+            
+        if (initialSource.current != null)
             return;
-        }
 
         // Initialization of localized data into formData, if the mounting is not yet done and there is structure inputs.
         if (structure?.fields) {
@@ -120,11 +123,13 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
         if (structure.onChange && typeof structure.onChange === 'function')
             structure.onChange();
 
+        setUnsavedChanges(true);
+
         if (setSource) {
             setSource(prev => setter(prev));
         } else {
             setFormData(prev => setter(prev));
-            setDiscardWarning(true);
+            structure?.modal && setDiscardWarning(structure.modal, true);
         }
     };
 
@@ -141,16 +146,17 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                 return;
 
             const invalid = validateField(name, data[name], config, data);
-            if (invalid) {
+            
+            if (invalid)
                 newErrors[name] = true;
-            }
         });
 
         setErrors(newErrors);
 
         const savedItem = await structure.onSubmit.onSave(formData, presetData?.id || null);
         if (savedItem) {
-            setDiscardWarning(false);
+            structure?.modal && setDiscardWarning(structure.modal, false);
+            setUnsavedChanges(false);
             setTimeout(() => {
                 closeTopModal();
                 if (!presetData?.id && structure.onSubmit.openIfNew) {
@@ -177,9 +183,11 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
 
         const closeModal = !structure.onCancel?.keepOpen;
         if (closeModal) {
-            setDiscardWarning(false);
+            structure?.modal && setDiscardWarning(structure.modal, false);
             closeTopModal();
         }
+
+        setUnsavedChanges(false);
     };
 
     const formSections = useMemo(() => {

@@ -4,7 +4,7 @@ import useRoles from '../../hooks/useRoles';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-const RoleEdit = ({ roleId }) => {
+const RoleEdit = ({ roleId, modal }) => {
     const { role, loading, setLoading, fetchRole, saveRole } = useRoles();
 
     useEffect(() => {
@@ -45,7 +45,8 @@ const RoleEdit = ({ roleId }) => {
             refreshTriggers: [['roles', true], ...(role ? [['role', role.id]] : [])],
             openIfNew: 'userDetails'
         },
-    }), [saveRole, role, roleId]);
+        modal,
+    }), [saveRole, modal, role, roleId]);
 
     const roleData = useMemo(() => {
         return role ? role : {};

@@ -15,7 +15,6 @@ import '../../styles/Schedules.css';
 
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
     const { appState } = useApp();
-    const { setUnsavedChanges } = useNav();
     const navigate = useNavigate();
     const { closeTopModal } = useApp();
     const { teams, fetchTeams } = useTeams();
@@ -134,12 +133,13 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                     if (schedule.user_scope && schedule.user_scope_id)
                         isEmpty.current = false;
 
+                    isNew.current = false;
+
                     return true;
                 },
-                    refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
-                    label: 'Start planning'
+                refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
+                label: 'Start planning'
             },
-            onChange: () => setUnsavedChanges(true),
             onCancel: {
                 handler: () => {
                     closeTopModal();
@@ -148,7 +148,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                 },
             }
         };
-    }, [schedule, setSchedule, setUnsavedChanges, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
+    }, [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
     
     return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
 };
