@@ -1,8 +1,13 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General
-- Add blocker to get back or refresh if there are changes made on the page.
 - Add response/message/status stack to the bottom left corner of the page, with any errors or success messages from backend.
+-- Notification types: info (blue), warning (yellow), error (red), success (green), disconnected (organe), actionRequired (purple)
+-- Add colouring to the notifications
+- Add Page Titles to the displayed page.
+- Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
+-- i.e. with EditForm: replacing "structure" prop with header, fields, sections, onChange, onSubmit, onCancel, modal and buttons props; moving RefreshData calls to the respective save functions in custom hooks; moving OpenIfNew to the save functions as well - but instead of opening a Details Modal for newly created resource, it should just open a pop up that can be clicked to that modal.
+- Move RefreshTriggers to the AppContext. NavContext should only handle blockers and modals.
 ### Work Planner
 - Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
 - Dispo Planner - yet separate editor.

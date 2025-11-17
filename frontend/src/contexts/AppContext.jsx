@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import ConnectivityPopup from '../components/ConnectivityPopup';
 import SchedulesDashboard from '../components/Schedules/Dashboard';
 import ScheduleEdit from '../components/Schedules/Edit';
 import ScheduleView from '../components/Schedules/View';
@@ -12,6 +11,7 @@ import UsersIndex, {EmployeesIndex, ManagersIndex} from '../components/Users/Ind
 import RolesIndex from '../components/Roles/Index';
 import TeamsIndex from '../components/Teams/Index';
 import InWorks from '../components/InWorks';
+import PopUps from '../components/PopUps';
 
 const COMPONENT_MAP = {
     UsersIndex,
@@ -54,6 +54,8 @@ export const AppProvider = ({ children }) => {
         pages: [],
         user: null
     });
+    const [popUps, setPopUps] = useState({});
+    const nextPopUpId = useRef(1);
     const appCache = useRef({
         users: {},
         roles: {},
@@ -69,6 +71,58 @@ export const AppProvider = ({ children }) => {
 
     const setUser = useCallback((user) => {
         setAppState(prev => ({ ...prev, user: {...prev.user, ...user} }));
+    }, []);
+
+    const showPopUp = useCallback((popUp, life=30000) => {
+        const id = nextPopUpId.current++;
+        popUp.id = id;
+        popUp.isVisible = false;
+
+        setPopUps(prev => {
+            return {...prev, [id]: popUp};
+        });
+
+        setTimeout(() => {
+            setPopUps((prev) => ({
+                ...prev,
+                [id]: { ...prev[id], isVisible: true },
+            }));
+        }, 300);
+
+        if (life) {
+            setTimeout(() => {
+                setPopUps((prev) => ({
+                    ...prev,
+                    [id]: { ...prev[id], isVisible: false },
+                }));
+            }, life + 300);
+
+            setTimeout(() => {
+                setPopUps((prev) => {
+                    const {[id]: _, ...next} = { ...prev };
+                    return next;
+                })
+            }, life + 600);
+        }
+
+        return id;
+    }, []);
+
+    const killPopUp = useCallback((id) => {
+        if (id == null)
+            return;
+
+        setPopUps((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], isVisible: false },
+        }));
+
+        setTimeout(() => {
+            setPopUps((prev) => {
+                const {[id]: _, ...next} = { ...prev };
+                return next;
+            })
+        }, 300);
     }, []);
 
     // API Get calls.
@@ -279,6 +333,10 @@ export const AppProvider = ({ children }) => {
         return () => clearInterval(interval);
     }, [checkConnection, getUser, getConfig, getModules, getPages, setLoading, setUser]);
 
+    useEffect(() => {
+        !appState.is_connected && showPopUp({type: 'disconnected', content: 'You got disconnected, mate!'}, 0);
+    }, [appState.is_connected, showPopUp]);
+
     const appClasses = useMemo(() => {
         let classes = [];
 
@@ -302,7 +360,6 @@ export const AppProvider = ({ children }) => {
         return ['app', ...classes].join(' ');
     }, [appState]);
 
-
     const exportObject = {
         appState,
         appCache,
@@ -312,6 +369,8 @@ export const AppProvider = ({ children }) => {
         pages: appState.pages,
         modules: appState.modules,
         setLoading,
+        showPopUp,
+        killPopUp,
         authUser,
         logoutUser,
         getConfigOptions,
@@ -329,7 +388,7 @@ export const AppProvider = ({ children }) => {
         <AppContext.Provider value={exportObject}>
             <div className={appClasses}>
                 {children}
-                <ConnectivityPopup />
+                <PopUps popUps={popUps} />
             </div>
         </AppContext.Provider>
     );

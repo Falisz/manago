@@ -8,9 +8,6 @@ import Icon from "./Icon";
 import MultiComboBox from './MultiComboBox';
 import '../styles/EditForm.css';
 
-// TODO: Replace "structure" prop with header, fields, sections, onChange, onSubmit, onCancel, modal and buttons props.
-// TODO: Move RefreshTriggers to the respective save functions in custom hooks
-// TODO: Move OpenIfNew to the save functions as well - but instead of opening a new it should just open a pop up that can be clicked to open details modal.
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
