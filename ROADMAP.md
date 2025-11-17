@@ -4,7 +4,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Add response/message/status stack to the bottom left corner of the page, with any errors or success messages from backend.
 -- Notification types: info (blue), warning (yellow), error (red), success (green), disconnected (organe), actionRequired (purple)
 -- Add colouring to the notifications
-- Add Page Titles to the displayed page.
+- Add Page Titles to the displayed page - consider react-helmet for this one.
 - Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
 -- i.e. with EditForm: replacing "structure" prop with header, fields, sections, onChange, onSubmit, onCancel, modal and buttons props; moving RefreshData calls to the respective save functions in custom hooks; moving OpenIfNew to the save functions as well - but instead of opening a Details Modal for newly created resource, it should just open a pop up that can be clicked to that modal.
 - Move RefreshTriggers to the AppContext. NavContext should only handle blockers and modals.
