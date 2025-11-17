@@ -334,7 +334,11 @@ export const AppProvider = ({ children }) => {
     }, [checkConnection, getUser, getConfig, getModules, getPages, setLoading, setUser]);
 
     useEffect(() => {
-        !appState.is_connected && showPopUp({type: 'disconnected', content: 'You got disconnected, mate!'}, 0);
+        !appState.is_connected && showPopUp({
+            type: 'disconnected', 
+            header: 'Connection lost!',
+            content: 'You got disconnected, mate!'
+        }, 0);
     }, [appState.is_connected, showPopUp]);
 
     const appClasses = useMemo(() => {

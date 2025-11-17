@@ -5,53 +5,54 @@ import Button from './Button';
 import '../styles/PopUps.css'
 import Icon from './Icon';
 
-const PopUps = ({popUps = {}}) => {
+const icons = {
+    info: 'info',
+    success: 'check_circle',
+    warning: 'warning',
+    error: 'error',
+    action: 'release_alert',
+    disconnected: 'cloud_off'
+};
+
+const PopUp = ({popUp}) => {
+
+    const { id, type, header, content, isVisible, noClose } = popUp;
 
     const { killPopUp } = useApp();
 
-    const icons = useMemo(() => ({
-        info: 'info',
-        success: 'check_circle',
-        warning: 'warning',
-        error: 'error',
-        action: 'release_alert',
-        disconnected: 'cloud_off'
-    }), []);
+    return (
+    <div
+        key={id}
+        className={'app-popup' 
+            + (isVisible ? ' visible' : '')
+            + (type ? ` ${type}` : ' info')
+        }
+    >
+        {!noClose && <Button
+            className={'app-popup-close'}
+            transparent={true}
+            icon={'close'}
+            onClick={()=>killPopUp(id)}
+        />}
+        <Icon
+            i={icons[type] || icons['info']}
+            s={true}
+        />
+        <div className={'app-popup-contents'}>
+        {header && <div className={'app-popup-header'}>{header}</div>}
+        {content}
+        </div>
+    </div>
+    );
 
-    const getIcon = useCallback((type) => {
-        const icon = icons[type];
-        
-        if (!icon)
-            return icons['info'];
-        
-        return icon;
+}
 
-    }, [icons]);
+const PopUps = ({popUps = {}}) => {
 
     console.log(popUps);
     return (
         <div className='app-popups'>
-            {Object.values(popUps).map(({ id, content, isVisible, type, noClose}) => (
-                <div
-                    key={id}
-                    className={'app-popup' 
-                        + (isVisible ? ' visible' : '')
-                        + (type ? ` ${type}` : '')
-                    }
-                >
-                    {!noClose && <Button
-                        className={'app-popup-close'}
-                        transparent={true}
-                        icon={'close'}
-                        onClick={()=>killPopUp(id)}
-                    />}
-                    <Icon
-                        i={getIcon(type)}
-                        s={true}
-                    />
-                    {content}
-                </div>
-            ))}
+            {Object.values(popUps).map(popUp => <PopUp key={popUp.id} popUp={popUp}/>)}
         </div>
     );
 };
