@@ -79,7 +79,7 @@ export const NavProvider = ({ children }) => {
                 [id]: { ...modalConfig, id, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
             };
             // Sync URL with the upcoming state
-            if (blocker.state !== 'blocked')
+            if (blocker.state !== 'blocked' &&  modalConfig.content !== 'confirm')
                 syncUrlWithModals(next);
             return next;
         });
@@ -107,7 +107,7 @@ export const NavProvider = ({ children }) => {
         });
     }, []);
 
-    const closeModal = useCallback((id) => {
+    const closeModal = useCallback((id, skipSyncing=false) => {
         setModals((prev) => ({
             ...prev,
             [id]: { ...prev[id], isVisible: false },
@@ -116,8 +116,8 @@ export const NavProvider = ({ children }) => {
         setTimeout(() => {
             setModals((prev) => {
                 const { [id]: _, ...rest } = prev;
-                // Sync URL after removal
-                syncUrlWithModals(rest);
+                if (!skipSyncing)
+                    syncUrlWithModals(rest);
                 return rest;
             });
         }, ANIMATION_DURATION);
@@ -145,7 +145,9 @@ export const NavProvider = ({ children }) => {
             return; // Escaping this callback - new pop-up confirmation modal will handle closing from now on.
         }
 
-        closeModal(topId); // Closing the topModal if there is no discardWarning on it.
+        const isConfirm = topModal.content === 'confirm';
+
+        closeModal(topId, isConfirm); // Closing the topModal if there is no discardWarning on it.
 
     }, [closeModal, openModal, setDiscardWarning]);
 
