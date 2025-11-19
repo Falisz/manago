@@ -1,5 +1,6 @@
 // FRONTEND/components/EditForm.jsx
 import React, {useState, useEffect, useMemo, useRef} from 'react';
+import useApp from '../contexts/AppContext';
 import useNav from '../contexts/NavContext';
 import Button from './Button';
 import CheckBox from './CheckBox';
@@ -11,7 +12,8 @@ import '../styles/EditForm.css';
 const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
-    const { openModal, setDiscardWarning, refreshData, closeTopModal, setUnsavedChanges } = useNav();
+    const { refreshData } = useApp();
+    const { openModal, setDiscardWarning, closeTopModal, setUnsavedChanges } = useNav();
     const initialSource = useRef(null);
     
     useEffect(() => {

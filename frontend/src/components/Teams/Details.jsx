@@ -1,5 +1,6 @@
 // FRONTEND/components/Teams/Details.js
 import React, {useEffect} from 'react';
+import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import useTeams from '../../hooks/useTeams';
 import Details from '../Details';
@@ -7,7 +8,8 @@ import Loader from '../Loader';
 
 const TeamDetails = ({ teamId }) => {
     const { team, loading, fetchTeam, deleteTeam } = useTeams();
-    const { openModal, refreshTriggers, closeTopModal, refreshData } = useNav();
+    const { refreshData, refreshTriggers } = useApp();
+    const { openModal, closeTopModal } = useNav();
 
     useEffect(() => {
 

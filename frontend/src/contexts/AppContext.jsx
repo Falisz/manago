@@ -62,6 +62,7 @@ export const AppProvider = ({ children }) => {
         teams: {},
         shifts: {}
     });
+    const [refreshTriggers, setRefreshTriggers] = useState({});
     const isCheckingUserRef = useRef(false);
 
     // State and Ref setters
@@ -123,6 +124,13 @@ export const AppProvider = ({ children }) => {
                 return next;
             })
         }, 300);
+    }, []);
+
+    const refreshData = useCallback((content, data) => {
+        setRefreshTriggers((prev) => ({
+            ...prev,
+            [content]: { data, timestamp: Date.now() },
+        }));
     }, []);
 
     // API Get calls.
@@ -372,6 +380,7 @@ export const AppProvider = ({ children }) => {
         user: appState.user,
         pages: appState.pages,
         modules: appState.modules,
+        refreshTriggers,
         setLoading,
         showPopUp,
         killPopUp,
@@ -384,6 +393,7 @@ export const AppProvider = ({ children }) => {
         refreshModules,
         toggleModule,
         refreshPages,
+        refreshData,
         toggleView,
         toggleTheme
     };

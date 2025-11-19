@@ -23,7 +23,6 @@ const NavContext = createContext();
 
 export const NavProvider = ({ children }) => {
     const [modals, setModals] = useState({});
-    const [refreshTriggers, setRefreshTriggers] = useState({});
     const [unsavedChanges, setUnsavedChanges] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const { search } = useLocation();
@@ -154,13 +153,6 @@ export const NavProvider = ({ children }) => {
                 },
             };
         });
-    }, []);
-
-    const refreshData = useCallback((content, data) => {
-        setRefreshTriggers((prev) => ({
-            ...prev,
-            [content]: { data, timestamp: Date.now() },
-        }));
     }, []);
 
     const renderModalContent = (modal) => {
@@ -300,14 +292,12 @@ export const NavProvider = ({ children }) => {
 
     const exportObject = {
         modals,
-        refreshTriggers,
         unsavedChanges,
         openModal,
         closeModal,
         closeTopModal,
         setDiscardWarning,
         updateModalProps,
-        refreshData,
         setUnsavedChanges
     };
     const sortedModalIds = Object.keys(modals).sort((a, b) => a - b);
