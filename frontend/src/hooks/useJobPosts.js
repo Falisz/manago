@@ -1,12 +1,15 @@
 // FRONTEND/hooks/useJobPosts.js
 import {useCallback, useState} from 'react';
 import axios from 'axios';
+import useApp from '../contexts/AppContext';
 
 const useJobPosts = () => {
+    // internal hooks and states
+    const { showPopUp } = useApp();
     const [jobPosts, setJobPosts] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState([]);
 
+    // API callbacks
     const fetchJobPosts = useCallback( async ({
                                                 id = null,
                                                 include_shifts = false,
@@ -14,7 +17,6 @@ const useJobPosts = () => {
                                             } = {}) => {
 
         setLoading(loading);
-        setStatus([]);
 
         try {
             let jobPosts;
@@ -42,10 +44,10 @@ const useJobPosts = () => {
         } catch (err) {
             console.error('fetchJobPosts error: ', err);
             const message = 'Error occurred while fetching Job Post data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
         }
 
-    }, []);
+    }, [showPopUp]);
 
     const fetchJobPost = useCallback( async (id) =>
         await fetchJobPosts({id}), [fetchJobPosts]);
@@ -54,9 +56,7 @@ const useJobPosts = () => {
         jobPosts,
         jobPost: jobPosts,
         loading,
-        status,
         setLoading,
-        setStatus,
         fetchJobPosts,
         fetchJobPost
     };

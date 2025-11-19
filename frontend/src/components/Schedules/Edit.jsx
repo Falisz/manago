@@ -93,7 +93,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
                     options: scopeOptions.scopes,
                     required: true,
                     disabled: !isEmpty.current,
-                    onChange: () => setSchedule(prev => ({...prev, user_scope_id: null})),
+                    onChange: () => setSchedule((prev) => ({...prev, user_scope_id: null})),
                 },
                 user_scope_id: {
                     section: 2,
@@ -271,7 +271,7 @@ const ScheduleEdit = () => {
             else
                 paramMissing = true;
 
-            setSchedule(scheduleConfig);
+            setSchedule((prev) => ({...prev, ...scheduleConfig}));
 
             if (paramMissing) {
                 editDetails();

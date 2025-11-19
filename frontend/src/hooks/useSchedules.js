@@ -1,16 +1,21 @@
 // FRONTEND/hooks/useSchedules.js
 import {useCallback, useState, useMemo, useRef} from 'react';
 import axios from 'axios';
+import useApp from '../contexts/AppContext';
 import useUsers from './useUsers';
 import useLeaves from './useLeaves';
 
 const useSchedules = () => {
+    // internal hooks and states
+    const { showPopUp } = useApp();
+    const { fetchUsers, fetchUser } = useUsers();
+    const { fetchLeaves } = useLeaves();
     const [ schedules, setSchedules ] = useState(null);
     const [ loading, setLoading ] = useState(true);
-    const [ status, setStatus ] = useState([]);
 
+    // auxilliary hooks and callbacks
     const schedule = useMemo(() => (schedules && schedules[0]) || {}, [schedules]);
-    const setSchedule = useCallback((updater, set = false) => {
+    const setSchedule = useCallback((updater) => {
         setSchedules(prevSchedules => {
             const prevSchedule = (prevSchedules && prevSchedules[0]) || {};
 
@@ -19,7 +24,7 @@ const useSchedules = () => {
             if (typeof updater === 'function')
                 newSchedule = updater(prevSchedule);
             else
-                newSchedule = set ? updater : { ...prevSchedule, ...updater };
+                newSchedule = updater;
 
             if (!prevSchedules) {
                 return [newSchedule];
@@ -31,92 +36,63 @@ const useSchedules = () => {
         });
     },[]);
 
-    const { fetchUsers, fetchUser } = useUsers();
-    const { fetchLeaves } = useLeaves();
-
     const shiftUpdates = useRef({
         new: [],
         updated: [],
         deleted: []
     });
 
-    const fetchShifts = useCallback( async ({
-                                                id = null,
-                                                user,
-                                                user_scope,
-                                                user_scope_id,
-                                                date,
-                                                start_date,
-                                                end_date,
-                                                schedule_id,
-                                                job_post,
-                                                location,
-                                                loading = true
-                                            } = {}) => {
+    const mapDates = useCallback( (shifts) => {
+        return shifts.reduce((map, shift) => {
+            const date = shift.date;
 
-        setLoading(loading);
+            if (!map.has(date))
+                map.set(date, []);
 
-        let shifts = new Map();
+            map.get(date).push(shift);
 
-        if (user_scope && !user_scope_id && !['all', 'you'].includes(user_scope)) {
-            loading && setLoading(false);
-            return shifts;
-        }
-
-        try {
-            let url;
-            let params = {};
-
-            if (id) {
-                url = `/shifts/${id}`;
-            } else {
-                if (user)
-                    params.user = user;
-                else {
-                    if (user_scope)
-                        params.user_scope = user_scope;
-                    if (user_scope_id)
-                        params.user_scope_id = user_scope_id;
-                }
-
-                if (date)
-                    params.date = date;
-                else {
-                    if (start_date)
-                        params.start_date = start_date;
-                    if (end_date)
-                        params.end_date = end_date;
-                }
-
-                if (schedule_id !== undefined)
-                    params.schedule = schedule_id;
-
-                if (job_post)
-                    params.job_post = job_post;
-
-                if (location)
-                    params.location = location;
-
-                url = '/shifts?' + new URLSearchParams(params).toString();
-            }
-
-            const res = await axios.get(url, { withCredentials: true });
-
-            shifts = res.data;
-
-            loading && setLoading(false);
-            return shifts;
-
-        } catch (err) {
-            console.error('fetchShifts error:', err);
-            const message = 'Error occurred while fetching the Shift data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
-        }
-
+            return map;
+        }, new Map());
     }, []);
 
-    const fetchShift = useCallback( async (shiftId) =>
-        await fetchShifts({shiftId}), [fetchShifts]);
+    const mapUsers = useCallback( (shifts, users, leaves) => {
+        if (!users)
+            return new Map();
+
+        if (!(users instanceof Map))
+            users = new Map(users.map(user => [user.id, user]));
+
+        users.forEach((user, userId) => {
+            user.shifts = shifts
+                .filter(shift => shift.user.id === userId)
+                .map(shift => ({...shift, user: shift.user.id}));
+
+            user.shifts = mapDates(user.shifts);
+
+            if (leaves)
+                user.leaves = leaves
+                    .filter(leave => leave.user.id === userId)
+                    .map(leave => ({...leave, user: leave.user.id}));
+        });
+
+        return new Map(
+            [...users.entries()].sort((a, b) => {
+                const userA = a[1];
+                const userB = b[1];
+
+                if (userA.hasOwnProperty('team') && userB.hasOwnProperty('team'))
+                    if (userA.team.id !== userB.team.id)
+                        return userA.team.id < userB.team.id ? -1 : 1;
+                    else
+                        return userA.role.id > userB.role.id ? -1 : 1;
+
+                else
+                    return (userA.last_name + ' ' + userA.first_name)
+                        .localeCompare(userB.last_name + ' ' + userB.first_name);
+            })
+        );
+
+    }, [mapDates]);
 
     const updateUserShift = useCallback(({shift, sourceShift, action = 'update'}) => {
         if ((action === 'move' || action === 'copy') && !sourceShift) {
@@ -187,57 +163,84 @@ const useSchedules = () => {
         });
     }, [setSchedule]);
 
-    const mapDates = useCallback( (shifts) => {
-        return shifts.reduce((map, shift) => {
-            const date = shift.date;
+    // API callbacks
+    const fetchShifts = useCallback( async ({
+                                                id = null,
+                                                user,
+                                                user_scope,
+                                                user_scope_id,
+                                                date,
+                                                start_date,
+                                                end_date,
+                                                schedule_id,
+                                                job_post,
+                                                location,
+                                                loading = true
+                                            } = {}) => {
 
-            if (!map.has(date))
-                map.set(date, []);
+        setLoading(loading);
 
-            map.get(date).push(shift);
+        let shifts = new Map();
 
-            return map;
-        }, new Map());
-    }, []);
+        if (user_scope && !user_scope_id && !['all', 'you'].includes(user_scope)) {
+            loading && setLoading(false);
+            return shifts;
+        }
 
-    const mapUsers = useCallback( (shifts, users, leaves) => {
-        if (!users)
-            return new Map();
+        try {
+            let url;
+            let params = {};
 
-        if (!(users instanceof Map))
-            users = new Map(users.map(user => [user.id, user]));
+            if (id) {
+                url = `/shifts/${id}`;
+            } else {
+                if (user)
+                    params.user = user;
+                else {
+                    if (user_scope)
+                        params.user_scope = user_scope;
+                    if (user_scope_id)
+                        params.user_scope_id = user_scope_id;
+                }
 
-        users.forEach((user, userId) => {
-            user.shifts = shifts
-                .filter(shift => shift.user.id === userId)
-                .map(shift => ({...shift, user: shift.user.id}));
+                if (date)
+                    params.date = date;
+                else {
+                    if (start_date)
+                        params.start_date = start_date;
+                    if (end_date)
+                        params.end_date = end_date;
+                }
 
-            user.shifts = mapDates(user.shifts);
+                if (schedule_id !== undefined)
+                    params.schedule = schedule_id;
 
-            if (leaves)
-                user.leaves = leaves
-                    .filter(leave => leave.user.id === userId)
-                    .map(leave => ({...leave, user: leave.user.id}));
-        });
+                if (job_post)
+                    params.job_post = job_post;
 
-        return new Map(
-            [...users.entries()].sort((a, b) => {
-                const userA = a[1];
-                const userB = b[1];
+                if (location)
+                    params.location = location;
 
-                if (userA.hasOwnProperty('team') && userB.hasOwnProperty('team'))
-                    if (userA.team.id !== userB.team.id)
-                        return userA.team.id < userB.team.id ? -1 : 1;
-                    else
-                        return userA.role.id > userB.role.id ? -1 : 1;
+                url = '/shifts?' + new URLSearchParams(params).toString();
+            }
 
-                else
-                    return (userA.last_name + ' ' + userA.first_name)
-                        .localeCompare(userB.last_name + ' ' + userB.first_name);
-            })
-        );
+            const res = await axios.get(url, { withCredentials: true });
 
-    }, [mapDates]);
+            shifts = res.data;
+
+            loading && setLoading(false);
+            return shifts;
+
+        } catch (err) {
+            console.error('fetchShifts error:', err);
+            const message = 'Error occurred while fetching the Shift data.';
+            showPopUp({type: 'error', content: message});
+        }
+
+    }, [showPopUp]);
+
+    const fetchShift = useCallback( async (shiftId) =>
+        await fetchShifts({shiftId}), [fetchShifts]);
 
     const fetchSchedule = useCallback( async ({
                                                   start_date = schedule.start_date,
@@ -257,7 +260,7 @@ const useSchedules = () => {
 
         if (user_scope !== 'all' && !user_scope_id) {
             const placeholder = `Select ${user_scope || 'User scope'}.`;
-            setSchedule(prev => ({...prev, users, shifts, leaves, placeholder}));
+            setSchedule((prev) => ({...prev, users, shifts, leaves, placeholder}));
             setLoading(false);
             return null;
         }
@@ -293,7 +296,7 @@ const useSchedules = () => {
         else
             shifts = mapDates(shifts);
 
-        setSchedule(prev => ({...prev, users, shifts, leaves, placeholder: null}));
+        setSchedule((prev) => ({...prev, users, shifts, leaves, placeholder: null}));
         loading && setLoading(false);
         return true;
 
@@ -339,10 +342,10 @@ const useSchedules = () => {
             console.error('fetchScheduleDrafts error:', err);
 
             const message = 'Error occurred while fetching the Schedule Draft data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
         }
         
-    }, [mapUsers]);
+    }, [mapUsers, showPopUp]);
 
     const fetchScheduleDraft = useCallback( async (id) =>
         await fetchScheduleDrafts({id}), [fetchScheduleDrafts]);
@@ -356,7 +359,6 @@ const useSchedules = () => {
             shifts: shiftUpdates.current
         };
 
-        setStatus([]);
         try {
             let res;
 
@@ -373,24 +375,30 @@ const useSchedules = () => {
             if (!data)
                 return null;
 
-            const { schedule, message } = data;
+            const { schedule, message, warning } = data;
+
+            if (warning)
+                showPopUp({type: 'warning', content: warning});
+
+            if (message)
+                showPopUp({type: 'success', content: message});
 
             schedule.users = mapUsers(schedule.shifts, schedule.users);
 
-            console.log('saveScheduleDraft:', message, schedule);
-            setSchedule(schedule);
+            setSchedule((prev) => ({...prev, ...schedule}));
             ['new', 'updated', 'deleted'].forEach(bin => shiftUpdates.current[bin] = []);
             return schedule || null;
 
         } catch (err) {
             console.log('saveScheduleDraft error:', err);
+            const message = 'Error occurred while saving Schedule Draft. Please try again.';
+            showPopUp({type: 'error', content: message});
         }
-    }, [schedule, setSchedule, mapUsers]);
+    }, [schedule, setSchedule, mapUsers, showPopUp]);
 
     const discardScheduleDraft = useCallback( async (scheduleId) => {
         try {
             setLoading(true);
-            setStatus([]);
 
             const res = await axios.delete(
                 `/schedules/${scheduleId}`,
@@ -403,23 +411,23 @@ const useSchedules = () => {
                 return null;
 
             if (data.warning)
-                setStatus(prev => [...prev, {status: 'warning', message: data.warning}]);
+                showPopUp({type: 'warning', content: data.warning});
 
             if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+                showPopUp({type: 'success', content: data.message});
 
             return true;
         } catch (err) {
             console.error('deleteTeams error:', err);
 
             const message = 'Failed to delete Role. Please try again.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [showPopUp]);
 
     return {
         schedules,
@@ -427,13 +435,11 @@ const useSchedules = () => {
         scheduleDrafts: schedules,
         scheduleDraft: schedule,
         loading,
-        status,
         setSchedules,
         setSchedule,
         setScheduleDrafts: setSchedules,
         setScheduleDraft: setSchedules,
         setLoading,
-        setStatus,
         updateUserShift,
         fetchShifts,
         fetchShift,

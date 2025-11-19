@@ -4,17 +4,17 @@ import axios from 'axios';
 import useApp from '../contexts/AppContext';
 
 const useUsers = () => {
+    // internal hooks and states
+    const { appCache, showPopUp } = useApp();
+    const userCache = appCache.current.users;
     const [ users, setUsers ] = useState();
     const [ loading, setLoading ] = useState();
-    const [ status, setStatus ] = useState([]);
-    const { appCache } = useApp();
-    const userCache = appCache.current.users;
 
+    // API callbacks
     const fetchUsers = useCallback(async ({userId = null, user_scope = 'all', user_scope_id = null, group = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
         let users;
-        setStatus([]);
 
         if (userId && !reload && userCache[userId])
             users = userCache[userId];
@@ -52,9 +52,8 @@ const useUsers = () => {
 
         } catch (err) {
             console.error('fetchUsers error:', err);
-
             const message = 'Error occurred while fetching the User data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
         }
 
         if (map) {
@@ -71,7 +70,7 @@ const useUsers = () => {
         setLoading(false);
         return users;
 
-    }, [userCache]);
+    }, [userCache, showPopUp]);
 
     const fetchUser = useCallback(async ({userId, reload} = {}) =>
         await fetchUsers({userId, reload}), [fetchUsers]);
@@ -83,8 +82,6 @@ const useUsers = () => {
         const newUser = !userId;
 
         try {
-            setStatus([]);
-
             let res;
 
             if (newUser)
@@ -103,8 +100,8 @@ const useUsers = () => {
 
             const { data } = res;
 
-            if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+            if (data?.message)
+                showPopUp({type: 'success', content: data.message});
 
             return ( data && data.user ) || null;
 
@@ -117,11 +114,11 @@ const useUsers = () => {
             if (response && response.data)
                 message += ' ' + response.data.message;
             message += ' Please try again later.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         }
-    }, []);
+    }, [showPopUp]);
 
     const saveUserAssignment = useCallback(async ({ userIds, resource, resourceIds, mode = 'set' }) => {
         if (!userIds || !resourceIds || !resource)
@@ -137,7 +134,6 @@ const useUsers = () => {
             return null;
 
         try {
-            setStatus([]);
 
             return await axios.post(
                 '/users/assignments',
@@ -149,11 +145,11 @@ const useUsers = () => {
             console.error('saveUserAssignment error:', err);
 
             const message = 'Error occurred while saving new User assignments. ' + err.response?.data?.message
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         }
-    }, []);
+    }, [showPopUp]);
 
     const deleteUsers = useCallback(async ({userId, userIds} = {}) => {
 
@@ -161,7 +157,6 @@ const useUsers = () => {
 
         try {
             setLoading(true);
-            setStatus([]);
 
             let res;
 
@@ -182,11 +177,11 @@ const useUsers = () => {
             if (batchMode && data.ids)
                 userIds = data.ids;
 
-            if (data.warning)
-                setStatus(prev => [...prev, {status: 'warning', message: data.warning}]);
+            if (data?.warning)
+                showPopUp({type: 'warning', content: data.warning});
 
-            if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+            if (data?.message)
+                showPopUp({type: 'success', content: data.message});
 
             if (batchMode)
                 userIds.forEach(userId => delete userCache[userId]);
@@ -198,13 +193,13 @@ const useUsers = () => {
             console.error('deleteTeams error:', err);
 
             const message = 'Failed to delete Team' + (batchMode ? 's' : '') + '. Please try again.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         } finally {
             setLoading(false);
         }
-    }, [userCache]);
+    }, [userCache, showPopUp]);
 
     const deleteUser = useCallback(async ({userId} = {}) =>
         await deleteUsers({userId}), [deleteUsers]);
@@ -213,9 +208,7 @@ const useUsers = () => {
         users,
         user: users,
         loading,
-        status, // 4 kinds: info, success, warning, error
         setLoading,
-        setStatus,
         fetchUsers,
         fetchUser,
         saveUser,

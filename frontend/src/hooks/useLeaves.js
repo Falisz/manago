@@ -1,13 +1,16 @@
 // FRONTEND/hooks/useLeaves.js
-import {useCallback, useRef, useState} from 'react';
+import {useCallback, useState} from 'react';
 import axios from 'axios';
+import useApp from '../contexts/AppContext';
 
-const useShifts = () => {
+const useLeaves = () => {
+    // internal hooks and states
+    const { appCache, showPopUp } = useApp();
+    const leaveCache = appCache.current.leaves;
     const [leaves, setLeaves] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState([]);
-    const cache = useRef({});
 
+    // API callbacks
     const fetchLeaves = useCallback( async ({
                                                 id = null,
                                                 user,
@@ -20,14 +23,11 @@ const useShifts = () => {
                                             } = {}) => {
 
         setLoading(loading);
-        setStatus([]);
-
-        const cacheKey = `leaves-${id || 0}-${start_date}-${end_date}-${user_scope}-${user_scope_id}`;
 
         let leaves = new Map();
 
-        if (cache.current[cacheKey]) {
-            leaves = cache.current[cacheKey];
+        if (id && leaveCache.current[id]) {
+            leaves = leaveCache.current[id];
             setLeaves(leaves);
             loading && setLoading(false);
             return leaves;
@@ -71,7 +71,9 @@ const useShifts = () => {
 
             leaves = res.data;
 
-            cache.current[cacheKey] = leaves;
+            if (id)
+                leaveCache.current[id] = leaves;
+
             setLeaves(leaves);
             loading && setLoading(false);
             return leaves;
@@ -79,10 +81,10 @@ const useShifts = () => {
         } catch (err) {
             console.error('fetchLeaves error: ', err);
             const message = 'Error occurred while fetching Leave data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
         }
 
-    }, []);
+    }, [showPopUp, leaveCache]);
 
     const fetchLeave = useCallback( async ({leaveId}) => 
         await fetchLeaves({leaveId}), [fetchLeaves]);
@@ -91,12 +93,10 @@ const useShifts = () => {
         leaves,
         leave: leaves,
         loading,
-        status,
         setLoading,
-        setStatus,
         fetchLeave,
         fetchLeaves,
     };
 };
 
-export default useShifts;
+export default useLeaves;

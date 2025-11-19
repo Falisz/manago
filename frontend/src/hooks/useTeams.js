@@ -4,17 +4,17 @@ import axios from 'axios';
 import useApp from '../contexts/AppContext';
 
 const useTeams = () => {
+    // internal hooks and states
+    const { appCache, showPopUp } = useApp();
     const [teams, setTeams] = useState(null);
-    const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState();
-    const { appCache } = useApp();
     const teamCache = appCache.current.teams;
 
+    // API callbacks
     const fetchTeams = useCallback(async ({teamId = null, all = false,
                                               loading = true, reload = false, map = false} = {}) => {
 
         let teams;
-        setStatus([]);
 
         if (teamId && !reload && teamCache[teamId]) {
             setTeams(teamCache[teamId]);
@@ -52,14 +52,14 @@ const useTeams = () => {
             console.error('fetchTeams error:', err);
 
             const message = 'Error occurred while fetching the Team data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
         }
 
         setTeams(teams);
         setLoading(false);
         return teams;
         
-    }, [teamCache]);
+    }, [teamCache, showPopUp]);
 
 
     const fetchTeam = useCallback(async ({teamId, reload} = {}) =>
@@ -72,8 +72,6 @@ const useTeams = () => {
         const newTeam = !teamId;
 
         try {
-            setStatus([]);
-
             let res;
 
             if (newTeam)
@@ -93,7 +91,7 @@ const useTeams = () => {
             const { data } = res;
 
             if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+                showPopUp({type: 'success', content: data.message});
 
             return ( data && data.team ) || null;
 
@@ -105,11 +103,11 @@ const useTeams = () => {
             if (response && response.data)
                 message += ' ' + response.data.message;
             message += ' Please try again later.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         }
-    }, []);
+    }, [showPopUp]);
 
     const saveTeamAssignment = useCallback( async ({ teamIds, resource, resourceIds, mode = 'set'}) => {
         if (!teamIds || !resourceIds || !resource)
@@ -125,8 +123,6 @@ const useTeams = () => {
             return null;
 
         try {
-            setStatus([]);
-
             return await axios.post(
                 '/teams/assignments',
                 {teamIds, resource, resourceIds, mode},
@@ -137,11 +133,11 @@ const useTeams = () => {
             console.error('Error saving new team assignments:', err);
 
             const message = 'Error occurred while saving new Team assignments. ' + err.response?.data?.message
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         }
-    }, []);
+    }, [showPopUp]);
 
     const deleteTeams = useCallback( async ({teamId, teamIds, cascade = false} = {}) => {
 
@@ -149,7 +145,6 @@ const useTeams = () => {
 
         try {
             setLoading(true);
-            setStatus([]);
 
             let res;
 
@@ -172,10 +167,10 @@ const useTeams = () => {
                 teamIds = data.ids;
 
             if (data.warning)
-                setStatus(prev => [...prev, {status: 'warning', message: data.warning}]);
+                showPopUp({type: 'warning', content: data.warning});
 
             if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+                showPopUp({type: 'success', content: data.message});
 
             if (batchMode)
                 teamIds.forEach(teamId => delete teamCache[teamId]);
@@ -188,13 +183,13 @@ const useTeams = () => {
             console.error('deleteTeams error:', err);
 
             const message = 'Failed to delete Team' + (batchMode ? 's' : '') + '. Please try again.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         } finally {
             setLoading(false);
         }
-    }, [teamCache]);
+    }, [teamCache, showPopUp]);
 
     const deleteTeam = useCallback(async ({teamId, cascade} = {}) =>
         await deleteTeams({teamId, cascade}), [deleteTeams]);
@@ -203,9 +198,7 @@ const useTeams = () => {
         teams,
         team: teams,
         loading,
-        status, // 4 kinds: info, success, warning, error
         setLoading,
-        setStatus,
         fetchTeams,
         fetchTeam,
         saveTeam,

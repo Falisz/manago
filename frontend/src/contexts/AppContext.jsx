@@ -60,7 +60,9 @@ export const AppProvider = ({ children }) => {
         users: {},
         roles: {},
         teams: {},
-        shifts: {}
+        shifts: {},
+        leaves: {},
+        jobPosts: {}
     });
     const [refreshTriggers, setRefreshTriggers] = useState({});
     const isCheckingUserRef = useRef(false);

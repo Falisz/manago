@@ -4,17 +4,17 @@ import axios from 'axios';
 import useApp from '../contexts/AppContext';
 
 const useRoles = () => {
+    // internal hooks and states
+    const { appCache, showPopUp } = useApp();
     const [roles, setRoles] = useState(null);
-    const [status, setStatus] = useState([]);
     const [loading, setLoading] = useState();
-    const { appCache } = useApp();
     const roleCache = appCache.current.roles;
 
+    // API callbacks
     const fetchRoles = useCallback(async ({roleId = null,
                                               loading = true, reload = false, map = false} = {}) => {
 
         let roles;
-        setStatus([]);
 
         if (roleId && !reload && roleCache[roleId]) {
             setRoles(roleCache[roleId]);
@@ -49,14 +49,14 @@ const useRoles = () => {
             console.error('fetchRoles error:', err);
 
             const message = 'Error occurred while fetching the Role data.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
         }
 
         setRoles(roles);
         setLoading(false);
         return roles;
         
-    }, [roleCache]);
+    }, [roleCache, showPopUp]);
 
     const fetchRole = useCallback(async ({roleId, reload} = {}) =>
         await fetchRoles({roleId, reload}), [fetchRoles]);
@@ -68,8 +68,6 @@ const useRoles = () => {
         const newRole = !roleId;
 
         try {
-            setStatus([]);
-
             let res;
 
             if (newRole)
@@ -88,7 +86,7 @@ const useRoles = () => {
             const { data } = res;
 
             if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+                showPopUp({type: 'success', content: data.message});
 
             return ( data && data.role ) || null;
 
@@ -100,16 +98,15 @@ const useRoles = () => {
             if (response && response.data)
                 message += ' ' + response.data.message;
             message += ' Please try again later.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         }
-    }, []);
+    }, [showPopUp]);
 
     const deleteRole = useCallback( async ({roleId} = {}) => {
         try {
             setLoading(true);
-            setStatus([]);
 
             const res = await axios.delete(
                 `/roles/${roleId}`,
@@ -119,10 +116,10 @@ const useRoles = () => {
             const { data } = res;
 
             if (data.warning)
-                setStatus(prev => [...prev, {status: 'warning', message: data.warning}]);
+                showPopUp({type: 'warning', content: data.warning});
 
             if (data.message)
-                setStatus(prev => [...prev, {status: 'success', message: data.message}]);
+                showPopUp({type: 'success', content: data.message});
 
             delete roleCache[roleId];
 
@@ -131,21 +128,19 @@ const useRoles = () => {
             console.error('deleteTeams error:', err);
 
             const message = 'Failed to delete Role. Please try again.';
-            setStatus(prev => [...prev, {status: 'error', message}]);
+            showPopUp({type: 'error', content: message});
 
             return null;
         } finally {
             setLoading(false);
         }
-    }, [roleCache]);
+    }, [roleCache, showPopUp]);
 
     return {
         roles,
         role: roles,
         loading,
-        status, // 4 kinds: info, success, warning, error
         setLoading,
-        setStatus,
         fetchRoles,
         fetchRole,
         saveRole,
