@@ -1,5 +1,6 @@
 
 .app-popups {
+    z-index: 2000;  /* Has to be higher than the z-index of modal components and overlays */
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -8,6 +9,7 @@
     gap: 10px;
     transition: 0.3s ease;
     align-items: stretch;
+    width: 25vw;
     max-width: 33.3vw;
 }
 
@@ -21,7 +23,7 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
     background: var(--background-color-2);
     color: var(--text-color);
-    padding: 5px 10px;
+    padding: 5px 15px 5px 10px;
     border-radius: var(--def-border-radius);
     min-width: 200px;
     position: relative;
@@ -70,6 +72,11 @@
 .app-popup-header {
     font-size: 1rem;
     font-weight: 500;
+}
+
+.app-popup-contents {
+    padding-right: 15px;
+    white-space: pre-wrap;
 }
 
 .app.fluent .app-popup-contents>p,

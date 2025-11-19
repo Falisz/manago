@@ -25,7 +25,6 @@ const PopUp = ({id, type, header, content, onClick, isVisible, noClose}) => {
             + (isVisible ? ' visible' : '')
             + (type ? ` ${type}` : ' info')
         }
-        onClick={onClick}
     >
         {!noClose && <Button
             className={'app-popup-close'}
@@ -36,8 +35,11 @@ const PopUp = ({id, type, header, content, onClick, isVisible, noClose}) => {
         <Icon
             i={icons[type] || icons['info']}
             s={true}
+            onClick={onClick}
+            clickable={!!onClick}
         />
-        <div className={'app-popup-contents'}>
+        <div className={'app-popup-contents' + (onClick ? ' app-clickable' : '')}
+             onClick={onClick}>
         {header && <div className={'app-popup-header'}>{header}</div>}
         {content}
         </div>
