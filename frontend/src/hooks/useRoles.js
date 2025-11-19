@@ -94,9 +94,10 @@ const useRoles = () => {
             if (data?.message)
                 showPopUp({
                     type: 'success',
+                    header: `Role ${newRole ? 'created' : 'updated'}`,
                     content: data.message,
                     onClick: !roleId ? () => openModal({content: 'roleDetails', 
-                        contentId: data.id
+                        contentId: data.role.id
                     }) : null
                 });
 
@@ -142,7 +143,7 @@ const useRoles = () => {
 
             return true;
         } catch (err) {
-            console.error('deleteTeams error:', err);
+            console.error('deleteRoles error:', err);
 
             const message = 'Failed to delete Role. Please try again.';
             showPopUp({type: 'error', content: message});

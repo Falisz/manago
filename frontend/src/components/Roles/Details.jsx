@@ -32,7 +32,7 @@ const RoleDetails = ({ roleId }) => {
             type: 'pop-up',
             message: message,
             onConfirm: () => {
-                deleteRole(roleId).then();
+                deleteRole({roleId}).then();
                 refreshData('roles', true);
                 closeTopModal();
             },
