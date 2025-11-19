@@ -13,8 +13,7 @@ import UserDetails from '../components/Users/Details';
 import UserEdit, {
     UserRoleAssignment,
     UserManagerAssignment,
-    UserRoleBulkAssignment,
-    UserManagerBulkAssignment
+    UserBulkAssignment
 } from '../components/Users/Edit';
 
 const ANIMATION_DURATION = 300;
@@ -173,11 +172,11 @@ export const NavProvider = ({ children }) => {
             case 'userRoleAssignment':
                 return <UserRoleAssignment user={modal.data} modal={modal.id} />;
             case 'userRoleBulkAssignment':
-                return <UserRoleBulkAssignment users={modal.data} modal={modal.id} />;
+                return <UserBulkAssignment users={modal.data} resource={'role'} modal={modal.id} />;
             case 'userManagerAssignment':
                 return <UserManagerAssignment user={modal.data} modal={modal.id} />;
             case 'userManagerBulkAssignment':
-                return <UserManagerBulkAssignment users={modal.data} modal={modal.id} />;
+                return <UserBulkAssignment users={modal.data} resource={'manager'} modal={modal.id} />;
             case 'userNew':
                 return <UserEdit modal={modal.id} />;
             case 'employeeNew':

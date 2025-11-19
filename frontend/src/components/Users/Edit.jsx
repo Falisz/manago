@@ -80,13 +80,23 @@ export const UserManagerAssignment = ({user, modal}) => {
 }
 
 // TODO: Consider combining into one UserBulkAssignment with one param that would define stuff within useEffect, useMemo and useCallback hooks accordngily;
-export const UserRoleBulkAssignment = ({users, modal}) => {
-    const { saveUserAssignment } = useUsers();
-    const { roles, loading, fetchRoles } = useRoles();
+export const UserBulkAssignment = ({resource, users, modal}) => {
+    const { users: managers, loading: managersLoading, fetchUsers: fetchManagers, saveUserAssignment} = useUsers();
+    const { roles, loading: rolesLoading, fetchRoles } = useRoles();
 
     useEffect(() => {
-        fetchRoles().then();
+        if (resource === 'manager')
+            fetchManagers({group: 'managers'}).then();
+
+        else if (resource === 'role')
+            fetchRoles().then();
+
     }, [fetchRoles]);
+
+    const loading = useMemo(() =>
+        (resource === 'manager' && managersLoading) || (resource === 'role' && rolesLoading),
+        [managersLoading, rolesLoading]
+    );
 
     const headerModes = {
         add: ['Adding', 'to'],
@@ -102,31 +112,62 @@ export const UserRoleBulkAssignment = ({users, modal}) => {
         return title;
     };
 
-    const fields = useMemo(() => ({
-        users: {
-            section: 0,
-            label: 'Selected Users',
-            nameField: ['first_name', 'last_name'],
-            type: 'listing'
-        },
-        mode: {
-            section: 1,
-            label: 'Mode',
-            type: 'string',
-            inputType: 'dropdown',
-            options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
-            itemName: 'Role',
-            searchable: false
-        },
-        role: {
-            section: 1,
-            label: 'Role',
-            type: 'number',
-            inputType: 'dropdown',
-            options: roles?.map(role => ({id: role.id, name: role.name})),
-            itemName: 'Role'
-        }
-    }), [roles]);
+    const fields = useMemo(() => {
+        if (resource === 'manager')
+            return {
+                users: {
+                    section: 0,
+                    label: 'Selected Users',
+                    nameField: ['first_name', 'last_name'],
+                    type: 'listing'
+                },
+                mode: {
+                    section: 1,
+                    label: 'Mode',
+                    type: 'string',
+                    inputType: 'dropdown',
+                    options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
+                    itemName: 'Mode',
+                    searchable: false
+                },
+                manager: {
+                    section: 1,
+                    label: 'Manager',
+                    type: 'manager',
+                    inputType: 'dropdown',
+                    options: managers?.filter(mgr => !users.find(user => user.id === mgr.id) )
+                        .map(mgr => ({id: mgr.id, name: mgr.first_name + ' ' + mgr.last_name})),
+                    itemName: 'Manager'
+                }
+            };
+
+        else if (resource === 'role')
+            return {
+                users: {
+                    section: 0,
+                        label: 'Selected Users',
+                        nameField: ['first_name', 'last_name'],
+                        type: 'listing'
+                },
+                mode: {
+                    section: 1,
+                        label: 'Mode',
+                        type: 'string',
+                        inputType: 'dropdown',
+                        options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
+                        itemName: 'Role',
+                        searchable: false
+                },
+                role: {
+                    section: 1,
+                        label: 'Role',
+                        type: 'number',
+                        inputType: 'dropdown',
+                        options: roles?.map(role => ({id: role.id, name: role.name})),
+                        itemName: 'Role'
+                }
+            };
+    }, [users, managers, roles]);
 
     const sections = {
         1: {style: {flexDirection: 'row'}}
@@ -134,88 +175,14 @@ export const UserRoleBulkAssignment = ({users, modal}) => {
 
     const onSubmit = useCallback(async (data) => await saveUserAssignment({
         userIds: users.map(user => user.id),
-        resource: 'role',
-        resourceIds: [data.role],
+        resource: resource,
+        resourceIds: [data[resource]],
         mode: data.mode
-    }), [users, saveUserAssignment]);
+    }), [users, resource, saveUserAssignment]);
 
     const presetData = useMemo(() => ({mode: 'add', users}), [users]);
 
-    if (loading) 
-        return <Loader/>;
-
-    return <EditForm 
-        header={header}
-        fields={fields}
-        sections={sections}
-        onSubmit={onSubmit}
-        modal={modal}
-        presetData={presetData}
-    />;
-}
-
-export const UserManagerBulkAssignment = ({users, modal}) => {
-    const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
-
-    useEffect(() => {
-        fetchUsers({group: 'managers'}).then();
-    }, [fetchUsers]);
-
-    const headerModes = {
-        add: ['Adding', 'to'],
-        set: ['Setting', 'to'],
-        del: ['Removing', 'from'],
-    };
-
-    const header = (data) => {
-        const tokens = headerModes[data['mode']];
-        let title = `%m Manager %m ${users.length} User${users.length > 1 ? 's' : ''}`;
-        title = title.replace('%m', tokens[0], 0);
-        title = title.replace('%m', tokens[1], 1);
-        return title;
-    };
-
-    const fields = useMemo(() => ({
-        users: {
-            section: 0,
-            label: 'Selected Users',
-            nameField: ['first_name', 'last_name'],
-            type: 'listing'
-        },
-        mode: {
-            section: 1,
-            label: 'Mode',
-            type: 'string',
-            inputType: 'dropdown',
-            options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
-            itemName: 'Mode',
-            searchable: false
-        },
-        manager: {
-            section: 1,
-            label: 'Manager',
-            type: 'manager',
-            inputType: 'dropdown',
-            options: managers?.filter(mgr => !users.find(user => user.id === mgr.id) )
-                .map(mgr => ({id: mgr.id, name: mgr.first_name + ' ' + mgr.last_name})),
-            itemName: 'Manager'
-        }
-    }), [users, managers]);
-
-    const sections = {
-        1: {style: {flexDirection: 'row'}}
-    };
-
-    const onSubmit = useCallback(async (data) => await saveUserAssignment({
-        userIds: users.map(user => user.id),
-        resource: 'manager',
-        resourceIds: [data.manager],
-        mode: data.mode
-    }),[users, saveUserAssignment]);
-
-    const presetData = useMemo(() => ({mode: 'add', users}), [users]);
-
-    if (loading) 
+    if (loading)
         return <Loader/>;
 
     return <EditForm 
