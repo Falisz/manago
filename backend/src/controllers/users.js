@@ -741,7 +741,7 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
             });
 
             for (const userId of userIds) {
-                const newAssignments = roleIds.map(roleId => ({
+                const newAssignments = roleIds.filter(roleId => roleId != null).map(roleId => ({
                     user: userId,
                     role: roleId
                 }));
