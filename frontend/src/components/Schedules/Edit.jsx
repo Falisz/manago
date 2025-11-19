@@ -176,7 +176,7 @@ const ScheduleEdit = () => {
 
     const discardChanges = useCallback(() => {
         setUnsavedChanges(false);
-        navigate(-1);
+        navigate('/schedules');
     }, [navigate, setUnsavedChanges]);
 
     const saveSchedule = useCallback(() => {

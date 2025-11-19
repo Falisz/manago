@@ -1,6 +1,7 @@
 // FRONTEND/components/Schedules/View.jsx
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import useApp from '../../contexts/AppContext';
 import useSchedules from '../../hooks/useSchedules';
 import useTeams from '../../hooks/useTeams';
@@ -168,6 +169,9 @@ const ScheduleView = () => {
         scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
 
     return <div className={'app-schedule seethrough'}>
+        <Helmet>
+            <title>MANAGO | {scheduleId ? 'Schedule Preview' : 'Current Schedule'}</title>
+        </Helmet>
         <div className={'app-schedule-header'}>
             <h1>{scheduleId ? 'Draft Preview: ' + schedule.name : 'Current Schedule'}</h1>
             <div
