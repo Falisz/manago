@@ -14,9 +14,7 @@ const icons = {
     disconnected: 'cloud_off'
 };
 
-const PopUp = ({popUp}) => {
-
-    const { id, type, header, content, isVisible, noClose } = popUp;
+const PopUp = ({id, type, header, content, onClick, isVisible, noClose}) => {
 
     const { killPopUp } = useApp();
 
@@ -27,6 +25,7 @@ const PopUp = ({popUp}) => {
             + (isVisible ? ' visible' : '')
             + (type ? ` ${type}` : ' info')
         }
+        onClick={onClick}
     >
         {!noClose && <Button
             className={'app-popup-close'}
@@ -49,7 +48,7 @@ const PopUp = ({popUp}) => {
 
 const PopUps = ({popUps = {}}) => (
     <div className='app-popups'>
-        {Object.values(popUps).slice(-10).map(popUp => <PopUp key={popUp.id} popUp={popUp}/>)}
+        {Object.values(popUps).slice(-10).map(popUp => <PopUp key={popUp.id} {...popUp}/>)}
     </div>
 );
 

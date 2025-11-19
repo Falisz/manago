@@ -2,10 +2,12 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 
 const useRoles = () => {
     // internal hooks and states
-    const { appCache, showPopUp } = useApp();
+    const { appCache, showPopUp, refreshData } = useApp();
+    const { openModal } = useNav();
     const [roles, setRoles] = useState(null);
     const [loading, setLoading] = useState();
     const roleCache = appCache.current.roles;
@@ -85,8 +87,21 @@ const useRoles = () => {
 
             const { data } = res;
 
-            if (data.message)
-                showPopUp({type: 'success', content: data.message});
+            if (!data)
+                return null;
+
+            // TODO: Test it out.
+            if (data?.message)
+                showPopUp({
+                    type: 'success',
+                    content: data.message,
+                    onClick: !roleId ? () => openModal({content: 'roleDetails', 
+                        contentId: data.id
+                    }) : null
+                });
+
+            refreshData('roles', true);
+            roleId && refreshData('role', roleId);
 
             return ( data && data.role ) || null;
 
@@ -102,7 +117,7 @@ const useRoles = () => {
 
             return null;
         }
-    }, [showPopUp]);
+    }, [showPopUp, refreshData, openModal]);
 
     const deleteRole = useCallback( async ({roleId} = {}) => {
         try {
@@ -123,6 +138,8 @@ const useRoles = () => {
 
             delete roleCache[roleId];
 
+            refreshData('roles', true);
+
             return true;
         } catch (err) {
             console.error('deleteTeams error:', err);
@@ -134,7 +151,7 @@ const useRoles = () => {
         } finally {
             setLoading(false);
         }
-    }, [roleCache, showPopUp]);
+    }, [roleCache, showPopUp, refreshData]);
 
     return {
         roles,

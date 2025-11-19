@@ -1,6 +1,5 @@
 // FRONTEND/components/EditForm.jsx
 import React, {useState, useEffect, useMemo, useRef} from 'react';
-import useApp from '../contexts/AppContext';
 import useNav from '../contexts/NavContext';
 import Button from './Button';
 import CheckBox from './CheckBox';
@@ -9,23 +8,46 @@ import Icon from "./Icon";
 import MultiComboBox from './MultiComboBox';
 import '../styles/EditForm.css';
 
-const EditForm = ({ structure, presetData, source = null, setSource = null, style, className }) => {
+const EditForm = ({ 
+    className,
+    style,
+    header,
+    headerStyle,
+    sections,
+    fields,
+    onChange,
+    onSubmit,
+    submitLabel,
+    submitStyle,
+    hideSubmit,
+    onCancel,
+    cancelLabel,
+    cancelStyle,
+    hideCancel,
+    modal,
+    keepOpen,
+    keepOpenOnSubmit,
+    keepOpenOnCancel,
+    presetData,
+    validate = true,
+    source = null,
+    setSource = null 
+}) => {
     const [ formData, setFormData ] = useState({});
     const [ errors, setErrors ] = useState({});
-    const { refreshData } = useApp();
-    const { openModal, setDiscardWarning, closeTopModal, setUnsavedChanges } = useNav();
+    const { closeModal, setDiscardWarning, setUnsavedChanges } = useNav();
     const initialSource = useRef(null);
     
     useEffect(() => {
         if (source && initialSource.current == null)
-            initialSource.current = JSON.parse(JSON.stringify(source));
-            
+            initialSource.current = structuredClone(source);
+
         if (initialSource.current != null)
             return;
 
         // Initialization of localized data into formData, if the mounting is not yet done and there is structure inputs.
-        if (structure?.fields) {
-            const newFormData = Object.entries(structure.fields).reduce((acc, [name, config]) => {
+        if (fields) {
+            const newFormData = Object.entries(fields).reduce((acc, [name, config]) => {
                 if (!name)
                     return acc;
 
@@ -58,7 +80,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
             }, {});
             setFormData(newFormData);
         }
-    }, [structure, presetData, source]);
+    }, [source, fields, presetData]);
 
     const validateField = (field, value, config, data) => {
         const required = typeof config.required === 'function' ? config.required(data) : config.required;
@@ -119,120 +141,123 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
             })()
         });
 
-        if (structure.onChange && typeof structure.onChange === 'function')
-            structure.onChange();
+        typeof onChange === 'function' && onChange(formData);
 
         setUnsavedChanges(true);
 
-        if (setSource) {
+        if (source && setSource) {
             setSource(prev => setter(prev));
         } else {
             setFormData(prev => setter(prev));
-            structure?.modal && setDiscardWarning(structure.modal, true);
+            modal && setDiscardWarning(modal, true);
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const data = source || formData;
-        const newErrors = {};
+        if (validate) {
+            const data = source || formData;
+            const errors = {};
 
-        setErrors(newErrors);
+            setErrors(errors);
 
-        Object.entries(structure.fields).forEach(([name, config]) => {
-            if (!name || !config.inputType)
-                return;
+            Object.entries(fields).forEach(([name, config]) => {
+                if (!name || !config.inputType)
+                    return;
 
-            const invalid = validateField(name, data[name], config, data);
-            
-            if (invalid)
-                newErrors[name] = true;
-        });
+                const invalid = validateField(name, data[name], config, data);
+                
+                if (invalid)
+                    errors[name] = true;
+            });
 
-        setErrors(newErrors);
+            setErrors(errors);
+        }
 
-        const savedItem = await structure.onSubmit.onSave(formData, presetData?.id || null);
-        if (savedItem) {
-            structure?.modal && setDiscardWarning(structure.modal, false);
+        let success = null;
+
+        if (typeof onSubmit === 'function') {
+            if (onSubmit.constructor === (async () => {}).constructor)
+                success = await onSubmit(formData);
+            else
+                success = onSubmit(formData);
+        }
+
+        if (success) {
             setUnsavedChanges(false);
-            setTimeout(() => {
-                closeTopModal();
-                if (!presetData?.id && structure.onSubmit.openIfNew) {
-                    setTimeout(() => {
-                        openModal({content: structure.onSubmit.openIfNew , contentId: savedItem.id});
-                    }, 350);
-                }
-                if (structure.onSubmit.refreshTriggers) {
-                    structure.onSubmit.refreshTriggers.forEach(([type, value]) => refreshData(type, value));
-                }
-            }, 10);
+            if (modal) {
+                setDiscardWarning(modal, false);
+                (!keepOpen || !keepOpenOnSubmit) && closeModal(modal);
+            }
         }
     };
 
     const handleCancel = async (e) => {
         e.preventDefault();
-        const onCancel = structure.onCancel?.handler;
+
         if (typeof onCancel === 'function') {
             if (onCancel.constructor === (async () => {}).constructor)
                 await onCancel();
             else
                 onCancel();
         }
-
-        const closeModal = !structure.onCancel?.keepOpen;
-        if (closeModal) {
-            structure?.modal && setDiscardWarning(structure.modal, false);
-            closeTopModal();
-        }
-
+        
         setUnsavedChanges(false);
+
+        if (modal) {
+            setDiscardWarning(modal, false);
+            (!keepOpen || !keepOpenOnCancel) && closeModal(modal);
+        }
     };
 
     const formSections = useMemo(() => {
-        const sections = structuredClone(structure.sections || {});
-        Object.entries(structure.fields).forEach(([name, config]) => {
+        const formSections = structuredClone(sections || {});
+
+        Object.entries(fields).forEach(([name, config]) => {
             const { section, ...field } = config;
 
-            if (!sections[section])
-                sections[section] = { fields: {} };
+            if (!formSections[section])
+                formSections[section] = { fields: {} };
 
-            else if (!sections[section].fields)
-                sections[section].fields = {};
+            else if (!formSections[section].fields)
+                formSections[section].fields = {};
 
-            sections[section].fields[name] = { ...field };
+            formSections[section].fields[name] = { ...field };
         });
-        Object.keys(sections).forEach(key => {
-            if (!sections[key].fields || Object.keys(sections[key].fields).length === 0)
-                delete sections[key];
+
+        Object.keys(formSections).forEach(key => {
+            if (!formSections[key].fields || Object.keys(formSections[key].fields).length === 0)
+                delete formSections[key];
         });
-        return sections;
-    }, [structure]);
 
-    const header = useMemo(() => {
-        const headerModes = {
-            add: ['Adding', 'to'],
-            set: ['Setting', 'to'],
-            del: ['Removing', 'from'],
-        };
+        return formSections;
+    }, [sections, fields]);
 
-        if (!structure.header || !structure.header.title) {
-            return '';
-        }
+    // const header = useMemo(() => {
+    //     const headerModes = {
+    //         add: ['Adding', 'to'],
+    //         set: ['Setting', 'to'],
+    //         del: ['Removing', 'from'],
+    //     };
 
-        let header = structure.header.title;
+    //     if (!structure.header || !structure.header.title) {
+    //         return '';
+    //     }
 
-        if (structure.header.modes) {
-            header = header.replace('%m', headerModes[formData['mode']]?.[0], 0);
-            header = header.replace('%m', headerModes[formData['mode']]?.[1], 1);
-        }
-        if (structure.header.variantField) {
-            header = header.replace('%v',
-                structure.header.variantOptions[formData[structure.header.variantField]]);
-        }
+    //     let header = structure.header.title;
 
-        return header;
-    }, [structure, formData]);
+    //     if (structure.header.modes) {
+    //         header = header.replace('%m', headerModes[formData['mode']]?.[0], 0);
+    //         header = header.replace('%m', headerModes[formData['mode']]?.[1], 1);
+    //     }
+    //     if (structure.header.variantField) {
+    //         header = header.replace('%v',
+    //             structure.header.variantOptions[formData[structure.header.variantField]]);
+    //     }
+
+    //     return header;
+    // }, [structure, formData]);
 
     const getInputClassName = (baseClass, name) => {
         return `${baseClass}${errors[name] ? ' error' : ''}`;
@@ -247,7 +272,7 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                 onSubmit={handleSubmit}
                 style={style}
             >
-                {header && <h1 className={'app-form-header'}>{header}</h1>}
+                {header && <h1 className={'app-form-header'} style={headerStyle}>{header}</h1>}
 
                 {Object.values(formSections).map((section, key) => {
                     return <div
@@ -255,7 +280,9 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                         className={'form-section' + (section.className ? ' ' + section.className : '')}
                         style={section.style}
                     >
-                        {section.header && <h2>{section.header}</h2>}
+                        {section.header && <h2>{
+                            typeof section.header === 'function' ? section.header(formData) : section.header 
+                            }</h2>}
                         {Object.entries(section.fields).map(([name, group], index) => {
 
                             const type = typeof group.type === 'function' ? group.type(formData) : group.type;
@@ -426,16 +453,18 @@ const EditForm = ({ structure, presetData, source = null, setSource = null, styl
                     </div>
                 })}
                 <div className='form-section align-center'>
-                    {!structure.onSubmit?.hidden && <Button
+                    {!hideSubmit && <Button
                         className={'save-button'}
+                        style={submitStyle}
                         type={'submit'}
-                        label={structure.onSubmit?.label || 'Save changes'}
+                        label={submitLabel || 'Save changes'}
                         icon={'save'}
                     />}
-                    {!structure.onCancel?.hidden && <Button
+                    {!hideCancel && <Button
                         className={'discard-button'}
+                        style={cancelStyle}
                         type={'button'}
-                        label={structure.onCancel?.label || 'Discard'}
+                        label={cancelLabel || 'Discard'}
                         icon={'close'}
                         onClick={handleCancel}
                     />}

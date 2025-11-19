@@ -15,70 +15,68 @@ export const TeamUserAssignment = ({team, modal}) => {
         fetchManagers({group: 'managers'}).then();
     }, [fetchUsers, fetchManagers]);
 
-    const formStructure = useMemo(() => ({
-        header: {
-            title: `Editing Members of ${team?.name}`,
+    const fields = useMemo(() => ({
+        managers: {
+            section: 0,
+            type: 'id-list',
+            teamCompliance: true,
+            inputType: 'multi-dropdown',
+            label: 'Team Managers',
+            itemSource: managers,
+            itemNameField: ['first_name', 'last_name'],
+            itemExcludedIds: { formData: ['leaders', 'members'] }
         },
-        fields: {
-            managers: {
-                section: 0,
-                type: 'id-list',
-                teamCompliance: true,
-                inputType: 'multi-dropdown',
-                label: 'Team Managers',
-                itemSource: managers,
-                itemNameField: ['first_name', 'last_name'],
-                itemExcludedIds: { formData: ['leaders', 'members'] }
-            },
-            leaders: {
-                section: 1,
-                type: 'id-list',
-                teamCompliance: true,
-                inputType: 'multi-dropdown',
-                label: 'Team Leaders',
-                itemSource: users,
-                itemNameField: ['first_name', 'last_name'],
-                itemExcludedIds: { formData: ['managers', 'members'] }
-            },
-            members: {
-                section: 2,
-                type: 'id-list',
-                teamCompliance: true,
-                inputType: 'multi-dropdown',
-                label: 'Team Members',
-                itemSource: users,
-                itemNameField: ['first_name', 'last_name'],
-                itemExcludedIds: { formData: ['leaders', 'managers'] }
-            }
+        leaders: {
+            section: 1,
+            type: 'id-list',
+            teamCompliance: true,
+            inputType: 'multi-dropdown',
+            label: 'Team Leaders',
+            itemSource: users,
+            itemNameField: ['first_name', 'last_name'],
+            itemExcludedIds: { formData: ['managers', 'members'] }
         },
-        onSubmit: {
-            onSave: (data) => {
-                saveTeamAssignment({
-                    teamIds: [team.id],
-                    resource: 'member',
-                    resourceIds: data['members']
-                }).then();
-                saveTeamAssignment({
-                    teamIds: [team.id],
-                    resource: 'leader',
-                    resourceIds: data['leaders']
-                }).then();
-                saveTeamAssignment({
-                    teamIds: [team.id],
-                    resource: 'manager',
-                    resourceIds: data['managers']
-                }).then();
-                return true;
-            },
-            refreshTriggers: [['teams', true], ['team', team.id]]
-        },
-        modal
-    }), [team, modal, users, managers, saveTeamAssignment]);
+        members: {
+            section: 2,
+            type: 'id-list',
+            teamCompliance: true,
+            inputType: 'multi-dropdown',
+            label: 'Team Members',
+            itemSource: users,
+            itemNameField: ['first_name', 'last_name'],
+            itemExcludedIds: { formData: ['leaders', 'managers'] }
+        }
+    }), [managers, users]);
+
+    const onSubmit = (data) => {
+        saveTeamAssignment({
+            teamIds: [team.id],
+            resource: 'member',
+            resourceIds: data['members']
+        }).then();
+        saveTeamAssignment({
+            teamIds: [team.id],
+            resource: 'leader',
+            resourceIds: data['leaders']
+        }).then();
+        saveTeamAssignment({
+            teamIds: [team.id],
+            resource: 'manager',
+            resourceIds: data['managers']
+        }).then();
+        return true;
+    };
 
     if (loading || managersLoading) 
         return <Loader/>;
 
-    return <EditForm structure={formStructure} presetData={team} />;
+    return <EditForm 
+        header={`Editing Members of ${team?.name}`}
+        fields={fields}
+        onSubmit={onSubmit}
+        modal={modal}
+        presetData={team} 
+    />;
 }
 
 export const TeamUserBulkAssignment = ({teams, modal}) => {
@@ -89,64 +87,78 @@ export const TeamUserBulkAssignment = ({teams, modal}) => {
         fetchUsers().then();
     }, [fetchUsers]);
 
-    const formStructure = useMemo(() => ({
-        header: {
-            title: `%m %v %m ${teams.length} Team${teams.length > 1 ? 's' : ''}`,
-            modes: true,
-            variantField: 'role',
-            variantOptions: {1: 'Member', 2: 'Leader', 3: 'Manager'}
+    const headerModes = {
+        add: ['Adding', 'to'],
+        set: ['Setting', 'to'],
+        del: ['Removing', 'from'],
+    };
+    const headerVariants = {1: 'Member', 2: 'Leader', 3: 'Manager'};
+
+    const header = (data) => {
+        const tokens = headerModes[data['mode']];
+        let title = `%m %v %m ${teams.length} Team${teams.length > 1 ? 's' : ''}`;
+        title = title.replace('%m', tokens[0], 0);
+        title = title.replace('%m', tokens[1], 1);
+        title = title.replace('%v', headerVariants[data['role']]);
+        return title;
+    };
+
+    const fields = useMemo(() => ({
+        teams: {
+            section: 0,
+            label: 'Selected Teams',
+            nameField: 'name',
+            type: 'listing'
         },
-        fields: {
-            teams: {
-                section: 0,
-                label: 'Selected Teams',
-                nameField: 'name',
-                type: 'listing'
-            },
-            mode: {
-                section: 1,
-                label: 'Mode',
-                type: 'string',
-                inputType: 'dropdown',
-                options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
-                searchable: false
-            },
-            user: {
-                section: 2,
-                label: 'User',
-                type: 'number',
-                inputType: 'dropdown',
-                options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
-            },
-            role: {
-                section: 2,
-                label: 'Role',
-                type: 'number',
-                inputType: 'dropdown',
-                options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
-                searchable: false
-            }
+        mode: {
+            section: 1,
+            label: 'Mode',
+            type: 'string',
+            inputType: 'dropdown',
+            options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
+            searchable: false
         },
-        sections: {
-          2: {style: {flexDirection: 'row'}}
+        user: {
+            section: 2,
+            label: 'User',
+            type: 'number',
+            inputType: 'dropdown',
+            options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
         },
-        onSubmit: {
-            onSave: (data) => saveTeamAssignment({
-                teamIds: teams.map(team => team.id),
-                resource: data.role === 3 ? 'manager' : data.role === 2 ? 'leader' : 'member',
-                resourceIds: [data.user],
-                mode: data.mode
-            }),
-            refreshTriggers: [['teams', true]]
-        }, modal
-    }), [teams, modal, users, saveTeamAssignment]);
+        role: {
+            section: 2,
+            label: 'Role',
+            type: 'number',
+            inputType: 'dropdown',
+            options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
+            searchable: false
+        }
+    }), [users]);
+
+    const sections = {
+        2: {style: {flexDirection: 'row'}}
+    };
+
+    const onSubmit = useCallback(async (data) => await saveTeamAssignment({
+        teamIds: teams.map(team => team.id),
+        resource: data.role === 3 ? 'manager' : data.role === 2 ? 'leader' : 'member',
+        resourceIds: [data.user],
+        mode: data.mode
+    }), [teams, saveTeamAssignment]);
 
     const presetData = useMemo(() => ({mode: 'add', teams, role: 2}), [teams]);
 
     if (loading) 
         return <Loader/>;
 
-    return <EditForm structure={formStructure} presetData={presetData} />;
+    return <EditForm 
+        header={header}
+        fields={fields}
+        sections={sections}
+        onSubmit={onSubmit}
+        modal={modal}
+        presetData={presetData} 
+    />;
 }
 
 const TeamEdit = ({ teamId, parentId, modal }) => {
@@ -195,72 +207,62 @@ const TeamEdit = ({ teamId, parentId, modal }) => {
         return teams.filter(t => t && typeof t.id === 'number' && !nonAvailableParentTeams.has(t.id));
     }, [teamId, team, teams]);
 
-    const formStructure = useMemo(() => ({
-        header: {
-            title: teamId ? `Editing ${team?.name}` : `Creating new ${parentId ? 'SubTeam' : 'Team'}`,
+    const fields = useMemo(() => ({
+        name: {
+            section: 0,
+            type: 'string',
+            inputType: 'input',
+            label: 'Name',
+            required: true,
         },
-        fields: {
-            name: {
-                section: 0,
-                type: 'string',
-                inputType: 'input',
-                label: 'Name',
-                required: true,
-            },
-            code_name: {
-                section: 0,
-                type: 'string',
-                inputType: 'input',
-                label: 'Codename',
-                required: true,
-            },
-            parent_team: {
-                section: 1,
-                type: 'item',
-                inputType: 'dropdown',
-                label: 'Parent Team',
-                options: getAvailableParentTeams(),
-                noneAllowed: true
-            },
-            managers: {
-                section: 2,
-                type: 'id-list',
-                teamCompliance: true,
-                inputType: 'multi-dropdown',
-                label: 'Team Managers',
-                itemSource: managers,
-                itemNameField: ['first_name', 'last_name'],
-                itemExcludedIds: { formData: ['leaders', 'members'] }
-            },
-            leaders: {
-                section: 3,
-                type: 'id-list',
-                teamCompliance: true,
-                inputType: 'multi-dropdown',
-                label: 'Team Leaders',
-                itemSource: users,
-                itemNameField: ['first_name', 'last_name'],
-                itemExcludedIds: { formData: ['managers', 'members'] }
-            },
-            members: {
-                section: 4,
-                type: 'id-list',
-                teamCompliance: true,
-                inputType: 'multi-dropdown',
-                label: 'Team Members',
-                itemSource: users,
-                itemNameField: ['first_name', 'last_name'],
-                itemExcludedIds: { formData: ['leaders', 'managers'] }
-            }
+        code_name: {
+            section: 0,
+            type: 'string',
+            inputType: 'input',
+            label: 'Codename',
+            required: true,
         },
-        onSubmit: {
-            onSave: (formData, id) => saveTeam({teamId: id, formData}),
-            refreshTriggers: [['teams', true], ...(team ? [['team', team.id]] : [])],
-            openIfNew: 'userDetails'
-        }, modal
-    }), [saveTeam, team, modal, teamId, parentId, getAvailableParentTeams, managers, users]);
+        parent_team: {
+            section: 1,
+            type: 'item',
+            inputType: 'dropdown',
+            label: 'Parent Team',
+            options: getAvailableParentTeams(),
+            noneAllowed: true
+        },
+        managers: {
+            section: 2,
+            type: 'id-list',
+            teamCompliance: true,
+            inputType: 'multi-dropdown',
+            label: 'Team Managers',
+            itemSource: managers,
+            itemNameField: ['first_name', 'last_name'],
+            itemExcludedIds: { formData: ['leaders', 'members'] }
+        },
+        leaders: {
+            section: 3,
+            type: 'id-list',
+            teamCompliance: true,
+            inputType: 'multi-dropdown',
+            label: 'Team Leaders',
+            itemSource: users,
+            itemNameField: ['first_name', 'last_name'],
+            itemExcludedIds: { formData: ['managers', 'members'] }
+        },
+        members: {
+            section: 4,
+            type: 'id-list',
+            teamCompliance: true,
+            inputType: 'multi-dropdown',
+            label: 'Team Members',
+            itemSource: users,
+            itemNameField: ['first_name', 'last_name'],
+            itemExcludedIds: { formData: ['leaders', 'managers'] }
+        }
+    }), [getAvailableParentTeams, managers, users]);
 
-    const teamData = useMemo(() => {
+    const presetData = useMemo(() => {
         const baseData = team ? team : {};
         return {
             ...baseData,
@@ -271,7 +273,13 @@ const TeamEdit = ({ teamId, parentId, modal }) => {
     if (loading) 
         return <Loader/>;
 
-    return <EditForm structure={formStructure} presetData={teamData} />;
+    return <EditForm
+        header={teamId ? `Editing ${team?.name}` : `Creating new ${parentId ? 'SubTeam' : 'Team'}`}
+        fields={fields}
+        onSubmit={async (formData) => await saveTeam({teamId, formData})}
+        modal={modal}
+        presetData={presetData} 
+    />;
 }
 
 export default TeamEdit;

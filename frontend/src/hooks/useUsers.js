@@ -2,10 +2,12 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 
 const useUsers = () => {
     // internal hooks and states
-    const { appCache, showPopUp } = useApp();
+    const { appCache, showPopUp, refreshData } = useApp();
+    const { openModal } = useNav();
     const userCache = appCache.current.users;
     const [ users, setUsers ] = useState();
     const [ loading, setLoading ] = useState();
@@ -100,13 +102,25 @@ const useUsers = () => {
 
             const { data } = res;
 
+            if (!data)
+                return null;
+
+            // TODO: Test it out.
             if (data?.message)
-                showPopUp({type: 'success', content: data.message});
+                showPopUp({
+                    type: 'success',
+                    content: data.message,
+                    onClick: !userId ? () => openModal({content: 'userDetails', 
+                        contentId: data.id
+                    }) : null
+                });
+
+            refreshData('users', true);
+            userId && refreshData('user', userId);
 
             return ( data && data.user ) || null;
 
         } catch(err) {
-
             console.error('saveUser error:', err);
 
             const { response } = err;
@@ -118,7 +132,7 @@ const useUsers = () => {
 
             return null;
         }
-    }, [showPopUp]);
+    }, [showPopUp, refreshData, openModal]);
 
     const saveUserAssignment = useCallback(async ({ userIds, resource, resourceIds, mode = 'set' }) => {
         if (!userIds || !resourceIds || !resource)
@@ -134,12 +148,18 @@ const useUsers = () => {
             return null;
 
         try {
-
-            return await axios.post(
+            const res = await axios.post(
                 '/users/assignments',
                 {userIds, resource, resourceIds, mode},
                 { withCredentials: true }
             );
+
+            // TODO: Test this out.
+            console.log(res);
+            
+            refreshData('users', true);
+
+            return true;
 
         } catch (err) {
             console.error('saveUserAssignment error:', err);
@@ -149,7 +169,7 @@ const useUsers = () => {
 
             return null;
         }
-    }, [showPopUp]);
+    }, [showPopUp, refreshData]);
 
     const deleteUsers = useCallback(async ({userId, userIds} = {}) => {
 
@@ -187,6 +207,8 @@ const useUsers = () => {
                 userIds.forEach(userId => delete userCache[userId]);
             else
                 delete userCache[userId];
+            
+            refreshData('users', true);
 
             return true;
         } catch (err) {
@@ -199,7 +221,7 @@ const useUsers = () => {
         } finally {
             setLoading(false);
         }
-    }, [userCache, showPopUp]);
+    }, [userCache, showPopUp, refreshData]);
 
     const deleteUser = useCallback(async ({userId} = {}) =>
         await deleteUsers({userId}), [deleteUsers]);

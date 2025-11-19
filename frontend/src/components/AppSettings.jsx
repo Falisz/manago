@@ -94,7 +94,7 @@ const AppStyles = () => {
         return opts.map( opt => ({id: opt, image: `./assets/background-${opt.toLowerCase()}.jpg`}) );
     }, [configOptions.background]);
 
-    const formStructure = useMemo(() => {
+    const formFields = useMemo(() => {
         const labelStyle = {
             display: 'flex',
             alignItems: 'center',
@@ -114,84 +114,78 @@ const AppStyles = () => {
         };
 
         return {
-            fields: {
+            style: {
+                section: 0,
                 style: {
-                    section: 0,
-                    style: {
-                        flex: '1 1 30%'
-                    },
-                    label: 'UI Style',
-                    labelStyle,
-                    icon: 'type_specimen',
-                    iconStyle,
-                    field: 'style',
-                    inputType: 'dropdown',
-                    searchable: false,
-                    selectedStyle: upperCase,
-                    optionsStyle: upperCase,
-                    options: configOptions.style
+                    flex: '1 1 30%'
                 },
-                theme: {
-                    section: 0,
-                    style: {
-                        flex: '1 1 30%'
-                    },
-                    label: 'Theme',
-                    labelStyle,
-                    icon: 'routine',
-                    iconStyle,
-                    field: 'theme',
-                    inputType: 'dropdown',
-                    searchable: false,
-                    selectedStyle: upperCase,
-                    optionsStyle: upperCase,
-                    options: configOptions.theme
-                },
-                color: {
-                    className: 'app-color',
-                    section: 0,
-                    style: {
-                        flex: '1 1 30%'
-                    },
-                    label: 'Color',
-                    labelStyle,
-                    icon: 'palette',
-                    iconStyle,
-                    field: 'color',
-                    inputType: 'dropdown',
-                    searchable: false,
-                    selectedStyle: upperCase,
-                    optionsStyle: upperCase,
-                    options: configOptions.color
-                },
-                background: {
-                    section: 1,
-                    className: 'app-background',
-                    label: 'Background',
-                    labelStyle,
-                    icon: 'wallpaper',
-                    iconStyle,
-                    field: 'background',
-                    inputType: 'radio',
-                    options: backgroundOptions,
-                    disabled: formConfig.style !== 'fluent'
-                }
+                label: 'UI Style',
+                labelStyle,
+                icon: 'type_specimen',
+                iconStyle,
+                field: 'style',
+                inputType: 'dropdown',
+                searchable: false,
+                selectedStyle: upperCase,
+                optionsStyle: upperCase,
+                options: configOptions.style
             },
-            onSubmit: {
-                onSave: async () => await saveConfig(formConfig)
+            theme: {
+                section: 0,
+                style: {
+                    flex: '1 1 30%'
+                },
+                label: 'Theme',
+                labelStyle,
+                icon: 'routine',
+                iconStyle,
+                field: 'theme',
+                inputType: 'dropdown',
+                searchable: false,
+                selectedStyle: upperCase,
+                optionsStyle: upperCase,
+                options: configOptions.theme
             },
-            onCancel: {
-                hidden: true
+            color: {
+                className: 'app-color',
+                section: 0,
+                style: {
+                    flex: '1 1 30%'
+                },
+                label: 'Color',
+                labelStyle,
+                icon: 'palette',
+                iconStyle,
+                field: 'color',
+                inputType: 'dropdown',
+                searchable: false,
+                selectedStyle: upperCase,
+                optionsStyle: upperCase,
+                options: configOptions.color
+            },
+            background: {
+                section: 1,
+                className: 'app-background',
+                label: 'Background',
+                labelStyle,
+                icon: 'wallpaper',
+                iconStyle,
+                field: 'background',
+                inputType: 'radio',
+                options: backgroundOptions,
+                disabled: formConfig.style !== 'fluent'
             }
         };
-    }, [backgroundOptions, configOptions.color, configOptions.style, configOptions.theme, formConfig, saveConfig]);
+    }, [backgroundOptions, configOptions.color, configOptions.style, configOptions.theme, formConfig]);
 
     if (loading)
         return <Loader/>;
 
     return <EditForm
         className={'seethrough app-scroll app-overflow-y'}
-        structure={formStructure}
+        fields={formFields}
+        onSubmit={async () => await saveConfig(formConfig)}
+        hideCancel={true}
         source={formConfig}
         setSource={setFormConfig}
     />;

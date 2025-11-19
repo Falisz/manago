@@ -2,13 +2,15 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 
 const useTeams = () => {
     // internal hooks and states
-    const { appCache, showPopUp } = useApp();
+    const { appCache, showPopUp, refreshData } = useApp();
+    const { openModal } = useNav();
+    const teamCache = appCache.current.teams;
     const [teams, setTeams] = useState(null);
     const [loading, setLoading] = useState();
-    const teamCache = appCache.current.teams;
 
     // API callbacks
     const fetchTeams = useCallback(async ({teamId = null, all = false,
@@ -90,8 +92,21 @@ const useTeams = () => {
 
             const { data } = res;
 
-            if (data.message)
-                showPopUp({type: 'success', content: data.message});
+            if (!data)
+                return null;
+
+            // TODO: Test it out.
+            if (data?.message)
+                showPopUp({
+                    type: 'success',
+                    content: data.message,
+                    onClick: !teamId ? () => openModal({content: 'teamDetails', 
+                        contentId: data.id
+                    }) : null
+                });
+
+            refreshData('teams', true);
+            teamId && refreshData('team', teamId);
 
             return ( data && data.team ) || null;
 
@@ -107,7 +122,7 @@ const useTeams = () => {
 
             return null;
         }
-    }, [showPopUp]);
+    }, [showPopUp, openModal, refreshData]);
 
     const saveTeamAssignment = useCallback( async ({ teamIds, resource, resourceIds, mode = 'set'}) => {
         if (!teamIds || !resourceIds || !resource)
@@ -123,11 +138,18 @@ const useTeams = () => {
             return null;
 
         try {
-            return await axios.post(
+            const res = await axios.post(
                 '/teams/assignments',
                 {teamIds, resource, resourceIds, mode},
                 { withCredentials: true }
             );
+
+            // TODO: Test this out.
+            console.log(res);
+
+            refreshData('teams', true);
+
+            return true;
 
         } catch (err) {
             console.error('Error saving new team assignments:', err);
@@ -137,7 +159,7 @@ const useTeams = () => {
 
             return null;
         }
-    }, [showPopUp]);
+    }, [showPopUp, refreshData]);
 
     const deleteTeams = useCallback( async ({teamId, teamIds, cascade = false} = {}) => {
 
@@ -176,6 +198,8 @@ const useTeams = () => {
                 teamIds.forEach(teamId => delete teamCache[teamId]);
             else
                 delete teamCache[teamId];
+            
+            refreshData('teams', true);
 
             return true;
 
@@ -189,7 +213,7 @@ const useTeams = () => {
         } finally {
             setLoading(false);
         }
-    }, [teamCache, showPopUp]);
+    }, [teamCache, showPopUp, refreshData]);
 
     const deleteTeam = useCallback(async ({teamId, cascade} = {}) =>
         await deleteTeams({teamId, cascade}), [deleteTeams]);

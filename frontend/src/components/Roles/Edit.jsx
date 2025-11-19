@@ -15,47 +15,42 @@ const RoleEdit = ({ roleId, modal }) => {
         
     }, [roleId, setLoading, fetchRole]);
 
-    const formStructure = useMemo(() => ({
-        header: {
-            title: roleId ? `Editing ${role?.name}` : 'Creating new Role',
+    const fields = useMemo(() => ({
+        name: {
+            section: 0,
+            type: 'string',
+            inputType: 'input',
+            label: 'Name',
+            required: true,
         },
-        fields: {
-            name: {
-                section: 0,
-                type: 'string',
-                inputType: 'input',
-                label: 'Name',
-                required: true,
-            },
-            icon: {
-                section: 0,
-                type: 'string',
-                inputType: 'input',
-                label: 'Icon',
-            },
-            description: {
-                section: 1,
-                type: 'string',
-                inputType: 'textarea',
-                label: 'Description',
-            }
+        icon: {
+            section: 0,
+            type: 'string',
+            inputType: 'input',
+            label: 'Icon',
         },
-        onSubmit: {
-            onSave: (formData, roleId) => saveRole({roleId, formData}),
-            refreshTriggers: [['roles', true], ...(role ? [['role', role.id]] : [])],
-            openIfNew: 'userDetails'
-        },
-        modal,
-    }), [saveRole, modal, role, roleId]);
+        description: {
+            section: 1,
+            type: 'string',
+            inputType: 'textarea',
+            label: 'Description',
+        }
+    }), []);
 
-    const roleData = useMemo(() => {
+    const presetData = useMemo(() => {
         return role ? role : {};
     }, [role]);
 
     if (loading) 
         return <Loader />;
 
-    return <EditForm structure={formStructure} presetData={roleData} />;
+    return <EditForm 
+        header={roleId && role ? `Editing ${role.name}` : 'Creating new Role'} 
+        fields={fields}
+        onSubmit={async (formData) => await saveRole({roleId, formData})}
+        modal={modal}
+        presetData={presetData} 
+    />;
 };
 
 export default RoleEdit;

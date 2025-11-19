@@ -16,7 +16,7 @@ import '../../styles/Schedules.css';
 export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, isEmpty }) => {
     const { appState } = useApp();
     const navigate = useNavigate();
-    const { closeTopModal } = useApp();
+    const { closeTopModal } = useNav();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -47,110 +47,107 @@ export const ScheduleEditForm = ({ schedule, setSchedule, saveSchedule, isNew, i
         branches: [{id: null, name: 'None'}]
     }), [appState.modules, teams, users, managers]);
 
-    const formStructure = useMemo(() => {
+    const fields = useMemo(() => {
         const users = schedule.users?.values() || [];
         const userList = Array.from(users.map(u => u.first_name + ' ' + u.last_name));
 
         return {
-            header: {
-                title: schedule.id ? `Editing ${schedule?.name}` : `Creating a new Schedule Draft`,
+            name: {
+                section: 0,
+                type: 'string',
+                inputType: 'input',
+                label: 'Name',
+                required: true,
             },
-            fields: {
-                name: {
-                    section: 0,
-                    type: 'string',
-                    inputType: 'input',
-                    label: 'Name',
-                    required: true,
-                },
-                description: {
-                    section: 0,
-                    type: 'string',
-                    inputType: 'textarea',
-                    label: 'Description',
-                },
-                start_date: {
-                    section: 1,
-                    type: 'date',
-                    inputType: 'date',
-                    label: 'Start Date',
-                    required: true,
-                    max: schedule.end_date,
-                },
-                end_date: {
-                    section: 1,
-                    type: 'date',
-                    inputType: 'date',
-                    label: 'End Date',
-                    required: true,
-                    min: schedule.start_date,
-                },
-                user_scope: {
-                    section: 2,
-                    type: 'string',
-                    inputType: 'dropdown',
-                    label: 'User Scope',
-                    options: scopeOptions.scopes,
-                    required: true,
-                    disabled: !isEmpty.current,
-                    onChange: () => setSchedule((prev) => ({...prev, user_scope_id: null})),
-                },
-                user_scope_id: {
-                    section: 2,
-                    type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
-                    inputType: 'dropdown',
-                    label: ' ',
-                    options: schedule.user_scope === 'team' ? scopeOptions.teams :
-                    schedule.user_scope === 'manager' ? scopeOptions.managers :
-                        schedule.user_scope === 'user' ? scopeOptions.users :
-                            schedule.user_scope === 'project' ? scopeOptions.projects :
-                                schedule.user_scope === 'branch' ? scopeOptions.branches :
-                                    [{ id: null, name: 'None'}],
-                    required: !['you', 'all'].includes(schedule.user_scope),
-                    disabled: !isEmpty.current
-                },
-                users: {
-                    section: 3,
-                    type: 'content',
-                    style: {flexDirection: 'column'},
-                    label: `Users (${userList.length})`,
-                    content: <span style={{paddingLeft: '10px'}}>{userList.join(', ')}</span>
-                }
+            description: {
+                section: 0,
+                type: 'string',
+                inputType: 'textarea',
+                label: 'Description',
             },
-            sections: {
-                2: {
-                    style: {alignItems: 'flex-end'}
-                }
+            start_date: {
+                section: 1,
+                type: 'date',
+                inputType: 'date',
+                label: 'Start Date',
+                required: true,
+                max: schedule.end_date,
             },
-            onSubmit: {
-                onSave: () => {
-                    for (const field of ['start_date', 'end_date', 'user_scope', 'user_scope_id'])
-                        if (schedule[field] == null)
-                            return false;
-
-                    saveSchedule();
-
-                    if (schedule.user_scope && schedule.user_scope_id)
-                        isEmpty.current = false;
-
-                    isNew.current = false;
-
-                    return true;
-                },
-                refreshTriggers: [['scheduleDrafts', true], ...(schedule.id ? [['scheduleDraft', schedule.id]] : [])],
-                label: 'Start planning'
+            end_date: {
+                section: 1,
+                type: 'date',
+                inputType: 'date',
+                label: 'End Date',
+                required: true,
+                min: schedule.start_date,
             },
-            onCancel: {
-                handler: () => {
-                    closeTopModal();
-                    if (isNew.current)
-                        navigate(-1);
-                },
+            user_scope: {
+                section: 2,
+                type: 'string',
+                inputType: 'dropdown',
+                label: 'User Scope',
+                options: scopeOptions.scopes,
+                required: true,
+                disabled: !isEmpty.current,
+                onChange: () => setSchedule((prev) => ({...prev, user_scope_id: null})),
+            },
+            user_scope_id: {
+                section: 2,
+                type: (['you', 'all'].includes(schedule.user_scope) ? 'hidden' : 'number'),
+                inputType: 'dropdown',
+                label: ' ',
+                options: schedule.user_scope === 'team' ? scopeOptions.teams :
+                schedule.user_scope === 'manager' ? scopeOptions.managers :
+                    schedule.user_scope === 'user' ? scopeOptions.users :
+                        schedule.user_scope === 'project' ? scopeOptions.projects :
+                            schedule.user_scope === 'branch' ? scopeOptions.branches :
+                                [{ id: null, name: 'None'}],
+                required: !['you', 'all'].includes(schedule.user_scope),
+                disabled: !isEmpty.current
+            },
+            users: {
+                section: 3,
+                type: 'content',
+                style: {flexDirection: 'column'},
+                label: `Users (${userList.length})`,
+                content: <span style={{paddingLeft: '10px'}}>{userList.join(', ')}</span>
             }
         };
-    }, [schedule, setSchedule, scopeOptions, closeTopModal, saveSchedule, isNew, isEmpty, navigate]);
+    }, [schedule, setSchedule, scopeOptions, isEmpty]);
+
+    const sections = {
+        2: {
+            style: {alignItems: 'flex-end'}
+        }
+    };
+
+    const onSubmit = useCallback(() => {
+        for (const field of ['start_date', 'end_date', 'user_scope', 'user_scope_id'])
+            if (schedule[field] == null)
+                return false;
+
+        saveSchedule();
+
+        if (schedule.user_scope && schedule.user_scope_id)
+            isEmpty.current = false;
+
+        isNew.current = false;
+
+        closeTopModal();
+
+        return true;
+    }, [isEmpty, isNew, saveSchedule, schedule, closeTopModal]);
     
-    return <EditForm structure={formStructure} source={schedule} setSource={setSchedule} />;
+    return <EditForm 
+        header={schedule.id ? `Editing Details of ${schedule?.name}` : `Creating a new Schedule Draft`}
+        fields={fields}
+        sections={sections}
+        onSubmit={onSubmit}
+        onCancel={() => {closeTopModal(); isNew.current && navigate(-1);}}
+        submitLabel={schedule.id ? 'Save Changes' : 'Start planning'}
+        source={schedule}
+        setSource={setSchedule} 
+    />;
 };
 
 const ScheduleEdit = () => {
