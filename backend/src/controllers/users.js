@@ -757,7 +757,7 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
 
         } else if (mode === 'del') {
             const deletedCount = await UserRole.destroy({
-                where: { user: userIds, manager: roleIds },
+                where: { user: userIds, role: roleIds },
                 transaction
             });
 
