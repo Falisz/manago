@@ -5,30 +5,75 @@ import useUsers from '../../hooks/useUsers';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-export const UserRoleAssignment = ({user, modal}) => {
-    const {saveUserAssignment} = useUsers();
-    const {roles, loading, fetchRoles} = useRoles();
+export const UserAssignment = ({user, resource, modal}) => {
+    const {users: managers, loading: managersLoading, fetchUsers: fetchManagers, saveUserAssignment} = useUsers();
+    const {roles, loading: rolesLoading, fetchRoles} = useRoles();
 
     useEffect(() => {
-        fetchRoles().then();
-    }, [fetchRoles]);
+        if (resource === 'manager')
+            fetchManagers({group: 'managers'}).then();
 
-    const fields = useMemo(() => ({
-        roles: {
-            section: 0,
-            type: 'id-list',
-            inputType: 'multi-dropdown',
-            itemSource: roles,
-            itemNameField: 'name',
-            itemName: 'Role',
-        }
-    }), [roles]);
+        else if (resource === 'role')
+            fetchRoles().then();
 
-    const onSubmit = useCallback(async (data) => await saveUserAssignment({
-        userIds: [user.id],
-        resource: 'role',
-        resourceIds: data['roles']
-    }), [user.id, saveUserAssignment]);
+        else
+            console.error('Invalid resource type for UserAssignment: ' + resource);
+
+    }, [resource, fetchManagers, fetchRoles]);
+
+    const loading = useMemo(() =>
+            (resource === 'manager' && managersLoading) || (resource === 'role' && rolesLoading),
+        [resource, managersLoading, rolesLoading]
+    );
+
+    const fields = useMemo(() => {
+        if (resource === 'manager')
+            return {
+                managers: {
+                    section: 0,
+                    type: 'id-list',
+                    inputType: 'multi-dropdown',
+                    itemSource: managers,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemName: 'Manager',
+                    itemExcludedIds: {data: [parseInt(user.id)]}
+                }
+            }
+
+        else if (resource === 'role')
+            return {
+                roles: {
+                    section: 0,
+                    type: 'id-list',
+                    inputType: 'multi-dropdown',
+                    itemSource: roles,
+                    itemNameField: 'name',
+                    itemName: 'Role',
+                }
+            }
+
+        else
+            return {};
+
+    }, [resource, user.id, managers, roles]);
+
+    const onSubmit = useCallback(async (data) => {
+        if (resource === 'manager')
+            return await saveUserAssignment({
+                userIds: [user.id],
+                resource: 'manager',
+                resourceIds: data['managers']
+            });
+        else if (resource === 'role')
+            return await saveUserAssignment({
+                userIds: [user.id],
+                resource: 'role',
+                resourceIds: data['roles']
+            })
+        else
+            return null;
+
+    }, [resource, user.id, saveUserAssignment]);
 
     if (loading) 
         return <Loader/>;
@@ -42,44 +87,6 @@ export const UserRoleAssignment = ({user, modal}) => {
     />;
 }
 
-export const UserManagerAssignment = ({user, modal}) => {
-    const {users: managers, loading, fetchUsers, saveUserAssignment} = useUsers();
-
-    useEffect(() => {
-        fetchUsers({group: 'managers'}).then();
-    }, [fetchUsers]);
-
-    const fields = useMemo(() => ({
-        managers: {
-            section: 0,
-            type: 'id-list',
-            inputType: 'multi-dropdown',
-            itemSource: managers,
-            itemNameField: ['first_name', 'last_name'],
-            itemName: 'Manager',
-            itemExcludedIds: {data: [parseInt(user.id)]}
-        }
-    }), [user.id, managers]);
-
-    const onSubmit = useCallback(async (data) => await saveUserAssignment({
-        userIds: [user.id],
-        resource: 'manager',
-        resourceIds: data['managers']
-    }), [user.id, saveUserAssignment]);
-
-    if (loading) 
-        return <Loader/>;
-
-    return <EditForm 
-        header={`Editing Managers of ${user?.first_name} ${user?.last_name}`}
-        fields={fields}
-        onSubmit={onSubmit}
-        modal={modal}
-        presetData={user} 
-    />;
-}
-
-// TODO: Consider combining into one UserBulkAssignment with one param that would define stuff within useEffect, useMemo and useCallback hooks accordngily;
 export const UserBulkAssignment = ({resource, users, modal}) => {
     const { users: managers, loading: managersLoading, fetchUsers: fetchManagers, saveUserAssignment} = useUsers();
     const { roles, loading: rolesLoading, fetchRoles } = useRoles();
@@ -91,26 +98,38 @@ export const UserBulkAssignment = ({resource, users, modal}) => {
         else if (resource === 'role')
             fetchRoles().then();
 
-    }, [fetchRoles]);
+        else
+            console.error('Invalid resource type for UserAssignment: ' + resource);
+
+    }, [resource, fetchManagers, fetchRoles]);
 
     const loading = useMemo(() =>
         (resource === 'manager' && managersLoading) || (resource === 'role' && rolesLoading),
-        [managersLoading, rolesLoading]
+        [resource, managersLoading, rolesLoading]
     );
 
-    const headerModes = {
-        add: ['Adding', 'to'],
-        set: ['Setting', 'to'],
-        del: ['Removing', 'from'],
-    };
+    const header = useCallback((data) => {
+        let rsc;
 
-    const header = (data) => {
+        if (resource === 'manager')
+            rsc = 'Manager';
+        else if (resource === 'role')
+            rsc = 'Role';
+
+        if (!data || !data['mode'])
+            return `Bulk ${rsc} Assignment`;
+
+        const headerModes = {
+            add: ['Adding', 'to'],
+            set: ['Setting', 'to'],
+            del: ['Removing', 'from'],
+        };
         const tokens = headerModes[data['mode']];
-        let title = `%m Role %m ${users.length} User${users.length > 1 ? 's' : ''}`;
+        let title = `%m ${rsc} %m ${users.length} User${users.length > 1 ? 's' : ''}`;
         title = title.replace('%m', tokens[0], 0);
         title = title.replace('%m', tokens[1], 1);
         return title;
-    };
+    }, [resource, users]);
 
     const fields = useMemo(() => {
         if (resource === 'manager')
@@ -167,7 +186,7 @@ export const UserBulkAssignment = ({resource, users, modal}) => {
                         itemName: 'Role'
                 }
             };
-    }, [users, managers, roles]);
+    }, [resource, users, managers, roles]);
 
     const sections = {
         1: {style: {flexDirection: 'row'}}
@@ -178,7 +197,7 @@ export const UserBulkAssignment = ({resource, users, modal}) => {
         resource: resource,
         resourceIds: [data[resource]],
         mode: data.mode
-    }), [users, resource, saveUserAssignment]);
+    }), [resource, users, saveUserAssignment]);
 
     const presetData = useMemo(() => ({mode: 'add', users}), [users]);
 

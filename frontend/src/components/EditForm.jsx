@@ -1,5 +1,5 @@
 // FRONTEND/components/EditForm.jsx
-import React, {useState, useEffect, useMemo, useRef} from 'react';
+import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import useNav from '../contexts/NavContext';
 import Button from './Button';
 import CheckBox from './CheckBox';
@@ -234,30 +234,12 @@ const EditForm = ({
         return formSections;
     }, [sections, fields]);
 
-    // const header = useMemo(() => {
-    //     const headerModes = {
-    //         add: ['Adding', 'to'],
-    //         set: ['Setting', 'to'],
-    //         del: ['Removing', 'from'],
-    //     };
+    const getHeader = useCallback(() => {
+        if (typeof header === 'function')
+            return header(formData);
 
-    //     if (!structure.header || !structure.header.title) {
-    //         return '';
-    //     }
-
-    //     let header = structure.header.title;
-
-    //     if (structure.header.modes) {
-    //         header = header.replace('%m', headerModes[formData['mode']]?.[0], 0);
-    //         header = header.replace('%m', headerModes[formData['mode']]?.[1], 1);
-    //     }
-    //     if (structure.header.variantField) {
-    //         header = header.replace('%v',
-    //             structure.header.variantOptions[formData[structure.header.variantField]]);
-    //     }
-
-    //     return header;
-    // }, [structure, formData]);
+        return header;
+    }, [header, formData]);
 
     const getInputClassName = (baseClass, name) => {
         return `${baseClass}${errors[name] ? ' error' : ''}`;
@@ -272,7 +254,7 @@ const EditForm = ({
                 onSubmit={handleSubmit}
                 style={style}
             >
-                {header && <h1 className={'app-form-header'} style={headerStyle}>{header}</h1>}
+                {header && <h1 className={'app-form-header'} style={headerStyle}>{getHeader()}</h1>}
 
                 {Object.values(formSections).map((section, key) => {
                     return <div
@@ -280,9 +262,7 @@ const EditForm = ({
                         className={'form-section' + (section.className ? ' ' + section.className : '')}
                         style={section.style}
                     >
-                        {section.header && <h2>{
-                            typeof section.header === 'function' ? section.header(formData) : section.header 
-                            }</h2>}
+                        {section.header && <h2>{section.header}</h2>}
                         {Object.entries(section.fields).map(([name, group], index) => {
 
                             const type = typeof group.type === 'function' ? group.type(formData) : group.type;

@@ -11,8 +11,7 @@ import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {
-    UserRoleAssignment,
-    UserManagerAssignment,
+    UserAssignment,
     UserBulkAssignment
 } from '../components/Users/Edit';
 
@@ -170,11 +169,11 @@ export const NavProvider = ({ children }) => {
             case 'userEdit':
                 return <UserEdit userId={modal.contentId} modal={modal.id} />;
             case 'userRoleAssignment':
-                return <UserRoleAssignment user={modal.data} modal={modal.id} />;
+                return <UserAssignment user={modal.data} resource={'role'} modal={modal.id} />;
             case 'userRoleBulkAssignment':
                 return <UserBulkAssignment users={modal.data} resource={'role'} modal={modal.id} />;
             case 'userManagerAssignment':
-                return <UserManagerAssignment user={modal.data} modal={modal.id} />;
+                return <UserAssignment user={modal.data} resource={'manager'} modal={modal.id} />;
             case 'userManagerBulkAssignment':
                 return <UserBulkAssignment users={modal.data} resource={'manager'} modal={modal.id} />;
             case 'userNew':
