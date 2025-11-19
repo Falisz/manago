@@ -58,10 +58,12 @@ export const NavProvider = ({ children }) => {
     }, [search, setSearchParams]);
 
     const openModal = useCallback((modalConfig) => {
-        const id = nextModalId.current++;
+
+        let id = null;
+        let isDuplicate = false;
 
         setModals((prev) => {
-            const isDuplicate = Object.values(prev).some(
+            isDuplicate = Object.values(prev).some(
                 (existing) =>
                     existing.content === modalConfig.content &&
                     existing.contentId === modalConfig.contentId
@@ -69,6 +71,8 @@ export const NavProvider = ({ children }) => {
 
             if (isDuplicate)
                 return prev;
+
+            id = nextModalId.current++;
 
             const next = {
                 ...prev,
@@ -79,6 +83,9 @@ export const NavProvider = ({ children }) => {
                 syncUrlWithModals(next);
             return next;
         });
+
+        if (isDuplicate)
+            return id;
 
         setTimeout(() => {
             setModals((prev) => ({
