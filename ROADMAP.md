@@ -1,6 +1,7 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General
+- Test out popups for saveResource callbacks.
 - Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
 -- destructured and refactored EditForm, double check if it works properly
 -- Details and Table to be done
