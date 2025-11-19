@@ -47,14 +47,10 @@ const PopUp = ({popUp}) => {
 
 }
 
-const PopUps = ({popUps = {}}) => {
-
-    console.log(popUps);
-    return (
-        <div className='app-popups'>
-            {Object.values(popUps).slice(-10).map(popUp => <PopUp key={popUp.id} popUp={popUp}/>)}
-        </div>
-    );
-};
+const PopUps = ({popUps = {}}) => (
+    <div className='app-popups'>
+        {Object.values(popUps).slice(-10).map(popUp => <PopUp key={popUp.id} popUp={popUp}/>)}
+    </div>
+);
 
 export default PopUps;

@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import Button from '../components/Button';
 import SchedulesDashboard from '../components/Schedules/Dashboard';
 import ScheduleEdit from '../components/Schedules/Edit';
 import ScheduleView from '../components/Schedules/View';
@@ -346,9 +347,17 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         !appState.is_connected && showPopUp({
             type: 'disconnected', 
-            header: 'Connection lost!',
-            content: 'You got disconnected, mate!'
+            header: 'Connection Lost',
+            content: <>
+                <p>No connection to the server. Please check your network.</p>
+                <Button
+                    onClick={() => window.location.reload()}
+                    label={'Refresh'}
+                />
+            </>
         }, 0);
+
+                
     }, [appState.is_connected, showPopUp]);
 
     const appClasses = useMemo(() => {
