@@ -1,6 +1,7 @@
 // FRONTEND/ManagerView.jsx
 import React, {useState} from 'react';
 import {Link, Outlet, useLocation} from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
 import Icon from './Icon';
@@ -105,15 +106,24 @@ const SubNav = ({currentMainPage, location}) => {
 }
 
 const ManagerView = () => {
-    const { appState } = useApp();
+    const { pages } = useApp();
     const location = useLocation();
 
-    const currentMainPage = appState.pages?.find((page) =>
+    const currentMainPage = pages?.find((page) =>
         location.pathname.startsWith(`/${page.path}`)
-    ) || (location.pathname === '/' ? appState.pages?.[0] : null);
+    ) || (location.pathname === '/' ? pages?.[0] : null);
+
+    const currentSubPage = currentMainPage?.subpages?.find((subpage) =>
+        location.pathname.startsWith(`/${currentMainPage.path}/${subpage.path}`)        
+    );
+
+    const pageTitle = currentSubPage?.title || currentMainPage?.title || null;
 
     return (
         <>
+            <Helmet>
+                <title>{pageTitle ? ['MANAGO', pageTitle].join(' | ') : 'MANAGO'}</title>
+            </Helmet>
             <MainNav/>
             <MobileNav
                 logoText={`Manager ${currentMainPage?.title && currentMainPage.title !== 'Home' ? `| ${currentMainPage.title}` : ``}`}

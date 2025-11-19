@@ -1,6 +1,7 @@
 // FRONTEND/StaffView.jsx
 import React from 'react';
 import {Link, Outlet, useLocation} from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import useApp from '../contexts/AppContext';
 import Icon from './Icon';
 import MobileNav from './MobileNav';
@@ -16,8 +17,17 @@ const StaffView = () => {
         location.pathname.startsWith(`/${page.path}`)
     ) || appState.pages?.[0] || null;
 
+    const currentSubPage = currentMainPage?.subpages?.find((subpage) =>
+        location.pathname.startsWith(`/${currentMainPage.path}/${subpage.path}`)        
+    );
+
+    const pageTitle = currentSubPage?.title || currentMainPage?.title || null;
+
     return (
         <>
+            <Helmet>
+                <title>{pageTitle ? ['MANAGO', pageTitle].join(' | ') : 'MANAGO'}</title>
+            </Helmet>
             <nav className='app-nav seethrough'>
                 <Link to='/'  title={'Home'} className={`app-home`}>
                     <SiteLogo className={'app-logo'}/>

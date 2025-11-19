@@ -1,7 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General
-- Add Page Titles to the displayed page - consider react-helmet for this one.
 - Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
 -- i.e. with EditForm: replacing "structure" prop with header, fields, sections, onChange, onSubmit, onCancel, modal and buttons props; moving RefreshData calls to the respective save functions in custom hooks; moving OpenIfNew to the save functions as well - but instead of opening a Details Modal for newly created resource, it should just open a pop up that can be clicked to that modal.
 ### Work Planner
