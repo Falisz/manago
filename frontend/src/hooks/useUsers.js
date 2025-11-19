@@ -153,9 +153,15 @@ const useUsers = () => {
                 {userIds, resource, resourceIds, mode},
                 { withCredentials: true }
             );
+            const { data } = res;
 
-            // TODO: Test this out.
-            console.log(res);
+            if (!data)
+                return null;
+
+            const { message } = data;
+
+            if (message)
+                showPopUp({type: 'success', content: message});
             
             refreshData('users', true);
 
