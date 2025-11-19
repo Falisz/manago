@@ -1,5 +1,5 @@
 // FRONTEND/components/PopUps.jsx
-import React, {useCallback, useMemo} from 'react';
+import React from 'react';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
 import '../styles/PopUps.css'
@@ -52,7 +52,7 @@ const PopUps = ({popUps = {}}) => {
     console.log(popUps);
     return (
         <div className='app-popups'>
-            {Object.values(popUps).map(popUp => <PopUp key={popUp.id} popUp={popUp}/>)}
+            {Object.values(popUps).slice(-10).map(popUp => <PopUp key={popUp.id} popUp={popUp}/>)}
         </div>
     );
 };

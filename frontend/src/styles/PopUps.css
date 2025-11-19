@@ -7,6 +7,8 @@
     flex-direction: column-reverse;
     gap: 10px;
     transition: 0.3s ease;
+    align-items: stretch;
+    max-width: 300vw;
 }
 
 .app-popup {
@@ -17,15 +19,16 @@
     transform: translateY(20px);
     transition: opacity 0.3s ease, transform 0.3s ease;
     background: var(--background-color-2);
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 6px;
+    color: var(--text-color);
+    padding: 5px 10px;
+    border-radius: var(--def-border-radius);
     min-width: 200px;
     position: relative;
 }
 
 .app.fluent .app-popup {
     background: var(--seethrough-background-2);
+    border-radius: var(--big-border-radius);
 }
 
 .app-popup.visible {
@@ -37,4 +40,28 @@
     position: absolute;
     top: 0;
     right: 0;
+}
+
+.app:not(.fluent) .app-popup.info>.icon {
+    color: rgb(0, 149, 208);
+}
+
+.app:not(.fluent) .app-popup.success>.icon {
+    color: limegreen;
+}
+
+.app:not(.fluent) .app-popup.warning>.icon {
+    color: orange;
+}
+
+.app:not(.fluent) .app-popup.error>.icon {
+    color: red;
+}
+
+.app:not(.fluent) .app-popup.disconnected>.icon {
+    color: orangered;
+}
+
+.app:not(.fluent) .app-popup.action>.icon {
+    color: violet;
 }

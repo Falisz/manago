@@ -1,9 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General
-- Add response/message/status stack to the bottom left corner of the page, with any errors or success messages from backend.
--- Notification types: info (blue), warning (yellow), error (red), success (green), disconnected (organe), actionRequired (purple)
--- Add colouring to the notifications
 - Add Page Titles to the displayed page - consider react-helmet for this one.
 - Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
 -- i.e. with EditForm: replacing "structure" prop with header, fields, sections, onChange, onSubmit, onCancel, modal and buttons props; moving RefreshData calls to the respective save functions in custom hooks; moving OpenIfNew to the save functions as well - but instead of opening a Details Modal for newly created resource, it should just open a pop up that can be clicked to that modal.
@@ -13,7 +10,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Holidays
 - Job Posts and Job Locations separate models (both optionals - i.e. gastronomy or entertainment staff)
 - App Settings with configs like enabling job locations and job posts.
-- Each Shift to be also opened in a Detailed mode, when clicked in Schedule Viewer. It can be edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored).
+- Each Shift to be also opened in a Detailed mode, when clicked in Schedule Viewer. It can be edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored). Separate useShifts for this.
 ### Timesheets
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
