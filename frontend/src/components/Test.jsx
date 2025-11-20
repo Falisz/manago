@@ -1,11 +1,23 @@
 // FRONTEND/components/Test.jsx
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
+import { useUser } from '../hooks/useResource';
 
 const Test = () => {
 
     const { showPopUp } = useApp();
+    const { users, fetchUsers } = useUser();
+    const isMounted = useRef(false);
+
+    useEffect(() => {
+        fetchUsers().then(
+            _res => isMounted.current = true
+        );
+    }, [fetchUsers]);
+
+    if(isMounted.current)
+        console.log(users);
 
     return <div>
         <Button
@@ -26,7 +38,7 @@ const Test = () => {
         />
         <Button
             label={'disconnected'}
-            onClick={() => showPopUp({type: 'disconnected', noClose: true, content: 'disconnected'})}
+            onClick={() => showPopUp({type: 'disconnected', content: 'disconnected'})}
         />
         <Button
             label={'action'}
