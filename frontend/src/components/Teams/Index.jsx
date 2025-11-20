@@ -23,28 +23,32 @@ const TeamsIndex = () => {
     }, [fetchTeams, teams, refreshTriggers.teams]);
 
     const handleTeamDelete = useCallback((team) => {
-        let message = `Are you sure you want to delete this team? This action cannot be undone.`;
+        let message = `Are you sure you want to delete this Team? This action cannot be undone.`;
         const teamId = team.id;
         const users = team.members ? team.members.length : 0;
         const subteams = team.subteams ? team.subteams.length : 0;
 
         if (users > 0) {
-            message += ` There are currently ${users === 1 ? 'a' : users} user${users > 1 ? 's' : ''} assigned to this team.`;
+            message += ` There are currently ${users === 1 ? 'a' : users}`
+                + ` User${users > 1 ? 's' : ''} assigned to this Team.`;
         }
         if (subteams > 0) {
-            message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}. Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`;
+            message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}.`
+                + `Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`;
         }
         openModal({
             content: 'confirm',
             type: 'pop-up',
             message: message,
-            onConfirm: () => {
-                deleteTeam(teamId).then();
+            onConfirm: async () => {
+                const success = await deleteTeam({teamId});
+                if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             },
-            onConfirm2: subteams > 0 ? () => {
-                deleteTeam(teamId, true).then();
+            onConfirm2: subteams > 0 ? async () => {
+                const success = await deleteTeam({teamId, cascade: true});
+                if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             } : null,
@@ -57,9 +61,11 @@ const TeamsIndex = () => {
         openModal({
             content: 'confirm',
             type: 'pop-up',
-            message: `Are you sure you want to delete ${selectedTeams.size} selected Team${selectedTeams.size > 1 ? 's' : ''}? This action cannot be undone.`,
-            onConfirm: () => {
-                deleteTeams(selectedTeams).then();
+            message: `Are you sure you want to delete ${selectedTeams.size} selected ` +
+                `Team${selectedTeams.size > 1 ? 's' : ''}? This action cannot be undone.`,
+            onConfirm: async () => {
+                const success = await deleteTeams({teamIds: Array.from(selectedTeams)});
+                if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             },

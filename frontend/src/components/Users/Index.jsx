@@ -25,24 +25,27 @@ const UsersIndexPage = ({content='users'}) => {
 
     const handleUserDelete = useCallback((id) => {
         openModal({
-                    content: 'confirm',
-                    type: 'pop-up',
-                    message: 'Are you sure you want to delete this user? This action cannot be undone.',
-                    onConfirm: () => {
-                        deleteUser({userId: id}).then();
-                        refreshData('users', true);
-                        closeTopModal();
-                    },
-                });
+            content: 'confirm',
+            type: 'pop-up',
+            message: 'Are you sure you want to delete this User? This action cannot be undone.',
+            onConfirm: async () => {
+                const success = await deleteUser({userId: id});
+                if (!success) return;
+                refreshData('users', true);
+                closeTopModal();
+            },
+        });
     }, [closeTopModal, deleteUser, openModal, refreshData]);
 
     const handleUsersDelete = useCallback((selectedUsers) => {
         openModal({
             content: 'confirm',
             type: 'pop-up',
-            message: `Are you sure you want to delete ${selectedUsers.size} selected User${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
-            onConfirm: () => {
-                deleteUsers({userIds: selectedUsers}).then();
+            message: `Are you sure you want to delete ${selectedUsers.size}`+
+                ` selected User${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
+            onConfirm: async () => {
+                const success = await deleteUsers({userIds: Array.from(selectedUsers)});
+                if (!success) return;
                 refreshData('users', true);
                 closeTopModal();
             },

@@ -28,7 +28,7 @@ const UserDetails = ({ userId }) => {
             type: 'pop-up',
             message: 'Are you sure you want to delete this user? This action cannot be undone.',
             onConfirm: () => {
-                deleteUser(userId).then();
+                deleteUser({userId}).then();
                 refreshData('users', true);
                 closeTopModal();
             },

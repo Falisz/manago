@@ -32,7 +32,8 @@ const RoleDetails = ({ roleId }) => {
             type: 'pop-up',
             message: message,
             onConfirm: () => {
-                deleteRole({roleId}).then();
+                const success = deleteRole({roleId}).then();
+                if (!success) return;
                 refreshData('roles', true);
                 closeTopModal();
             },
