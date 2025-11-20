@@ -4,6 +4,7 @@ import useApp from "../contexts/AppContext";
 import useNav from "../contexts/NavContext";
 import axios from "axios";
 
+// Helper functions to convert camelCase to kebab-case and snake_case
 const kebabCase = (str) => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 const snakeCase = (str) => str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
 const getNames = (str) => ({
@@ -16,8 +17,20 @@ const getNames = (str) => ({
     6: snakeCase(str),                              // singular, snake_case
     7: snakeCase(str + 's')                         // plural, snake_case
 });
+//TODO: Prepare resourceConfigs
 const resourceConfigs = {
-    user: { fetchParams: {}, buildUrl: (id) => id ? `/users/${id}` : '/users'},
+    user: {
+        fetchParams: {
+            id: null,
+            user_scope: 'all',
+            user_scope_id: null,
+            group: null,
+            loading: true,
+            reload: false,
+            map: false
+        },
+        buildUrl: (id) => id ? `/users/${id}` : '/users'
+    },
     role: { fetchParams: {}, buildUrl: (id) => id ? `/roles/${id}` : '/roles'},
     permission: { fetchParams: {}, buildUrl: (id) => id ? `/permissions/${id}` : '/permissions'},
     team: { fetchParams: {}, buildUrl: () => {}},
@@ -300,8 +313,3 @@ export const useUser = () => useResource('user');
 export const useRole = () => useResource('role');
 export const usePermission = () => useResource('permission');
 export const useTeam = () => useResource('team');
-
-
-export default useResource;
-
-
