@@ -256,7 +256,8 @@ const UserEdit = ({userId, preset, modal}) => {
             section: 1,
             label: 'Login Alias',
             type: 'string',
-            inputType: 'input'
+            inputType: 'input',
+            required: true
         },
         active: {
             section: 2,
