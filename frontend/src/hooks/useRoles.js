@@ -90,15 +90,11 @@ const useRoles = () => {
             if (!data)
                 return null;
 
-            // TODO: Test it out.
-            if (data?.message)
+            if (data.message)
                 showPopUp({
                     type: 'success',
-                    header: `Role ${newRole ? 'created' : 'updated'}`,
                     content: data.message,
-                    onClick: !roleId ? () => openModal({content: 'roleDetails', 
-                        contentId: data.role.id
-                    }) : null
+                    onClick: !roleId ? () => openModal({content: 'roleDetails', contentId: data.role.id}) : null
                 });
 
             refreshData('roles', true);

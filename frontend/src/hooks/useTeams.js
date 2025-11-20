@@ -95,14 +95,11 @@ const useTeams = () => {
             if (!data)
                 return null;
 
-            // TODO: Test it out.
-            if (data?.message)
+            if (data.message)
                 showPopUp({
                     type: 'success',
                     content: data.message,
-                    onClick: !teamId ? () => openModal({content: 'teamDetails', 
-                        contentId: data.id
-                    }) : null
+                    onClick: !teamId ? () => openModal({content: 'teamDetails', contentId: data.team.id}) : null
                 });
 
             refreshData('teams', true);

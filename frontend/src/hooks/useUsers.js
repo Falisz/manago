@@ -105,14 +105,11 @@ const useUsers = () => {
             if (!data)
                 return null;
 
-            // TODO: Test it out.
-            if (data?.message)
+            if (data.message)
                 showPopUp({
                     type: 'success',
                     content: data.message,
-                    onClick: !userId ? () => openModal({content: 'userDetails', 
-                        contentId: data.id
-                    }) : null
+                    onClick: !userId ? () => openModal({content: 'userDetails', contentId: data.user.id}) : null
                 });
 
             refreshData('users', true);
@@ -120,11 +117,11 @@ const useUsers = () => {
 
             return ( data && data.user ) || null;
 
-        } catch(err) {
+        } catch (err) {
             console.error('saveUser error:', err);
 
             const { response } = err;
-            let message = 'Error occurred while saving the user data.';
+            let message = 'Error occurred while saving the User data.';
             if (response && response.data)
                 message += ' ' + response.data.message;
             message += ' Please try again later.';
@@ -188,13 +185,13 @@ const useUsers = () => {
 
             if (batchMode)
                 res = await axios.delete(
-                    `/users/${userId}`,
+                    `/users`,
+                    { data: { id: Array.from(userIds).filter(id => id != null) }},
                     { withCredentials: true }
                 );
             else
                 res = await axios.delete(
-                    `/users`,
-                    { data: {userIds: Array.from(userIds).filter(id => id != null)}},
+                    `/users/${userId}`,
                     { withCredentials: true }
                 );
 
@@ -204,10 +201,10 @@ const useUsers = () => {
                 userIds = data.ids;
 
             if (data?.warning)
-                showPopUp({type: 'warning', content: data.warning});
+                showPopUp({ type: 'warning', content: data.warning });
 
             if (data?.message)
-                showPopUp({type: 'success', content: data.message});
+                showPopUp({ type: 'success', content: data.message });
 
             if (batchMode)
                 userIds.forEach(userId => delete userCache[userId]);
@@ -215,18 +212,19 @@ const useUsers = () => {
                 delete userCache[userId];
             
             refreshData('users', true);
-
-            return true;
         } catch (err) {
-            console.error('deleteTeams error:', err);
+            console.error('deleteUsers error:', err);
 
-            const message = 'Failed to delete Team' + (batchMode ? 's' : '') + '. Please try again.';
+            const message = 'Failed to delete User' + (batchMode ? 's' : '') + '. Please try again.';
             showPopUp({type: 'error', content: message});
 
-            return null;
-        } finally {
             setLoading(false);
+            return null;
         }
+
+        setLoading(false);
+        return true;
+
     }, [userCache, showPopUp, refreshData]);
 
     const deleteUser = useCallback(async ({userId} = {}) =>
