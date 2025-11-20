@@ -25,7 +25,7 @@ export const NavProvider = ({ children }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { search } = useLocation();
     const isMounted = useRef(false);
-    const nextModalId = useRef(0);
+    const nextModalId = useRef(1);
     const modalsRef = useRef({});
 
     const blocker = useBlocker(unsavedChanges);
