@@ -1,7 +1,7 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### General (till 23-11-25)
-- Combine various hooks responsible for resource management together into one mega useResourceHook
+- Implement the useResource hook instead of the dedicated per-resource hooks.
 - Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
   - destructured and refactored EditForm, double check if it works properly
   - Details and Table to be done

@@ -17,31 +17,117 @@ const getNames = (str) => ({
     6: snakeCase(str),                              // singular, snake_case
     7: snakeCase(str + 's')                         // plural, snake_case
 });
-//TODO: Prepare resourceConfigs
+
+/**
+ * Build a URL based on the provided parameters.
+ * @param url_base
+ * @param params
+ * @param id_required
+ * @returns {string|null}
+ */
+const buildUrl = (url_base = null, params = {}, id_required=false) => {
+    if (!url_base) return null;
+    const { id, ...flags } = params;
+    if (id_required && !id) return null;
+    const query = flags ? Object.entries(flags).map(([key, value]) => `${key}=${value}`).join('&') : null;
+    return `/${url_base}` + (id ? `/${id}` : '') + (query ? `?${query}` : '');
+}
+/**
+ * Delete a specific team by ID.
+ * @param {string | null} name - The plural name of the resource in kebab-case, used for the URL-base
+ */
+const defaultParams = (name) => ({
+    fetchParams: { id: null, loading: true, reload: false, map: false },
+    deleteParams: { id: null },
+    buildUrl: (params) => buildUrl(name, params),
+    buildDeleteUrl: (params) => buildUrl(name, params, true)
+});
 const resourceConfigs = {
+    default: (name) => defaultParams(name),
     user: {
-        fetchParams: {
-            id: null,
-            user_scope: 'all',
-            user_scope_id: null,
-            group: null,
-            loading: true,
-            reload: false,
-            map: false
-        },
-        buildUrl: (id) => id ? `/users/${id}` : '/users'
+        ...defaultParams('users'),
+        fetchParams: { id: null, user_scope: 'all', user_scope_id: null, group: null, loading: true, reload: false,
+            map: false },
+        buildUrl: (params) => {
+
+            const { id, user_scope, user_scope_id, group } = params;
+
+            let url = '/users';
+
+            if (id) {
+                url = `/users/${id}`;
+            } else if (user_scope !== 'all' && user_scope_id) {
+                if (user_scope === 'manager')
+                    url = `/users/${user_scope_id}/managed-users`;
+
+                else if (user_scope === 'team')
+                    url = `/teams/${user_scope_id}/users?include_subteams=true`;
+
+                else if (user_scope === 'branch')
+                    url = `/branches/${user_scope_id}/users`;
+
+                else if (user_scope === 'project')
+                    url = `/projects/${user_scope_id}/users`;
+            } else if (user_scope !== 'all' && !user_scope_id) {
+                return null;
+            } else if (group === 'employees' || group === 'managers') {
+                url = `/users?group=${group}`;
+            }
+
+            return url;
+        }
     },
-    role: { fetchParams: {}, buildUrl: (id) => id ? `/roles/${id}` : '/roles'},
-    permission: { fetchParams: {}, buildUrl: (id) => id ? `/permissions/${id}` : '/permissions'},
-    team: { fetchParams: {}, buildUrl: () => {}},
-    shift: { fetchParams: {}, buildUrl: () => {}},
-    leave: { fetchParams: {}, buildUrl: () => {}},
-    jobPost: { fetchParams: {}, buildUrl: () => {}}
+    team: {
+        ...defaultParams('teams'),
+        fetchParams: { id: null, all: false, loading: true, reload: false, map: false },
+        deleteParams: { id: null, cascade: false },
+    },
+    leave: {
+        ...defaultParams('leaves'),
+        fetchParams: { id: null, user: null, user_scope: 'all', user_scope_id: null, date: null, start_date: null,
+            end_date: null, loading: true, reload: false, map: false },
+        buildUrl: (params) => {
+
+            const { id, user, user_scope, user_scope_id, date, start_date, end_date } = params;
+            let url;
+
+            if (id) {
+                url = `/leaves/${id}`;
+            } else {
+                if (user)
+                    params.user = user;
+                else {
+                    if (user_scope)
+                        params.user_scope = user_scope;
+                    if (user_scope_id)
+                        params.user_scope_id = user_scope_id;
+                }
+
+                if (date)
+                    params.date = date;
+                else {
+                    if (start_date)
+                        params.start_date = start_date;
+                    if (end_date)
+                        params.end_date = end_date;
+                }
+
+                url = '/leaves?' + new URLSearchParams(params).toString();
+            }
+
+            return url;
+        }
+    },
+    jobPost: {
+        ...defaultParams('job-posts'),
+        fetchParams: { id: null, include_shifts: false, loading: true, reload: false, map: false },
+    }
 };
 
-// to be taking param resource type:
-// - user, team, role, permission, schedule, jobPost, leave, etc.
-// - resource is to be a singular camelCase name!
+/**
+ * @param resource {string} - The singular name of the resource written with camelCase, used for other names.
+ * @returns {Object} - An object containing states and callback to manage the resource data.
+ */
 const useResource = (resource) => {
     if (!resource || typeof resource !== 'string')
         throw new Error('useResource requires a string resource parameter');
@@ -54,11 +140,7 @@ const useResource = (resource) => {
 
     const name = useMemo(() => getNames(resource), [resource]);
     const resourceCache = useMemo(() => appCache.current[name[1]] || [], [appCache, name]);
-    const config = useMemo(() => resourceConfigs[name[0]] || {
-        fetchParams: {},
-        deleteParams: {},
-        buildUrl: (id) => id ? `/${name[5]}/${id}` : `/${name[5]}`
-    }, [name]);
+    const config = useMemo(() => resourceConfigs[name[0]] || resourceConfigs.default(name[5]), [name]);
 
     // API callbacks
     const fetchResource = useCallback(async (params = {}) => {
@@ -77,6 +159,10 @@ const useResource = (resource) => {
         try {
             setLoading(showLoading);
             const url = config.buildUrl(params);
+
+            if (!url)
+                return null;
+
             const res = await axios.get(url, { withCredentials: true });
 
             if (!res) {
@@ -122,7 +208,7 @@ const useResource = (resource) => {
                 res = await axios.post(config.buildUrl(), formData, { withCredentials: true });
 
             else
-                res = await axios.put(config.buildUrl(id), formData, { withCredentials: true });
+                res = await axios.put(config.buildUrl({id}), formData, { withCredentials: true });
 
             if (!res)
                 return null;
@@ -236,26 +322,22 @@ const useResource = (resource) => {
             id = id.filter(i => i != null);
             batchMode = true;
         } else if (typeof id === 'object' && id instanceof Set) {
-            id = Array.from(id);
+            id = Array.from(id).filter(i => i != null);
             batchMode = true;
         } else if (typeof id !== 'number' || Number.isNaN(id)) {
             return null;
         }
 
         try {
-            let res;
 
-            if (batchMode)
-                res = await axios.delete(
-                    config.buildUrl(),
-                    { data: { id } },
-                    { withCredentials: true }
-                );
-            else
-                res = await axios.delete(
-                    config.buildUrl(id),
-                    { withCredentials: true }
-                );
+            const url = batchMode ? config.buildUrl() : config.buildDeleteUrl(params);
+
+            if (!url)
+                return null;
+
+            const res = batchMode ?
+                await axios.delete(url, {data: {data: params}, withCredentials: true}) :
+                await axios.delete(url, {withCredentials: true});
 
             if (!res)
                 return null;
@@ -309,7 +391,13 @@ const useResource = (resource) => {
     };
 };
 
-export const useUser = () => useResource('user');
-export const useRole = () => useResource('role');
-export const usePermission = () => useResource('permission');
-export const useTeam = () => useResource('team');
+export const useUsers = () => useResource('user');
+export const useRoles = () => useResource('role');
+export const useTeams = () => useResource('team');
+export const useProjects = () => useResource('project');
+export const useBranches = () => useResource('branch');
+export const usePermissions = () => useResource('permission');
+export const useScheduleDrafts = () => useResource('schedules');
+export const useShifts = () => useResource('shift');
+export const useLeaves = () => useResource('leave');
+export const useJobPosts = () => useResource('jobPost');
