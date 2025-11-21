@@ -4,6 +4,32 @@ import Button from './Button';
 import Icon from './Icon';
 import '../styles/Details.css';
 
+// new structure
+
+// header = {
+//     className: {},
+//     style: {},
+//     prefix: {},
+//     title: {},
+//     suffix: {},
+//     buttons: {}
+// }
+
+// sections = {
+//     section1: {
+//         className: {},
+//         style: {},
+//         header: {},
+//         fields: {},
+//     },
+//     section2: {
+//         className: {},
+//         style: {},
+//         header: {},
+//         fields: {},
+//     }
+// }
+
 const DetailsHeader = ({ structure, data }) =>
     <div className='app-details-header'>
         {Object.entries(structure).map(([key, value]) => {
