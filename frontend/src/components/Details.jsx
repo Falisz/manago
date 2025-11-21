@@ -30,7 +30,7 @@ import '../styles/Details.css';
 //     }
 // }
 
-const DetailsHeader = ({ structure, data }) =>
+const Header = ({ header, data }) =>
     <div className='app-details-header'>
         {Object.entries(structure).map(([key, value]) => {
             if (key==='type' || !value)
@@ -80,182 +80,181 @@ const DetailsHeader = ({ structure, data }) =>
         })}
     </div>
 
-const DetailsSection = ({structure, data}) => {
+const SectionHeader = ({ header, data }) => (
+    <div key={'section-header'} className='section-header'>
+        {header.text}
+        {header.editButton && <Button
+            onClick={() => header.editButton.onClick(data)}
+            label={header.editButton.label}
+            transparent={header.editButton.transparent ?? true}
+            icon={header.editButton.icon ?? 'edit'}
+        />}
+    </div>;
+);
+
+const Section = ({section, data}) => {
     const isEmpty = useRef(true);
+    const { style, className, header, fields, hideEmpty } = section;
 
-    const content = <div className='app-details-section'>
-        {Object.entries(structure).map(([key, value]) => {
-            if (key==='type')
-                return null;
+    const content = (
+        <div
+            className={'app-details-section' + (className ? ' ' + className : '')}
+            style={style}
+        >
+            {header && <SectionHeader header={header} data={data}/>}
+            {Object.values(fields).map((field, index) => {
 
-            if (value.type === 'section-header') {
-                return <div key={'section-header'} className='section-header'>
-                    {value.text}
-                    {value.editButton && <Button
-                        onClick={() => value.editButton.onClick(data)}
-                        label={value.editButton.label}
-                        transparent={value.editButton.transparent ?? true}
-                        icon={value.editButton.icon ?? 'edit'}
-                    />}
-                </div>;
+                    let content = field.placeholder;
+                    let isGroupEmpty = true;
 
-            } else if (value.type === 'data-group') {
-                let content = value.placeholder;
-                let isGroupEmpty = true;
+                    if (field.dataType === 'string') {
+                        content = data[field.dataField];
+                        if (content !== null) {
+                            isEmpty.current = false;
+                            isGroupEmpty = false;
+                        }
 
-                if (value.dataType === 'string') {
-                    content = data[value.dataField];
-                    if (content !== null) {
-                        isEmpty.current = false;
+                    } else if (field.dataType === 'number') {
+                        content = data[field.dataField].toString();
+                        if (content !== null) {
+                            isEmpty.current = false;
+                            isGroupEmpty = false;
+                        }
+
+                    } else if (field.dataType === 'boolean') {
+                        const val = data[field.dataField];
+                        if (val !== null) {
+                            isEmpty.current = false;
+                            isGroupEmpty = false;
+                        }
+
+                        content = <div className={'data-group linear'}>
+                            {val ?
+                                field.trueIcon && <Icon className={'true'} i={field.trueIcon} /> :
+                                field.falseIcon && <Icon className={'false'} i={field.falseIcon} /> }
+                            {val ? field.trueValue : field.falseValue}
+                        </div>;
+
+                    } else if (field.dataType === 'item') {
+
+                        const item = data[field.dataField];
+
+                        if (!item) return null;
+
+                        const itemStruct = field.item;
+                        const itemId = item[itemStruct.idField];
+
                         isGroupEmpty = false;
-                    }
-
-                } else if (value.dataType === 'number') {
-                    content = data[value.dataField].toString();
-                    if (content !== null) {
-                        isEmpty.current = false;
-                        isGroupEmpty = false;
-                    }
-
-                } else if (value.dataType === 'boolean') {
-                    const val = data[value.dataField];
-                    if (val !== null) {
-                        isEmpty.current = false;
-                        isGroupEmpty = false;
-                    }
-
-                    content = <div className={'data-group linear'}>
-                        {val ?
-                            value.trueIcon && <Icon className={'true'} i={value.trueIcon} /> :
-                            value.falseIcon && <Icon className={'false'} i={value.falseIcon} /> }
-                        {val ? value.trueValue : value.falseValue}
-                    </div>;
-
-                } else if (value.dataType === 'item') {
-
-                    const item = data[value.dataField];
-
-                    if (!item) return null;
-
-                    const itemStruct = value.item;
-                    const itemId = item[itemStruct.idField];
-
-                    isGroupEmpty = false;
-                    let itemName;
-                    if (Array.isArray(itemStruct.dataField)) {
-                        itemName = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
-                    } else if (typeof value.dataField === 'string') {
-                        itemName = item[itemStruct.dataField];
-                    } else {
-                        itemName = itemStruct.text || '';
-                    }
-                    content = <div
-                        key={itemId}
-                        className={'data-group'}
-                    >
-                        <span
-                            className={itemStruct.onClick ? 'app-clickable' : ''}
-                            onClick={() => itemStruct.onClick(itemId)}
+                        let itemName;
+                        if (Array.isArray(itemStruct.dataField)) {
+                            itemName = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
+                        } else if (typeof field.dataField === 'string') {
+                            itemName = item[itemStruct.dataField];
+                        } else {
+                            itemName = itemStruct.text || '';
+                        }
+                        content = <div
+                            key={itemId}
+                            className={'data-group'}
                         >
-                            {itemName}
-                        </span>
-                    </div>
-
-                } else if (value.dataType === 'list') {
-
-                    const items = data[value.dataField];
-
-                    if (items && items.length > 0) {
-                        isEmpty.current = false;
-                        isGroupEmpty = false;
-                        content = Object.values(items).map((item, index) => {
-                            const itemStruct = value.items;
-                            if (!itemStruct)
-                                return null;
-
-                            const itemId = itemStruct.idField ? item[itemStruct.idField] : item['id'];
-
-                            let name;
-                            if (Array.isArray(itemStruct.dataField)) {
-                                name = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
-                            } else if (typeof value.dataField === 'string') {
-                                name = item[itemStruct.dataField];
-                            } else {
-                                name = itemStruct.text || '';
-                            }
-
-                            let suffix = null;
-                            if (itemStruct.suffix) {
-                                const subItem = item[itemStruct.suffix.dataField];
-                                const subItemId = subItem[itemStruct.suffix.idField];
-                                const subItemName = subItem[itemStruct.suffix.nameField];
-
-                                if ((itemStruct.suffix.condition === 'neq' && subItemId !== data['id']) ||
-                                    (itemStruct.suffix.condition === 'eq' && subItemId === data['id']) ||
-                                    !itemStruct.suffix.condition
-                                )
-                                    suffix = <span
-                                        className={itemStruct.onClick ? 'app-clickable' : ''}
-                                        onClick={() => itemStruct.suffix.onClick(subItemId)}
-                                    >
-                                        {subItemName}
-                                    </span>;
-                            }
-
-                            return <div
-                                key={index}
-                                className={'data-group linear'}
-                                style={suffix && {alignItems: 'baseline', gap: '5px'}}
+                            <span
+                                className={itemStruct.onClick ? 'app-clickable' : ''}
+                                onClick={() => itemStruct.onClick(itemId)}
                             >
-                                <span
-                                    className={itemStruct.onClick ? 'app-clickable' : ''}
-                                    onClick={() => itemStruct.onClick(itemId)}
+                                {itemName}
+                            </span>
+                        </div>
+
+                    } else if (field.dataType === 'list') {
+
+                        const items = data[field.dataField];
+
+                        if (items && items.length > 0) {
+                            isEmpty.current = false;
+                            isGroupEmpty = false;
+                            content = Object.values(items).map((item, index) => {
+                                const itemStruct = field.items;
+                                if (!itemStruct)
+                                    return null;
+
+                                const itemId = itemStruct.idField ? item[itemStruct.idField] : item['id'];
+
+                                let name;
+                                if (Array.isArray(itemStruct.dataField)) {
+                                    name = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
+                                } else if (typeof field.dataField === 'string') {
+                                    name = item[itemStruct.dataField];
+                                } else {
+                                    name = itemStruct.text || '';
+                                }
+
+                                let suffix = null;
+                                if (itemStruct.suffix) {
+                                    const subItem = item[itemStruct.suffix.dataField];
+                                    const subItemId = subItem[itemStruct.suffix.idField];
+                                    const subItemName = subItem[itemStruct.suffix.nameField];
+
+                                    if ((itemStruct.suffix.condition === 'neq' && subItemId !== data['id']) ||
+                                        (itemStruct.suffix.condition === 'eq' && subItemId === data['id']) ||
+                                        !itemStruct.suffix.condition
+                                    )
+                                        suffix = <span
+                                            className={itemStruct.onClick ? 'app-clickable' : ''}
+                                            onClick={() => itemStruct.suffix.onClick(subItemId)}
+                                        >
+                                            {subItemName}
+                                        </span>;
+                                }
+
+                                return <div
+                                    key={index}
+                                    className={'data-group linear'}
+                                    style={suffix && {alignItems: 'baseline', gap: '5px'}}
                                 >
-                                    {name}
-                                </span>
-                                {suffix && <small>({suffix})</small>}
-                            </div>
-                        });
+                                    <span
+                                        className={itemStruct.onClick ? 'app-clickable' : ''}
+                                        onClick={() => itemStruct.onClick(itemId)}
+                                    >
+                                        {name}
+                                    </span>
+                                    {suffix && <small>({suffix})</small>}
+                                </div>
+                            });
+                        }
                     }
-                }
 
-                if (value.hideEmpty && isGroupEmpty)
-                    return null;
+                    if (field.hideEmpty && isGroupEmpty)
+                        return null;
 
-                return <div key={key} className={'data-group' + (value.linear ? ' linear' : '')} title={value.label}>
-                    { value.label && <label>{value.label}</label>}
-                    { content }
-                    { value.newItem && <Button
-                        onClick={() => value.newItem.onClick(data.id)}
-                        label={value.newItem.label}
-                        transparent={value.newItem.transparent ?? true}
-                        icon={value.newItem.icon ?? 'add_circle'}
-                    />}
-                </div>;
+                    return <div key={index} className={'data-group' + (field.linear ? ' linear' : '')} title={field.label}>
+                        { field.label && <label>{field.label}</label>}
+                        { content }
+                        { field.newItem && <Button
+                            onClick={() => field.newItem.onClick(data.id)}
+                            label={field.newItem.label}
+                            transparent={field.newItem.transparent ?? true}
+                            icon={field.newItem.icon ?? 'add_circle'}
+                        />}
+                    </div>;
+            })}
+        </div>
+    );
 
-            } else
-                return null;
-        })}
-    </div>
-
-    if (structure.hideEmpty && isEmpty.current)
+    if (hideEmpty && isEmpty.current)
         return null;
 
     return content;
 }
 
 
-const Details = ({structure, data, className, style}) =>
-    <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
-        {Object.values(structure).map((value, index) => {
-            if (value.type === 'header')
-                return <DetailsHeader key={index} structure={value} data={data} />
+const Details = ({className, style, header, sections, data}) => {
+    if (!data || !sections)
+        return null;
 
-            if (value.type === 'section')
-                return <DetailsSection key={index} structure={value} data={data} />
-
-            return null;
-        })}
-    </div>
+    return <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
+        {header && <Header header={header} data={data}/>}
+        {Object.values(sections).map((section, index) => <Section key={index} section={section} data={data}/>)}
+    </div>;
+};
 
 export default Details;
