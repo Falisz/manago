@@ -22,7 +22,7 @@ const RoleDetails = ({ roleId }) => {
 
     }, [fetchRole, role, roleId, refreshTriggers.role]);
 
-    const handleDelete = async (users = 0) => {
+    const handleDelete = (users = 0) => {
         let message = 'Are you sure you want to delete this role? This action cannot be undone.'
         if (users > 0) {
             message += ` This role is currently assigned to ${users} user${users > 1 ? 's' : ''}.`
@@ -31,8 +31,8 @@ const RoleDetails = ({ roleId }) => {
             content: 'confirm',
             type: 'pop-up',
             message: message,
-            onConfirm: () => {
-                const success = deleteRole({roleId}).then();
+            onConfirm: async () => {
+                const success = await deleteRole({roleId});
                 if (!success) return;
                 refreshData('roles', true);
                 closeTopModal();

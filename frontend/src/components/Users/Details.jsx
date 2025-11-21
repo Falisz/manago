@@ -22,13 +22,14 @@ const UserDetails = ({ userId }) => {
 
     }, [fetchUser, user, userId, refreshTriggers.user]);
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         openModal({
             content: 'confirm',
             type: 'pop-up',
             message: 'Are you sure you want to delete this user? This action cannot be undone.',
-            onConfirm: () => {
-                deleteUser({userId}).then();
+            onConfirm: async () => {
+                const success = await deleteUser({userId});
+                if (!success) return;
                 refreshData('users', true);
                 closeTopModal();
             },

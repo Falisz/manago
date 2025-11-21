@@ -23,7 +23,7 @@ const TeamDetails = ({ teamId }) => {
 
     }, [fetchTeam, team, teamId, refreshTriggers.team]);
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         let message = `Are you sure you want to delete this role? This action cannot be undone.`
 
         const membersCount = team.members.length+team.managers.length+team.leaders.length;
@@ -42,13 +42,15 @@ const TeamDetails = ({ teamId }) => {
             content: 'confirm',
             type: 'pop-up',
             message: message,
-            onConfirm: () => {
-                deleteTeam(teamId).then();
+            onConfirm: async () => {
+                const success = await deleteTeam({teamId});
+                if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             },
-            onConfirm2: subteamsCount > 0 ? () => {
-                deleteTeam(teamId, true).then();
+            onConfirm2: subteamsCount > 0 ? async () => {
+                const success = await deleteTeam({teamId, cascade: true});
+                if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             } : null,
