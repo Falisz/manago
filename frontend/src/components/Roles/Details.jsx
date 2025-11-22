@@ -1,5 +1,5 @@
 // FRONTEND/components/Roles/Details.js
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import useRoles from '../../hooks/useRoles';
@@ -8,7 +8,7 @@ import Loader from '../Loader';
 
 const RoleDetails = ({ roleId }) => {
     const { role, loading, fetchRole, deleteRole } = useRoles();
-    const { refreshTriggers, refreshData } = useApp();
+    const { refreshData, refreshTriggers } = useApp();
     const { openModal, closeTopModal } = useNav();
 
     useEffect(() => {
@@ -22,7 +22,7 @@ const RoleDetails = ({ roleId }) => {
 
     }, [fetchRole, role, roleId, refreshTriggers.role]);
 
-    const handleDelete = (users = 0) => {
+    const handleDelete = useCallback((users = 0) => {
         let message = 'Are you sure you want to delete this role? This action cannot be undone.'
         if (users > 0) {
             message += ` This role is currently assigned to ${users} user${users > 1 ? 's' : ''}.`
@@ -38,74 +38,67 @@ const RoleDetails = ({ roleId }) => {
                 closeTopModal();
             },
         });
-    };
+    }, [roleId, openModal, deleteRole, refreshData, closeTopModal]);
 
-    const roleStructure = {
-        header: {
-            type: 'header',
-            titlePrefix: {
-                dataField: 'id',
-                title: 'Role ID',
-            },
-            title: {
-                dataField: 'name',
-            },
-            buttons: !role?.system_default ? {
-                edit: {
-                    className: 'edit',
-                    icon: 'edit',
-                    title: 'Edit User',
-                    onClick: () => openModal({content: 'roleEdit', contentId: role.id})
-                },
-                delete: {
-                    className: 'delete',
-                    icon: 'delete',
-                    title: 'Delete User',
-                    onClick: handleDelete
-                }
-            } : null
+    const header = useMemo(() => ({
+        prefix: {
+            dataField: 'id',
+            title: 'Role ID',
         },
-        detailsSection: {
-            type: 'section',
-            header: {
-                type: 'section-header',
-                text: 'Role Details'
+        title: {
+            dataField: 'name',
+        },
+        buttons: !role?.system_default ? {
+            edit: {
+                className: 'edit',
+                icon: 'edit',
+                title: 'Edit User',
+                onClick: () => openModal({content: 'roleEdit', contentId: roleId})
             },
-            descGroup: {
-                type: 'data-group',
-                label: 'Description',
-                dataType: 'string',
-                dataField: 'description',
-            },
-            typeGroup: {
-                type: 'data-group',
-                label: 'Type',
-                dataType: 'boolean',
-                dataField: 'system_default',
-                trueValue: 'This is system default role. It cannot be edited nor deleted.',
-                trueIcon: 'check',
-                falseValue: 'This is custom default role. It can be edited and deleted.',
-                falseIcon: 'check',
+            delete: {
+                className: 'delete',
+                icon: 'delete',
+                title: 'Delete User',
+                onClick: handleDelete
+            }
+        } : null
+    }), [role, openModal, roleId, handleDelete]);
+
+    const sections = useMemo(() => ({
+        0: {
+            header: 'Role Details',
+            fields: {
+                0: {
+                    label: 'Description',
+                    dataType: 'string',
+                    dataField: 'description',
+                },
+                1: {
+                    label: 'Type',
+                    dataType: 'boolean',
+                    dataField: 'system_default',
+                    trueValue: 'This is system default role. It cannot be edited nor deleted.',
+                    trueIcon: 'check',
+                    falseValue: 'This is custom default role. It can be edited and deleted.',
+                    falseIcon: 'check',
+                }
             }
         },
-        usersSection: {
-            type: 'section',
-            header: {
-                type: 'section-header',
-                text: 'Users with this Role'
-            },
-            usersGroup: {
-                type: 'data-group',
-                dataType: 'list',
-                dataField: 'users',
-                placeholder: 'No Users with this Role.',
-                items: {
-                    dataField: ['first_name', 'last_name'],
-                    onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
+        1: {
+            header: 'Users with this Role',
+            fields: {
+                0: {
+                    dataType: 'list',
+                    dataField: 'users',
+                    placeholder: 'No Users with this Role.',
+                    items: {
+                        dataField: ['first_name', 'last_name'],
+                        onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
+                    }
                 }
             }
         }
-    }
+    }), [openModal]);
 
     if (loading)
         return <Loader />;
@@ -113,7 +106,7 @@ const RoleDetails = ({ roleId }) => {
     if (!role)
         return <h1>Role not found!</h1>;
 
-    return <Details data={role} structure={roleStructure} />;
+    return <Details header={header} sections={sections} data={role} />;
 };
 
 export default RoleDetails;

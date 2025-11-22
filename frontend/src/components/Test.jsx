@@ -2,12 +2,12 @@
 import React, {useEffect, useRef} from 'react';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
-import { useUser } from '../hooks/useResource';
+import { useUsers } from '../hooks/useResource';
 
 const Test = () => {
 
     const { showPopUp } = useApp();
-    const { users, fetchUsers } = useUser();
+    const { users, fetchUsers } = useUsers();
     const isMounted = useRef(false);
 
     useEffect(() => {

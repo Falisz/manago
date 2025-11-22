@@ -161,6 +161,7 @@ const useUsers = () => {
                 showPopUp({type: 'success', content: message});
             
             refreshData('users', true);
+            refreshData('user', userIds[0]);
 
             return true;
 
