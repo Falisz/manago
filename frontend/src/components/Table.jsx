@@ -11,9 +11,11 @@ import '../styles/Table.css';
 const TableHeader = ({
                          fields,
                          filters,
+                         sortable,
+                         searchable,
                          sortConfig,
                          handleFilter,
-                         handleSorting
+                         handleSorting,
                      }) => {
 
     const [headerCollapsed, setHeaderCollapsed] = useState(true);
@@ -30,7 +32,7 @@ const TableHeader = ({
                             {field.title}
                         </div>
                         <div className={'app-table-header-cell-actions'}>
-                            {field.filterable && <input
+                            {searchable && field.filterable && <input
                                 className='search'
                                 title={field.title}
                                 placeholder={`Filter by the ${field.title.toLowerCase()}...`}
@@ -38,7 +40,7 @@ const TableHeader = ({
                                 value={filters[key] || ''}
                                 onChange={handleFilter}
                             />}
-                            {field.sortable && <Button
+                            {sortable && field.sortable && <Button
                                 className={`order ${sortConfig.key === key ? sortConfig.direction : ''}`}
                                 name={key}
                                 onClick={handleSorting}
@@ -217,10 +219,8 @@ const TableRow = ({
  * @param searchable
  * @param sortable
  * @param selectableRows
- * @param contextMenu
+ * @param contextMenuActions
  * @param dataPlaceholder
- * @returns {JSX.Element|null}
- * @constructor
  */
 const Table = ({
                    className,
@@ -234,7 +234,7 @@ const Table = ({
                    searchable = false,
                    sortable = false,
                    selectableRows = false,
-                   contextMenu,
+                   contextMenuActions,
                    dataPlaceholder = null,
                }) => {
     const MENU_ID = 'table_context_menu';
@@ -294,7 +294,8 @@ const Table = ({
     };
 
     const filteredAndSortedData = useMemo(() => {
-        if (!data || !fields) return [];
+        if (!data || !fields)
+            return [];
 
         let filteredData = [...data];
 
@@ -422,17 +423,18 @@ const Table = ({
                                 label={'Clear selection'}
                             />
                             <Button
-                                onClick={() => setSelectedItems(pageHeader.allElements)}
+                                onClick={() => setSelectedItems(header.allElements)}
                                 label={'Select all'}
                             />
                         </div>
                     }
-                    {header.newItemModal &&
+                    {header.button &&
                         <Button
-                            className='new-item'
-                            onClick={() => openModal({ content: header.newItemModal })}
-                            label={`Add ${header.itemName || 'Item'}`}
-                            icon={'add'}
+                            {...header.button}
+                            className={header.button.className ?? 'new-item'}
+                            label={header.button.label ?? `Add ${header.itemName ?? 'Item'}`}
+                            icon={header.button.icon ?? 'add'}
+                            onClick={header.button.onClick ?? (() => openModal({ content: header.newItemModal }))}
                         />
                     }
                 </div>
@@ -441,32 +443,36 @@ const Table = ({
                 `${className? ' ' + className : ''}`} style={style}>
                 {columnHeaders && (
                     <TableHeader
-                        fields={tableFields}
+                        fields={fields}
                         filters={filters}
                         sortConfig={sortConfig}
+                        searchable={searchable}
+                        sortable={sortable}
                         handleFilter={handleFilter}
                         handleSorting={handleSorting}
                     />
                 )}
                 <div className={'app-table-body app-overflow-y app-scroll'}>
-                    {filteredAndSortedData?.length === 0 ? (
-                        <p className={'app-table-no-matches'}>{dataPlaceholder || 'No matching items found.'}</p>
+                    {!filteredAndSortedData.length ? (
+                        <p className={'app-table-no-matches'}>
+                            {dataPlaceholder ?? 'No matching items found.'}
+                        </p>
                     ) : (
                         filteredAndSortedData.map((data, index) => {
                             const tableRow = <TableRow
                                 key={index}
                                 data={data}
-                                fields={tableFields}
+                                fields={fields}
                                 handleSelect={(e, id) => handleSelect(e, id, data.id)}
                                 selectedItems={selectedItems}
-                                subRowField={subRowField}
-                                descriptionField={descriptionField}
+                                subRowField={subRowFields}
+                                descriptionField={descriptionFields}
                                 hasContextMenu={contextMenuActions && contextMenuActions.length > 0}
                                 displayContextMenu={displayContextMenu}
                                 openModal={openModal}
                             />;
 
-                            return subRowField ? (
+                            return subRowFields ? (
                                 <div key={index} className={'app-table-row-stack'}>
                                     {tableRow}
                                 </div>
@@ -474,7 +480,7 @@ const Table = ({
                         })
                     )}
                 </div>
-                {contextMenuActions && contextMenuActions.length > 0 && (
+                {contextMenuActions && contextMenuActions.length && (
                     <Menu className={'app-context-menu'} id={MENU_ID}>
                         {contextMenuActions.filter(item => item.selectionMode === selectionMode).map(item => (
                             <Item 
