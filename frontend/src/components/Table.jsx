@@ -205,20 +205,37 @@ const TableRow = ({
 };
 
 /**
- * @param {Object[]} dataSource
- * @param {Object} tableStructure
- * @param {boolean} hasSelectableRows
- * @param {string | null} dataPlaceholder
- * @param {string} className
- * @param {Object} style
- * **/
+ *
+ * @param className
+ * @param style
+ * @param data
+ * @param fields
+ * @param subRowFields
+ * @param descriptionFields
+ * @param header
+ * @param columnHeaders
+ * @param searchable
+ * @param sortable
+ * @param selectableRows
+ * @param contextMenu
+ * @param dataPlaceholder
+ * @returns {JSX.Element|null}
+ * @constructor
+ */
 const Table = ({
-                   dataSource,
-                   tableStructure,
-                   hasSelectableRows = false,
-                   dataPlaceholder = null,
                    className,
-                   style
+                   style,
+                   data,
+                   fields,
+                   subRowFields,
+                   descriptionFields,
+                   header,
+                   columnHeaders = true,
+                   searchable = false,
+                   sortable = false,
+                   selectableRows = false,
+                   contextMenu,
+                   dataPlaceholder = null,
                }) => {
     const MENU_ID = 'table_context_menu';
 
@@ -257,7 +274,7 @@ const Table = ({
     };
 
     const handleSelect = (e, id) => {
-        if (!hasSelectableRows)
+        if (!selectableRows)
             return;
 
         if (selectionMode || e === 'contextMenuClick' || e.shiftKey || e.ctrlKey) {
@@ -277,10 +294,9 @@ const Table = ({
     };
 
     const filteredAndSortedData = useMemo(() => {
-        if (!dataSource || !tableStructure) return [];
+        if (!data || !fields) return [];
 
-        let filteredData = [...dataSource];
-        const fields = tableStructure?.tableFields;
+        let filteredData = [...data];
 
         Object.keys(filters).forEach(key => {
             if (filters[key]) {
@@ -380,32 +396,26 @@ const Table = ({
 
         return filteredData;
 
-    }, [dataSource, tableStructure, filters, sortConfig]);
+    }, [data, fields, filters, sortConfig]);
 
-    if (!tableStructure) {
+    if (!fields) {
         console.error('Table cannot be render without properly defined Table Structure.');
         return null;
     }
 
     const selectionMode = selectedItems?.size > 0;
-    const hasHeader = tableStructure.hasHeader;
-    const pageHeader = tableStructure.pageHeader;
-    const tableFields = tableStructure.tableFields;
-    const subRowField = tableStructure.subRowField;
-    const descriptionField = tableStructure.descriptionField;
-    const contextMenuActions = tableStructure.contextMenuActions;
     
     return (
         <>
-            {pageHeader && 
+            {header &&
                 <div className='page-header'>
-                    {pageHeader.title &&
-                        <h1 className={'page-title'}> {pageHeader.title} </h1>
+                    {header.title &&
+                        <h1 className={'page-title'}> {header.title} </h1>
                     }
                     {selectionMode > 0 &&
                         <div className='selected-items'>
                             <p className='seethrough'>
-                                {selectedItems.size} {pageHeader.itemName || 'Item'}{selectedItems.size !== 1 ? 's' : ''} selected.
+                                {selectedItems.size} {header.itemName || 'Item'}{selectedItems.size !== 1 ? 's' : ''} selected.
                             </p>
                             <Button
                                 onClick={() => setSelectedItems(new Set())}
@@ -417,11 +427,11 @@ const Table = ({
                             />
                         </div>
                     }
-                    {tableStructure.pageHeader.newItemModal && 
+                    {header.newItemModal &&
                         <Button
                             className='new-item'
-                            onClick={() => openModal({ content: pageHeader.newItemModal })}
-                            label={`Add ${pageHeader.itemName || 'Item'}`}
+                            onClick={() => openModal({ content: header.newItemModal })}
+                            label={`Add ${header.itemName || 'Item'}`}
                             icon={'add'}
                         />
                     }
@@ -429,7 +439,7 @@ const Table = ({
             }
             <div className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`+
                 `${className? ' ' + className : ''}`} style={style}>
-                {hasHeader && (
+                {columnHeaders && (
                     <TableHeader
                         fields={tableFields}
                         filters={filters}
