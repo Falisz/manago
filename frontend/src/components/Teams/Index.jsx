@@ -8,7 +8,7 @@ import Table from '../Table';
 
 const TeamsIndex = () => {
     const { refreshTriggers, refreshData } = useApp();
-    const { openModal, closeTopModal } = useNav();
+    const { openModal, openPopUp, closeTopModal } = useNav();
     const { teams, loading, fetchTeams, deleteTeams, deleteTeam } = useTeams();
 
     useEffect(() => {
@@ -34,11 +34,11 @@ const TeamsIndex = () => {
         }
         if (subteams > 0) {
             message += ` This team has currently ${subteams === 1 ? 'a' : subteams} subteam${subteams > 1 ? 's' : ''}.`
-                + `Do you want to delete all of its subteams too, or only the main team - keeping other subteams orphaned.`;
+                + 'Do you want to delete all of its subteams too, or only the main team' +
+                ' - keeping other SubTeams orphaned.';
         }
-        openModal({
+        openPopUp({
             content: 'confirm',
-            type: 'pop-up',
             message: message,
             onConfirm: async () => {
                 const success = await deleteTeam({teamId});
@@ -55,12 +55,11 @@ const TeamsIndex = () => {
             confirmLabel: subteams > 0 ? 'Delete only this team' : 'Delete the team',
             confirmLabel2: subteams > 0 ? 'Delete team and subteams' : undefined,
         });
-    },[closeTopModal, openModal, refreshData, deleteTeam]);
+    },[closeTopModal, openPopUp, refreshData, deleteTeam]);
 
     const handleTeamsDelete = useCallback((selectedTeams) => {
-        openModal({
+        openPopUp({
             content: 'confirm',
-            type: 'pop-up',
             message: `Are you sure you want to delete ${selectedTeams.size} selected ` +
                 `Team${selectedTeams.size > 1 ? 's' : ''}? This action cannot be undone.`,
             onConfirm: async () => {
@@ -71,82 +70,78 @@ const TeamsIndex = () => {
             },
         });
 
-    }, [closeTopModal, openModal, refreshData, deleteTeams]);
+    }, [closeTopModal, openPopUp, refreshData, deleteTeams]);
 
-    const tableStructure = useMemo(() => ({
-        pageHeader: {
-            title: 'Teams',
-            itemName: 'Team',
-            allElements: new Set(teams?.map(team => team.id)),
-            newItemModal: 'teamNew'
+    const header = useMemo(() => ({
+        title: 'Teams',
+        itemName: 'Team',
+        allElements: new Set(teams?.map(team => team.id)),
+        newItemModal: 'teamNew'
+    }), [teams]);
+
+    const fields = useMemo(() => ({
+        0: {
+            label: 'Name',
+            name: 'name',
+            type: 'string',
+            openModal: 'teamDetails'
         },
-        tableFields: {
-            name: {
-                title: 'Name',
-                display: true,
-                sortable: true,
-                filterable: true,
-                type: 'string',
-                openModal: 'teamDetails'
-            },
-            managers: {
-                title: 'Managers',
-                display: true,
-                sortable: true,
-                filterable: true,
-                type: 'list',
-                openModal: 'userDetails'
-            },
-            leaders: {
-                title: 'Leaders',
-                display: true,
-                sortable: true,
-                filterable: true,
-                type: 'list',
-                openModal: 'userDetails'
-            },
-            members_count: {
-                title: 'Members',
-                display: true,
-                sortable: true,
-                filterable: true,
-                type: 'number',
-                style: {maxWidth: 100+'px'},
-                computeValue: (data) => data.members?.length || 0
-            }
+        1: {
+            label: 'Managers',
+            name: 'managers',
+            type: 'list',
+            openModal: 'userDetails'
         },
-        hasHeader: true,
-        subRowField: 'subteams',
-        contextMenuActions: [
-            { id: 'select', label: 'Select Team', selectionMode: false, select: 'id'},
-            { id: 'edit', label: 'Edit Team', selectionMode: false,
-                onClick: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
-            { id: 'assign-member', label: 'Edit Members', selectionMode: false,
-                onClick: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) },
-            { id: 'delete', label: 'Delete Team', selectionMode: false,
-                onClick: (props) => handleTeamDelete(props) },
-            { id: 'select-all', label: 'Select All', selectionMode: true, shortcut: 'Ctrl + Z',
-                setSelected: new Set(teams?.map(team => team.id)) },
-            { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
-                setSelected: new Set(teams?.filter(team => team.parent_team === null).map(team => team.id)) },
-            { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
-                setSelected: new Set() },
-            { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
-                onClick: (selectedTeams) => openModal({content: 'teamUserBulkAssignment', style: {overflow: 'unset'},
-                    type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
-            { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
-                onClick: (selectedTeams) => handleTeamsDelete(selectedTeams) },
-        ],
-        }), [handleTeamDelete, handleTeamsDelete, openModal, teams]);
+        2: {
+            label: 'Leaders',
+            name: 'leaders',
+            type: 'list',
+            openModal: 'userDetails'
+        },
+        3: {
+            label: 'Members',
+            name: 'members',
+            type: 'number',
+            value: (data) => data.members?.length || 0,
+            style: {maxWidth: '100px'}
+        }
+        }), []);
+
+    const contextMenuActions = useMemo(() => ([
+        { id: 'select', label: 'Select Team', selectionMode: false, select: 'id'},
+        { id: 'edit', label: 'Edit Team', selectionMode: false,
+            onClick: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
+        { id: 'assign-member', label: 'Edit Members', selectionMode: false,
+            onClick: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) },
+        { id: 'delete', label: 'Delete Team', selectionMode: false,
+            onClick: (props) => handleTeamDelete(props) },
+        { id: 'select-all', label: 'Select All', selectionMode: true, shortcut: 'Ctrl + Z',
+            setSelected: new Set(teams?.map(team => team.id)) },
+        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
+            setSelected: new Set(teams?.filter(team => team.parent_team === null).map(team => team.id)) },
+        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
+            setSelected: new Set() },
+        { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
+            onClick: (selectedTeams) => openModal({content: 'teamUserBulkAssignment', style: {overflow: 'unset'},
+                type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
+        { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
+            onClick: (selectedTeams) => handleTeamsDelete(selectedTeams) },
+    ]), [openModal, handleTeamDelete, teams]);
 
     if (loading) 
         return <Loader />;
 
     return (
         <Table
-            dataSource={teams && teams.filter(team => team.parent_team === null)}
-            tableStructure={tableStructure}
-            hasSelectableRows={true}
+            data={teams && teams.filter(team => team.parent_team === null)}
+            header={header}
+            fields={fields}
+            subRowFields={'subteams'}
+            columnHeaders={true}
+            sortable={true}
+            searchable={true}
+            contextMenuActions={contextMenuActions}
+            selectableRows={true}
             dataPlaceholder={'No Teams found.'}
         />
     );

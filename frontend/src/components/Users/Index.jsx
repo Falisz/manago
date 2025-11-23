@@ -8,25 +8,18 @@ import Table from '../Table';
 
 const UsersIndexPage = ({content='users'}) => {
     const { refreshData, refreshTriggers } = useApp();
-    const { openModal, closeTopModal } = useNav();
+    const { openModal, openPopUp, closeTopModal } = useNav();
     const { users, loading, fetchUsers, deleteUser, deleteUsers } = useUsers();
 
     useEffect(() => {
-
         const refresh = refreshTriggers?.users || false;
-
-        if (refresh)
-            delete refreshTriggers.users;
-
-        if (!users || refresh)
-            fetchUsers({group: content}).then();
-
+        if (refresh) delete refreshTriggers.users;
+        if (!users || refresh) fetchUsers({group: content}).then();
     }, [content, users, refreshTriggers, fetchUsers]);
 
     const handleUserDelete = useCallback((id) => {
-        openModal({
+        openPopUp({
             content: 'confirm',
-            type: 'pop-up',
             message: 'Are you sure you want to delete this User? This action cannot be undone.',
             onConfirm: async () => {
                 const success = await deleteUser({userId: id});
@@ -35,12 +28,11 @@ const UsersIndexPage = ({content='users'}) => {
                 closeTopModal();
             },
         });
-    }, [closeTopModal, deleteUser, openModal, refreshData]);
+    }, [closeTopModal, deleteUser, openPopUp, refreshData]);
 
     const handleUsersDelete = useCallback((selectedUsers) => {
-        openModal({
+        openPopUp({
             content: 'confirm',
-            type: 'pop-up',
             message: `Are you sure you want to delete ${selectedUsers.size}`+
                 ` selected User${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
             onConfirm: async () => {
@@ -50,7 +42,7 @@ const UsersIndexPage = ({content='users'}) => {
                 closeTopModal();
             },
         });
-    }, [closeTopModal, deleteUsers, openModal, refreshData]);
+    }, [closeTopModal, deleteUsers, openPopUp, refreshData]);
 
     const header = useMemo(() => ({
         title: content.charAt(0).toUpperCase() + content.slice(1),
@@ -61,40 +53,33 @@ const UsersIndexPage = ({content='users'}) => {
     }), [users, content]);
 
     const fields = useMemo(() => ({
-        name: {
-            title: 'Name',
-            display: true,
-            sortable: true,
-            filterable: true,
+        0: {
+            label: 'Name',
+            name: 'name',
             type: 'string',
             openModal: 'userDetails'
         },
-        roles: {
-            title: 'Roles',
-            display: true,
-            sortable: true,
-            filterable: true,
+        1: {
+            label: 'Roles',
+            name: 'roles',
             type: 'list',
             openModal: 'roleDetails'
         },
-        managers: {
-            title: 'Managers',
-            display: true,
-            sortable: true,
-            filterable: true,
+        2: {
+            label: 'Managers',
+            name: 'managers',
             type: 'list',
             openModal: 'userDetails'
         },
-        users_count: {
-            title: 'Users Count',
-            display: content === 'managers',
-            sortable: true,
-            filterable: true,
-            style: {maxWidth: 100+'px'},
+        3: {
+            label: 'Users Count',
+            name: 'users_count',
             type: 'number',
-            computeValue: (data) => data.managed_users?.length || 0
+            value: (data) => data.managed_users?.length || 0,
+            display: content === 'managers',
+            style: {maxWidth: '100px'}
         }
-    }), [content, handleUserDelete, handleUsersDelete, openModal, users]);
+    }), [content]);
 
     const contextMenuActions = useMemo(() => ([
         { id: 'select', label: 'Select User', selectionMode: false,
@@ -115,13 +100,13 @@ const UsersIndexPage = ({content='users'}) => {
             setSelected: new Set() },
         { id: 'bulk-assign-role', label: 'Assign Role', selectionMode: true,
             onClick: (selectedUsers) => openModal({content: 'userRoleBulkAssignment', type: 'dialog',
-                data: users.filter(user => selectedUsers.has(user.id)), style: {overflow: 'unset'}}) },
+                data: users?.filter(user => selectedUsers.has(user.id)), style: {overflow: 'unset'}}) },
         { id: 'bulk-assign-manager', label: 'Assign Manager', selectionMode: true,
             onClick: (selectedUsers) => openModal({content: 'userManagerBulkAssignment', type: 'dialog',
-                data: users.filter(user => selectedUsers.has(user.id)), style: {overflow: 'unset'}}) },
+                data: users?.filter(user => selectedUsers.has(user.id)), style: {overflow: 'unset'}}) },
         { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
             onClick: (selectedUsers) => handleUsersDelete(selectedUsers) }
-    ]), [openModal, users]);
+    ]), [openModal, users, handleUserDelete, handleUsersDelete]);
 
     if (loading) 
         return <Loader />;
@@ -131,9 +116,8 @@ const UsersIndexPage = ({content='users'}) => {
             data={users}
             header={header}
             fields={fields}
-            columnHeaders={true}
             sortable={true}
-            searchable={true}
+            filterable={true}
             contextMenuActions={contextMenuActions}
             selectableRows={true}
             dataPlaceholder={'No Users found.'}

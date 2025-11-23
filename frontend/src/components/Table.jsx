@@ -11,8 +11,8 @@ import '../styles/Table.css';
 const TableHeader = ({
                          fields,
                          filters,
-                         sortable,
-                         searchable,
+                         tableSortable,
+                         tableFilterable,
                          sortConfig,
                          handleFilter,
                          handleSorting,
@@ -20,37 +20,59 @@ const TableHeader = ({
 
     const [headerCollapsed, setHeaderCollapsed] = useState(true);
 
+    const collapseButton = Object.values(fields).some(field => field.filterable || field.sortable)
+        && (tableSortable || tableFilterable);
+
     return <div className={`app-table-header ${headerCollapsed ? 'collapsed' : ''}`}>
-                {Object.entries(fields).map(([key, field]) => (
-                    field.display &&
-                    <div
-                        className={`app-table-header-cell ${key}`}
-                        key={key}
-                        style={field.style || null}
-                    >
-                        <div className={'app-table-header-cell-label'}>
-                            {field.title}
+                {Object.values(fields).map((field) => {
+                    const {
+                        label = '',
+                        name = '',
+                        display,
+                        sortable: fieldSortable = true,
+                        filterable: fieldFilterable = true,
+                        style = {}
+                    } = field;
+
+                    if (!name)
+                        return null;
+
+                    const sortable = tableSortable && fieldSortable;
+                    const filterable = tableFilterable && fieldFilterable;
+
+                    if (display !== undefined && !display)
+                        return null;
+
+                    return (
+                        <div
+                            className={`app-table-header-cell ${name}`}
+                            key={name.toString()}
+                            style={style}
+                        >
+                            {label && <div className={'app-table-header-cell-label'}>
+                                {label}
+                            </div>}
+                            {(filterable || sortable) && <div className={'app-table-header-cell-actions'}>
+                                {filterable && <input
+                                    className='search'
+                                    title={label}
+                                    placeholder={`Filter by the ${label.toLowerCase()}...`}
+                                    name={name}
+                                    value={filters[name] || ''}
+                                    onChange={handleFilter}
+                                />}
+                                {sortable && <Button
+                                    className={`order ${sortConfig.key === name ? sortConfig.direction : ''}`}
+                                    name={name}
+                                    onClick={handleSorting}
+                                    icon={sortConfig.name === name &&
+                                    sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
+                                />}
+                            </div>}
                         </div>
-                        <div className={'app-table-header-cell-actions'}>
-                            {searchable && field.filterable && <input
-                                className='search'
-                                title={field.title}
-                                placeholder={`Filter by the ${field.title.toLowerCase()}...`}
-                                name={key}
-                                value={filters[key] || ''}
-                                onChange={handleFilter}
-                            />}
-                            {sortable && field.sortable && <Button
-                                className={`order ${sortConfig.key === key ? sortConfig.direction : ''}`}
-                                name={key}
-                                onClick={handleSorting}
-                                icon={sortConfig.key === key &&
-                                sortConfig.direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-                            />}
-                        </div>
-                    </div>
-                ))}
-                {Object.values(fields).some(field => field.filterable || field.sortable) &&
+                    );
+                })}
+                {collapseButton &&
                     <Button
                         className={`collapse_header ${headerCollapsed ? 'collapsed' : ''}`}
                         transparent={true}
@@ -72,12 +94,13 @@ const TableRow = ({
                       handleSelect,
                       selectedItems,
                       hasContextMenu,
-                      openModal
+                      openModal,
+                      openDialog
                   }) => {
 
     const selectionMode = selectedItems?.size > 0;
 
-    return (
+    const rowContent = (
         <>
             <div
                 className={`app-table-row${selectedItems?.has(data.id) ? 
@@ -89,11 +112,26 @@ const TableRow = ({
             >
                 {isSubRow && <Icon className={'app-table-sub-row-icon'} i={'subdirectory_arrow_right'} />}
                 {Object.entries(fields).map(([key, field]) => {
-                    if (!field.display || field.type === 'description') return null;
-                    let content;
-                    const value = data[key];
 
-                    switch (field.type) {
+                    const { name, type, display, style } = field;
+
+                    if ((display !== undefined && !display) || type === 'description')
+                        return null;
+
+                    let value = data[name], content;
+
+                    if (field.value === 'function')
+                        value = field.value(data);
+                    else if (field.value != null)
+                        value = field.value;
+
+                    if (field.formats)
+                        if (fields.format[value] != null)
+                            value = fields.format[value].toString().replace('%n', value);
+                        else if (fields.format.default != null)
+                            value = fields.format.default.toString().replace('%n', value);
+
+                    switch (type) {
                         case 'string':
                             content = (
                                 <span
@@ -104,7 +142,8 @@ const TableRow = ({
                                         }
                                     }}
                                 >
-                                  {value || (key === 'name' && data.first_name ? `${data.first_name} ${data.last_name}` : '')}
+                                  {value ||
+                                      (key === 'name' && data.first_name ? `${data.first_name} ${data.last_name}` : '')}
                                 </span>
                             );
                             break;
@@ -131,7 +170,7 @@ const TableRow = ({
                                         className={`app-clickable sub-item ${field.className || ''}`}
                                         onClick={() => {
                                             if (!selectionMode && field.openModal) {
-                                                openModal({ content: field.openModal, type: 'dialog', contentId: item.id });
+                                                openDialog({ content: field.openModal, contentId: item.id });
                                             }
                                         }}
                                     >
@@ -153,27 +192,17 @@ const TableRow = ({
                             />;
                             break;
                         case 'number':
-                            if (field.computeValue)
-                                content = field.computeValue(data);
-                            else
-                                content = value ?? 0;
-                            if (field.formats) {
-                                if (field.formats[content] !== undefined) {
-                                    content = field.formats[content];
-                                } else if (field.formats.default) {
-                                    content = field.formats.default.toString().replace('%n', content);
-                                }
-                            }
+                            content = value ?? 0;
                             break;
                         default:
-                            content = value?.toString() || '';
+                            content = value?.toString() ?? '';
                     }
 
                     return (
                         <div
                             key={key}
                             className={`app-table-row-cell ${key}`}
-                            style={field.style || null}
+                            style={style}
                         >
                             {content}
                         </div>
@@ -198,12 +227,15 @@ const TableRow = ({
                             handleSelect={handleSelect}
                             selectedItems={selectedItems}
                             openModal={openModal}
+                            openDialog={openDialog}
                         />
                     )}
                 </div>
             }
         </>
     );
+
+    return subRowField ? <div className={'app-table-row-stack'}>{rowContent}</div> : {rowContent};
 };
 
 /**
@@ -231,7 +263,7 @@ const Table = ({
                    descriptionFields,
                    header,
                    columnHeaders = true,
-                   searchable = false,
+                   filterable = false,
                    sortable = false,
                    selectableRows = false,
                    contextMenuActions,
@@ -243,7 +275,7 @@ const Table = ({
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [selectedItems, setSelectedItems] = useState(new Set());
     const { show } = useContextMenu({ id: MENU_ID, });
-    const { openModal } = useNav();
+    const { openModal, openDialog } = useNav();
 
     const displayContextMenu = (e, item) => {
         e.preventDefault();
@@ -307,8 +339,8 @@ const Table = ({
                 filteredData = filteredData.filter(item => {
                     let itemValue = item[key];
 
-                    if (field?.computeValue) {
-                        itemValue = field.computeValue(item);
+                    if (typeof field?.value === 'function') {
+                        itemValue = field.value(item);
                     }
 
                     if (key === 'name' && !itemValue && item.first_name) {
@@ -353,9 +385,9 @@ const Table = ({
                 let aValue = a[sortConfig.key];
                 let bValue = b[sortConfig.key];
 
-                if (field?.computeValue) {
-                    aValue = field.computeValue(a);
-                    bValue = field.computeValue(b);
+                if (typeof field?.value === 'function') {
+                    aValue = field.value(a);
+                    bValue = field.value(b);
                 }
 
                 if (sortConfig.key === 'name' && !aValue && a.first_name) {
@@ -416,7 +448,8 @@ const Table = ({
                     {selectionMode > 0 &&
                         <div className='selected-items'>
                             <p className='seethrough'>
-                                {selectedItems.size} {header.itemName || 'Item'}{selectedItems.size !== 1 ? 's' : ''} selected.
+                                {selectedItems.size} {header.itemName || 'Item'}
+                                {selectedItems.size !== 1 ? 's' : ''} selected.
                             </p>
                             <Button
                                 onClick={() => setSelectedItems(new Set())}
@@ -446,8 +479,8 @@ const Table = ({
                         fields={fields}
                         filters={filters}
                         sortConfig={sortConfig}
-                        searchable={searchable}
-                        sortable={sortable}
+                        tableFilterable={filterable}
+                        tableSortable={sortable}
                         handleFilter={handleFilter}
                         handleSorting={handleSorting}
                     />
@@ -458,8 +491,8 @@ const Table = ({
                             {dataPlaceholder ?? 'No matching items found.'}
                         </p>
                     ) : (
-                        filteredAndSortedData.map((data, index) => {
-                            const tableRow = <TableRow
+                        filteredAndSortedData.map((data, index) =>
+                            <TableRow
                                 key={index}
                                 data={data}
                                 fields={fields}
@@ -470,14 +503,9 @@ const Table = ({
                                 hasContextMenu={contextMenuActions && contextMenuActions.length > 0}
                                 displayContextMenu={displayContextMenu}
                                 openModal={openModal}
-                            />;
-
-                            return subRowFields ? (
-                                <div key={index} className={'app-table-row-stack'}>
-                                    {tableRow}
-                                </div>
-                            ) : tableRow
-                        })
+                                openDialog={openDialog}
+                            />
+                        )
                     )}
                 </div>
                 {contextMenuActions && contextMenuActions.length && (

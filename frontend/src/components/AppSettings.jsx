@@ -16,45 +16,51 @@ const AppModules = () => {
         openModal({
             content: 'confirm',
             type: 'dialog',
-            message: `Are you sure you want to ${!value ? 'enable' : 'disable'} this app module?` + (value ? ' All the data related to it will not be ' +
+            message: `Are you sure you want to ${!value ? 'enable' : 'disable'} this app module?` +
+                (value ? ' All the data related to it will not be ' +
                 'accessible within the app until its reactivation.' : ''),
             onConfirm: () => toggleModule(id, value).then(),
         });
     }
 
-    const tableStructure = {
-        pageHeader: {
-            title: 'App Modules',
-            itemName: 'Module',
+    const header = useMemo(() => ({
+        title: 'App Modules',
+        itemName: 'Module',
+    }), []);
+    const fields = useMemo(() => ({
+        0: {
+            name: 'icon',
+            type: 'icon',
+            style: {maxWidth: '25px', paddingRight: 0, display: 'flex', alignItems: 'center'},
+            iconStyle: {fontSize: '2rem' }
         },
-        tableFields: {
-            icon: {
-                display: true,
-                type: 'icon',
-                style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'},
-                iconStyle: {fontSize: '2rem' }
-            },
-            title: {
-                display: true,
-                type: 'string',
-                style: {fontSize: '1.5rem', cursor: 'default', paddingLeft: '20px', textTransform: 'uppercase', fontFamily: 'var(--font-family-condensed)' },
-            },
-            enabled: {
-                display: true,
-                type: 'toggleSwitch',
-                style: {textAlign: 'right', maxWidth: '200px'},
-                checked: (data) => data.enabled,
-                onChange: (data) => handleToggleConfirm(data.id, data.enabled),
-                disabled: (data) => data.id === 0,
+        1: {
+            name: 'title',
+            type: 'string',
+            style: {
+                fontSize: '1.5rem',
+                cursor: 'default',
+                paddingLeft: '20px',
+                textTransform: 'uppercase',
+                fontFamily: 'var(--font-family-condensed)'
             },
         },
-        descriptionField: 'description',
-    }
+        2: {
+            name: 'enabled',
+            type: 'toggleSwitch',
+            style: {textAlign: 'right', maxWidth: '200px'},
+            checked: (data) => data.enabled,
+            onChange: (data) => handleToggleConfirm(data.id, data.enabled),
+            disabled: (data) => data.id === 0,
+        }
+    }), [handleToggleConfirm]);
 
     return (
         <Table
-            dataSource={appState.modules}
-            tableStructure={tableStructure}
+            data={appState.modules}
+            header={header}
+            fields={fields}
+            descriptionFields={'description'}
             dataPlaceholder={'No Modules found.'}
         />
     );

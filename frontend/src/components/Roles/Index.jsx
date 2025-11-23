@@ -20,34 +20,36 @@ const RolesIndex = () => {
 
     }, [fetchRoles, roles, refreshTriggers.roles]);
 
-    const tableStructure = useMemo(() => ({
-        pageHeader: {
-            title: 'Roles',
-            itemName: 'Role',
-            newItemModal: 'roleNew'
+    const header = useMemo(() => ({
+        title: 'Roles',
+        itemName: 'Role',
+        newItemModal: 'roleNew'
+    }), []);
+
+    const fields = useMemo(() => ({
+        0: {
+            name: 'icon',
+            type: 'icon',
+            openModal: 'roleDetails',
+            style: {maxWidth: '25px', paddingRight: 0, display: 'flex', alignItems: 'center'}
         },
-        tableFields: {
-            icon: {
-                display: true,
-                type: 'icon',
-                openModal: 'roleDetails',
-                style: {maxWidth: 25+'px', paddingRight: 0, display: 'flex', alignItems: 'center'}
-            },
-            name: {
-                display: true,
-                type: 'string',
-                openModal: 'roleDetails',
-                style: {fontSize: 1.25+'rem', paddingLeft: 0}
-            },
-            users_count: {
-                display: true,
-                type: 'number',
-                formats: {0: 'No users with this role', 1: 'One user with this role', default: '%n users has this role'},
-                style: {textAlign: 'right', maxWidth: '200px'},
-                computeValue: (data) => data.users?.length || 0
-            }
+        1: {
+            name: 'name',
+            type: 'string',
+            openModal: 'roleDetails',
+            style: {fontSize: '1.25rem', paddingLeft: 0}
         },
-        descriptionField: 'description'
+        2: {
+            name: 'users',
+            type: 'number',
+            value: (data) => data.users?.length || 0,
+            formats: {
+                0: 'No users with this role',
+                1: 'One user with this role',
+                default: '%n users has this role'
+            },
+            style: {textAlign: 'right', maxWidth: '200px'}
+        }
     }), []);
 
     if (loading)
@@ -55,9 +57,10 @@ const RolesIndex = () => {
 
     return (
         <Table
-            dataSource={roles}
-            tableStructure={tableStructure}
-            hasSelectableRows={false}
+            data={roles}
+            header={header}
+            fields={fields}
+            descriptionFields={'description'}
             dataPlaceholder={'No Roles found.'}
             style={{maxWidth: 'max(40%, 500px)'}}
         />
