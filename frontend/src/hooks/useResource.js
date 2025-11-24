@@ -201,12 +201,14 @@ const useResource = (resource) => {
             return null;
 
         const isNew = !id;
+        const batchMode = Array.isArray(id);
 
         try {
             let res;
             if (isNew)
                 res = await axios.post(config.buildUrl(), formData, { withCredentials: true });
-
+            else if (batchMode)
+                res = await axios.put(config.buildUrl(), {ids: id, data: formData}, { withCredentials: true });
             else
                 res = await axios.put(config.buildUrl({id}), formData, { withCredentials: true });
 
@@ -221,8 +223,10 @@ const useResource = (resource) => {
             if (isNew && result[name[0]])
                 id = result[name[0]].id;
 
-            if (result.warning)
-                showPopUp({type: 'success', content: result.message});
+            if (Array.isArray(result.warning))
+                result.warning.forEach(warn => showPopUp({type: 'warning', content: warn}));
+            else if (result.warning && typeof result.warning === 'string')
+                showPopUp({type: 'warning', content: result.warning});
 
             if (result.message)
                 showPopUp({
@@ -232,7 +236,7 @@ const useResource = (resource) => {
                 });
 
             refreshData(name[1], true);
-            if (!isNew)
+            if (!isNew && !batchMode)
                 refreshData(name[0], id);
 
             return result[name[0]];
@@ -382,10 +386,14 @@ const useResource = (resource) => {
         [name[1]]: data,
         loading,
         setLoading,
+        [`${name[0]}Loading`]: loading,
+        [`set${name[2]}Loading`]: setLoading,
         [`fetch${name[2]}`]: fetchResource,
         [`fetch${name[3]}`]: fetchResource,
         [`save${name[2]}`]: saveResource,
+        [`save${name[3]}`]: saveResource,
         [`save${name[2]}Assignment`]: saveResourceAssignment,
+        [`save${name[3]}Assignment`]: saveResourceAssignment,
         [`delete${name[2]}`]: deleteResource,
         [`delete${name[3]}`]: deleteResource,
     };
