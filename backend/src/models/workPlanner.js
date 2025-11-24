@@ -122,7 +122,7 @@ export const RequestStatus = sequelize.define('RequestStatus', {
     tableName: 'request_statuses',
     timestamps: false,
 });
-// 0: pending, 1: approved, 2: rejected, 3: cancelled
+// 0: planned, 1: rquested, 2: approved, 3: rejected, 4: cancellRequested, 5: cancelled
 
 export const LeaveType = sequelize.define('LeaveType', {
     name: {
