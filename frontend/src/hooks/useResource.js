@@ -28,7 +28,7 @@ const getNames = (str) => {
  * @param id_required
  * @returns {string|null}
  */
-const buildUrl = (url_base = null, params = {}, id_required=false) => {
+const buildUrl = (url_base, params = {}, id_required=false) => {
     if (!url_base) return null;
     const { id, ...flags } = params;
     if (id_required && !id) return null;
@@ -51,7 +51,7 @@ const resourceConfigs = {
         ...defaultParams('users'),
         fetchParams: { id: null, user_scope: 'all', user_scope_id: null, group: null, loading: true, reload: false,
             map: false },
-        buildUrl: (params) => {
+        buildUrl: (params = {}) => {
 
             const { id, user_scope, user_scope_id, group } = params;
 
@@ -89,7 +89,7 @@ const resourceConfigs = {
         ...defaultParams('leaves'),
         fetchParams: { id: null, user: null, user_scope: 'all', user_scope_id: null, date: null, start_date: null,
             end_date: null, loading: true, reload: false, map: false },
-        buildUrl: (params) => {
+        buildUrl: (params = {}) => {
 
             const { id, user, user_scope, user_scope_id, date, start_date, end_date } = params;
             let url;
@@ -409,8 +409,9 @@ export const useTeams = () => useResource('team');
 export const useProjects = () => useResource('project');
 export const useBranches = () => useResource('branch');
 export const usePermissions = () => useResource('permission');
-export const useScheduleDrafts = () => useResource('schedules');
+export const useScheduleDrafts = () => useResource('schedule');
 export const useShifts = () => useResource('shift');
 export const useLeaves = () => useResource('leave');
+export const useLeaveTypes = () => useResource('leaveType');
 export const useJobPosts = () => useResource('jobPost');
 export const useRequestStatuses = () => useResource('requestStatus');

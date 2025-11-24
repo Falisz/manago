@@ -244,7 +244,7 @@ const TableRow = ({
         </>
     );
 
-    return subRowField ? <div className={'app-table-row-stack'}>{rowContent}</div> : {rowContent};
+    return subRowField ? <div className={'app-table-row-stack'}>{rowContent}</div> : rowContent;
 };
 
 const TableMenu = ({id, contextMenuActions, selectionMode, handleSelect, selectedItems, setSelectedItems}) => {

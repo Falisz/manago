@@ -28,7 +28,7 @@ const EditForm = ({
     keepOpen,
     keepOpenOnSubmit,
     keepOpenOnCancel,
-    presetData,
+    presetData = {},
     validate = true,
     source = null,
     setSource = null 
@@ -273,7 +273,8 @@ const EditForm = ({
                             let groupContent;
 
                             if (group.type === 'content')
-                                groupContent = group.content;
+                                groupContent = typeof group.content === 'function' ?
+                                    group.content(formData) : group.content;
 
                             if (group.inputType === 'input' || group.inputType === 'text')
                                 groupContent = <input

@@ -92,7 +92,7 @@ const createLeaveHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        let { leave } = req.body;
+        let leave = req.body;
     
         const { success, message, id } = await createLeave(leave);
 
@@ -120,7 +120,7 @@ const updateLeaveHandler = async (req, res) => {
 
     try {
         if (!id) {
-            const { ids, data } = req.body;
+            let { ids, data } = req.body;
 
             if (!ids)
                 return res.status(400).json({message: 'Missing IDs.'});
@@ -130,11 +130,11 @@ const updateLeaveHandler = async (req, res) => {
 
             let action = 'update';
 
-            if (leave.status === 2)
+            if (data.status === 2)
                 action = 'approve';
-            else if (leave.status === 3)
+            else if (data.status === 3)
                 action = 'reject';
-            else if (leave.status === 4)
+            else if (data.status === 4)
                 action = 'request-cancellation';
 
             const {
@@ -176,14 +176,14 @@ const updateLeaveHandler = async (req, res) => {
             res.status(201).json({ message: `${done} ${updated.length} Leaves.`, updated, warning})
 
         } else {
-            const leave = req.body;
+            const data = req.body;
             let action = 'update';
 
-            if (leave.status === 2)
+            if (data.status === 2)
                 action = 'approve';
-            else if (leave.status === 3)
+            else if (data.status === 3)
                 action = 'reject';
-            else if (leave.status === 4)
+            else if (data.status === 4)
                 action = 'request-cancellation';
 
             const { hasAccess } = await checkAccess(req.session.user, action, 'leave', id);
@@ -191,12 +191,12 @@ const updateLeaveHandler = async (req, res) => {
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
 
-            const { success, message } = await updateLeave(parseInt(id), leave);
+            const { success, message } = await updateLeave(parseInt(id), data);
             
             if (!success)
                 return res.status(400).json({ message });
-    
-            leave = await getLeave({id});
+
+            const leave = await getLeave({id});
     
             res.json({ message, leave });
         }
