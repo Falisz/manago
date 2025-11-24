@@ -12,6 +12,7 @@ import jobPostsRoutes from './job-posts.js';
 import shiftRoutes from './shifts.js';
 import leaveRoutes from './leaves.js';
 import holidaysRoutes from './holidays.js';
+import requestStatusRoutes from './request-statuses.js';
 import postsRoutes from './posts.js';
 import checkAuthHandler from '../utils/checkAuth.js';
 
@@ -39,6 +40,7 @@ router.use('/branches', branchesRoutes);
 router.use('/schedules', schedulesRoutes);
 router.use('/job-posts', jobPostsRoutes);
 router.use('/shifts', shiftRoutes);
+router.use('/request-statuses', requestStatusRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/holidays', holidaysRoutes);
 router.use('/posts', postsRoutes);
