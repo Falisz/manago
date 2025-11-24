@@ -810,7 +810,7 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
         const rawData = leave.toJSON();
 
         rawData.user = leave['User'].toJSON();
-        rawData.approveer = leave['Approver']?.toJSON();
+        rawData.approver = leave['Approver']?.toJSON();
         rawData.type = leave['LeaveType']?.name;
         rawData.color = leave['LeaveType']?.color;
 

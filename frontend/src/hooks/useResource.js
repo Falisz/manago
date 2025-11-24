@@ -93,29 +93,30 @@ const resourceConfigs = {
 
             const { id, user, user_scope, user_scope_id, date, start_date, end_date } = params;
             let url;
+            let queryParams = {};
 
             if (id) {
                 url = `/leaves/${id}`;
             } else {
                 if (user)
-                    params.user = user;
+                    queryParams.user = user;
                 else {
                     if (user_scope)
-                        params.user_scope = user_scope;
+                        queryParams.user_scope = user_scope;
                     if (user_scope_id)
-                        params.user_scope_id = user_scope_id;
+                        queryParams.user_scope_id = user_scope_id;
                 }
 
                 if (date)
-                    params.date = date;
+                    queryParams.date = date;
                 else {
                     if (start_date)
-                        params.start_date = start_date;
+                        queryParams.start_date = start_date;
                     if (end_date)
-                        params.end_date = end_date;
+                        queryParams.end_date = end_date;
                 }
 
-                url = '/leaves?' + new URLSearchParams(params).toString();
+                url = '/leaves?' + new URLSearchParams(queryParams).toString();
             }
 
             return url;

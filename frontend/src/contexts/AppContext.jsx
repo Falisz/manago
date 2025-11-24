@@ -8,6 +8,7 @@ import ScheduleEdit from '../components/Schedules/Edit';
 import ScheduleView from '../components/Schedules/View';
 import PostsIndex from '../components/Posts/Index';
 import AppSettings from '../components/AppSettings';
+import LeavesIndex from '../components/Leaves/Index';
 import UsersIndex, {EmployeesIndex, ManagersIndex} from '../components/Users/Index';
 import RolesIndex from '../components/Roles/Index';
 import TeamsIndex from '../components/Teams/Index';
@@ -23,6 +24,7 @@ const COMPONENT_MAP = {
     ScheduleDashboard: SchedulesDashboard,
     ScheduleView,
     ScheduleEdit,
+    LeavesIndex,
     PostsIndex,
     AppSettings
 };

@@ -776,7 +776,7 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
 
 export async function getUsersByScope({scope, scope_id}={}) {
 
-    if (['all', 'you'].includes(scope) && !scope_id)
+    if (scope !== 'all' && !scope_id)
         return null;
 
     if (scope === 'all')
