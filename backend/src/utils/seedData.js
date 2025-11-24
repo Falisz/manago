@@ -784,7 +784,7 @@ const requestStatuses = [
     { id: 2, name: 'Approved' },
     { id: 3, name: 'Rejected' },
     { id: 4, name: 'Cancel Request Pending' },
-    { id: 4, name: 'Cancelled' }
+    { id: 5, name: 'Cancelled' }
 ];
 
 const leaveTypes = [
