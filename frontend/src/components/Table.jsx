@@ -20,8 +20,7 @@ const TableHeader = ({
 
     const [headerCollapsed, setHeaderCollapsed] = useState(true);
 
-    const collapseButton = Object.values(fields).some(field => field.filterable || field.sortable)
-        && (tableSortable || tableFilterable);
+    const collapseButton = (tableSortable || tableFilterable);
 
     return <div className={`app-table-header ${headerCollapsed ? 'collapsed' : ''}`}>
                 {Object.values(fields).map((field) => {
@@ -83,6 +82,105 @@ const TableHeader = ({
             </div>;
 }
 
+const TableField = ({field, data, selectionMode}) => {
+
+    const { openModal, openDialog } = useNav();
+
+    const { name, type, display, style } = field;
+
+    if ((display !== undefined && !display) || type === 'description')
+        return null;
+
+    let value = data[name], content;
+
+    if (field.value === 'function')
+        value = field.value(data);
+    else if (field.value != null)
+        value = field.value;
+
+    if (field.formats)
+        if (field.format[value] != null)
+            value = field.format[value].toString().replace('%n', value);
+        else if (field.format.default != null)
+            value = field.format.default.toString().replace('%n', value);
+
+    switch (type) {
+        case 'string':
+            content = (
+                <span
+                    className='app-clickable'
+                    onClick={() => {
+                        if (!selectionMode && field.openModal) {
+                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
+                        }
+                    }}
+                >
+                    {value ||
+                        (name === 'name' && data.first_name ? `${data.first_name} ${data.last_name}` : '')}
+                </span>
+            );
+            break;
+        case 'icon':
+            content = (
+                <Icon
+                    className={field.openModal ? 'app-clickable' : ''}
+                    onClick={() => {
+                        if (!selectionMode && field.openModal) {
+                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
+                        }
+                    }}
+                    i={value}
+                    s={true}
+                    style={field.iconStyle || null}
+                />
+            );
+            break;
+        case 'list':
+            if (value && value.length > 0) {
+                content = value.map((item, index) => (
+                    <span
+                        key={item.id || index}
+                        className={`app-clickable sub-item ${field.className || ''}`}
+                        onClick={() => {
+                            if (!selectionMode && field.openModal) {
+                                openDialog({ content: field.openModal, contentId: item.id });
+                            }
+                        }}
+                    >
+                        {item.name || `${item.first_name || ''} ${item.last_name || ''}`}
+                    </span>
+                )).reduce((prev, curr) => [prev, ', ', curr]);
+            } else {
+                content = '';
+            }
+            break;
+        case 'boolean':
+            content = value ? '✔️' : '✖️';
+            break;
+        case 'toggleSwitch':
+            content = <ToggleSwitch
+                checked={field.checked(data)}
+                onChange={() => field.onChange(data)}
+                disabled={field.disabled(data)}
+            />;
+            break;
+        case 'number':
+            content = value ?? 0;
+            break;
+        default:
+            content = value?.toString() ?? '';
+    }
+
+    return (
+        <div
+            key={name}
+            className={`app-table-row-cell ${name}`}
+            style={style}
+        >
+            {content}
+        </div>
+    );
+};
 
 const TableRow = ({
                       data,
@@ -111,103 +209,14 @@ const TableRow = ({
                 onContextMenu={(e) => hasContextMenu && displayContextMenu(e, data)}
             >
                 {isSubRow && <Icon className={'app-table-sub-row-icon'} i={'subdirectory_arrow_right'} />}
-                {Object.entries(fields).map(([key, field]) => {
-
-                    const { name, type, display, style } = field;
-
-                    if ((display !== undefined && !display) || type === 'description')
-                        return null;
-
-                    let value = data[name], content;
-
-                    if (field.value === 'function')
-                        value = field.value(data);
-                    else if (field.value != null)
-                        value = field.value;
-
-                    if (field.formats)
-                        if (fields.format[value] != null)
-                            value = fields.format[value].toString().replace('%n', value);
-                        else if (fields.format.default != null)
-                            value = fields.format.default.toString().replace('%n', value);
-
-                    switch (type) {
-                        case 'string':
-                            content = (
-                                <span
-                                    className='app-clickable'
-                                    onClick={() => {
-                                        if (!selectionMode && field.openModal) {
-                                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
-                                        }
-                                    }}
-                                >
-                                  {value ||
-                                      (key === 'name' && data.first_name ? `${data.first_name} ${data.last_name}` : '')}
-                                </span>
-                            );
-                            break;
-                        case 'icon':
-                            content = (
-                                <Icon
-                                    className={field.openModal ? 'app-clickable' : ''}
-                                    onClick={() => {
-                                        if (!selectionMode && field.openModal) {
-                                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
-                                        }
-                                    }}
-                                    i={value}
-                                    s={true}
-                                    style={field.iconStyle || null}
-                                />
-                            );
-                            break;
-                        case 'list':
-                            if (value && value.length > 0) {
-                                content = value.map((item, index) => (
-                                    <span
-                                        key={item.id || index}
-                                        className={`app-clickable sub-item ${field.className || ''}`}
-                                        onClick={() => {
-                                            if (!selectionMode && field.openModal) {
-                                                openDialog({ content: field.openModal, contentId: item.id });
-                                            }
-                                        }}
-                                    >
-                                        {item.name || `${item.first_name || ''} ${item.last_name || ''}`}
-                                    </span>
-                                )).reduce((prev, curr) => [prev, ', ', curr]);
-                            } else {
-                                content = '';
-                            }
-                            break;
-                        case 'boolean':
-                            content = value ? '✔️' : '✖️';
-                            break;
-                        case 'toggleSwitch':
-                            content = <ToggleSwitch
-                                checked={field.checked(data)}
-                                onChange={() => field.onChange(data)}
-                                disabled={field.disabled(data)}
-                            />;
-                            break;
-                        case 'number':
-                            content = value ?? 0;
-                            break;
-                        default:
-                            content = value?.toString() ?? '';
-                    }
-
-                    return (
-                        <div
-                            key={key}
-                            className={`app-table-row-cell ${key}`}
-                            style={style}
-                        >
-                            {content}
-                        </div>
-                    );
-                })}
+                {Object.values(fields).map((field, index) => 
+                    <TableField
+                        key={index}
+                        field={field}
+                        data={data}
+                        selectionMode={selectionMode}
+                    />
+                )}
                 {data[descriptionField] && data[descriptionField].trim() !== '' &&
                     <div className={'app-table-row-cell app-table-row-desc'}>{data[descriptionField]}</div>
                 }
@@ -237,6 +246,33 @@ const TableRow = ({
 
     return subRowField ? <div className={'app-table-row-stack'}>{rowContent}</div> : {rowContent};
 };
+
+const TableMenu = ({id, contextMenuActions, selectionMode, handleSelect, selectedItems, setSelectedItems}) => {
+    return (
+        <Menu className={'app-context-menu'} id={id}>
+            {contextMenuActions.filter(item => item.selectionMode === selectionMode).map(item => (
+                <Item 
+                    key={item.id}
+                    onClick={({ props }) => {
+                        if (item.select) {
+                            handleSelect('contextMenuClick', props[item.select]);
+                        } else if (item.setSelected) {
+                            setSelectedItems(item.setSelected);
+                        } else if (item.onClick) {
+                            if (item.selectionMode)
+                                item.onClick(selectedItems);
+                            else
+                                item.onClick(props);
+                        } else 
+                            return null;
+                    }}
+                >
+                    {item.label} { item.shortcut ? <RightSlot>{item.shortcut}</RightSlot> : null }
+                </Item>
+            ))}
+        </Menu>
+    );
+}
 
 /**
  *
@@ -269,11 +305,11 @@ const Table = ({
                    contextMenuActions,
                    dataPlaceholder = null,
                }) => {
-    const MENU_ID = 'table_context_menu';
 
     const [filters, setFilters] = useState({});
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [selectedItems, setSelectedItems] = useState(new Set());
+    const MENU_ID = 'table_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });
     const { openModal, openDialog } = useNav();
 
@@ -299,9 +335,8 @@ const Table = ({
     const handleSorting = (e) => {
         const { name } = e.currentTarget;
         let direction = 'asc';
-        if (sortConfig.key === name && sortConfig.direction === 'asc') {
+        if (sortConfig.key === name && sortConfig.direction === 'asc')
             direction = 'desc';
-        }
         setSortConfig({ key: name, direction });
     };
 
@@ -325,7 +360,7 @@ const Table = ({
         }        
     };
 
-    const filteredAndSortedData = useMemo(() => {
+    const displayData = useMemo(() => {
         if (!data || !fields)
             return [];
 
@@ -486,12 +521,12 @@ const Table = ({
                     />
                 )}
                 <div className={'app-table-body app-overflow-y app-scroll'}>
-                    {!filteredAndSortedData.length ? (
+                    {!displayData.length ? (
                         <p className={'app-table-no-matches'}>
                             {dataPlaceholder ?? 'No matching items found.'}
                         </p>
                     ) : (
-                        filteredAndSortedData.map((data, index) =>
+                        displayData.map((data, index) =>
                             <TableRow
                                 key={index}
                                 data={data}
@@ -508,29 +543,14 @@ const Table = ({
                         )
                     )}
                 </div>
-                {contextMenuActions && contextMenuActions.length && (
-                    <Menu className={'app-context-menu'} id={MENU_ID}>
-                        {contextMenuActions.filter(item => item.selectionMode === selectionMode).map(item => (
-                            <Item 
-                                key={item.id}
-                                onClick={({ props }) => {
-                                    if (item.select)
-                                        handleSelect('contextMenuClick', props[item.select]);
-                                    else if (item.setSelected)
-                                        setSelectedItems(item.setSelected);
-                                    else if (item.onClick)
-                                        if (item.selectionMode)
-                                            item.onClick(selectedItems);
-                                        else
-                                            item.onClick(props);
-                                    else 
-                                        return null;
-                                    }}>
-                                {item.label} { item.shortcut ? <RightSlot>{item.shortcut}</RightSlot> : null }
-                            </Item>
-                        ))}
-                    </Menu>
-                )}
+                {contextMenuActions && <TableMenu 
+                    id={MENU_ID}
+                    contextMenuActions={contextMenuActions}
+                    selectionMode={selectionMode}
+                    handleSelect={handleSelect}
+                    selectedItems={selectedItems}
+                    setSelectedItems={setSelectedItems} 
+                />}
             </div>
         </>
     );

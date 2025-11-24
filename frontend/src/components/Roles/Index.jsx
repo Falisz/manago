@@ -11,7 +11,7 @@ const RolesIndex = () => {
 
     useEffect(() => {
         const refresh = refreshTriggers?.roles || false;
-
+        
         if (refresh)
             delete refreshTriggers.roles;
 

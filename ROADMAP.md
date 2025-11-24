@@ -1,10 +1,7 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### General (till 23-11-25)
+### General (till 30-11-25)
 - Implement the useResource hook instead of the dedicated per-resource hooks.
-- Refactor Details, EditForm and Table to be handling each structure field as a prop for more consistency and modularity:
-  - destructured and refactored EditForm, double check if it works properly
-  - Details and Table to be done
 ### Work Planner (till 30-11-25)
 - Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
 - Dispo Planner - yet separate editor.

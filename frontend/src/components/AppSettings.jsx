@@ -1,5 +1,5 @@
 // FRONTEND/Components/AppSettings.jsx
-import React, {useEffect, useRef, useState, useMemo} from 'react';
+import React, {useEffect, useRef, useState, useMemo, useCallback} from 'react';
 import useApp from '../contexts/AppContext';
 import useNav from '../contexts/NavContext';
 import EditForm from './EditForm';
@@ -12,7 +12,7 @@ const AppModules = () => {
     const { appState, toggleModule } = useApp();
     const { openModal } = useNav();
 
-    const handleToggleConfirm = (id, value) => {
+    const handleToggleConfirm = useCallback((id, value) => {
         openModal({
             content: 'confirm',
             type: 'dialog',
@@ -21,7 +21,7 @@ const AppModules = () => {
                 'accessible within the app until its reactivation.' : ''),
             onConfirm: () => toggleModule(id, value).then(),
         });
-    }
+    }, [openModal, toggleModule]);
 
     const header = useMemo(() => ({
         title: 'App Modules',
@@ -43,7 +43,7 @@ const AppModules = () => {
                 paddingLeft: '20px',
                 textTransform: 'uppercase',
                 fontFamily: 'var(--font-family-condensed)'
-            },
+            }
         },
         2: {
             name: 'enabled',
@@ -51,7 +51,7 @@ const AppModules = () => {
             style: {textAlign: 'right', maxWidth: '200px'},
             checked: (data) => data.enabled,
             onChange: (data) => handleToggleConfirm(data.id, data.enabled),
-            disabled: (data) => data.id === 0,
+            disabled: (data) => data.id === 0
         }
     }), [handleToggleConfirm]);
 
@@ -100,7 +100,7 @@ const AppStyles = () => {
         return opts.map( opt => ({id: opt, image: `./assets/background-${opt.toLowerCase()}.jpg`}) );
     }, [configOptions.background]);
 
-    const formFields = useMemo(() => {
+    const fields = useMemo(() => {
         const labelStyle = {
             display: 'flex',
             alignItems: 'center',
@@ -189,7 +189,7 @@ const AppStyles = () => {
 
     return <EditForm
         className={'seethrough app-scroll app-overflow-y'}
-        fields={formFields}
+        fields={fields}
         onSubmit={async () => await saveConfig(formConfig)}
         hideCancel={true}
         source={formConfig}

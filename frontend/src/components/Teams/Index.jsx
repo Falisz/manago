@@ -14,12 +14,12 @@ const TeamsIndex = () => {
     useEffect(() => {
         const refresh = refreshTriggers?.teams || false;
 
-        if (refresh)
+        if (refresh) 
             delete refreshTriggers.teams;
         
-        if (!teams || refresh)
+        if (!teams || refresh) 
             fetchTeams({all: true, loading: true}).then();
-
+        
     }, [fetchTeams, teams, refreshTriggers.teams]);
 
     const handleTeamDelete = useCallback((team) => {
@@ -108,25 +108,67 @@ const TeamsIndex = () => {
         }), []);
 
     const contextMenuActions = useMemo(() => ([
-        { id: 'select', label: 'Select Team', selectionMode: false, select: 'id'},
-        { id: 'edit', label: 'Edit Team', selectionMode: false,
-            onClick: (props) => openModal({content: 'teamEdit', contentId: props.id}) },
-        { id: 'assign-member', label: 'Edit Members', selectionMode: false,
-            onClick: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) },
-        { id: 'delete', label: 'Delete Team', selectionMode: false,
-            onClick: (props) => handleTeamDelete(props) },
-        { id: 'select-all', label: 'Select All', selectionMode: true, shortcut: 'Ctrl + Z',
-            setSelected: new Set(teams?.map(team => team.id)) },
-        { id: 'select-all-main', label: 'Select Main Teams', selectionMode: true,
-            setSelected: new Set(teams?.filter(team => team.parent_team === null).map(team => team.id)) },
-        { id: 'clear-selection', label: 'Clear Selection', selectionMode: true,
-            setSelected: new Set() },
-        { id: 'bulk-assign-member', label: 'Assign Members', selectionMode: true,
-            onClick: (selectedTeams) => openModal({content: 'teamUserBulkAssignment', style: {overflow: 'unset'},
-                type: 'dialog', data: teams.filter(team => selectedTeams.has(team.id))}) },
-        { id: 'bulk-delete', label: 'Delete Selected', selectionMode: true,
-            onClick: (selectedTeams) => handleTeamsDelete(selectedTeams) },
-    ]), [openModal, handleTeamDelete, teams]);
+        { 
+            id: 'select', 
+            label: 'Select Team', 
+            selectionMode: false, 
+            select: 'id'
+        },
+        { 
+            id: 'edit', 
+            label: 'Edit Team', 
+            selectionMode: false,
+            onClick: (props) => openModal({content: 'teamEdit', contentId: props.id}) 
+        },
+        { 
+            id: 'assign-member', 
+            label: 'Edit Members', 
+            selectionMode: false,
+            onClick: (props) => openModal({content: 'TeamUserAssignment', type: 'dialog', data: props}) 
+        },
+        { 
+            id: 'delete', 
+            label: 'Delete Team', 
+            selectionMode: false,
+            onClick: (props) => handleTeamDelete(props) 
+        },
+        { 
+            id: 'select-all', 
+            label: 'Select All', 
+            selectionMode: true, 
+            shortcut: 'Ctrl + Z',
+            setSelected: new Set(teams?.map(team => team.id)) 
+        },
+        { 
+            id: 'select-all-main', 
+            label: 'Select Main Teams', 
+            selectionMode: true,
+            setSelected: new Set(teams?.filter(team => team.parent_team === null).map(team => team.id)) 
+        },
+        { 
+            id: 'clear-selection', 
+            label: 'Clear Selection', 
+            selectionMode: true,
+            setSelected: new Set() 
+        },
+        { 
+            id: 'bulk-assign-member', 
+            label: 'Assign Members', 
+            selectionMode: true,
+            onClick: (selectedTeams) => openModal({
+                content: 'teamUserBulkAssignment', 
+                style: {overflow: 'unset'},
+                type: 'dialog', 
+                data: teams.filter(team => selectedTeams.has(team.id))
+            }) 
+        },
+        { 
+            id: 'bulk-delete', 
+            label: 'Delete Selected', 
+            selectionMode: true,
+            onClick: (selectedTeams) => handleTeamsDelete(selectedTeams) 
+        },
+    ]), [openModal, handleTeamDelete, handleTeamsDelete, teams]);
 
     if (loading) 
         return <Loader />;
