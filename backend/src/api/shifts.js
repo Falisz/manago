@@ -142,7 +142,7 @@ const updateShiftHandler = async (req, res) => {
 
     try {
         if (!id) {
-            let { shifts } = req.body;
+            let { ids, data } = req.body;
 
             const {
                 hasAccess, 
@@ -154,27 +154,26 @@ const updateShiftHandler = async (req, res) => {
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
 
-            const errorMessages = [];
+            const warning = [];
 
-            if (!hasFullAccess) {            
-                shifts = Object.entries(shifts).filter( (id, _shift) => allowedIds.contains(id));
-                
-                errorMessages.push(`You are not permitted to update ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
+            if (!hasFullAccess) {
+                ids = Array.from(allowedIds);
+
+                warning.push(`You are not permitted to update ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
             }
 
-            const updatedShifts = [];
+            const updated = [];
 
             for (const [id, shift] of Object.entries(shifts)) {
                 const { success, message } = await updateShift(parseInt(id), shift);
 
                 if (success)
-                    updatedShifts.push(await getShift({ id }));
-                
+                    updated.push(await getShift({ id }));
                 else
-                    errorMessages.push(message);
+                    warning.push(message);
             }
 
-            res.status(201).json({ message: `Updated ${updatedShifts.length} shifts.`, updatedShifts, errorMessages})
+            res.status(201).json({ message: `Updated ${updated.length} shifts.`, updated, warning})
 
         } else {
             let { shift } = req.body;

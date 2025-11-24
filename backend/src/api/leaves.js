@@ -120,44 +120,73 @@ const updateLeaveHandler = async (req, res) => {
 
     try {
         if (!id) {
-            let { leaves } = req.body;
+            const { ids, data } = req.body;
+
+            if (!ids)
+                return res.status(400).json({message: 'Missing IDs.'});
+
+            if (!data)
+                return res.status(400).json({message: 'Missing data.'});
+
+            let action = 'update';
+
+            if (leave.status === 2)
+                action = 'approve';
+            else if (leave.status === 3)
+                action = 'reject';
+            else if (leave.status === 4)
+                action = 'request-cancellation';
 
             const {
                 hasAccess, 
                 hasFullAccess,
                 allowedIds,
                 forbiddenIds 
-            } = await checkAccess(req.session.user, 'update', 'leave', Object.keys(leaves));
+            } = await checkAccess(req.session.user, action, 'leave', ids);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
             
-            const errorMessages = [];
+            const warning = [];
 
             if (!hasFullAccess) {
-                leaves = Object.entries(leaves).filter( (id, _leave) => allowedIds.contains(id));
+                ids = Array.from(allowedIds);
                 
-                errorMessages.push(`You are not permitted to update Leave${forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:'} ${forbiddenIds.join(', ')}.`);
+                warning.push(`You are not permitted to ${action} Leave${forbiddenIds.length > 1 ?
+                     's with IDs:' : ' with ID:'} ${forbiddenIds.join(', ')}.`);
             }
 
-            const updatedLeaves = [];
+            const updated = [];
 
-            for (const [id, leave] of Object.entries(leaves)) {
-                const { success, message } = await updateLeave(parseInt(id), leave);
+            for (const id of ids) {
+                const { success, message } = await updateLeave(parseInt(id), data);
 
                 if (success)
-                    updatedLeaves.push(await getLeave({ id }));
-
+                    updated.push(await getLeave({ id }));
                 else
-                    errorMessages.push(message);
+                    warning.push(message);
             }
 
-            res.status(201).json({ message: `Updated ${updatedLeaves.length()} Leaves.`, updatedLeaves, errorMessages})
+            const done = action === 'update' ? 'Updated' :
+                         action === 'approve' ? 'Approved' :
+                         action === 'reject' ? 'Rejected' :
+                         action === 'request-cancellation' ? 'Cancellation requested' : 
+                         'Processed';
+
+            res.status(201).json({ message: `${done} ${updated.length} Leaves.`, updated, warning})
 
         } else {
-            let { leave } = req.body;
+            const leave = req.body;
+            let action = 'update';
 
-            const { hasAccess } = await checkAccess(req.session.user, 'update', 'leave', id);
+            if (leave.status === 2)
+                action = 'approve';
+            else if (leave.status === 3)
+                action = 'reject';
+            else if (leave.status === 4)
+                action = 'request-cancellation';
+
+            const { hasAccess } = await checkAccess(req.session.user, action, 'leave', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
