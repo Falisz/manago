@@ -779,10 +779,12 @@ const holidays = [
 ];
 
 const requestStatuses = [
-    { id: 0, name: 'Pending' },
-    { id: 1, name: 'Approved' },
-    { id: 2, name: 'Rejected' },
-    { id: 3, name: 'Cancelled' }
+    { id: 0, name: 'Planned' },
+    { id: 1, name: 'Request Pending' },
+    { id: 2, name: 'Approved' },
+    { id: 3, name: 'Rejected' },
+    { id: 4, name: 'Cancel Request Pending' },
+    { id: 4, name: 'Cancelled' }
 ];
 
 const leaveTypes = [
