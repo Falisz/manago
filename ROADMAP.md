@@ -3,10 +3,9 @@ Following roadmap and tasks to-do as of 2025-10-02:
 ### General (till 30-11-25)
 - Implement the useResource hook instead of the dedicated per-resource hooks.
 ### Work Planner (till 30-11-25)
+- RequestTypes, LeaveBalance, Holidays, JobPosts and JobLocations backend implementation
 - Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
 - Dispo Planner - yet separate editor.
-- Holidays
-- Job Posts and Job Locations separate models (both optionals - i.e. gastronomy or entertainment staff)
 - App Settings with configs like enabling job locations and job posts.
 - Each Shift to be also opened in a Detailed mode, when clicked in Schedule Viewer. It can be edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored). Separate useShifts for this.
 ### Timesheets
