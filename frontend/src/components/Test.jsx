@@ -2,22 +2,22 @@
 import React, {useEffect, useRef} from 'react';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
-import { useUsers } from '../hooks/useResource';
+import { useRequestStatuses } from '../hooks/useResource';
 
 const Test = () => {
 
     const { showPopUp } = useApp();
-    const { users, fetchUsers } = useUsers();
+    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
     const isMounted = useRef(false);
 
     useEffect(() => {
-        fetchUsers().then(
+        fetchRequestStatuses().then(
             _res => isMounted.current = true
         );
-    }, [fetchUsers]);
+    }, [fetchRequestStatuses]);
 
     if(isMounted.current)
-        console.log(users);
+        console.log(requestStatuses);
 
     return <div>
         <Button

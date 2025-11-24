@@ -15,7 +15,7 @@ import {
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
-
+    const query = {};
     try {
         if (id) {
             const { hasAccess } = await checkAccess(req.session.user, 'read', 'request-status', id);
@@ -29,12 +29,12 @@ const fetchHandler = async (req, res) => {
         const job_posts = await getRequestStatus(query);
 
         if (id && !job_posts)
-            return res.status(404).json({ message: 'Job Post not found.' });
+            return res.status(404).json({ message: 'Request Status not found.' });
 
         res.json(job_posts);
 
     } catch (err) {
-        console.error(`Error fetching Job Post${id ? ' (ID: ' + id + ')' : 's'}:`, err);
+        console.error(`Error fetching Request Status${id ? ' (ID: ' + id + ')' : 'es'}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 

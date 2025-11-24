@@ -7,16 +7,19 @@ import axios from "axios";
 // Helper functions to convert camelCase to kebab-case and snake_case
 const kebabCase = (str) => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 const snakeCase = (str) => str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-const getNames = (str) => ({
-    0: str,                                         // singular, lowercase, camelCase
-    1: str + 's',                                   // plural, lowercase, camelCase
-    2: str[0].toUpperCase() + str.slice(1),         // singular, capitalized, camelCase
-    3: str[0].toUpperCase() + str.slice(1) + 's',   // plural, capitalized, camelCase
-    4: kebabCase(str),                              // singular, kebab-case
-    5: kebabCase(str + 's'),                        // plural, kebab-case
-    6: snakeCase(str),                              // singular, snake_case
-    7: snakeCase(str + 's')                         // plural, snake_case
-});
+const getNames = (str) => {
+    const s = str.endsWith('s') ? 'es' : 's';
+    return {
+        0: str,                                       // singular, lowercase, camelCase
+        1: str + s,                                   // plural, lowercase, camelCase
+        2: str[0].toUpperCase() + str.slice(1),       // singular, capitalized, camelCase
+        3: str[0].toUpperCase() + str.slice(1) + s,   // plural, capitalized, camelCase
+        4: kebabCase(str),                            // singular, kebab-case
+        5: kebabCase(str + s),                        // plural, kebab-case
+        6: snakeCase(str),                            // singular, snake_case
+        7: snakeCase(str + s)                         // plural, snake_case
+    }
+};
 
 /**
  * Build a URL based on the provided parameters.
@@ -409,3 +412,4 @@ export const useScheduleDrafts = () => useResource('schedules');
 export const useShifts = () => useResource('shift');
 export const useLeaves = () => useResource('leave');
 export const useJobPosts = () => useResource('jobPost');
+export const useRequestStatuses = () => useResource('requestStatus');
