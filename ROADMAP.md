@@ -1,14 +1,13 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### General (till 30-11-25)
-- Implement the useResource hook instead of the dedicated per-resource hooks.
 ### Work Planner (till 30-11-25)
 - RequestTypes, LeaveBalance, Holidays, JobPosts and JobLocations backend implementation
 - Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
 - Dispo Planner - yet separate editor.
 - App Settings with configs like enabling job locations and job posts.
-- Each Shift to be also opened in a Detailed mode, when clicked in Schedule Viewer. It can be edited or deleted like any other resource. The shift can be reassigned to another person, moved to a different day or time. It can be also individually published or reverted to the working schedule (if there is any authored). Separate useShifts for this.
-### Timesheets
+### Users (till 14-12-25)
+- Users have contractual data added - time joined company, contract types, start and end-dates.
+### Timesheets (till 14-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
 - Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
@@ -16,15 +15,13 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Payroll planning.
 - Timesheet approval and rejection.
 - Option for both employees and managers to autofill the timesheet based on published schedule.
-### Projects
+### Projects (till 21-12-25)
 - Project Roles - different from company-wide user roles.
 - Access to different resources.
-### Users
-- Users have contractual data added - time joined company, contract types, start and end-dates.
-### Permissions
+### Permissions (till 30-12-25)
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
 - Implement Roles and/or Permission based restrictions over the UI.
-### Branches
+### Branches (till 30-12-25)
 - Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
 - Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
 - Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
