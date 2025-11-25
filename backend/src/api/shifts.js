@@ -31,7 +31,7 @@ const fetchShiftsHandler = async (req, res) => {
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
 
-            query.id = id;
+            query.id = parseInt(id);
         } else {
 
             if (req.query.user) {
@@ -72,6 +72,9 @@ const fetchShiftsHandler = async (req, res) => {
 
         if (id && !shifts)
             return res.status(404).json({ message: 'Shift not found.' });
+
+        if (id && Array.isArray(shifts))
+            return res.json(shifts[0]);
 
         res.json(shifts);
 
@@ -176,7 +179,7 @@ const updateShiftHandler = async (req, res) => {
             res.status(201).json({ message: `Updated ${updated.length} shifts.`, updated, warning})
 
         } else {
-            let { shift } = req.body;
+            let shift = req.body;
 
             const { hasAccess } = await checkAccess(req.session.user, 'update', 'shift', id);
 

@@ -32,7 +32,10 @@ const buildUrl = (url_base = null, params = {}, id_required=false) => {
     if (!url_base) return null;
     const { id, ...flags } = params;
     if (id_required && !id) return null;
-    const query = flags ? Object.entries(flags).map(([key, value]) => `${key}=${value}`).join('&') : null;
+    const query = flags ? Object.entries(flags)
+        .filter(([key, _value]) => !['key','map','reload','loading'].includes(key))
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&') : null;
     return `/${url_base}` + (id ? `/${id}` : '') + (query ? `?${query}` : '');
 }
 /**
@@ -236,12 +239,12 @@ const useResource = (resource) => {
                 showPopUp({
                     type: 'success',
                     content: result.message,
-                    onClick: isNew ? () => openModal({content: 'resourceDetails', contentId: id}) : null
+                    onClick: isNew ? () => openModal({content: 'resourceDetails', contentId: parseInt(id)}) : null
                 });
 
             refreshData(name[1], true);
             if (!isNew && !batchMode)
-                refreshData(name[0], id);
+                refreshData(name[0], parseInt(id));
 
             return result[name[0]];
         } catch (err) {

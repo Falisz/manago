@@ -7,15 +7,124 @@ import Modal from "../components/Modal";
 import PostDetails from '../components/Posts/Details';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
+import ShiftDetails from '../components/Shifts/Details';
+import ShiftEdit from '../components/Shifts/Edit';
 import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
-import UserEdit, {
-    UserAssignment,
-    UserBulkAssignment
-} from '../components/Users/Edit';
+import UserEdit, {UserAssignment, UserBulkAssignment} from '../components/Users/Edit';
 
 const ANIMATION_DURATION = 300;
+
+const MODALS = {
+    default: {
+        component: (modal) => <InWorks title={'Missing Modal'} modal={modal.id} />
+    },
+    userNew: {
+        urlParam: 'new',
+        urlParamValue: 'user',
+        component: (modal) => <UserEdit modal={modal.id}/>
+    },
+    userDetails: {
+        urlParam: 'user',
+        component: (modal) => <UserDetails userId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog'
+    },
+    userEdit: {
+        urlParam: 'editUser',
+        component: (modal) => <UserEdit userId={modal.contentId} modal={modal.id}/>
+    },
+    managerNew: {
+        urlParam: 'new',
+        urlParamValue: 'manager',
+        component: (modal) => <UserEdit preset={'manager'} modal={modal.id}/>
+    },
+    employeeNew: {
+        urlParam: 'new',
+        urlParamValue: 'employee',
+        component: (modal) => <UserEdit preset={'employee'} modal={modal.id}/>
+    },
+    roleNew: {
+        urlParam: 'new',
+        urlParamValue: 'role',
+        component: (modal) => <RoleEdit modal={modal.id}/>
+    },
+    roleDetails: {
+        urlParam: 'role',
+        component: (modal) => <RoleDetails roleId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog'
+    },
+    roleEdit: {
+        urlParam: 'editRole',
+        component: (modal) => <RoleEdit roleId={modal.contentId} modal={modal.id}/>
+    },
+    teamNew: {
+        urlParam: 'new',
+        urlParamValue: 'team',
+        component: (modal) => <TeamEdit modal={modal.id}/>
+    },
+    teamDetails: {
+        urlParam: 'team',
+        component: (modal) => <TeamDetails teamId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog'
+    },
+    teamEdit: {
+        urlParam: 'editTeam',
+        component: (modal) => <TeamEdit teamId={modal.contentId} modal={modal.id}/>
+    },
+    shiftNew: {
+        urlParam: 'new',
+        urlParamValue: 'shift',
+        component: (modal) => <ShiftEdit modal={modal.id}/>
+    },
+    shiftDetails: {
+        urlParam: 'shift',
+        component: (modal) => <ShiftDetails shiftId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog'
+    },
+    shiftEdit: {
+        urlParam: 'editShift',
+        component: (modal) => <ShiftEdit shiftId={modal.contentId} modal={modal.id}/>
+    },
+    postDetails: {
+        urlParam: 'post',
+        component: (modal) => <PostDetails postId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog'
+    },
+    confirm: {
+        component: (modal) => <ConfirmPrompt
+                                    message={modal.message}
+                                    onConfirm={modal.onConfirm}
+                                    onConfirm2={modal.onConfirm2}
+                                    confirmLabel={modal.confirmLabel}
+                                    confirmLabel2={modal.confirmLabel2}
+                                    cancelLabel={modal.cancelLabel}
+                                    onCancel={modal.onCancel}
+                                    modal={modal.id}
+                                />
+    },
+    component: {
+        component: (modal) => React.createElement(modal.component, modal.props)
+    },
+    userRoleAssignment: {
+        component: (modal) => <UserAssignment user={modal.data} resource={'role'} modal={modal.id} />
+    },
+    userRoleBulkAssignment: {
+        component: (modal) => <UserBulkAssignment users={modal.data} resource={'role'} modal={modal.id} />
+    },
+    userManagerAssignment: {
+        component: (modal) => <UserAssignment user={modal.data} resource={'manager'} modal={modal.id} />
+    },
+    userManagerBulkAssignment: {
+        component: (modal) => <UserBulkAssignment users={modal.data} resource={'manager'} modal={modal.id} />        
+    },
+    teamUserAssignment: {
+        component: (modal) => <TeamUserAssignment team={modal.data} modal={modal.id} />
+    },
+    teamUserBulkAssignment: {
+        component: (modal) => <TeamUserBulkAssignment teams={modal.data} modal={modal.id} />
+    }
+};
 
 const NavContext = createContext();
 
@@ -38,19 +147,13 @@ export const NavProvider = ({ children }) => {
         modalKeys.forEach((k) => newParams.delete(k));
 
         Object.values(currentModals).forEach((modal) => {
-            if (modal.content === 'userNew') newParams.set('new', 'user');
-            if (modal.content === 'managerNew') newParams.set('new', 'manager');
-            if (modal.content === 'employeeNew') newParams.set('new', 'employee');
-            if (modal.content === 'roleNew') newParams.set('new', 'role');
-            if (modal.content === 'teamNew') newParams.set('new', 'team');
-            if (modal.content === 'test') newParams.set('new', 'test');
-            if (modal.content === 'userDetails') newParams.set('user', modal.contentId);
-            if (modal.content === 'userEdit') newParams.set('editUser', modal.contentId);
-            if (modal.content === 'roleDetails') newParams.set('role', modal.contentId);
-            if (modal.content === 'roleEdit') newParams.set('editRole', modal.contentId);
-            if (modal.content === 'teamDetails') newParams.set('team', modal.contentId);
-            if (modal.content === 'teamEdit') newParams.set('editTeam', modal.contentId);
-            if (modal.content === 'postDetails') newParams.set('post', modal.contentId);
+            const modalConfig = MODALS[modal.content];
+
+            if (modalConfig) {
+                const key = modalConfig.urlParam;
+                const value = key === 'new' ? modalConfig.urlParamValue : modal.contentId;
+                newParams.set(key, value);
+            }
         });
         setSearchParams(newParams, { replace: true });
     }, [search, setSearchParams]);
@@ -162,102 +265,26 @@ export const NavProvider = ({ children }) => {
         });
     }, []);
 
-    const renderModalContent = (modal) => {
-        switch (modal.content) {
-            case 'userDetails':
-                return <UserDetails userId={modal.contentId} modal={modal.id} />;
-            case 'userEdit':
-                return <UserEdit userId={modal.contentId} modal={modal.id} />;
-            case 'userRoleAssignment':
-                return <UserAssignment user={modal.data} resource={'role'} modal={modal.id} />;
-            case 'userRoleBulkAssignment':
-                return <UserBulkAssignment users={modal.data} resource={'role'} modal={modal.id} />;
-            case 'userManagerAssignment':
-                return <UserAssignment user={modal.data} resource={'manager'} modal={modal.id} />;
-            case 'userManagerBulkAssignment':
-                return <UserBulkAssignment users={modal.data} resource={'manager'} modal={modal.id} />;
-            case 'userNew':
-                return <UserEdit modal={modal.id} />;
-            case 'employeeNew':
-                return <UserEdit preset={'employee'} modal={modal.id} />;
-            case 'managerNew':
-                return <UserEdit preset={'manager'} modal={modal.id} />;
-            case 'roleDetails':
-                return <RoleDetails roleId={modal.contentId} modal={modal.id} />;
-            case 'roleEdit':
-                return <RoleEdit roleId={modal.contentId} modal={modal.id} />;
-            case 'roleNew':
-                return <RoleEdit />;
-            case 'teamDetails':
-                return <TeamDetails teamId={modal.contentId} modal={modal.id} />;
-            case 'teamEdit':
-                return <TeamEdit teamId={modal.contentId} modal={modal.id} />;
-            case 'TeamUserAssignment':
-                return <TeamUserAssignment team={modal.data} modal={modal.id} />;
-            case 'teamUserBulkAssignment':
-                return <TeamUserBulkAssignment teams={modal.data} modal={modal.id} />;
-            case 'teamNew':
-                return <TeamEdit />;
-            case 'subteamNew':
-                return <TeamEdit parentId={modal.parentId} modal={modal.id} />;
-            case 'postDetails':
-                return <PostDetails postId={modal.contentId} modal={modal.id} />;
-            case 'confirm':
-                return <ConfirmPrompt
-                    message={modal.message}
-                    onConfirm={modal.onConfirm}
-                    onConfirm2={modal.onConfirm2}
-                    confirmLabel={modal.confirmLabel}
-                    confirmLabel2={modal.confirmLabel2}
-                    cancelLabel={modal.cancelLabel}
-                    onCancel={modal.onCancel}
-                    modal={modal.id}
-                />;
-            case 'component':
-                return React.createElement(modal.component, modal.props);
-            default:
-                return <InWorks title={'Unknown Modal'} modal={modal.id} />;
-        }
-    };
+    const renderModalContent = (modal) => MODALS[modal.content]?.component(modal) || MODALS.default.component(modal);
 
     const parseUrlParams = useCallback(() => {
+        Object.entries(MODALS).forEach(([key, config]) => {
+            if (!config.urlParam || config.urlParam === 'new')
+                return;
+            
+            const contentId = searchParams.get(config.urlParam);
+            
+            if (contentId) 
+                openModal({ content: key, contentId, type: config.type || 'pane' });
+        });
+        
         const newResource = searchParams.get('new');
-        if (newResource === 'manager')
-            openModal({ content: 'managerNew' });
-        else if (newResource === 'employee')
-            openModal({ content: 'employeeNew' });
-        else if (newResource === 'user')
-            openModal({ content: 'userNew' });
-        else if (newResource === 'role')
-            openModal({ content: 'roleNew' });
-        else if (newResource === 'team')
-            openModal({ content: 'teamNew' });
-        else if (newResource === 'branch')
-            openModal({ content: 'branchNew' });
-        else if (newResource === 'project')
-            openModal({ content: 'projectNew' });
-        else if (newResource === 'post')
-            openModal({ content: 'postNew' });
-        else if (newResource === 'test')
-            openModal({ content: 'test' });
-
-        const userDetails = searchParams.get('user');
-        if (userDetails) openModal({ content: 'userDetails', contentId: userDetails, type: 'dialog' });
-        const editUser = searchParams.get('editUser');
-        if (editUser) openModal({ content: 'userEdit', contentId: editUser });
-
-        const roleDetails = searchParams.get('role');
-        if (roleDetails) openModal({ content: 'roleDetails', contentId: roleDetails, type: 'dialog' });
-        const editRole = searchParams.get('editRole');
-        if (editRole) openModal({ content: 'roleEdit', contentId: editRole });
-
-        const teamDetails = searchParams.get('team');
-        if (teamDetails) openModal({ content: 'teamDetails', contentId: teamDetails, type: 'dialog' });
-        const editTeam = searchParams.get('editTeam');
-        if (editTeam) openModal({ content: 'teamEdit', contentId: editTeam });
-
-        const postDetails = searchParams.get('post');
-        if (postDetails) openModal({ content: 'postDetails', contentId: postDetails, type: 'dialog' });
+        if (newResource) {
+            const modalConfig = Object.entries(MODALS)
+                .find(([_key, config]) => config.urlParam === 'new' && config.urlParamValue === newResource);
+            if (modalConfig)
+                openModal({ content: modalConfig[0]});
+        }
     }, [openModal, searchParams]);
 
     useEffect(() => {
