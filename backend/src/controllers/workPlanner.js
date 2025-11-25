@@ -465,6 +465,9 @@ export async function updateShift(id, data) {
     if (!id)
         return { success: false, message: 'Shift ID not provided.' };
 
+    if (!data)
+        return { success: false, message: 'Update data not provided.' };
+
     const shift = await Shift.findByPk(id);
 
     if (!shift)

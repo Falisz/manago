@@ -132,6 +132,7 @@ export const AppProvider = ({ children }) => {
     }, []);
 
     const refreshData = useCallback((content, data) => {
+        console.log(content, data);
         setRefreshTriggers((prev) => ({
             ...prev,
             [content]: { data, timestamp: Date.now() },

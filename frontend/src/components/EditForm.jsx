@@ -302,6 +302,20 @@ const EditForm = ({
                                     disabled={group.disabled}
                                 />;
 
+                            if (group.inputType === 'time')
+                                groupContent = <input
+                                    className={getInputClassName('form-input', name)}
+                                    type={'time'}
+                                    name={name}
+                                    value={source?.[name] || formData?.[name] || ''}
+                                    min={typeof group.min === 'function' ? group.min(formData) : group.min }
+                                    max={typeof group.max === 'function' ? group.max(formData) : group.max }
+                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
+                                    placeholder={`${group.placeholder || group.label}`}
+                                    required={group.required}
+                                    disabled={group.disabled}
+                                />;
+
                             if (group.inputType === 'textarea')
                                 groupContent = <textarea
                                     className={getInputClassName('form-textarea', name)}

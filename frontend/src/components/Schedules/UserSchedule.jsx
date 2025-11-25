@@ -18,6 +18,8 @@ const LeaveItem = ({ days, type, color }) => (
 const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onClick,
                        selectShift, updateShift, jobPosts }) => {
 
+    const { openDialog } = useNav();
+
     if (!shift)
         return null;
 
@@ -41,13 +43,13 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
     }
 
     return <div
-        className={'shift-item' + (shift.selected ? ' selected' : '')}
+        className={'shift-item' + (shift.selected ? ' selected' : '') + (!editMode ? ' app-clickable' : '')}
         style={{background: (shift.job_post ? shift.job_post.color+'90' : 'var(--seethrough-background)'), position: 'relative'}}
         draggable={editMode}
         onDragStart={editMode ? (e) => onDragStart(e, shift) : undefined}
         onDragEnd={editMode ? (e) => onDragEnd(e, shift) : undefined}
         onContextMenu={editMode ? (e) => onContextMenu(e, shift) : undefined}
-        onClick={editMode ? (e) => onClick(e, shift) : undefined}
+        onClick={editMode ? (e) => onClick(e, shift) : () => openDialog({content: 'shiftDetails', contentId: shift.id})}
     >
         <span className={'time-range'}>{editMode ?
             <><input

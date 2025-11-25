@@ -61,7 +61,7 @@ const Header = ({ header, data }) => {
                 title={title.title}
                 style={title.style}
             >
-                {getData(data, title.dataField, title.placeholder)}
+                {title.content ? title.content : getData(data, title.dataField, title.placeholder)}
             </div>}
 
             {suffix && <div
@@ -80,14 +80,14 @@ const Header = ({ header, data }) => {
 
 const SectionHeader = ({ header }) => {
 
-    let text, button;
+    let text, button, style = {};
 
     if (typeof header === 'object')
-        ({ text, button } = header);
+        ({ text, button, style } = header);
     else
         text = header;
 
-    return <div key={'section-header'} className='section-header'>
+    return <div key={'section-header'} className='section-header' style={style}>
         {text}
         {button && <Button
             {...button}
@@ -99,17 +99,12 @@ const SectionHeader = ({ header }) => {
 
 const SectionField = ({ field, data, isSectionEmpty }) => {
 
-    const { className, style, title, label, dataType, dataField, placeholder, button, hideEmpty } = field;
+    const { className, style, title, label, dataType, dataField, placeholder, format, button, hideEmpty } = field;
 
     let content = placeholder;
     let isGroupEmpty = true;
 
-    if (['string', 'number', 'value'].includes(dataType)) {
-        content = data[dataField].toString();
-        if (content != null)
-            isGroupEmpty = false;
-
-    } else if (dataType === 'boolean') {
+    if (dataType === 'boolean') {
         const val = data[dataField];
         if (val != null)
             isGroupEmpty = false;
@@ -128,26 +123,28 @@ const SectionField = ({ field, data, isSectionEmpty }) => {
         if (!item)
             return null;
 
-        const itemStruct = field.item;
-        const itemId = item[itemStruct.idField];
+        const { idField = 'id', dataField: itemDataField, text: itemText, onClick, style = {} } = field.item;
+
+        const itemId = item[idField];
 
         isGroupEmpty = false;
 
         let itemName;
-        if (Array.isArray(itemStruct.dataField)) {
-            itemName = itemStruct.dataField.map(field => item[field] ?? '').join(' ')
+        if (Array.isArray(itemDataField)) {
+            itemName = itemDataField.map(field => item[field] ?? '').join(' ')
         } else if (typeof field.dataField === 'string') {
-            itemName = item[itemStruct.dataField];
+            itemName = item[itemDataField];
         } else {
-            itemName = itemStruct.text || '';
+            itemName = itemText || '';
         }
         content = <div
             key={itemId}
             className={'data-group'}
         >
             <span
-                className={itemStruct.onClick ? 'app-clickable' : ''}
-                onClick={() => itemStruct.onClick(itemId)}
+                className={onClick ? 'app-clickable' : ''}
+                onClick={onClick ? () => onClick(itemId) : null}
+                style={style}
             >
                 {itemName}
             </span>
@@ -209,7 +206,15 @@ const SectionField = ({ field, data, isSectionEmpty }) => {
             });
         }
     } else {
-        return null;
+        content = data[dataField].toString();
+        if (content != null)
+            isGroupEmpty = false;
+
+        if (format && !isGroupEmpty) {
+            if (typeof format === 'function') content = format(content);
+            else if (typeof format === 'string') content = format.replace('%v', content);
+        }
+        
     }
 
     // TODO: Make this work.
