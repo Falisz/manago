@@ -855,7 +855,6 @@ export async function createLeave(data) {
     
     if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) 
         return { success: false, message: 'Approver not found.' };
-    
 
     const leave = await Leave.create({
         id: await randomId(Leave),

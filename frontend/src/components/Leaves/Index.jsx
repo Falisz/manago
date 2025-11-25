@@ -17,7 +17,7 @@ const LeaveRequestForm = () => {
     }, [fetchLeaveTypes]);
 
     const fields = useMemo(() => ({
-        leave_type: {
+        type: {
             section: 0,
             type: 'string',
             inputType: 'combobox',
@@ -64,8 +64,6 @@ const LeaveRequestForm = () => {
     }), [leaveTypes]);
 
     const presetData = useMemo(() => ({status: 0, user: user.id}), [user]);
-
-    // TODO: Fix this - says Leave Type not provided.
 
     return (
         <EditForm

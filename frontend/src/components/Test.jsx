@@ -1,23 +1,11 @@
 // FRONTEND/components/Test.jsx
-import React, {useEffect, useRef} from 'react';
+import React from 'react';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
-import { useRequestStatuses } from '../hooks/useResource';
 
 const Test = () => {
 
     const { showPopUp } = useApp();
-    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
-    const isMounted = useRef(false);
-
-    useEffect(() => {
-        fetchRequestStatuses().then(
-            _res => isMounted.current = true
-        );
-    }, [fetchRequestStatuses]);
-
-    if(isMounted.current)
-        console.log(requestStatuses);
 
     return <div>
         <Button

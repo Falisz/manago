@@ -1,34 +1,8 @@
 // FRONTEND/components/Details.jsx
-import React, {useRef} from 'react';
+import React, {useState} from 'react';
 import Button from './Button';
 import Icon from './Icon';
 import '../styles/Details.css';
-
-// new structure
-
-// header = {
-//     className: {},
-//     style: {},
-//     prefix: {},
-//     title: {},
-//     suffix: {},
-//     buttons: {}
-// }
-
-// sections = {
-//     section1: {
-//         className: {},
-//         style: {},
-//         header: {},
-//         fields: {},
-//     },
-//     section2: {
-//         className: {},
-//         style: {},
-//         header: {},
-//         fields: {},
-//     }
-// }
 
 const Header = ({ header, data }) => {
 
@@ -97,7 +71,7 @@ const SectionHeader = ({ header }) => {
     </div>;
 };
 
-const SectionField = ({ field, data, isSectionEmpty }) => {
+const SectionField = ({ field, data, markNotEmpty }) => {
 
     const { className, style, title, label, dataType, dataField, placeholder, format, button, hideEmpty } = field;
 
@@ -217,9 +191,8 @@ const SectionField = ({ field, data, isSectionEmpty }) => {
         
     }
 
-    // TODO: Make this work.
     if (!isGroupEmpty)
-        isSectionEmpty.current = false;
+        markNotEmpty();
 
     if (hideEmpty && isGroupEmpty)
         return null;
@@ -240,25 +213,20 @@ const SectionField = ({ field, data, isSectionEmpty }) => {
 }
 
 const Section = ({section, data}) => {
-    const isEmpty = useRef(true);
+    const [isEmpty, setIsEmpty] = useState(true);
     const { style, className, header, fields, hideEmpty } = section;
 
-    const content = (
+    return (
         <div
             className={'app-details-section' + (className ? ' ' + className : '')}
-            style={style}
+            style={{...style, display: hideEmpty  && isEmpty ? 'none' : undefined }}
         >
             {header && <SectionHeader header={header}/>}
             {Object.values(fields).map((field, key) =>
-                <SectionField key={key} field={field} data={data} isSectionEmpty={isEmpty}/>
+                <SectionField key={key} field={field} data={data} markNotEmpty={() => setIsEmpty(false)}/>
             )}
         </div>
     );
-
-    if (hideEmpty && isEmpty.current)
-        return null;
-
-    return content;
 }
 
 const Details = ({className, style, header, sections, data}) => {

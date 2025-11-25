@@ -93,6 +93,18 @@ const createLeaveHandler = async (req, res) => {
 
     try {
         let leave = req.body;
+        leave.user = req.session.user;
+        leave.status = 0;
+
+        if (leave.start_date && leave.end_date) {
+            const start = new Date(leave.start_date);
+            const end = new Date(leave.end_date);
+
+            if (!isNaN(start) && !isNaN(end)) {
+                const diffInMs = end - start;
+                leave.days = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
+            }
+        }
     
         const { success, message, id } = await createLeave(leave);
 
