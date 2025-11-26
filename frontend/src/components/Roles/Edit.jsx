@@ -9,7 +9,7 @@ const RoleEdit = ({ roleId, modal }) => {
 
     useEffect(() => {
         if (roleId)
-            fetchRole({roleId}).then();
+            fetchRole({id: roleId}).then();
         else 
             setLoading(false);
         
@@ -47,7 +47,7 @@ const RoleEdit = ({ roleId, modal }) => {
     return <EditForm 
         header={roleId && role ? `Editing ${role.name}` : 'Creating new Role'} 
         fields={fields}
-        onSubmit={async (formData) => await saveRole({roleId, formData})}
+        onSubmit={async (data) => await saveRole({id: roleId, data})}
         modal={modal}
         presetData={presetData} 
     />;

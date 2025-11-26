@@ -265,7 +265,7 @@ const useSchedules = () => {
         }
 
         if (['you', 'user'].includes(user_scope))
-            users = await fetchUser({userId: user_scope_id});
+            users = await fetchUser({id: user_scope_id});
         else
             users = await fetchUsers({
                 user_scope,

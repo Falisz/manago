@@ -4,7 +4,7 @@ import {useTeams, useUsers} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-export const TeamUserAssignment = ({team, modal}) => {
+export const TeamAssignment = ({team, modal}) => {
     const {saveTeamAssignment} = useTeams();
     const {users, loading, fetchUsers} = useUsers();
     const {users: managers, loading: managersLoading, fetchUsers: fetchManagers} = useUsers();
@@ -14,151 +14,151 @@ export const TeamUserAssignment = ({team, modal}) => {
         fetchManagers({group: 'managers'}).then();
     }, [fetchUsers, fetchManagers]);
 
-    const fields = useMemo(() => ({
-        managers: {
-            section: 0,
-            type: 'id-list',
-            teamCompliance: true,
-            inputType: 'multi-dropdown',
-            label: 'Team Managers',
-            itemSource: managers,
-            itemNameField: ['first_name', 'last_name'],
-            itemExcludedIds: { formData: ['leaders', 'members'] }
-        },
-        leaders: {
-            section: 1,
-            type: 'id-list',
-            teamCompliance: true,
-            inputType: 'multi-dropdown',
-            label: 'Team Leaders',
-            itemSource: users,
-            itemNameField: ['first_name', 'last_name'],
-            itemExcludedIds: { formData: ['managers', 'members'] }
-        },
-        members: {
-            section: 2,
-            type: 'id-list',
-            teamCompliance: true,
-            inputType: 'multi-dropdown',
-            label: 'Team Members',
-            itemSource: users,
-            itemNameField: ['first_name', 'last_name'],
-            itemExcludedIds: { formData: ['leaders', 'managers'] }
+    const header = useCallback((data) => {
+        const batchMode = Array.isArray(team);
+
+        if (batchMode) {
+            if (!data || !data['mode'])
+                return `Bulk Assignment`;
+
+            const headerModes = {
+                add: ['Adding', 'to'],
+                set: ['Setting', 'to'],
+                del: ['Removing', 'from'],
+            };
+            const headerVariants = {1: 'Member', 2: 'Leader', 3: 'Manager'};
+
+            const tokens = headerModes[data['mode']];
+            let title = `%m1 %v %m2 ${team.length} Team${team.length > 1 ? 's' : ''}`;
+            title = title.replace('%m1', tokens[0]);
+            title = title.replace('%m2', tokens[1]);
+            title = title.replace('%v', headerVariants[data['role']]);
+            return title;
+        } else {
+            return `Editing Members of ${team?.name}`;
         }
-    }), [managers, users]);
+    }, [team]);
 
-    const onSubmit = (data) => {
-        saveTeamAssignment({
-            teamIds: [team.id],
-            resource: 'member',
-            resourceIds: data['members']
-        }).then();
-        saveTeamAssignment({
-            teamIds: [team.id],
-            resource: 'leader',
-            resourceIds: data['leaders']
-        }).then();
-        saveTeamAssignment({
-            teamIds: [team.id],
-            resource: 'manager',
-            resourceIds: data['managers']
-        }).then();
-        return true;
-    };
+    const fields = useMemo(() => {
+        const batchMode = Array.isArray(team);
 
-    if (loading || managersLoading) 
-        return <Loader/>;
-
-    return <EditForm 
-        header={`Editing Members of ${team?.name}`}
-        fields={fields}
-        onSubmit={onSubmit}
-        modal={modal}
-        presetData={team} 
-    />;
-}
-
-export const TeamUserBulkAssignment = ({teams, modal}) => {
-    const {users, usersLoading: loading, fetchUsers} = useUsers();
-    const { saveTeamAssignment } = useTeams();
-
-    useEffect(() => {
-        fetchUsers().then();
-    }, [fetchUsers]);
-
-    const headerModes = {
-        add: ['Adding', 'to'],
-        set: ['Setting', 'to'],
-        del: ['Removing', 'from'],
-    };
-    const headerVariants = {1: 'Member', 2: 'Leader', 3: 'Manager'};
-
-    const header = (data) => {
-        const tokens = headerModes[data['mode']];
-        let title = `%m %v %m ${teams.length} Team${teams.length > 1 ? 's' : ''}`;
-        title = title.replace('%m', tokens[0], 0);
-        title = title.replace('%m', tokens[1], 1);
-        title = title.replace('%v', headerVariants[data['role']]);
-        return title;
-    };
-
-    const fields = useMemo(() => ({
-        teams: {
-            section: 0,
-            label: 'Selected Teams',
-            nameField: 'name',
-            type: 'listing'
-        },
-        mode: {
-            section: 1,
-            label: 'Mode',
-            type: 'string',
-            inputType: 'dropdown',
-            options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
-            searchable: false
-        },
-        user: {
-            section: 2,
-            label: 'User',
-            type: 'number',
-            inputType: 'dropdown',
-            options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
-        },
-        role: {
-            section: 2,
-            label: 'Role',
-            type: 'number',
-            inputType: 'dropdown',
-            options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
-            searchable: false
-        }
-    }), [users]);
+        if (batchMode)
+            return {
+                teams: {
+                    section: 0,
+                    label: 'Selected Teams',
+                    nameField: 'name',
+                    type: 'listing'
+                },
+                mode: {
+                    section: 1,
+                    label: 'Mode',
+                    type: 'string',
+                    inputType: 'dropdown',
+                    options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
+                    searchable: false
+                },
+                user: {
+                    section: 2,
+                    label: 'User',
+                    type: 'number',
+                    inputType: 'dropdown',
+                    options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
+                },
+                role: {
+                    section: 2,
+                    label: 'Role',
+                    type: 'number',
+                    inputType: 'dropdown',
+                    options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
+                    searchable: false
+                }
+            }
+        else
+            return {
+                managers: {
+                    section: 0,
+                    type: 'id-list',
+                    teamCompliance: true,
+                    inputType: 'multi-dropdown',
+                    label: 'Team Managers',
+                    itemSource: managers,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: {formData: ['leaders', 'members']}
+                },
+                leaders: {
+                    section: 1,
+                    type: 'id-list',
+                    teamCompliance: true,
+                    inputType: 'multi-dropdown',
+                    label: 'Team Leaders',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: {formData: ['managers', 'members']}
+                },
+                members: {
+                    section: 2,
+                    type: 'id-list',
+                    teamCompliance: true,
+                    inputType: 'multi-dropdown',
+                    label: 'Team Members',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: {formData: ['leaders', 'managers']}
+                }
+            }
+    }, [team, users, managers]);
 
     const sections = {
         2: {style: {flexDirection: 'row'}}
     };
 
-    const onSubmit = useCallback(async (data) => await saveTeamAssignment({
-        teamIds: teams.map(team => team.id),
-        resource: data.role === 3 ? 'manager' : data.role === 2 ? 'leader' : 'member',
-        resourceIds: [data.user],
-        mode: data.mode
-    }), [teams, saveTeamAssignment]);
+    const onSubmit = useCallback(async (data) => {
 
-    const presetData = useMemo(() => ({mode: 'add', teams, role: 2}), [teams]);
+        const batchMode = Array.isArray(team);
 
-    if (loading) 
+        if (batchMode) {
+            return await saveTeamAssignment({
+                teamIds: team.map(team => team.id),
+                resource: data.role === 3 ? 'manager' : data.role === 2 ? 'leader' : 'member',
+                resourceIds: [data.user],
+                mode: data.mode
+            });
+        } else {
+            saveTeamAssignment({
+                teamIds: [team.id],
+                resource: 'member',
+                resourceIds: data['members']
+            }).then();
+            saveTeamAssignment({
+                teamIds: [team.id],
+                resource: 'leader',
+                resourceIds: data['leaders']
+            }).then();
+            saveTeamAssignment({
+                teamIds: [team.id],
+                resource: 'manager',
+                resourceIds: data['managers']
+            }).then();
+            return true;
+        }
+
+    }, [team, saveTeamAssignment]);
+
+    const presetData = useMemo(() => (Array.isArray(team) ? {mode: 'add', teams: team, role: 2} : team), [team]);
+
+    if (loading || managersLoading)
         return <Loader/>;
 
-    return <EditForm 
+    return <EditForm
         header={header}
         fields={fields}
         sections={sections}
         onSubmit={onSubmit}
         modal={modal}
-        presetData={presetData} 
+        presetData={presetData}
     />;
-}
+};
 
 const TeamEdit = ({ teamId, parentId, modal }) => {
     const { team, loading, setLoading, fetchTeam, saveTeam } = useTeams();
@@ -172,7 +172,7 @@ const TeamEdit = ({ teamId, parentId, modal }) => {
         fetchTeams({all: true, loading: true}).then();
 
         if (teamId)
-            fetchTeam({teamId}).then();
+            fetchTeam({id: teamId}).then();
         else
             setLoading(false);
         
@@ -275,7 +275,7 @@ const TeamEdit = ({ teamId, parentId, modal }) => {
     return <EditForm
         header={teamId ? `Editing ${team?.name}` : `Creating new ${parentId ? 'SubTeam' : 'Team'}`}
         fields={fields}
-        onSubmit={async (formData) => await saveTeam({teamId, formData})}
+        onSubmit={async (data) => await saveTeam({id: teamId, data})}
         modal={modal}
         presetData={presetData} 
     />;

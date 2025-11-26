@@ -169,7 +169,7 @@ const ScheduleView = () => {
 
     return <div className={'app-schedule seethrough'}>
         <Helmet>
-            <title>MANAGO | {scheduleId ? 'Schedule Preview' : 'Current Schedule'}</title>
+            <title>{scheduleId ? 'Schedule Preview' : 'Current Schedule'} | MANAGO</title>
         </Helmet>
         <div className={'app-schedule-header'}>
             <h1>{scheduleId ? 'Draft Preview: ' + schedule.name : 'Current Schedule'}</h1>

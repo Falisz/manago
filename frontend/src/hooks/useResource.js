@@ -5,8 +5,25 @@ import useNav from "../contexts/NavContext";
 import axios from "axios";
 
 // Helper functions to convert camelCase to kebab-case and snake_case
+/**
+ * Convert camelCase to kebab-case and snake_case.
+ * @param str
+ * @returns {string}
+ */
 const kebabCase = (str) => str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+
+/**
+ * Convert camelCase to snake_case.
+ * @param str
+ * @returns {string}
+ */
 const snakeCase = (str) => str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+
+/**
+ * Get all possible names for a resource from singular, camelCase name.
+ * @param str
+ * @returns {Object}
+ */
 const getNames = (str) => {
     const s = str.endsWith('s') ? 'es' : 's';
     return {
@@ -37,7 +54,8 @@ const buildUrl = (url_base, params = {}, id_required=false) => {
         .map(([key, value]) => `${key}=${value}`)
         .join('&') : null;
     return `/${url_base}` + (id ? `/${id}` : '') + (query ? `?${query}` : '');
-}
+};
+
 /**
  * Delete a specific team by ID.
  * @param {string | null} name - The plural name of the resource in kebab-case, used for the URL-base
@@ -48,6 +66,10 @@ const defaultParams = (name) => ({
     buildUrl: (params) => buildUrl(name, params),
     buildDeleteUrl: (params) => buildUrl(name, params, true)
 });
+
+/**
+ * Object with definitions of configurations for each resource.
+ */
 const resourceConfigs = {
     default: (name) => defaultParams(name),
     user: {
@@ -74,8 +96,6 @@ const resourceConfigs = {
 
                 else if (user_scope === 'project')
                     url = `/projects/${user_scope_id}/users`;
-            } else if (user_scope !== 'all' && !user_scope_id) {
-                return null;
             } else if (group === 'employees' || group === 'managers') {
                 url = `/users?group=${group}`;
             }
@@ -150,6 +170,9 @@ const useResource = (resource) => {
     const config = useMemo(() => resourceConfigs[name[0]] || resourceConfigs.default(name[5]), [name]);
 
     // API callbacks
+    /**
+     * Fetch a resource by ID and/or additional parameters.
+     */
     const fetchResource = useCallback(async (params = {}) => {
 
         params = {...config.fetchParams, ...params, loading: params.loading ?? true};
@@ -203,8 +226,11 @@ const useResource = (resource) => {
         return result;
     }, [name, config, resourceCache, showPopUp]);
 
-    const saveResource = useCallback(async ({id = null, formData}) => {
-        if (!formData)
+    /**
+     * Save data for a resource by ID.
+     */
+    const saveResource = useCallback(async ({id = null, data}) => {
+        if (!data)
             return null;
 
         const isNew = !id;
@@ -213,11 +239,11 @@ const useResource = (resource) => {
         try {
             let res;
             if (isNew)
-                res = await axios.post(config.buildUrl(), formData, { withCredentials: true });
+                res = await axios.post(config.buildUrl(), data, { withCredentials: true });
             else if (batchMode)
-                res = await axios.put(config.buildUrl(), {ids: id, data: formData}, { withCredentials: true });
+                res = await axios.put(config.buildUrl(), {ids: id, data: data}, { withCredentials: true });
             else
-                res = await axios.put(config.buildUrl({id}), formData, { withCredentials: true });
+                res = await axios.put(config.buildUrl({id}), data, { withCredentials: true });
 
             if (!res)
                 return null;
@@ -261,10 +287,12 @@ const useResource = (resource) => {
         }
     }, [showPopUp, openModal, refreshData, name, config]);
 
+    /**
+     * Save assignment data for a resource by ID.
+     */
     const saveResourceAssignment = useCallback(async (params = {}) => {
 
         params = {...params, mode: params.mode ?? 'set'};
-
         let { [name[0]+'Ids']: itemIds, resource, resourceIds, mode } = params;
 
         if (!itemIds || !resource || !resourceIds)
@@ -282,10 +310,10 @@ const useResource = (resource) => {
 
         if (!itemIds.length || !resourceIds.length)
             return null;
-
         try {
+            const url = config.buildUrl() + '/assignments';
             const res = await axios.post(
-                config.buildUrl() + '/assignments',
+                url,
                 {[name[0]+'Ids']: itemIds, resource, resourceIds, mode},
                 { withCredentials: true }
             )
@@ -318,6 +346,9 @@ const useResource = (resource) => {
 
     }, [showPopUp, refreshData, name, config]);
 
+    /**
+     * Delete a resource by ID.
+     */
     const deleteResource = useCallback(async (params = {}) => {
 
         params = {...config.deleteParams, ...params};

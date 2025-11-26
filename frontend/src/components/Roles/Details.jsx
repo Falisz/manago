@@ -18,7 +18,7 @@ const RoleDetails = ({ roleId }) => {
             delete refreshTriggers.role;
 
         if (roleId && (!role || refresh))
-            fetchRole({roleId, reload: refresh}).then();
+            fetchRole({id: roleId, reload: refresh}).then();
 
     }, [fetchRole, role, roleId, refreshTriggers.role]);
 

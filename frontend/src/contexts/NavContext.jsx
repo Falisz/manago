@@ -10,9 +10,9 @@ import RoleEdit from '../components/Roles/Edit';
 import ShiftDetails from '../components/Shifts/Details';
 import ShiftEdit from '../components/Shifts/Edit';
 import TeamDetails from '../components/Teams/Details';
-import TeamEdit, {TeamUserAssignment, TeamUserBulkAssignment} from '../components/Teams/Edit';
+import TeamEdit, {TeamAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
-import UserEdit, {UserAssignment, UserBulkAssignment} from '../components/Users/Edit';
+import UserEdit, {UserAssignment} from '../components/Users/Edit';
 
 const ANIMATION_DURATION = 300;
 
@@ -72,6 +72,9 @@ const MODALS = {
         urlParam: 'editTeam',
         component: (modal) => <TeamEdit teamId={modal.contentId} modal={modal.id}/>
     },
+    subteamNew: {
+        component: (modal) => <TeamEdit parentId={modal.parentId} modal={modal.id}/>
+    },
     shiftNew: {
         urlParam: 'new',
         urlParamValue: 'shift',
@@ -109,20 +112,11 @@ const MODALS = {
     userRoleAssignment: {
         component: (modal) => <UserAssignment user={modal.data} resource={'role'} modal={modal.id} />
     },
-    userRoleBulkAssignment: {
-        component: (modal) => <UserBulkAssignment users={modal.data} resource={'role'} modal={modal.id} />
-    },
     userManagerAssignment: {
         component: (modal) => <UserAssignment user={modal.data} resource={'manager'} modal={modal.id} />
     },
-    userManagerBulkAssignment: {
-        component: (modal) => <UserBulkAssignment users={modal.data} resource={'manager'} modal={modal.id} />        
-    },
     teamUserAssignment: {
-        component: (modal) => <TeamUserAssignment team={modal.data} modal={modal.id} />
-    },
-    teamUserBulkAssignment: {
-        component: (modal) => <TeamUserBulkAssignment teams={modal.data} modal={modal.id} />
+        component: (modal) => <TeamAssignment team={modal.data} modal={modal.id} />
     }
 };
 

@@ -69,7 +69,7 @@ const LeaveRequestForm = () => {
         <EditForm
             header={'Leave Request'}
             fields={fields}
-            onSubmit={async (formData) => await saveLeave({formData})}
+            onSubmit={async (data) => await saveLeave({data})}
             presetData={presetData}
         />
     );

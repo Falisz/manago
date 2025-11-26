@@ -2,7 +2,7 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import useUsers from '../../hooks/useUsers';
+import {useUsers} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 
@@ -18,7 +18,7 @@ const UserDetails = ({ userId }) => {
             delete refreshTriggers.user;
 
         if (userId && (!user || refresh))
-            fetchUser({userId, reload: refresh}).then();
+            fetchUser({id: userId, reload: refresh}).then();
 
     }, [fetchUser, user, userId, refreshTriggers.user]);
 
@@ -28,7 +28,7 @@ const UserDetails = ({ userId }) => {
             type: 'pop-up',
             message: 'Are you sure you want to delete this user? This action cannot be undone.',
             onConfirm: async () => {
-                const success = await deleteUser({userId});
+                const success = await deleteUser({id: userId});
                 if (!success) return;
                 refreshData('users', true);
                 closeTopModal();

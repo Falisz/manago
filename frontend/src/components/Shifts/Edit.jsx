@@ -79,7 +79,7 @@ const ShiftEdit = ({ shiftId, modal }) => {
     return <EditForm
         header={'Editting a Shift'}
         fields={fields}
-        onSubmit={async (formData) => await saveShift({id: shiftId, formData})}
+        onSubmit={async (data) => await saveShift({id: shiftId, data})}
         modal={modal}
         presetData={presetData}
     />

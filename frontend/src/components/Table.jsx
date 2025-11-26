@@ -93,16 +93,16 @@ const TableField = ({field, data, selectionMode}) => {
 
     let value = data[name], content;
 
-    if (field.value === 'function')
+    if (typeof field.value === 'function')
         value = field.value(data);
     else if (field.value != null)
         value = field.value;
 
     if (field.formats)
-        if (field.format[value] != null)
-            value = field.format[value].toString().replace('%n', value);
-        else if (field.format.default != null)
-            value = field.format.default.toString().replace('%n', value);
+        if (field.formats[value] != null)
+            value = field.formats[value].toString().replace('%n', value);
+        else if (field.formats.default != null)
+            value = field.formats.default.toString().replace('%n', value);
 
     switch (type) {
         case 'string':
@@ -436,8 +436,15 @@ const Table = ({
                         bValue = bValue?.toLowerCase() ?? '';
                         break;
                     case 'list':
-                        aValue = (aValue || []).map(sub => sub.name || `${sub.first_name} ${sub.last_name}`).sort().join(', ').toLowerCase();
-                        bValue = (bValue || []).map(sub => sub.name || `${sub.first_name} ${sub.last_name}`).sort().join(', ').toLowerCase();
+                        aValue = (aValue || [])
+                            .map(sub => sub.name || `${sub.first_name} ${sub.last_name}`)
+                            .sort()
+                            .join(', ')
+                            .toLowerCase();
+                        bValue = (bValue || []).map(sub => sub.name || `${sub.first_name} ${sub.last_name}`)
+                            .sort()
+                            .join(', ')
+                            .toLowerCase();
                         break;
                     case 'boolean':
                         aValue = aValue ? 1 : 0;
@@ -496,13 +503,13 @@ const Table = ({
                             />
                         </div>
                     }
-                    {header.button &&
+                    {(header.button || header.newItemModal) &&
                         <Button
                             {...header.button}
-                            className={header.button.className ?? 'new-item'}
-                            label={header.button.label ?? `Add ${header.itemName ?? 'Item'}`}
-                            icon={header.button.icon ?? 'add'}
-                            onClick={header.button.onClick ?? (() => openModal({ content: header.newItemModal }))}
+                            className={header.button?.className ?? 'new-item'}
+                            label={header.button?.label ?? `Add ${header.itemName ?? 'Item'}`}
+                            icon={header.button?.icon ?? 'add'}
+                            onClick={header.button?.onClick ?? (() => openModal({ content: header.newItemModal }))}
                         />
                     }
                 </div>

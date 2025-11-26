@@ -6,10 +6,10 @@ import {useShifts} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 
-const ShiftDetails = ({ shiftId }) => {
+const ShiftDetails = ({ shiftId, modal }) => {
     const { shift, loading, fetchShift, deleteShift } = useShifts();
     const { refreshData, refreshTriggers } = useApp();
-    const { openModal, openDialog, closeTopModal } = useNav();
+    const { openModal, openDialog, closeModal, closeTopModal } = useNav();
 
     useEffect(() => {
         const refresh = refreshTriggers?.shift?.data === parseInt(shiftId);
@@ -32,7 +32,7 @@ const ShiftDetails = ({ shiftId }) => {
             type: 'pop-up',
             message: message,
             onConfirm: async () => {
-                const success = await deleteShift({shiftId});
+                const success = await deleteShift({id: shiftId});
                 if (!success) return;
                 refreshData('roles', true);
                 closeTopModal();
@@ -47,7 +47,10 @@ const ShiftDetails = ({ shiftId }) => {
                 className: 'edit',
                 icon: 'edit',
                 title: 'Edit User',
-                onClick: () => openModal({content: 'shiftEdit', contentId: shiftId})
+                onClick: () => {
+                    closeModal(modal);
+                    openDialog({content: 'shiftEdit', contentId: shiftId});
+                }
             },
             delete: {
                 className: 'delete',
@@ -56,8 +59,9 @@ const ShiftDetails = ({ shiftId }) => {
                 onClick: handleDelete
             }
         }
-    }), [openModal, shiftId, handleDelete]);
+    }), [openDialog, shiftId, handleDelete]);
 
+    // TODO: Add "schedule" field to identify if the shift is from schedule draft or not.
     const sections = useMemo(() => ({
         0: {
             fields: {

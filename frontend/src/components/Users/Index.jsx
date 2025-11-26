@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo } from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import useUsers from '../../hooks/useUsers';
+import {useUsers} from '../../hooks/useResource';
 import Loader from '../Loader';
 import Table from '../Table';
 
@@ -27,7 +27,7 @@ const UsersIndexPage = ({content='users'}) => {
             content: 'confirm',
             message: 'Are you sure you want to delete this User? This action cannot be undone.',
             onConfirm: async () => {
-                const success = await deleteUser({userId: id});
+                const success = await deleteUser({id});
                 if (!success) return;
                 refreshData('users', true);
                 closeTopModal();
@@ -41,7 +41,7 @@ const UsersIndexPage = ({content='users'}) => {
             message: `Are you sure you want to delete ${selectedUsers.size}`+
                 ` selected User${selectedUsers.size > 1 ? 's' : ''}? This action cannot be undone.`,
             onConfirm: async () => {
-                const success = await deleteUsers({userIds: Array.from(selectedUsers)});
+                const success = await deleteUsers({id: Array.from(selectedUsers)});
                 if (!success) return;
                 refreshData('users', true);
                 closeTopModal();
@@ -144,7 +144,7 @@ const UsersIndexPage = ({content='users'}) => {
             label: 'Assign Role', 
             selectionMode: true,
             onClick: (selectedUsers) => openModal({
-                content: 'userRoleBulkAssignment', 
+                content: 'userRoleAssignment',
                 type: 'dialog',
                 data: users?.filter(user => selectedUsers.has(user.id)), 
                 style: {overflow: 'unset'}
@@ -155,7 +155,7 @@ const UsersIndexPage = ({content='users'}) => {
             label: 'Assign Manager', 
             selectionMode: true,
             onClick: (selectedUsers) => openModal({
-                content: 'userManagerBulkAssignment', 
+                content: 'userManagerAssignment',
                 type: 'dialog',
                 data: users?.filter(user => selectedUsers.has(user.id)), 
                 style: {overflow: 'unset'}

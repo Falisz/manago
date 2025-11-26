@@ -41,13 +41,13 @@ const TeamsIndex = () => {
             content: 'confirm',
             message: message,
             onConfirm: async () => {
-                const success = await deleteTeam({teamId});
+                const success = await deleteTeam({id: teamId});
                 if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             },
             onConfirm2: subteams > 0 ? async () => {
-                const success = await deleteTeam({teamId, cascade: true});
+                const success = await deleteTeam({id: teamId, cascade: true});
                 if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
