@@ -2,8 +2,7 @@
 import {useCallback, useState, useMemo, useRef} from 'react';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
-import useUsers from './useUsers';
-import useLeaves from './useLeaves';
+import {useUsers, useLeaves} from './useResource';
 
 const useSchedules = () => {
     // internal hooks and states
