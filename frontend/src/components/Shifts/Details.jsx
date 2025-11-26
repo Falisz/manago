@@ -41,9 +41,7 @@ const ShiftDetails = ({ shiftId }) => {
     }, [shiftId, openModal, deleteShift, refreshData, closeTopModal]);
 
     const header = useMemo(() => ({
-        title: {
-            content: 'Shift Details'
-        },
+        title: 'Shift Details',
         buttons: {
             edit: {
                 className: 'edit',

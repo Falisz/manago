@@ -29,7 +29,14 @@ const Header = ({ header, data }) => {
                 {getData(data, prefix.dataField, prefix.placeholder)}
             </div>}
 
-            {title && <div
+            {typeof title === 'string' && <div
+                key={'title'}
+                className={'details-title'}
+                title={title}
+            >
+                {title}
+            </div>}
+            {typeof title === 'object' && <div
                 key={'title'}
                 className={'details-title' + (title.className ? ' ' + title.className : '')}
                 title={title.title}
