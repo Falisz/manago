@@ -1,7 +1,6 @@
 // FRONTEND/components/Teams/Edit.js
 import React, {useCallback, useEffect, useMemo} from 'react';
-import useTeams from '../../hooks/useTeams';
-import useUsers from '../../hooks/useUsers';
+import {useTeams, useUsers} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 

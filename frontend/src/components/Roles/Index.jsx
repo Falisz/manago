@@ -1,7 +1,7 @@
 // FRONTEND/components/Roles/Index.js
 import React, { useEffect, useMemo } from 'react';
 import useApp from '../../contexts/AppContext';
-import useRoles from '../../hooks/useRoles';
+import {useRoles} from '../../hooks/useResource';
 import Loader from '../Loader';
 import Table from '../Table';
 

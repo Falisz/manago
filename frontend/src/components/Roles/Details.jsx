@@ -2,7 +2,7 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import useRoles from '../../hooks/useRoles';
+import {useRoles} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 

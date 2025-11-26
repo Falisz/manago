@@ -1,7 +1,6 @@
 // FRONTEND/components/Users/Edit.js
 import React, {useEffect, useCallback, useMemo} from 'react';
-import useRoles from '../../hooks/useRoles';
-import useUsers from '../../hooks/useUsers';
+import {useUsers, useRoles} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 

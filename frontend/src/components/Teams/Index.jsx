@@ -2,7 +2,7 @@
 import React, { useEffect, useCallback, useMemo } from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import useTeams from '../../hooks/useTeams';
+import {useTeams} from '../../hooks/useResource';
 import Loader from '../Loader';
 import Table from '../Table';
 
