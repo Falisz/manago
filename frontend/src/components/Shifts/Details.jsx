@@ -145,13 +145,14 @@ const ShiftDetails = ({ shiftId, modal }) => {
                     style: {
                         padding: '10px',
                         background: 'var(--seethrough-background-2)',
-                        border: '1px solid #ccc',
                         borderRadius: 'var(--def-border-radius)',
+                        marginTop: '15px',
                         maxWidth: 500
                     },
                     format: (val) => val && <div>
-                        This Shift is planned on a Schedule Draft <i>{val.name.toString()}</i>.
-                    </div>
+                        This Shift is only planned on a Schedule Draft <i>{val.name.toString()}</i>.
+                    </div>,
+                    hideEmpty: true
                 }
             }
         }
