@@ -2,7 +2,7 @@
 import {useCallback, useState, useMemo, useRef} from 'react';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
-import {useUsers, useLeaves} from './useResource';
+import {useUsers, useLeaves, useShifts} from './useResource';
 
 const useSchedules = () => {
 
@@ -16,29 +16,6 @@ const useSchedules = () => {
     const { fetchLeaves } = useLeaves();
     const [ schedules, setSchedules ] = useState(null);
     const [ loading, setLoading ] = useState(true);
-
-    // auxilliary hooks and callbacks
-    const schedule = useMemo(() => (schedules && schedules[0]) || {}, [schedules]);
-    const setSchedule = useCallback((updater) => {
-        setSchedules(prevSchedules => {
-            const prevSchedule = (prevSchedules && prevSchedules[0]) || {};
-
-            let newSchedule;
-
-            if (typeof updater === 'function')
-                newSchedule = updater(prevSchedule);
-            else
-                newSchedule = updater;
-
-            if (!prevSchedules) {
-                return [newSchedule];
-            } else {
-                const newSchedules = [...prevSchedules];
-                newSchedules[0] = newSchedule;
-                return newSchedules;
-            }
-        });
-    },[]);
 
     const shiftUpdates = useRef({
         new: [],
@@ -193,41 +170,7 @@ const useSchedules = () => {
         }
 
         try {
-            let url;
-            let params = {};
 
-            if (id) {
-                url = `/shifts/${id}`;
-            } else {
-                if (user)
-                    params.user = user;
-                else {
-                    if (user_scope)
-                        params.user_scope = user_scope;
-                    if (user_scope_id)
-                        params.user_scope_id = user_scope_id;
-                }
-
-                if (date)
-                    params.date = date;
-                else {
-                    if (start_date)
-                        params.start_date = start_date;
-                    if (end_date)
-                        params.end_date = end_date;
-                }
-
-                if (schedule_id !== undefined)
-                    params.schedule = schedule_id;
-
-                if (job_post)
-                    params.job_post = job_post;
-
-                if (location)
-                    params.location = location;
-
-                url = '/shifts?' + new URLSearchParams(params).toString();
-            }
 
             const res = await axios.get(url, { withCredentials: true });
 

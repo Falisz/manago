@@ -72,6 +72,60 @@ const defaultParams = (name) => ({
  */
 const resourceConfigs = {
     default: (name) => defaultParams(name),
+    shift: {
+        ...defaultParams('shifts'),
+        fetchParams: { id: null, user: null, user_scope: null, user_scope_id: null, date: null, start_date: null,
+            end_date: null, schedule_id: null, job_post: null, location: null, loading: true, reload: false,
+            map: false },
+        buildUrl: (params = {}) => {
+
+            const { id, user, user_scope, user_scope_id, date, start_date, end_date, schedule_id, job_post,
+                location } = params;
+            let url = '/shifts';
+            let queryParams = {};
+
+            if (id) {
+                url = `/shifts/${id}`;
+            } else {
+                if (user)
+                    queryParams.user = user;
+                else {
+                    if (user_scope)
+                        queryParams.user_scope = user_scope;
+                    if (user_scope_id)
+                        queryParams.user_scope_id = user_scope_id;
+                }
+
+                if (date)
+                    queryParams.date = date;
+                else {
+                    if (start_date)
+                        queryParams.start_date = start_date;
+                    if (end_date)
+                        queryParams.end_date = end_date;
+                }
+
+                if (schedule_id !== undefined)
+                    queryParams.schedule = schedule_id;
+
+                if (job_post)
+                    queryParams.job_post = job_post;
+
+                if (location)
+                    queryParams.location = location;
+
+                if(Object.keys(queryParams).length)
+                    url = '/shifts?' + new URLSearchParams(queryParams).toString();
+            }
+
+            return url;
+        }
+    },
+    team: {
+        ...defaultParams('teams'),
+        fetchParams: { id: null, all: false, loading: true, reload: false, map: false },
+        deleteParams: { id: null, cascade: false },
+    },
     user: {
         ...defaultParams('users'),
         fetchParams: { id: null, user_scope: 'all', user_scope_id: null, group: null, loading: true, reload: false,
@@ -102,11 +156,6 @@ const resourceConfigs = {
 
             return url;
         }
-    },
-    team: {
-        ...defaultParams('teams'),
-        fetchParams: { id: null, all: false, loading: true, reload: false, map: false },
-        deleteParams: { id: null, cascade: false },
     },
     leave: {
         ...defaultParams('leaves'),
