@@ -136,7 +136,7 @@ const TeamsIndex = () => {
             id: 'select-all', 
             label: 'Select All', 
             selectionMode: true, 
-            shortcut: 'Ctrl + Z',
+            shortcut: 'Ctrl + A',
             setSelected: new Set(teams?.map(team => team.id)) 
         },
         { 
@@ -181,7 +181,7 @@ const TeamsIndex = () => {
             subRowFields={'subteams'}
             columnHeaders={true}
             sortable={true}
-            searchable={true}
+            filterable={true}
             contextMenuActions={contextMenuActions}
             selectableRows={true}
             dataPlaceholder={'No Teams found.'}
