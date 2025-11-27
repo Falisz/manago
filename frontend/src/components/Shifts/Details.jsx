@@ -59,9 +59,8 @@ const ShiftDetails = ({ shiftId, modal }) => {
                 onClick: handleDelete
             }
         }
-    }), [openDialog, shiftId, handleDelete]);
+    }), [shiftId, modal, openDialog, closeModal, handleDelete]);
 
-    // TODO: Add "schedule" field to identify if the shift is from schedule draft or not.
     const sections = useMemo(() => ({
         0: {
             fields: {
@@ -136,6 +135,23 @@ const ShiftDetails = ({ shiftId, modal }) => {
                             background: shift?.job_location ? shift.job_location.color : null 
                         } 
                     }
+                }
+            }
+        },
+        3: {
+            fields: {
+                0: {
+                    dataField: 'schedule',
+                    style: {
+                        padding: '10px',
+                        background: 'var(--seethrough-background-2)',
+                        border: '1px solid #ccc',
+                        borderRadius: 'var(--def-border-radius)',
+                        maxWidth: 500
+                    },
+                    format: (val) => val && <div>
+                        This Shift is planned on a Schedule Draft <i>{val.name.toString()}</i>.
+                    </div>
                 }
             }
         }

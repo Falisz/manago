@@ -36,6 +36,7 @@ const Header = ({ header, data }) => {
             >
                 {title}
             </div>}
+
             {typeof title === 'object' && <div
                 key={'title'}
                 className={'details-title' + (title.className ? ' ' + title.className : '')}
@@ -54,7 +55,9 @@ const Header = ({ header, data }) => {
                 {getData(data, suffix.dataField, suffix.placeholder)}
             </div>}
 
-            {buttons && Object.values(buttons).map((button, key) => <Button key={key} {...button} />)}
+            {buttons && Object.values(buttons).map((button, key) =>
+                <Button key={key} {...{transparent: true, ...button}} />
+            )}
         </div>
     );
 };
@@ -187,7 +190,7 @@ const SectionField = ({ field, data, markNotEmpty }) => {
             });
         }
     } else {
-        content = data[dataField].toString();
+        content = data[dataField];
         if (content != null)
             isGroupEmpty = false;
 

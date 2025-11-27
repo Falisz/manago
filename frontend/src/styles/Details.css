@@ -6,7 +6,7 @@
 }
 .detail-header {
     font-size: 2em;
-    display: flex;
+    gap: 10px;
     flex-direction: row;
     align-items: baseline;
 }
@@ -14,9 +14,6 @@
     cursor: help;
     font-size: 0.5em;
     margin-right: 10px;
-}
-.detail-header .detail-title {
-    margin-right: 20px;
 }
 .detail-header .app-button {
     color: var(--text-color-3);
@@ -104,16 +101,14 @@
 .app-details-header {
     font-size: 2em;
     display: flex;
+    gap: 10px;
     flex-direction: row;
     align-items: baseline;
 }
-.app-details-header .details-title-prefix {
+.app-details-header .details-title-prefix,
+.app-details-header .details-title-suffix {
     cursor: help;
     font-size: 0.5em;
-    margin-right: 10px;
-}
-.app-details-header .details-title {
-    margin-right: 20px;
 }
 .app-details-header .app-button {
     color: var(--text-color-3);
