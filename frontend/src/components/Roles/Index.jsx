@@ -60,6 +60,7 @@ const RolesIndex = () => {
             data={roles}
             header={header}
             fields={fields}
+            columnHeaders={false}
             descriptionFields={'description'}
             dataPlaceholder={'No Roles found.'}
             style={{maxWidth: 'max(40%, 500px)'}}

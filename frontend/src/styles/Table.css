@@ -9,6 +9,29 @@
     padding-right: 0;
     overflow-y: scroll;
 }
+.app-table-top-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.app-table-top-header .app-table-title {
+    margin: 0;
+    padding: 10px;
+    font-weight: 300;
+    font-size: 2rem;
+    font-family: var(--font-family-condensed), sans-serif;
+}
+.app-table-top-header .selected-items {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+.app-table-top-header .selected-items p {
+    padding: 8px 10px;
+    margin: 0;
+}
 .app-table-header {
     display: flex;
     flex-direction: row;
