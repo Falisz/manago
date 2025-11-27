@@ -422,6 +422,8 @@ const useResource = (resource) => {
     return {
         [name[0]]: data,
         [name[1]]: data,
+        [`set${name[2]}`]: setData,
+        [`set${name[3]}`]: setData,
         loading,
         setLoading,
         [`${name[0]}Loading`]: loading,

@@ -4,7 +4,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import useApp from '../../contexts/AppContext';
 import useSchedules from '../../hooks/useSchedules';
-import {useTeams, useUsers} from '../../hooks/useResource';
+import {useTeams, useUsers, useScheduleDrafts} from '../../hooks/useResource';
 import Button from '../Button';
 import ComboBox from '../ComboBox';
 import InWorks from '../InWorks';
@@ -15,11 +15,13 @@ import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
+// TODO: Move header to the separate sub-component "ScheduleViewHeader" and "DraftViewHeader"
 const ScheduleView = () => {
     const { appState, user } = useApp();
     const { modules } = appState;
-    const { scheduleId } = useParams();
-    const { schedule, loading, setLoading, setSchedule, fetchScheduleDraft, fetchSchedule } = useSchedules();
+    const { scheduleId: draftId } = useParams();
+    const { schedule, loading, setLoading, setSchedule, fetchSchedule, mapUsers } = useSchedules();
+    const { schedule: draft, setSchedule: setDraft, loading: draftLoading, fetchSchedule: fetchDraft } = useScheduleDrafts();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -54,13 +56,13 @@ const ScheduleView = () => {
                 else
                     newSchedule.user_scope_id = null;
             }
-        
+
             const newParams = new URLSearchParams(searchParams);
 
             const urlKeys = [
-                { field: 'view', url: 'view' }, 
-                { field: 'start_date', url: 'from'}, 
-                { field: 'end_date', url: 'to'}, 
+                { field: 'view', url: 'view' },
+                { field: 'start_date', url: 'from'},
+                { field: 'end_date', url: 'to'},
                 { field: 'month', url: 'month'},
                 { field: 'user_scope', url: 'scope'},
                 { field: 'user_scope_id', url: 'sid'}
@@ -78,21 +80,24 @@ const ScheduleView = () => {
 
             return newSchedule;
         });
-        
-        
+
+
     }, [setSchedule, setSearchParams, user, searchParams]);
 
     const editSchedule = useCallback(() => {
-        if (schedule.id)
-            navigate('/schedules/edit/' + schedule.id);
+        if (draftId)
+            navigate('/schedules/edit/' + draftId);
 
         else
             navigate('/schedules/edit?current=true' +
                 `&from=${schedule.start_date}&to=${schedule.end_date}` +
                 `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`);
 
-    }, [schedule, navigate]);
+    }, [draftId, schedule, navigate]);
 
+    /**
+     * Component initializer logic. If draftId is provided, skipping the rest of logic.
+     */
     useEffect(() => {
         if (isMounted.current)
             return;
@@ -103,10 +108,8 @@ const ScheduleView = () => {
         fetchManagers({ group: 'manager' }).then();
         fetchTeams({ all: true }).then();
 
-        if (scheduleId) {
-            fetchScheduleDraft(scheduleId).then();
+        if (!!draftId)
             return;
-        }
 
         setLoading(true);
 
@@ -131,10 +134,16 @@ const ScheduleView = () => {
         
         setSchedule((prev) => ({...prev, ...currentSchedule}));
 
-    }, [scheduleId, user.id, setLoading, searchParams, defaultStartDate, defaultEndDate, fetchScheduleDraft,
+    }, [draftId, user.id, setLoading, searchParams, defaultStartDate, defaultEndDate,
         fetchUsers, fetchManagers, fetchTeams, setSchedule]);
 
+    /**
+     * Update scopeIdOptions based on user_scope value, only for non-draft schedule.
+     */
     useEffect(() => {
+        if (!!draftId)
+            return;
+
         if (teams && teams.length > 0 && schedule.user_scope === 'team') 
             setScopeIdOptions(teams.map((team) =>
                 ({id: team.id, name: team.name})
@@ -153,26 +162,104 @@ const ScheduleView = () => {
         else
             setScopeIdOptions([{ id: null, name: 'None'}]);
 
-    }, [schedule.user_scope, teams, users, managers]);
+    }, [draftId, schedule.user_scope, teams, users, managers]);
 
+    /**
+     * Fetch draft schedule if draftId is provided or fetch current schedule otherwise.
+     */
     useEffect(() => {
-        if (!scheduleId)
+        if (draftId)
+            fetchDraft({id: draftId}).then(
+                _res => setDraft(prev => ({...prev, users: mapUsers(prev?.shifts, prev?.users)}))
+            );
+        else
             fetchSchedule().then();
-    }, [fetchSchedule, scheduleId]);
+    }, [fetchSchedule, setDraft, fetchDraft, draftId]);
 
-    const userScope = schedule.user_scope && schedule.user_scope[0].toUpperCase() + schedule.user_scope.slice(1);
-    const scopeName = (schedule.user_scope !== 'you' && schedule.user_scope !== 'all' && scopeIdOptions &&
-        scopeIdOptions.find(option => option.id === schedule.user_scope_id)?.['name']) || null;
+    //
+    // Logic for rendering Draft Schedule View
+    //
+    if (draftId) {
+
+        if (draftLoading)
+            return <Loader/>;
+
+        const userScope = (draft && draft.user_scope && draft.user_scope[0].toUpperCase() + draft.user_scope.slice(1))
+            || null;
+
+        const scopeName = () => {
+            if (draft?.user_scope === 'team') {
+                const scope = teams?.find(team => team.id === draft.user_scope_id);
+                if (scope)
+                    return scope['name'];
+            }
+            if (draft?.user_scope === 'user') {
+                const scope = users?.find(user => user.id === draft.user_scope_id);
+                if (scope)
+                    return scope['first_name'] + ' ' + scope['last_name'];
+            }
+            if (draft?.user_scope === 'manager') {
+                const scope = managers?.find(mgr => mgr.id === draft.user_scope_id);
+                if (scope)
+                    return scope['first_name'] + ' ' + scope['last_name'];
+            }
+            return null;
+        }
+
+        return (
+            <div className={'app-schedule seethrough'}>
+                <Helmet>
+                    <title>Schedule Preview | MANAGO</title>
+                </Helmet>
+                <div className={'app-schedule-header'}>
+                    <h1>Draft Preview: {draft?.name}</h1>
+                    <div
+                        className={'app-form'}
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'flex-start',
+                            gap: '10px'
+                        }}
+                    >
+                        <div className={'form-group'}>
+                            <label>User Scope</label>
+                            <span style={{padding: '8px'}}><b>{userScope}{scopeName() && ':'}</b> {scopeName()}</span>
+                        </div>
+                        <div className={'form-group'}>
+                            <label>Date Range</label>
+                            <span style={{padding: '8px', whiteSpace: 'nowrap'}}>{draft?.start_date} - {draft?.end_date}</span>
+                        </div>
+                    </div>
+                    <Button
+                        label='Edit Schedule'
+                        icon='edit'
+                        style={{marginLeft: 'auto'}}
+                        onClick={editSchedule}
+                    />
+                    <Button
+                        label='Publish Schedule'
+                        icon='publish'
+                        onClick={null}
+                    />
+                </div>
+                { draft ? <UserSchedule schedule={draft}/> : <Loader/> }
+            </div>
+        );
+    }
+
+    //
+    // Logic for rendering Current Schedule View
+    //
 
     if (['monthly', 'jobs'].includes(schedule.view))
         scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
 
     return <div className={'app-schedule seethrough'}>
         <Helmet>
-            <title>{scheduleId ? 'Schedule Preview' : 'Current Schedule'} | MANAGO</title>
+            <title>Current Schedule | MANAGO</title>
         </Helmet>
         <div className={'app-schedule-header'}>
-            <h1>{scheduleId ? 'Draft Preview: ' + schedule.name : 'Current Schedule'}</h1>
+            <h1>Current Schedule</h1>
             <div
                 className={'app-form'}
                 style={{
@@ -195,80 +282,67 @@ const ScheduleView = () => {
                         onChange={handleChange}
                     />
                 </div>
-                { scheduleId ? <>
-                    <div className={'form-group'}>
-                        <label>User Scope</label>
-                        <span style={{padding: '8px'}}><b>{userScope}{scopeName && ':'}</b> {scopeName}</span>
+                <div className={'form-group'}>
+                    <label>User Scope</label>
+                    <div className={'form-group'} style={{flexDirection: 'row'}}>
+                        <ComboBox
+                            placeholder={'Pick a group'}
+                            name={'user_scope'}
+                            searchable={false}
+                            value={schedule.user_scope || 'you'}
+                            options={scopeOptions || []}
+                            onChange={handleChange}
+                            disabled={!!draftId}
+                        />
+                        { schedule.user_scope && !['all', 'you'].includes(schedule.user_scope) && <ComboBox
+                            placeholder={`Pick a ${schedule.user_scope}`}
+                            name={'user_scope_id'}
+                            searchable={true}
+                            value={schedule.user_scope_id || null}
+                            options={scopeIdOptions}
+                            onChange={handleChange}
+                            disabled={!!draftId}
+                        />}
                     </div>
-                    <div className={'form-group'}>
-                        <label>Date Range</label>
-                        <span style={{padding: '8px', whiteSpace: 'nowrap'}}>{schedule.start_date} - {schedule.end_date}</span>
+                </div>
+                { schedule.view !== 'monthly' && <div className={'form-group'}>
+                    <label>Date range</label>
+                    <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
+                        <input
+                            className={'form-input'}
+                            name={'start_date'}
+                            value={schedule.start_date || defaultStartDate}
+                            max={schedule.end_date}
+                            onChange={handleChange}
+                            type={'date'}
+                            disabled={!!draftId}
+                        />
+                        <span>-</span>
+                        <input
+                            className={'form-input'}
+                            name={'end_date'}
+                            value={schedule.end_date || defaultEndDate}
+                            min={schedule.start_date}
+                            onChange={handleChange}
+                            type={'date'}
+                            disabled={!!draftId}
+                        />
                     </div>
-                </> :
-                    <>
-                        <div className={'form-group'}>
-                            <label>User Scope</label>
-                            <div className={'form-group'} style={{flexDirection: 'row'}}>
-                                <ComboBox
-                                    placeholder={'Pick a group'}
-                                    name={'user_scope'}
-                                    searchable={false}
-                                    value={schedule.user_scope || 'you'}
-                                    options={scopeOptions || []}
-                                    onChange={handleChange}
-                                    disabled={!!scheduleId}
-                                />
-                                { schedule.user_scope && !['all', 'you'].includes(schedule.user_scope) && <ComboBox
-                                    placeholder={`Pick a ${schedule.user_scope}`}
-                                    name={'user_scope_id'}
-                                    searchable={true}
-                                    value={schedule.user_scope_id || null}
-                                    options={scopeIdOptions}
-                                    onChange={handleChange}
-                                    disabled={!!scheduleId}
-                                />}
-                            </div>
-                        </div>
-                        { schedule.view !== 'monthly' && <div className={'form-group'}>
-                            <label>Date range</label>
-                            <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
-                                <input
-                                    className={'form-input'}
-                                    name={'start_date'}
-                                    value={schedule.start_date || defaultStartDate}
-                                    max={schedule.end_date}
-                                    onChange={handleChange}
-                                    type={'date'}
-                                    disabled={!!scheduleId}
-                                />
-                                <span>-</span>
-                                <input
-                                    className={'form-input'}
-                                    name={'end_date'}
-                                    value={schedule.end_date || defaultEndDate}
-                                    min={schedule.start_date}
-                                    onChange={handleChange}
-                                    type={'date'}
-                                    disabled={!!scheduleId}
-                                />
-                            </div>
-                        </div>}
-                        { schedule.view === 'monthly' && <div className={'form-group'}>
-                            <label>Month</label>
-                            <div className={'form-group'} style={{flexDirection: 'row'}}>
-                                <input
-                                    className={'form-input'}
-                                    placeholder={'month'}
-                                    name={'month'}
-                                    value={schedule.month}
-                                    type={'month'}
-                                    onChange={handleChange}
-                                    disabled={!!scheduleId}
-                                />
-                            </div>
-                        </div>}
-                    </>
-                }
+                </div>}
+                { schedule.view === 'monthly' && <div className={'form-group'}>
+                    <label>Month</label>
+                    <div className={'form-group'} style={{flexDirection: 'row'}}>
+                        <input
+                            className={'form-input'}
+                            placeholder={'month'}
+                            name={'month'}
+                            value={schedule.month}
+                            type={'month'}
+                            onChange={handleChange}
+                            disabled={!!draftId}
+                        />
+                    </div>
+                </div>}
             </div>
             { schedule.view === 'users' && 
                 <Button

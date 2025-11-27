@@ -5,6 +5,11 @@ import useApp from '../contexts/AppContext';
 import {useUsers, useLeaves} from './useResource';
 
 const useSchedules = () => {
+
+    // TODO: refactor, only one "schedule" state.
+    // TODO: make it a 'middle-ware' hook that handles both schedules and scheduleDrafts (used from useResource).
+    // TODO: fetchShifts to be used from useResource
+
     // internal hooks and states
     const { showPopUp } = useApp();
     const { fetchUsers, fetchUser } = useUsers();
@@ -107,6 +112,7 @@ const useSchedules = () => {
         const sourceUser = sourceShift && sourceShift.user;
         const sourceDate = sourceShift && sourceShift.date;
 
+        // TODO: Fix editing 'newly-added' shifts as they get duplicated on saving.
         setSchedule((prev) => {
             const users = new Map(prev.users);
 
@@ -446,7 +452,8 @@ const useSchedules = () => {
         fetchScheduleDrafts,
         fetchScheduleDraft,
         saveScheduleDraft,
-        discardScheduleDraft
+        discardScheduleDraft,
+        mapUsers
     };
 };
 export default useSchedules;
