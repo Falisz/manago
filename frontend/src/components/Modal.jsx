@@ -42,13 +42,13 @@ const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton 
     return (
         <>
             <div
-                className={`app-modal-overlay ${!isVisible ? 'hidden' : ''}`}
+                className={`app-modal-overlay${!isVisible ? ' hidden' : ''}`}
                 style={{ zIndex }}
                 onClick={() => onClose()}
                 role='presentation'
             />
             <div
-                className={`app-modal-content app-scroll${type === 'dialog' ? '' : ' app-overflow-y'} ${type} ${!isVisible ? 'hidden' : ''}`}
+                className={`app-modal-content app-scroll app-overflow-y  ${type}${!isVisible ? ' hidden' : ''}`}
                 style={{ ...style, zIndex: zIndex + 1 }}
                 tabIndex='-1'
                 ref={modalRef}
