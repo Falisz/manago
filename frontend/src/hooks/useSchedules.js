@@ -163,7 +163,7 @@ const useSchedules = () => {
             schedule.view = view;
             schedule.users = mapUsers(schedule.shifts, schedule.users);
         } else {
-            let users = new Map(), shifts = [], leaves = [];
+            let users, shifts, leaves;
 
             if (['you', 'user'].includes(user_scope))
                 users = await fetchUsers({id: user_scope_id});
