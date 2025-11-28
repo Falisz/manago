@@ -15,7 +15,6 @@ import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
-// TODO: Fix glitching Current View Header display
 const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
     return (
         <div className={'app-schedule-header'}>
@@ -25,13 +24,16 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                 style={{
                     flexDirection: 'row',
                     alignItems: 'flex-start',
-                    gap: '10px'
+                    justifyContent: 'flex-start',
+                    gap: '10px',
+                    flexWrap: 'nowrap'
                 }}
             >
-                <div className={'form-group'}>
+                <div className={'form-group'} style={{flex: '0'}}>
                     <label>View</label>
                     <ComboBox
                         name={'view'}
+                        style={{width: '5vw'}}
                         searchable={false}
                         value={schedule?.view || 'users'}
                         options={[
@@ -42,12 +44,13 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                         onChange={handleChange}
                     />
                 </div>
-                <div className={'form-group'}>
+                <div className={'form-group'} style={{flex: '0'}}>
                     <label>User Scope</label>
                     <div className={'form-group'} style={{flexDirection: 'row'}}>
                         <ComboBox
                             placeholder={'Pick a group'}
                             name={'user_scope'}
+                            style={{width: '8vw'}}
                             searchable={false}
                             value={schedule?.user_scope || 'you'}
                             options={scopeOptions || []}
@@ -56,6 +59,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                         { schedule?.user_scope && !['all', 'you'].includes(schedule?.user_scope) && <ComboBox
                             placeholder={`Pick a ${schedule?.user_scope}`}
                             name={'user_scope_id'}
+                            style={{width: '8vw'}}
                             searchable={true}
                             value={schedule?.user_scope_id || null}
                             options={scopeIdOptions}
@@ -63,12 +67,13 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                         />}
                     </div>
                 </div>
-                { schedule?.view !== 'monthly' && <div className={'form-group'}>
+                { schedule?.view !== 'monthly' && <div className={'form-group'} style={{flex: '0'}}>
                     <label>Date range</label>
                     <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
                         <input
                             className={'form-input'}
                             name={'start_date'}
+                            style={{width: '8vw', minWidth: 'unset'}}
                             value={schedule?.start_date}
                             max={schedule?.end_date}
                             onChange={handleChange}
@@ -78,6 +83,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                         <input
                             className={'form-input'}
                             name={'end_date'}
+                            style={{width: '8vw', minWidth: 'unset'}}
                             value={schedule?.end_date}
                             min={schedule?.start_date}
                             onChange={handleChange}

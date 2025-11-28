@@ -1,5 +1,5 @@
 // FRONTEND/components/Schedules/Edit.js
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
@@ -154,6 +154,27 @@ export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isE
     />;
 };
 
+const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave, publishSchedule}) => {
+    return (
+        <div className={'app-schedule-header'}>
+                <span style={{marginRight: 'auto', fontSize: '2rem'}}>{
+                    mode ==='new' ? 'New Schedule Draft' :
+                        mode === 'current' ? 'Editing Current Schedule' :
+                            mode === 'draft' ? 'Editing Schedule Draft: ' + schedule?.name : 'Editing Schedule Draft'
+                }</span>
+            <Button icon={'close'} label={'Discard Changes'} onClick={discardChanges}/>
+            { mode === 'current' ? <>
+                <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
+                <Button icon={'publish'} label={'Re-Publish'} onClick={publishSchedule}/>
+            </> : <>
+                <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
+                <Button icon={'save'} label={'Save'} onClick={handleSave}/>
+                <Button icon={'publish'} label={'Publish'} onClick={publishSchedule}/>
+            </> }
+        </div>
+    );
+};
+
 const ScheduleEdit = () => {
     const { appCache } = useApp();
     const { openModal, updateModalProps, closeTopModal, setUnsavedChanges } = useNav();
@@ -172,6 +193,7 @@ const ScheduleEdit = () => {
     const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
 
+    const [ mode, setMode ] = useState('new');
     const isNew = useRef(!scheduleId);
     const isEmpty = useRef(true);
     const isMounted = useRef(false);
@@ -224,62 +246,53 @@ const ScheduleEdit = () => {
     }, [openModal, schedule, setSchedule, handleSave]);
 
     useEffect(() => {
+        if (scheduleId || !isMounted.current)
+            return;
+
+        getSchedule({
+            start_date: schedule?.start_date,
+            end_date: schedule?.end_date,
+            user_scope: schedule?.user_scope,
+            user_scope_id: schedule?.user_scope_id
+        }).then();
+    }, [getSchedule, scheduleId, schedule?.start_date, schedule?.end_date,
+        schedule?.user_scope, schedule?.user_scope_id]);
+
+    useEffect(() => {
         if (isMounted.current)
             return;
 
-        fetchJobPosts().then();
+        isMounted.current = true;
+
         setLoading(true);
+        fetchJobPosts().then();
 
         if (scheduleId) {
             getSchedule({id: scheduleId}).then();
-            setLoading(false);
+            setMode('draft');
             isEmpty.current = false;
-            isMounted.current = true;
             return;
-
-        } else {
-            const scheduleConfig = {};
-            let paramMissing = false;
-
-            const current = params.get('current');
-            if (current)
-                scheduleConfig.mode = 'current';
-            else
-                scheduleConfig.mode = 'new';
-
-            const from = params.get('from');
-            if (from && !isNaN(Date.parse(from)))
-                scheduleConfig.start_date = from;
-            else
-                paramMissing = true;
-
-            const to = params.get('to');
-            if (to && !isNaN(Date.parse(to)))
-                scheduleConfig.end_date = to;
-            else
-                paramMissing = true;
-
-            const scope = params.get('scope');
-            if (scope)
-                scheduleConfig.user_scope = scope;
-            else
-                paramMissing = true;
-
-            const sid = params.get('sid');
-            if (sid && !isNaN(parseInt(sid)))
-                scheduleConfig.user_scope_id = sid;
-            else
-                paramMissing = true;
-
-            setSchedule((prev) => ({...prev, ...scheduleConfig}));
-
-            if (paramMissing) {
-                editDetails();
-                setLoading(false);
-            }
         }
 
-        isMounted.current = true;
+        setLoading(true);
+
+        const from = params.get('from');
+        const start_date = from && !isNaN(Date.parse(from)) ? from : null;
+        const to = params.get('to');
+        const end_date = to && !isNaN(Date.parse(to)) ? to : null;
+        const user_scope = params.get('scope');
+        const sid = params.get('sid');
+        const user_scope_id = sid && !isNaN(parseInt(sid)) ? parseInt(sid, 10) : null;
+        const paramMissing = !(start_date && end_date && user_scope && user_scope_id);
+
+        getSchedule({start_date, end_date, user_scope, user_scope_id }).then();
+
+        if (paramMissing) {
+            setMode('new');
+            editDetails();
+        } else {
+            setMode('current');
+        }
 
     }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading,
         getSchedule, editDetails, fetchJobPosts]);
@@ -289,32 +302,19 @@ const ScheduleEdit = () => {
             updateModalProps(modalIdRef.current, { schedule, saveSchedule });
     }, [schedule, saveSchedule, updateModalProps]);
 
-    useEffect(() => {
-        if (isNew.current && isEmpty.current)
-            getSchedule().then();
-    }, [getSchedule]);
-
-    if (loading || !schedule)
+    if (loading)
         return <Loader/>;
 
     return (
         <div className={'app-schedule seethrough'}>
-            <div className={'app-schedule-header'}>
-                <span style={{marginRight: 'auto', fontSize: '2rem'}}>Schedule Editor: {
-                    schedule.mode ==='new' ? 'New Schedule Draft' :
-                        schedule.mode === 'current' ? 'Current Draft' :
-                            schedule.name || ''
-                }</span>
-                <Button icon={'close'} label={'Discard Changes'} onClick={discardChanges}/>
-                { schedule.mode === 'current' ? <>
-                    <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
-                    <Button icon={'publish'} label={'Re-Publish'} onClick={publishSchedule}/>
-                </> : <>
-                    <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
-                    <Button icon={'save'} label={'Save'} onClick={handleSave}/>
-                    <Button icon={'publish'} label={'Publish'} onClick={publishSchedule}/>
-                </> }
-            </div>
+            <ScheduleHeader
+                schedule={schedule}
+                mode={mode}
+                discardChanges={discardChanges}
+                editDetails={editDetails}
+                handleSave={handleSave}
+                publishSchedule={publishSchedule}
+            />
             {schedule ? <UserSchedule
                 schedule={schedule}
                 updateUserShift={updateUserShift}
