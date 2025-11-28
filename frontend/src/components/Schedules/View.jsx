@@ -15,6 +15,7 @@ import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
+// TODO: Fix glitching Current View Header display
 const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
     return (
         <div className={'app-schedule-header'}>
@@ -239,8 +240,10 @@ const ScheduleView = () => {
         fetchManagers({ group: 'manager' }).then();
         fetchTeams({ all: true }).then();
 
-        if (!!scheduleId)
+        if (scheduleId) {
+            getSchedule({id: scheduleId}).then();
             return;
+        }
 
         setLoading(true);
 
@@ -291,14 +294,6 @@ const ScheduleView = () => {
             setScopeIdOptions([{ id: null, name: 'None'}]);
 
     }, [scheduleId, schedule?.user_scope, teams, users, managers]);
-
-    /**
-     * Fetch draft schedule if draftId is provided or fetch current schedule otherwise.
-     */
-    useEffect(() => {
-        if (scheduleId)
-            getSchedule({id: scheduleId}).then();
-    }, [scheduleId, getSchedule]);
 
     //
     // Logic for rendering Draft Schedule View

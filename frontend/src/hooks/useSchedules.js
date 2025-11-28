@@ -147,15 +147,17 @@ const useSchedules = () => {
         if (!id && (!start_date || !end_date) && !user_scope)
             return;
 
-        if (user_scope !== 'all' && !user_scope_id) {
+        if (!id && user_scope !== 'all' && !user_scope_id) {
             const placeholder = `Select ${user_scope || 'User scope'}.`;
             setSchedule({name, start_date, end_date, user_scope, user_scope_id: null, placeholder, view});
             setLoading(false);
             return null;
         }
 
+        if (!id)
+            setSchedule({name, start_date, end_date, user_scope, user_scope_id, view});
+
         let schedule;
-        setSchedule({name, start_date, end_date, user_scope, user_scope_id, view});
         setLoading(loading);
 
         if (id) {
