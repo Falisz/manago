@@ -155,6 +155,7 @@ const useSchedules = () => {
         }
 
         let schedule;
+        setSchedule({name, start_date, end_date, user_scope, user_scope_id, view});
         setLoading(loading);
 
         if (id) {

@@ -268,12 +268,9 @@ const ScheduleView = () => {
     /**
      * Update scopeIdOptions based on user_scope value, only for non-draft schedule.
      */
-    // TODO: Fix it.
     useEffect(() => {
-        if (!!scheduleId || schedule?.user_scope)
+        if (!!scheduleId || !schedule?.user_scope)
             return;
-
-        console.log(schedule?.user_scope);
 
         if (teams && teams.length > 0 && schedule?.user_scope === 'team')
             setScopeIdOptions(teams.map((team) =>
