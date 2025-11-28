@@ -1,5 +1,5 @@
 // FRONTEND/components/Details.jsx
-import React, {useState} from 'react';
+import React from 'react';
 import Button from './Button';
 import Icon from './Icon';
 import '../styles/Details.css';
@@ -81,17 +81,17 @@ const SectionHeader = ({ header }) => {
     </div>;
 };
 
-const SectionField = ({ field, data, markNotEmpty }) => {
+const SectionField = ({ field, data }) => {
 
     const { className, style, title, label, dataType, dataField, placeholder, format, button, hideEmpty } = field;
 
     let content = placeholder;
-    let isGroupEmpty = true;
+    let isEmpty = true;
 
     if (dataType === 'boolean') {
         const val = data[dataField];
         if (val != null)
-            isGroupEmpty = false;
+            isEmpty = false;
 
         content = <div className={'data-group linear'}>
             {val ?
@@ -111,7 +111,7 @@ const SectionField = ({ field, data, markNotEmpty }) => {
 
         const itemId = item[idField];
 
-        isGroupEmpty = false;
+        isEmpty = false;
 
         let itemName;
         if (Array.isArray(itemDataField)) {
@@ -139,7 +139,7 @@ const SectionField = ({ field, data, markNotEmpty }) => {
         const items = data[dataField];
 
         if (items && items.length > 0) {
-            isGroupEmpty = false;
+            isEmpty = false;
             content = Object.values(items).map((item, index) => {
                 const itemStruct = field.items;
                 if (!itemStruct)
@@ -192,19 +192,16 @@ const SectionField = ({ field, data, markNotEmpty }) => {
     } else {
         content = data[dataField];
         if (content != null)
-            isGroupEmpty = false;
+            isEmpty = false;
 
-        if (format && !isGroupEmpty) {
+        if (format && !isEmpty) {
             if (typeof format === 'function') content = format(content);
             else if (typeof format === 'string') content = format.replace('%v', content);
         }
         
     }
 
-    if (!isGroupEmpty)
-        markNotEmpty();
-
-    if (hideEmpty && isGroupEmpty)
+    if (hideEmpty && isEmpty)
         return null;
 
     return <div
@@ -223,18 +220,21 @@ const SectionField = ({ field, data, markNotEmpty }) => {
 }
 
 const Section = ({section, data}) => {
-    const [isEmpty, setIsEmpty] = useState(true);
     const { style, className, header, fields, hideEmpty } = section;
+
+    const isEmpty = Object.values(fields).every(field => data[field.dataField] == null ||
+        (Array.isArray(data[field.dataField]) && data[field.dataField].length === 0));
+
+    if (hideEmpty && isEmpty)
+        return null;
 
     return (
         <div
             className={'app-details-section' + (className ? ' ' + className : '')}
-            style={{...style, display: hideEmpty  && isEmpty ? 'none' : undefined }}
+            style={style}
         >
             {header && <SectionHeader header={header}/>}
-            {Object.values(fields).map((field, key) =>
-                <SectionField key={key} field={field} data={data} markNotEmpty={() => setIsEmpty(false)}/>
-            )}
+            {Object.values(fields).map((field, key) => <SectionField key={key} field={field} data={data}/>)}
         </div>
     );
 }
@@ -243,10 +243,15 @@ const Details = ({className, style, header, sections, data}) => {
     if (!data || !sections)
         return null;
 
-    return <div className={'app-details' + (className ? ' ' + className : '')} style={style}>
-        {header && <Header header={header} data={data}/>}
-        {Object.values(sections).map((section, index) => <Section key={index} section={section} data={data}/>)}
-    </div>;
+    return (
+        <div
+            className={'app-details app-scroll app-overflow-y' + (className ? ' ' + className : '')}
+            style={style}
+        >
+            {header && <Header header={header} data={data}/>}
+            {Object.values(sections).map((section, index) => <Section key={index} section={section} data={data}/>)}
+        </div>
+    );
 };
 
 export default Details;
