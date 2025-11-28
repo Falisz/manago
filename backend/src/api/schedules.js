@@ -65,6 +65,7 @@ const createHandler = async (req, res) => {
         schedule.author = req.session.user;
 
         if (publish) {
+            // TODO: Implement schedule re-publishing logic.
             // In case of re-publishing, we do not use overwrite flag from the schedule, as republishing itself is meant
             //  to overwrite the current schedule.
             console.log('Republishing current schedule:', schedule);
@@ -106,6 +107,7 @@ const updateHandler = async (req, res) => {
     try {
 
         if (publish) {
+            // TODO: Implement schedule publishing logic.
             // In case of shift publishing, we use overwrite flag from the schedule,
             //  if we want to overwrite the shifts from currently published scopes of users and dates in prev schedule.
             console.log('Publishing schedule draft:', schedule, overwrite);

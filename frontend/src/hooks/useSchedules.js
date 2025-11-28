@@ -6,7 +6,7 @@ import {useUsers, useLeaves, useShifts, useScheduleDrafts} from './useResource';
 
 const useSchedules = () => {
     const { showPopUp } = useApp();
-    const { fetchUsers, fetchUser } = useUsers();
+    const { fetchUsers } = useUsers();
     const { fetchLeaves } = useLeaves();
     const { fetchShifts } = useShifts();
     const { fetchSchedule, deleteSchedule } = useScheduleDrafts();
@@ -141,40 +141,31 @@ const useSchedules = () => {
     }, [setSchedule]);
 
     // API callbacks
-    const getSchedule = useCallback( async ({
-                                                id = null,
-                                                start_date = schedule?.start_date || null,
-                                                end_date = schedule?.end_date || null,
-                                                user_scope = schedule?.user_scope || null,
-                                                user_scope_id = schedule?.user_scope_id || null,
-                                                view = schedule?.view || 'users',
-                                                loading = true
-    } = {}) => {
+    const getSchedule = useCallback( async ({id, name, start_date, end_date, user_scope, user_scope_id,
+                                                view = 'users', loading = true} = {}) => {
 
-        if (!id && !start_date && !end_date && !user_scope && !user_scope_id)
+        if (!id && (!start_date || !end_date) && !user_scope)
             return;
 
+        if (user_scope !== 'all' && !user_scope_id) {
+            const placeholder = `Select ${user_scope || 'User scope'}.`;
+            setSchedule({name, start_date, end_date, user_scope, user_scope_id: null, placeholder, view});
+            setLoading(false);
+            return null;
+        }
+
+        let schedule;
         setLoading(loading);
 
         if (id) {
-            const schedule = await fetchSchedule({id});
-            schedule.users = mapUsers(schedule.shifts, schedule.users);
+            schedule = await fetchSchedule({id});
             schedule.view = view;
-
-            setSchedule(schedule);
-
+            schedule.users = mapUsers(schedule.shifts, schedule.users);
         } else {
             let users = new Map(), shifts = [], leaves = [];
 
-            if (user_scope !== 'all' && !user_scope_id) {
-                const placeholder = `Select ${user_scope || 'User scope'}.`;
-                setSchedule((prev) => ({...prev, users, shifts, leaves, placeholder}));
-                setLoading(false);
-                return null;
-            }
-
             if (['you', 'user'].includes(user_scope))
-                users = await fetchUser({id: user_scope_id});
+                users = await fetchUsers({id: user_scope_id});
             else
                 users = await fetchUsers({
                     user_scope,
@@ -184,36 +175,45 @@ const useSchedules = () => {
             if (!Array.isArray(users))
                 users = [users];
 
-            if (!['all', 'you'].includes(user_scope) && user_scope && user_scope_id) {
-                shifts = await fetchShifts({
-                    start_date,
-                    end_date,
-                    user_scope,
-                    user_scope_id,
-                    schedule_id: null
-                }) || [];
+            shifts = await fetchShifts({
+                start_date,
+                end_date,
+                user_scope,
+                user_scope_id,
+                schedule_id: null
+            }) || [];
 
-                leaves = await fetchLeaves({
-                    start_date,
-                    end_date,
-                    user_scope,
-                    user_scope_id,
-                }) || [];
-            }
+            leaves = await fetchLeaves({
+                start_date,
+                end_date,
+                user_scope,
+                user_scope_id,
+            }) || [];
 
             if (view === 'users')
                 users = mapUsers(shifts, users, leaves);
             else
                 shifts = mapDates(shifts);
 
-            setSchedule((prev) => ({...prev, users, shifts, leaves, placeholder: null}));
+            schedule = {
+                name,
+                view,
+                start_date,
+                end_date,
+                user_scope,
+                user_scope_id,
+                users,
+                shifts,
+                leaves,
+                placeholder: null
+            };
         }
 
+        setSchedule(schedule);
         loading && setLoading(false);
         return true;
 
-    }, [fetchUsers, fetchUser, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers,
-        schedule?.start_date, schedule?.end_date, schedule?.user_scope, schedule?.user_scope_id, schedule?.view]);
+    }, [fetchUsers, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers]);
 
     const saveSchedule = useCallback( async ({publish = false, overwrite = false} = {}) => {
 

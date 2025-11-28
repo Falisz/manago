@@ -153,7 +153,7 @@ const ScheduleView = () => {
     const { appState, user } = useApp();
     const { modules } = appState;
     const { scheduleId } = useParams();
-    const { schedule, setSchedule, loading, setLoading, getSchedule } = useSchedules();
+    const { schedule, loading, setLoading, getSchedule } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -176,44 +176,44 @@ const ScheduleView = () => {
     const defaultStartDate = formatDate(new Date(now));
     const defaultEndDate = formatDate(new Date(now + 6 * DAY_IN_MS));
 
-    const handleChange = useCallback((e) => {
+    const handleChange = useCallback(async (e) => {
         const { name, value } = e.target;
 
-        setSchedule((prev) => {
-            const newSchedule = { ...prev, [name]: value};
+        const newSchedule = { ...schedule, [name]: value};
 
-            if (name === 'user_scope') {
-                if (value === 'you')
-                    newSchedule.user_scope_id = user.id;
-                else
-                    newSchedule.user_scope_id = null;
-            }
+        if (name === 'user_scope') {
+            if (value === 'you')
+                newSchedule.user_scope_id = user.id;
+            else
+                newSchedule.user_scope_id = null;
+        }
 
-            const newParams = new URLSearchParams(searchParams);
+        const newParams = new URLSearchParams(searchParams);
 
-            const urlKeys = [
-                { field: 'view', url: 'view' },
-                { field: 'start_date', url: 'from'},
-                { field: 'end_date', url: 'to'},
-                { field: 'month', url: 'month'},
-                { field: 'user_scope', url: 'scope'},
-                { field: 'user_scope_id', url: 'sid'}
-            ];
+        const urlKeys = [
+            { field: 'view', url: 'view' },
+            { field: 'start_date', url: 'from'},
+            { field: 'end_date', url: 'to'},
+            { field: 'month', url: 'month'},
+            { field: 'user_scope', url: 'scope'},
+            { field: 'user_scope_id', url: 'sid'}
+        ];
 
-            urlKeys.forEach(key => {
-                const v = newSchedule[key.field];
-                if (v != null && v!== '')
-                    newParams.set(key.url, String(v))
-                else
-                    newParams.delete(key.url);
-            });
-
-            setSearchParams(newParams, { replace: true });
-
-            return newSchedule;
+        urlKeys.forEach(key => {
+            const v = newSchedule[key.field];
+            if (v != null && v!== '')
+                newParams.set(key.url, String(v))
+            else
+                newParams.delete(key.url);
         });
 
-    }, [setSchedule, setSearchParams, user, searchParams]);
+        setSearchParams(newParams, { replace: true });
+
+        const { view, start_date, end_date, user_scope, user_scope_id } = newSchedule;
+
+        await getSchedule({name: 'Current Schedule', view, start_date, end_date, user_scope, user_scope_id});
+
+    }, [setSearchParams, getSchedule, schedule, user, searchParams]);
 
     const editSchedule = useCallback(() => {
         if (scheduleId)
@@ -244,48 +244,48 @@ const ScheduleView = () => {
 
         setLoading(true);
 
-        const currentSchedule = {
+        const view = searchParams.get('view') || 'users';
+        const from = searchParams.get('from');
+        const start_date = from && !isNaN(Date.parse(from)) ? from : defaultStartDate;
+        const to = searchParams.get('to');
+        const end_date = to && !isNaN(Date.parse(to)) ? to : defaultEndDate;
+        const user_scope = searchParams.get('scope') || 'you';
+        const sid = searchParams.get('sid');
+        const user_scope_id = sid && !isNaN(parseInt(sid)) ? parseInt(sid, 10) : user.id;
+
+        getSchedule({
             name: 'Current Schedule',
-            view: searchParams.get('view') || 'users',
-            start_date: (() => {
-                const from = searchParams.get('from');
-                return from && !isNaN(Date.parse(from)) ? from : defaultStartDate; 
-            })(),
-            end_date: (() => {
-                const to = searchParams.get('to');
-                return to && !isNaN(Date.parse(to)) ? to : defaultEndDate; 
-            })(),
-            user_scope: searchParams.get('scope') || 'you',
-            user_scope_id: (() => {
-                const sid = searchParams.get('sid');
-                return sid && !isNaN(parseInt(sid)) ? parseInt(sid, 10) : user.id; 
-            })() || user.id,
-            placeholder: null
-        };
-        
-        setSchedule((prev) => ({...prev, ...currentSchedule}));
+            view,
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id
+        }).then();
 
     }, [scheduleId, user.id, setLoading, searchParams, defaultStartDate, defaultEndDate,
-        fetchUsers, fetchManagers, fetchTeams, setSchedule]);
+        fetchUsers, fetchManagers, fetchTeams, getSchedule]);
 
     /**
      * Update scopeIdOptions based on user_scope value, only for non-draft schedule.
      */
+    // TODO: Fix it.
     useEffect(() => {
-        if (!!scheduleId)
+        if (!!scheduleId || schedule?.user_scope)
             return;
 
-        if (teams && teams.length > 0 && schedule.user_scope === 'team') 
+        console.log(schedule?.user_scope);
+
+        if (teams && teams.length > 0 && schedule?.user_scope === 'team')
             setScopeIdOptions(teams.map((team) =>
                 ({id: team.id, name: team.name})
             ));
 
-        else if (users && Array.from(users).length > 0 && schedule.user_scope === 'user')
+        else if (users && Array.from(users).length > 0 && schedule?.user_scope === 'user')
             setScopeIdOptions(Array.from(users).map((user) =>
                 ({id: user.id, name: user.first_name + ' ' + user.last_name})
             ));
         
-        else if (managers && Array.from(managers).length > 0 && schedule.user_scope === 'manager')
+        else if (managers && Array.from(managers).length > 0 && schedule?.user_scope === 'manager')
             setScopeIdOptions(Array.from(managers).map((manager) =>
                 ({id: manager.id, name: manager.first_name + ' ' + manager.last_name})
             ));
@@ -299,8 +299,8 @@ const ScheduleView = () => {
      * Fetch draft schedule if draftId is provided or fetch current schedule otherwise.
      */
     useEffect(() => {
-        console.log('effect runs', scheduleId);
-        getSchedule({id: scheduleId}).then();
+        if (scheduleId)
+            getSchedule({id: scheduleId}).then();
     }, [scheduleId, getSchedule]);
 
     //
