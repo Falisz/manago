@@ -4,7 +4,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import useApp from '../../contexts/AppContext';
 import useSchedules from '../../hooks/useSchedules';
-import {useTeams, useUsers, useScheduleDrafts} from '../../hooks/useResource';
+import {useTeams, useUsers} from '../../hooks/useResource';
 import Button from '../Button';
 import ComboBox from '../ComboBox';
 import InWorks from '../InWorks';
@@ -15,13 +15,145 @@ import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
-// TODO: Move header to the separate sub-component "ScheduleViewHeader" and "DraftViewHeader"
+const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
+    return (
+        <div className={'app-schedule-header'}>
+            <h1>Current Schedule</h1>
+            <div
+                className={'app-form'}
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: '10px'
+                }}
+            >
+                <div className={'form-group'}>
+                    <label>View</label>
+                    <ComboBox
+                        name={'view'}
+                        searchable={false}
+                        value={schedule?.view || 'users'}
+                        options={[
+                            {id: 'users', name: 'Users'},
+                            {id: 'jobs', name: 'Jobs'},
+                            {id: 'monthly', name: 'Monthly'}
+                        ]}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className={'form-group'}>
+                    <label>User Scope</label>
+                    <div className={'form-group'} style={{flexDirection: 'row'}}>
+                        <ComboBox
+                            placeholder={'Pick a group'}
+                            name={'user_scope'}
+                            searchable={false}
+                            value={schedule?.user_scope || 'you'}
+                            options={scopeOptions || []}
+                            onChange={handleChange}
+                        />
+                        { schedule?.user_scope && !['all', 'you'].includes(schedule?.user_scope) && <ComboBox
+                            placeholder={`Pick a ${schedule?.user_scope}`}
+                            name={'user_scope_id'}
+                            searchable={true}
+                            value={schedule?.user_scope_id || null}
+                            options={scopeIdOptions}
+                            onChange={handleChange}
+                        />}
+                    </div>
+                </div>
+                { schedule?.view !== 'monthly' && <div className={'form-group'}>
+                    <label>Date range</label>
+                    <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
+                        <input
+                            className={'form-input'}
+                            name={'start_date'}
+                            value={schedule?.start_date}
+                            max={schedule?.end_date}
+                            onChange={handleChange}
+                            type={'date'}
+                        />
+                        <span>-</span>
+                        <input
+                            className={'form-input'}
+                            name={'end_date'}
+                            value={schedule?.end_date}
+                            min={schedule?.start_date}
+                            onChange={handleChange}
+                            type={'date'}
+                        />
+                    </div>
+                </div>}
+                { schedule?.view === 'monthly' && <div className={'form-group'}>
+                    <label>Month</label>
+                    <div className={'form-group'} style={{flexDirection: 'row'}}>
+                        <input
+                            className={'form-input'}
+                            placeholder={'month'}
+                            name={'month'}
+                            value={schedule?.month}
+                            type={'month'}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </div>}
+            </div>
+            { schedule?.view === 'users' &&
+                <Button
+                    label='Edit Schedule'
+                    icon='edit'
+                    style={{marginLeft: 'auto'}}
+                    onClick={editSchedule}
+                />
+            }
+        </div>
+    );
+};
+
+const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
+    return (
+        <div className={'app-schedule-header'}>
+            <h1>Draft Preview: {schedule?.name}</h1>
+            <div
+                className={'app-form'}
+                style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: '10px'
+                }}
+            >
+                <div className={'form-group'}>
+                    <label>User Scope</label>
+                    <span style={{padding: '8px'}}><b>{userScope}{scopeName && ':'}</b> {scopeName}</span>
+                </div>
+                <div className={'form-group'}>
+                    <label>Date Range</label>
+                    <span style={{padding: '8px', whiteSpace: 'nowrap'}}>
+                                {schedule?.start_date} - {schedule?.end_date}
+                            </span>
+                </div>
+            </div>
+            <Button
+                label='Edit Schedule'
+                icon='edit'
+                style={{marginLeft: 'auto'}}
+                onClick={editSchedule}
+            />
+            <Button
+                label='Publish Schedule'
+                icon='publish'
+                onClick={null}
+            />
+        </div>
+    );
+};
+
+
 const ScheduleView = () => {
     const { appState, user } = useApp();
     const { modules } = appState;
-    const { scheduleId: draftId } = useParams();
-    const { schedule, loading, setLoading, setSchedule, fetchSchedule, mapUsers } = useSchedules();
-    const { schedule: draft, setSchedule: setDraft, loading: draftLoading, fetchSchedule: fetchDraft } = useScheduleDrafts();
+    const { scheduleId } = useParams();
+    const { schedule, setSchedule, loading, setLoading, getSchedule } = useSchedules();
     const { teams, fetchTeams } = useTeams();
     const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
@@ -81,19 +213,18 @@ const ScheduleView = () => {
             return newSchedule;
         });
 
-
     }, [setSchedule, setSearchParams, user, searchParams]);
 
     const editSchedule = useCallback(() => {
-        if (draftId)
-            navigate('/schedules/edit/' + draftId);
+        if (scheduleId)
+            navigate('/schedules/edit/' + scheduleId);
 
         else
             navigate('/schedules/edit?current=true' +
                 `&from=${schedule.start_date}&to=${schedule.end_date}` +
                 `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`);
 
-    }, [draftId, schedule, navigate]);
+    }, [scheduleId, schedule, navigate]);
 
     /**
      * Component initializer logic. If draftId is provided, skipping the rest of logic.
@@ -108,7 +239,7 @@ const ScheduleView = () => {
         fetchManagers({ group: 'manager' }).then();
         fetchTeams({ all: true }).then();
 
-        if (!!draftId)
+        if (!!scheduleId)
             return;
 
         setLoading(true);
@@ -134,14 +265,14 @@ const ScheduleView = () => {
         
         setSchedule((prev) => ({...prev, ...currentSchedule}));
 
-    }, [draftId, user.id, setLoading, searchParams, defaultStartDate, defaultEndDate,
+    }, [scheduleId, user.id, setLoading, searchParams, defaultStartDate, defaultEndDate,
         fetchUsers, fetchManagers, fetchTeams, setSchedule]);
 
     /**
      * Update scopeIdOptions based on user_scope value, only for non-draft schedule.
      */
     useEffect(() => {
-        if (!!draftId)
+        if (!!scheduleId)
             return;
 
         if (teams && teams.length > 0 && schedule.user_scope === 'team') 
@@ -162,44 +293,37 @@ const ScheduleView = () => {
         else
             setScopeIdOptions([{ id: null, name: 'None'}]);
 
-    }, [draftId, schedule.user_scope, teams, users, managers]);
+    }, [scheduleId, schedule?.user_scope, teams, users, managers]);
 
     /**
      * Fetch draft schedule if draftId is provided or fetch current schedule otherwise.
      */
     useEffect(() => {
-        if (draftId)
-            fetchDraft({id: draftId}).then(
-                _res => setDraft(prev => ({...prev, users: mapUsers(prev?.shifts, prev?.users)}))
-            );
-        else
-            fetchSchedule().then();
-    }, [fetchSchedule, setDraft, fetchDraft, draftId]);
+        console.log('effect runs', scheduleId);
+        getSchedule({id: scheduleId}).then();
+    }, [scheduleId, getSchedule]);
 
     //
     // Logic for rendering Draft Schedule View
     //
-    if (draftId) {
+    if (scheduleId) {
 
-        if (draftLoading)
-            return <Loader/>;
-
-        const userScope = (draft && draft.user_scope && draft.user_scope[0].toUpperCase() + draft.user_scope.slice(1))
-            || null;
+        const userScope = ( schedule && schedule.user_scope &&
+                schedule.user_scope[0].toUpperCase() + schedule.user_scope.slice(1) ) || null;
 
         const scopeName = () => {
-            if (draft?.user_scope === 'team') {
-                const scope = teams?.find(team => team.id === draft.user_scope_id);
+            if (schedule?.user_scope === 'team') {
+                const scope = teams?.find(team => team.id === schedule.user_scope_id);
                 if (scope)
                     return scope['name'];
             }
-            if (draft?.user_scope === 'user') {
-                const scope = users?.find(user => user.id === draft.user_scope_id);
+            if (schedule?.user_scope === 'user') {
+                const scope = users?.find(user => user.id === schedule.user_scope_id);
                 if (scope)
                     return scope['first_name'] + ' ' + scope['last_name'];
             }
-            if (draft?.user_scope === 'manager') {
-                const scope = managers?.find(mgr => mgr.id === draft.user_scope_id);
+            if (schedule?.user_scope === 'manager') {
+                const scope = managers?.find(mgr => mgr.id === schedule.user_scope_id);
                 if (scope)
                     return scope['first_name'] + ' ' + scope['last_name'];
             }
@@ -211,38 +335,13 @@ const ScheduleView = () => {
                 <Helmet>
                     <title>Schedule Preview | MANAGO</title>
                 </Helmet>
-                <div className={'app-schedule-header'}>
-                    <h1>Draft Preview: {draft?.name}</h1>
-                    <div
-                        className={'app-form'}
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'flex-start',
-                            gap: '10px'
-                        }}
-                    >
-                        <div className={'form-group'}>
-                            <label>User Scope</label>
-                            <span style={{padding: '8px'}}><b>{userScope}{scopeName() && ':'}</b> {scopeName()}</span>
-                        </div>
-                        <div className={'form-group'}>
-                            <label>Date Range</label>
-                            <span style={{padding: '8px', whiteSpace: 'nowrap'}}>{draft?.start_date} - {draft?.end_date}</span>
-                        </div>
-                    </div>
-                    <Button
-                        label='Edit Schedule'
-                        icon='edit'
-                        style={{marginLeft: 'auto'}}
-                        onClick={editSchedule}
-                    />
-                    <Button
-                        label='Publish Schedule'
-                        icon='publish'
-                        onClick={null}
-                    />
-                </div>
-                { draft ? <UserSchedule schedule={draft}/> : <Loader/> }
+                <DraftViewHeader
+                    schedule={schedule}
+                    editSchedule={editSchedule}
+                    userScope={userScope}
+                    scopeName={scopeName()}
+                />
+                { schedule ? <UserSchedule schedule={schedule}/> : <Loader/> }
             </div>
         );
     }
@@ -251,114 +350,26 @@ const ScheduleView = () => {
     // Logic for rendering Current Schedule View
     //
 
-    if (['monthly', 'jobs'].includes(schedule.view))
+    if (['monthly', 'jobs'].includes(schedule?.view))
         scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
 
     return <div className={'app-schedule seethrough'}>
         <Helmet>
             <title>Current Schedule | MANAGO</title>
         </Helmet>
-        <div className={'app-schedule-header'}>
-            <h1>Current Schedule</h1>
-            <div
-                className={'app-form'}
-                style={{
-                    flexDirection: 'row',
-                    alignItems: 'flex-start',
-                    gap: '10px'
-                }}
-            >
-                <div className={'form-group'}>
-                    <label>View</label>
-                    <ComboBox
-                        name={'view'}
-                        searchable={false}
-                        value={schedule.view || 'users'}
-                        options={[
-                            {id: 'users', name: 'Users'},
-                            {id: 'jobs', name: 'Jobs'},
-                            {id: 'monthly', name: 'Monthly'}
-                        ]}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className={'form-group'}>
-                    <label>User Scope</label>
-                    <div className={'form-group'} style={{flexDirection: 'row'}}>
-                        <ComboBox
-                            placeholder={'Pick a group'}
-                            name={'user_scope'}
-                            searchable={false}
-                            value={schedule.user_scope || 'you'}
-                            options={scopeOptions || []}
-                            onChange={handleChange}
-                            disabled={!!draftId}
-                        />
-                        { schedule.user_scope && !['all', 'you'].includes(schedule.user_scope) && <ComboBox
-                            placeholder={`Pick a ${schedule.user_scope}`}
-                            name={'user_scope_id'}
-                            searchable={true}
-                            value={schedule.user_scope_id || null}
-                            options={scopeIdOptions}
-                            onChange={handleChange}
-                            disabled={!!draftId}
-                        />}
-                    </div>
-                </div>
-                { schedule.view !== 'monthly' && <div className={'form-group'}>
-                    <label>Date range</label>
-                    <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
-                        <input
-                            className={'form-input'}
-                            name={'start_date'}
-                            value={schedule.start_date || defaultStartDate}
-                            max={schedule.end_date}
-                            onChange={handleChange}
-                            type={'date'}
-                            disabled={!!draftId}
-                        />
-                        <span>-</span>
-                        <input
-                            className={'form-input'}
-                            name={'end_date'}
-                            value={schedule.end_date || defaultEndDate}
-                            min={schedule.start_date}
-                            onChange={handleChange}
-                            type={'date'}
-                            disabled={!!draftId}
-                        />
-                    </div>
-                </div>}
-                { schedule.view === 'monthly' && <div className={'form-group'}>
-                    <label>Month</label>
-                    <div className={'form-group'} style={{flexDirection: 'row'}}>
-                        <input
-                            className={'form-input'}
-                            placeholder={'month'}
-                            name={'month'}
-                            value={schedule.month}
-                            type={'month'}
-                            onChange={handleChange}
-                            disabled={!!draftId}
-                        />
-                    </div>
-                </div>}
-            </div>
-            { schedule.view === 'users' && 
-                <Button
-                    label='Edit Schedule'
-                    icon='edit'
-                    style={{marginLeft: 'auto'}}
-                    onClick={editSchedule}
-                />
-            }
-        </div>
+        <CurrentViewHeader
+            schedule={schedule}
+            handleChange={handleChange}
+            scopeOptions={scopeOptions}
+            scopeIdOptions={scopeIdOptions}
+            editSchedule={editSchedule}
+        />
         { loading ? <Loader/> : 
-            schedule.view === 'users' ?
+            schedule?.view === 'users' ?
                 <UserSchedule schedule={schedule}/> : 
-            schedule.view === 'monthly' ?
+            schedule?.view === 'monthly' ?
                 <MonthlySchedule schedule={schedule}/> : 
-            schedule.view === 'jobs' ?
+            schedule?.view === 'jobs' ?
                 <JobPostSchedule schedule={schedule}/> :
             <InWorks icon={'error'} title={'Cannot view Schedule'} description={'Invalid view type provided'} />
         }

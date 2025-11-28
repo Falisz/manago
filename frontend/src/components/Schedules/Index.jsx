@@ -3,7 +3,7 @@ import React, {useEffect, useCallback} from 'react';
 import {useNavigate} from 'react-router-dom';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import useSchedules from '../../hooks/useSchedules';
+import {useScheduleDrafts} from '../../hooks/useResource';
 import Button from '../Button';
 import Loader from '../Loader';
 import '../../styles/Schedules.css';
@@ -11,7 +11,7 @@ import '../../styles/Schedules.css';
 const SchedulesIndex = () => {
     const { refreshTriggers, refreshData } = useApp();
     const { openModal, closeTopModal } = useNav();
-    const { scheduleDrafts, fetchScheduleDrafts, discardScheduleDraft, loading  } = useSchedules();
+    const { schedules, fetchSchedules, deleteSchedule, loading  } = useScheduleDrafts();
     const navigate = useNavigate();
 
     const previewSchedule = useCallback((id) => {
@@ -26,28 +26,28 @@ const SchedulesIndex = () => {
         }
     }, [navigate]);
 
-    const deleteSchedule = useCallback((id) => {
+    const handleDelete = useCallback((id) => {
         openModal({
             content: 'confirm',
             type: 'pop-up',
             message: 'Are you sure you want to discard this Schedule Draft? This action cannot be undone.',
             onConfirm: () => {
-                discardScheduleDraft(id).then();
+                deleteSchedule({id}).then();
                 refreshData('scheduleDrafts', true);
                 closeTopModal();
             },
         });
-    }, [closeTopModal, discardScheduleDraft, openModal, refreshData]);
+    }, [closeTopModal, deleteSchedule, openModal, refreshData]);
 
     useEffect(() => {
-        const refresh = refreshTriggers?.scheduleDrafts || false;
+        const refresh = refreshTriggers?.schedules || false;
 
         if (refresh)
-            delete refreshTriggers.scheduleDrafts;
+            delete refreshTriggers.schedules;
 
-        if (!scheduleDrafts || refresh)
-            fetchScheduleDrafts({include_users: true, include_leaves: true}).then();
-    }, [refreshTriggers.scheduleDrafts, scheduleDrafts, fetchScheduleDrafts]);
+        if (!schedules || refresh)
+            fetchSchedules({include_users: true, include_leaves: true}).then();
+    }, [refreshTriggers.schedules, schedules, fetchSchedules]);
 
     return <>
         <div className={'header'}>
@@ -60,7 +60,7 @@ const SchedulesIndex = () => {
         </div>
         <div className={'content app-scroll'}>
             { loading ? <Loader/> :
-                scheduleDrafts && scheduleDrafts.length > 0 && scheduleDrafts.map((schedule, idx) =>
+                schedules && schedules.length > 0 && schedules.map((schedule, idx) =>
                     <div key={idx} className={'schedule-draft-item'}>
                         <div className={'schedule-draft-item-header'}>
                             <h2>{schedule.name}</h2>
@@ -80,7 +80,7 @@ const SchedulesIndex = () => {
                                 icon={'delete'}
                                 title={'Delete'}
                                 transparent={true}
-                                onClick={() => deleteSchedule(schedule.id)}
+                                onClick={() => handleDelete(schedule.id)}
                             />
                         </div>
                         <div className={'schedule-draft-item-content'}>

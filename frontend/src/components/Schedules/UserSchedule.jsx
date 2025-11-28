@@ -6,6 +6,7 @@ import Icon from '../Icon';
 import ComboBox from '../ComboBox';
 import {generateDateList, formatDate, sameDay} from '../../utils/dates';
 import '../../styles/UserSchedule.css';
+import InWorks from "../InWorks";
 
 
 const LeaveItem = ({ days, type, color }) => (
@@ -328,7 +329,11 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         }
     ]
     if (!schedule.start_date || !schedule.end_date)
-            return <span>Cannot open Schedule {editable ? 'Editor' : 'View'}. No time range specified.</span>;
+        return <InWorks
+            icon={'calendar_clock'}
+            description={`Cannot display Schedule ${editable ? 'Editor' : 'View'}. There is no time range specified.`}
+            hideReturnLink={true}
+        />;
         
     const dates = generateDateList(schedule.start_date, schedule.end_date);
 
