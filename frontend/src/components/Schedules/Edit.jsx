@@ -171,6 +171,7 @@ const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave
     );
 };
 
+// TODO: Fix new schedule.
 const ScheduleEdit = () => {
     const { appCache } = useApp();
     const { openModal, updateModalProps, closeTopModal, setUnsavedChanges } = useNav();

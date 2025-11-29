@@ -119,7 +119,6 @@ const ManagerView = () => {
 
     const pageTitle = currentSubPage?.title || currentMainPage?.title || null;
 
-    //TODO: Consider going with grid display layout for app body here. https://www.youtube.com/watch?v=aEj6k-gi9-s
     return (
         <>
             <Helmet>
@@ -131,15 +130,13 @@ const ManagerView = () => {
                 currentView={'manager'}
                 currentPath={location.pathname}
             />
-            <div className='app-content'>
-                <SubNav
-                    currentMainPage={currentMainPage}
-                    location={location}
-                />
-                <main className={currentMainPage?.path}>
-                    <Outlet />
-                </main>
-            </div>
+            <SubNav
+                currentMainPage={currentMainPage}
+                location={location}
+            />
+            <main className={`app-content ${currentMainPage?.path}`}>
+                <Outlet />
+            </main>
         </>
     );
 };

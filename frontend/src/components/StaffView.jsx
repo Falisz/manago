@@ -87,11 +87,9 @@ const StaffView = () => {
                 currentView={'staff'}
                 currentPath={location.pathname}
             />
-            <div className='app-content'>
-                <main className={currentMainPage?.path}>
-                    <Outlet />
-                </main>
-            </div>
+            <main className={`app-content ${currentMainPage?.path}`}>
+                <Outlet />
+            </main>
         </>
     );
 };

@@ -3,7 +3,6 @@ import React from 'react';
 import SchedulesIndex from './Index';
 import '../../styles/Schedules.css';
 
-// TODO: Use Bento Grid here - https://www.youtube.com/watch?v=JYfiaSKeYhE
 const SchedulesDashboard = () => {
     return (
         <div className={'schedules-dashboard app-scroll'}>

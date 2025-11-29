@@ -1,7 +1,16 @@
+.app.staff {
+    grid-template-rows: auto 1fr;
+    grid-template-columns: auto;
+    grid-template-areas:
+            "nav"
+            "main";
+
+}
 /*********/
 /*APP NAV*/
 /*********/
 .app.staff .app-nav {
+    grid-area: nav;
     display: flex;
     justify-content: space-between;
     padding: 0;
@@ -10,7 +19,6 @@
     font-family: 'Roboto Condensed', sans-serif;
 }
 .app.staff.fluent .app-nav {
-    margin: 10px;
     border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
@@ -138,27 +146,19 @@
 /*APP CONTENT*/
 /*************/
 .app.staff .app-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
-    height: 100vh;
-    padding: 0;
-    margin: 0;
-}
-.app.staff .app-content main {
     display: flex;
     position: relative;
     flex: 1;
     align-items: center;
     flex-direction: column;
     margin: 0;
-    padding: 0;
+    padding: 10px;
     overflow-y: auto;
     overflow-x: hidden;
 }
-
+.app.staff.fluent .app-content {
+    padding: 0;
+}
 
 /*************/
 /*MOBILE VIEW*/

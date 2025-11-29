@@ -1,15 +1,16 @@
 /* Schedules/Dashboard.jsx */
 .schedules-dashboard {
-    display: flex;
+    display: grid;
+    grid-template-rows: 2fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
+    padding: 10px;
     flex-wrap: wrap;
-    padding: 0;
-    margin: 20px 0 20px 20px;
-    height: calc(100% - 40px);
-    overflow-y: scroll;
+    height: calc(100% - 20px);
+    overflow: hidden;
 }
 .app.fluent .schedules-dashboard {
-    margin: 0;
+    padding: 0;
     height: 100%;
     gap: 10px;
 }
@@ -17,11 +18,9 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
-    flex: 1 1 400px;
     background: var(--background-gradient);
     border-radius: var(--def-border-radius);
     padding: 20px;
-    height: 500px;
     overflow: hidden;
 }
 .app.fluent .schedules-dashboard-widget {

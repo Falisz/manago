@@ -1,14 +1,16 @@
-/*****/
-/*APP*/
-/*****/
 .app.manager {
-    flex-direction: row;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+            "nav subnav"
+            "nav main";
 }
 
 /*********/
 /*APP NAV*/
 /*********/
 .app.manager .app-nav {
+    grid-area: nav;
     display: flex;
     gap: 10px;
     flex-direction: column;
@@ -24,7 +26,6 @@
     border: 0;
 }
 .app.manager.fluent .app-nav {
-    margin: 10px;
     border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
@@ -144,11 +145,12 @@
 /*APP SUB-NAV*/
 /*************/
 .app.manager .app-sub-nav {
-    position: relative;
+    grid-area: subnav;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: stretch;
+    position: relative;
     background: var(--color-gradient);
     padding: 0;
     margin: 0;
@@ -191,7 +193,6 @@
     gap: 10px;
     align-items: stretch;
     padding: 0 10px 0 15px;
-    margin: 10px 10px 10px 0;
     border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background);
@@ -222,11 +223,8 @@
 
 .app.manager.fluent .app-sub-nav.no-subpages {
     width: fit-content;
-    align-self: flex-end;
+    margin-left: auto;
     z-index: 500;
-}
-.app.manager.fluent .app-sub-nav.no-subpages .user-link {
-    margin-left: 15px;
 }
 
 .app.manager .app-sub-nav .subpage-link:hover .app-sub-menu,
@@ -243,29 +241,19 @@
 /*APP CONTENT*/
 /*************/
 .app.manager .app-content {
-    position: relative;
+    grid-area: main;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    overflow: hidden;
-    height: 100vh;
-    padding: 0;
-    margin: 0;
-}
-.app.manager .app-content main {
-    display: flex;
-    position: relative;
-    padding: 10px;
-    flex: 1;
     align-items: center;
-    flex-direction: column;
-    margin: 0;
+    position: relative;
     overflow: hidden;
+    padding: 10px;
+    margin: 0;
 }
-.app.manager.fluent .app-content main {
-    padding: 0 10px 10px 0;
+.app.manager.fluent .app-content {
+    padding: 0;
 }
-.app.manager .app-content main .page-header {
+.app.manager .app-content .page-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -283,7 +271,7 @@
     padding: 8px 10px;
     margin: 0;
 }
-.app.manager .app-content main .page-title {
+.app.manager .app-content .page-title {
     font-size: 2rem;
     margin: 10px;
     font-weight: 300;
