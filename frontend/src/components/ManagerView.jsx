@@ -122,7 +122,7 @@ const ManagerView = () => {
     return (
         <>
             <Helmet>
-                <title>{pageTitle ? ['MANAGO', pageTitle].join(' | ') : 'MANAGO'}</title>
+                <title>{pageTitle ? [pageTitle, 'MANAGO'].join(' | ') : 'MANAGO'}</title>
             </Helmet>
             <MainNav/>
             <MobileNav

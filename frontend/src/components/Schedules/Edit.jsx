@@ -1,6 +1,7 @@
 // FRONTEND/components/Schedules/Edit.js
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {Helmet} from 'react-helmet';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useUsers, useTeams, useJobPosts} from '../../hooks/useResource';
@@ -135,29 +136,30 @@ export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isE
 
         return true;
     }, [isEmpty, isNew, handleSave, schedule, closeTopModal]);
-
-    if (!schedule)
-        return <Loader/>;
     
     return <EditForm 
-        header={schedule.id ? `Editing Details of ${schedule.name}` : `Creating a new Schedule Draft`}
+        header={schedule?.id ? `Editing Details of ${schedule.name}` : `Creating a new Schedule Draft`}
         sections={sections}
         onSubmit={onSubmit}
         onCancel={() => {closeTopModal(); isNew.current && navigate(-1);}}
-        submitLabel={schedule.id ? 'Save Changes' : 'Start planning'}
+        submitLabel={schedule?.id ? 'Save Changes' : 'Start planning'}
         source={schedule}
         setSource={setSchedule} 
     />;
 };
 
 const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave, publishSchedule}) => {
+
+    const title = mode ==='new' ? 'New Schedule Draft' :
+        mode === 'current' ? 'Editing Current Schedule' :
+            mode === 'draft' ? 'Editing Schedule Draft: ' + schedule?.name : 'Editing Schedule Draft'
+
     return (
         <div className={'app-schedule-header'}>
-                <span style={{marginRight: 'auto', fontSize: '2rem'}}>{
-                    mode ==='new' ? 'New Schedule Draft' :
-                        mode === 'current' ? 'Editing Current Schedule' :
-                            mode === 'draft' ? 'Editing Schedule Draft: ' + schedule?.name : 'Editing Schedule Draft'
-                }</span>
+            <Helmet>
+                <title>{title} | MANAGO</title>
+            </Helmet>
+            <span style={{marginRight: 'auto', fontSize: '2rem'}}>{title}</span>
             <Button icon={'close'} label={'Discard Changes'} onClick={discardChanges}/>
             { mode === 'current' ? <>
                 <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
@@ -171,7 +173,6 @@ const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave
     );
 };
 
-// TODO: Fix new schedule.
 const ScheduleEdit = () => {
     const { appCache } = useApp();
     const { openModal, updateModalProps, closeTopModal, setUnsavedChanges } = useNav();
@@ -287,11 +288,12 @@ const ScheduleEdit = () => {
         if (paramMissing) {
             setMode('new');
             editDetails();
+            setLoading(false);
         } else {
             setMode('current');
         }
 
-    }, [isMounted, appCache, params, scheduleId, setSchedule, setLoading,
+    }, [isMounted, appCache, params, scheduleId, setLoading,
         getSchedule, editDetails, fetchJobPosts]);
 
     useEffect(() => {

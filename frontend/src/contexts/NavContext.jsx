@@ -174,7 +174,7 @@ export const NavProvider = ({ children }) => {
                 [id]: { ...modalConfig, id, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
             };
             // Sync URL with the upcoming state
-            if (blocker.state !== 'blocked' &&  modalConfig.content !== 'confirm')
+            if (blocker.state !== 'blocked' &&  modalConfig.content !== 'confirm' && modalConfig.content !== 'component')
                 syncUrlWithModals(next);
             return next;
         });

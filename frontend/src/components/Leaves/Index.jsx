@@ -100,7 +100,7 @@ const YourLeaves = () => {
             {leaves?.map(leave => (
                 leave &&
                 <div key={leave.id}>
-                    <p>{Object.entries(leave).map(([key, value]) => <><b>{key}:</b> {value?.toString()}&nbsp;&nbsp;</>)}</p>
+                    <p>{Object.entries(leave).map(([key, value]) => <span key={key}><b>{key}:</b> {value?.toString()}&nbsp;&nbsp;</span>)}</p>
                     <p>Status: {requestStatuses?.find(status => status.id === leave.status)?.name || 'Unknown'}</p>
                 </div>
             ))}

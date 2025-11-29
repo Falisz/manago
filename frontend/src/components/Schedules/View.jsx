@@ -20,6 +20,9 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
     const disableButton = !(schedule?.view === 'users' && schedule?.start_date && schedule?.end_date &&
         schedule?.user_scope && (schedule?.user_scope === 'all' || schedule?.user_scope_id));
 
+    if (!schedule)
+        return <Loader/>;
+
     return (
         <div className={'app-schedule-header'}>
             <h1>Current Schedule</h1>
@@ -73,7 +76,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                 </div>
                 { schedule?.view !== 'monthly' && <div className={'form-group'} style={{flex: '0'}}>
                     <label>Date range</label>
-                    <div className={'form-group date-range'} style={{flexDirection: 'row'}}>
+                    <div className={'form-group date-range'} style={{flexDirection: 'row', alignItems: 'center'}}>
                         <input
                             className={'form-input'}
                             name={'start_date'}
@@ -370,7 +373,7 @@ const ScheduleView = () => {
         />
         { loading ? <Loader/> : 
             schedule?.view === 'users' ?
-                <UserSchedule schedule={schedule}/> : 
+                <UserSchedule schedule={schedule}/> :
             schedule?.view === 'monthly' ?
                 <MonthlySchedule schedule={schedule}/> : 
             schedule?.view === 'jobs' ?

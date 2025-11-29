@@ -144,77 +144,79 @@ const useSchedules = () => {
     const getSchedule = useCallback( async ({id, name, start_date, end_date, user_scope, user_scope_id,
                                                 view = 'users', loading = true} = {}) => {
 
-        if (!id && (!start_date || !end_date) && !user_scope)
+        if (id) {
+            setLoading(loading);
+            const schedule = await fetchSchedule({id});
+            schedule.view = view;
+            schedule.users = mapUsers(schedule.shifts, schedule.users);
+            setSchedule(schedule);
+            loading && setLoading(false);
+            return schedule;
+        }
+
+        setSchedule({name, start_date, end_date, user_scope, user_scope_id, view});
+
+        if ((!start_date || !end_date) && !user_scope)
             return;
 
-        if (!id && user_scope !== 'all' && !user_scope_id) {
+        setLoading(loading);
+
+        if (user_scope !== 'all' && !user_scope_id) {
             const placeholder = `Select ${user_scope || 'User scope'}.`;
             setSchedule({name, start_date, end_date, user_scope, user_scope_id: null, placeholder, view});
-            setLoading(false);
+            loading && setLoading(false);
             return null;
         }
 
-        if (!id)
-            setSchedule({name, start_date, end_date, user_scope, user_scope_id, view});
+        let users, shifts, leaves;
 
-        let schedule;
-        setLoading(loading);
-
-        if (id) {
-            schedule = await fetchSchedule({id});
-            schedule.view = view;
-            schedule.users = mapUsers(schedule.shifts, schedule.users);
-        } else {
-            let users, shifts, leaves;
-
-            if (['you', 'user'].includes(user_scope))
-                users = await fetchUsers({id: user_scope_id});
-            else
-                users = await fetchUsers({
-                    user_scope,
-                    user_scope_id
-                });
-
-            if (!Array.isArray(users))
-                users = [users];
-
-            shifts = await fetchShifts({
-                start_date,
-                end_date,
+        if (['you', 'user'].includes(user_scope))
+            users = await fetchUsers({id: user_scope_id});
+        else
+            users = await fetchUsers({
                 user_scope,
-                user_scope_id,
-                schedule_id: null
-            }) || [];
+                user_scope_id
+            });
 
-            leaves = await fetchLeaves({
-                start_date,
-                end_date,
-                user_scope,
-                user_scope_id,
-            }) || [];
+        if (!Array.isArray(users))
+            users = [users];
 
-            if (view === 'users')
-                users = mapUsers(shifts, users, leaves);
-            else
-                shifts = mapDates(shifts);
+        shifts = await fetchShifts({
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id,
+            schedule_id: null
+        }) || [];
 
-            schedule = {
-                name,
-                view,
-                start_date,
-                end_date,
-                user_scope,
-                user_scope_id,
-                users,
-                shifts,
-                leaves,
-                placeholder: null
-            };
-        }
+        leaves = await fetchLeaves({
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id,
+        }) || [];
+
+        if (view === 'users')
+            users = mapUsers(shifts, users, leaves);
+        else
+            shifts = mapDates(shifts);
+
+        const schedule = {
+            name,
+            view,
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id,
+            users,
+            shifts,
+            leaves,
+            placeholder: null
+        };
 
         setSchedule(schedule);
         loading && setLoading(false);
-        return true;
+        return schedule;
 
     }, [fetchUsers, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers]);
 
