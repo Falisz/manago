@@ -15,8 +15,11 @@ import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
-// TODO: Grey out Edit button if schedule does not have all 4 scope-fields filled out.
 const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
+
+    const disableButton = !(schedule?.view === 'users' && schedule?.start_date && schedule?.end_date &&
+        schedule?.user_scope && (schedule?.user_scope === 'all' || schedule?.user_scope_id));
+
     return (
         <div className={'app-schedule-header'}>
             <h1>Current Schedule</h1>
@@ -112,6 +115,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                     icon='edit'
                     style={{marginLeft: 'auto'}}
                     onClick={editSchedule}
+                    disabled={disableButton}
                 />
             }
         </div>

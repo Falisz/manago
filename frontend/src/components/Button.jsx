@@ -38,7 +38,8 @@ const Button = ({
 }) =>
     <button
         id={id}
-        className={'app-button' + ( transparent ? (' no-bg') : '') + ( className ? (' ' + className) : '')}
+        className={'app-button' + ( transparent ? (' no-bg') : '') + ( className ? (' ' + className) : '') +
+            (disabled ?  ' disabled' : '')}
         type={type}
         title={title}
         name={name}

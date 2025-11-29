@@ -54,3 +54,15 @@
     box-shadow: none;
     color: var(--text-color);
 }
+
+.app-button.disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+.app-button.disabled:hover {
+    color: inherit;
+}
+.app.fluent .app-button.disabled:hover {
+    color: inherit;
+    background: var(--seethrough-background);
+}
