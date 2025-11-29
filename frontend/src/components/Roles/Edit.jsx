@@ -15,25 +15,27 @@ const RoleEdit = ({ roleId, modal }) => {
         
     }, [roleId, setLoading, fetchRole]);
 
-    const fields = useMemo(() => ({
-        name: {
-            section: 0,
-            type: 'string',
-            inputType: 'input',
-            label: 'Name',
-            required: true,
+    const sections = useMemo(() => ({
+        0: {
+            fields: {
+                name: {
+                    type: 'input',
+                    label: 'Name',
+                    required: true,
+                },
+                icon: {
+                    type: 'input',
+                    label: 'Icon',
+                }
+            }
         },
-        icon: {
-            section: 0,
-            type: 'string',
-            inputType: 'input',
-            label: 'Icon',
-        },
-        description: {
-            section: 1,
-            type: 'string',
-            inputType: 'textarea',
-            label: 'Description',
+        1: {
+            fields: {
+                description: {
+                    type: 'textarea',
+                    label: 'Description',
+                }
+            }
         }
     }), []);
 
@@ -46,7 +48,7 @@ const RoleEdit = ({ roleId, modal }) => {
 
     return <EditForm 
         header={roleId && role ? `Editing ${role.name}` : 'Creating new Role'} 
-        fields={fields}
+        sections={sections}
         onSubmit={async (data) => await saveRole({id: roleId, data})}
         modal={modal}
         presetData={presetData} 

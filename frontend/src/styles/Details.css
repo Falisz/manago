@@ -3,7 +3,6 @@
     flex-direction: column;
     gap: 10px;
 }
-
 .details-header {
     font-size: 2em;
     display: flex;

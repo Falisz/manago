@@ -1,5 +1,5 @@
 // FRONTEND/components/EditForm.jsx
-import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import useNav from '../contexts/NavContext';
 import Button from './Button';
 import CheckBox from './CheckBox';
@@ -8,13 +8,241 @@ import Icon from "./Icon";
 import MultiComboBox from './MultiComboBox';
 import '../styles/EditForm.css';
 
+const Header = ({header, data}) => {
+    if (!header)
+        return null;
+
+    if (typeof header === 'string')
+        return <h1 className={'form-header'}>{header}</h1>;
+
+    if (typeof header === 'function')
+        return <h1 className={'form-header'}>{header(data)}</h1>;
+
+    if (typeof header === 'object') {
+        const {className, style, title} = header;
+
+        return (
+            <h1 className={'form-header' + (className ? ` ${className}` : '')} style={style}>{title}</h1>
+        );
+    }
+};
+
+const Field = ({name, field, formData, source, errors, handleChange}) => {
+
+
+    const getInputClassName = (baseClass, name) => {
+        return `${baseClass}${errors[name] ? ' error' : ''}`;
+    };
+
+    const getComponentClassName = (name, field) => {
+        return `${field.className || ''}${errors[name] ? ' error' : ''}`;
+    };
+
+    const { className, style, label, labelStyle, icon, iconStyle, disabled } = field;
+    const type = typeof field.type === 'function' ? field.type(formData) : field.type;
+
+    if ( type === 'hidden')
+        return null;
+
+    let content;
+
+    if (type === 'content')
+        content = typeof field.content === 'function' ? field.content(formData) : field.content;
+
+    if (['input', 'text', 'string'].includes(type))
+        content = <input
+            className={getInputClassName('form-input', name)}
+            type={'text'}
+            name={name}
+            value={source?.[name] || formData?.[name] || ''}
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            placeholder={`${field.placeholder || field.label}`}
+            required={field.required}
+            disabled={field.disabled}
+        />;
+
+    if (type === 'date')
+        content = <input
+            className={getInputClassName('form-input', name)}
+            type={'date'}
+            name={name}
+            value={source?.[name] || formData?.[name] || ''}
+            min={typeof field.min === 'function' ? field.min(formData) : field.min }
+            max={typeof field.max === 'function' ? field.max(formData) : field.max }
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            placeholder={`${field.placeholder || field.label}`}
+            required={field.required}
+            disabled={field.disabled}
+        />;
+
+    if (type === 'time')
+        content = <input
+            className={getInputClassName('form-input', name)}
+            type={'time'}
+            name={name}
+            value={source?.[name] || formData?.[name] || ''}
+            min={typeof field.min === 'function' ? field.min(formData) : field.min }
+            max={typeof field.max === 'function' ? field.max(formData) : field.max }
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            placeholder={`${field.placeholder || field.label}`}
+            required={field.required}
+            disabled={field.disabled}
+        />;
+
+    if (type === 'textarea')
+        content = <textarea
+            className={getInputClassName('form-textarea', name)}
+            name={name}
+            value={source?.[name] || formData?.[name] || ''}
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            placeholder={`${field.placeholder || field.label}`}
+            required={field.required}
+            disabled={field.disabled}
+        />;
+
+    if (type === 'checkbox')
+        content = <CheckBox
+            className={getComponentClassName(name, field)}
+            id={name}
+            name={name}
+            checked={source?.[name] || formData?.[name] || false}
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            label={field.inputLabel}
+        />;
+
+    if (type === 'radio') {
+        content = <div
+            className={'form-radio-group'
+                + (field.className ? ' ' + field.className : '')
+                + (field.disabled ? ' disabled' : '')}
+            style={field.style}
+        >
+            {field.options.map((option, index) => (
+                <label key={index} className={'radio-label'}>
+                    <input
+                        type='radio'
+                        name={name}
+                        value={option.id}
+                        checked={(source?.[name] || formData?.[name]) === option.id}
+                        onChange={handleChange}
+                        disabled={typeof field.disabled === 'function' ? field.disabled(formData) : field.disabled}
+                    />
+                    {option.label &&
+                        <span className={'radio-label-text'}>{option.label}</span>
+                    }
+                    {option.image &&
+                        <img
+                            className={'radio-label-image'}
+                            src={option.image}
+                            alt={option.id}
+                        />
+                    }
+                </label>
+            ))}
+        </div>;
+    }
+
+    if (['dropdown', 'combobox'].includes(type))
+        content = <ComboBox
+            className={getComponentClassName(name, field)}
+            style={field.inputStyle}
+            selectedStyle={field.selectedStyle}
+            optionsStyle={field.optionsStyle}
+            placeholder={`${field.placeholder || 'Select ' + field.label}`}
+            name={name}
+            value={source?.[name] || formData?.[name] || field.default || null}
+            options={typeof field.options === 'function' ? field.options(source || formData) :
+                field.options || [{id: null, name: 'None'}]}
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            searchable={field.searchable}
+            noneAllowed={field.noneAllowed}
+            disabled={field.disabled}
+            required={typeof field.required === 'function' ? field.required(formData) : field.required}
+        />;
+
+    if (type === 'multi-dropdown') {
+
+        let itemExcludedIds = [];
+
+        if (field.itemExcludedIds) {
+            if (field.itemExcludedIds.data)
+                itemExcludedIds.push(...field.itemExcludedIds.data);
+
+            if (field.itemExcludedIds.formData)
+                field.itemExcludedIds.formData.forEach(field => {
+                    if (Array.isArray(formData[field]) && formData[field].length)
+                        itemExcludedIds.push(...formData[field]);
+                    else
+                        itemExcludedIds.push(formData[field]);
+                });
+        }
+        content = <MultiComboBox
+            formData={formData}
+            dataField={name}
+            onChange={handleChange}
+            itemSource={field.itemSource}
+            itemNameField={field.itemNameField}
+            itemName={field.itemName}
+            itemExcludedIds={itemExcludedIds}
+        />;
+    }
+
+    if (type === 'listing')
+        content = <div>{
+            formData[name]?.map((item) => {
+                let name = item[field.nameField];
+                if (Array.isArray(field.nameField)) {
+                    name = field.nameField.map(field => item[field]).join(' ');
+                }
+                return name;
+            }).join(', ')
+        }</div>;
+
+    return (
+        <div
+            className={'form-group' + (className ? ' ' + className : '') + (disabled ? ' disabled' : '')}
+            style={style}
+        >
+            {label &&
+                <h3 className={'form-group-label'} style={labelStyle}>
+                    {icon && <Icon i={icon} s={true} style={iconStyle}/>}
+                    {label}
+                </h3>
+            }
+            {content}
+        </div>
+    );
+
+}
+
+const Section = ({section, formData, source, errors, handleChange}) => {
+
+    const { className, style, header, fields } = section;
+
+    return (
+        <div
+            className={'form-section' + (className ? ' ' + className : '')}
+            style={style}
+        >
+            {header && <h2 className={'form-section-header'}>{header}</h2>}
+            {Object.entries(fields).map(([name, field], index) => <Field
+                key={index}
+                name={name}
+                field={field}
+                formData={formData}
+                source={source}
+                errors={errors}
+                handleChange={handleChange}
+            />)}
+        </div>
+    );
+};
+
 const EditForm = ({ 
     className,
     style,
     header,
-    headerStyle,
     sections,
-    fields,
     onChange,
     onSubmit,
     submitLabel,
@@ -37,7 +265,11 @@ const EditForm = ({
     const [ errors, setErrors ] = useState({});
     const { closeModal, setDiscardWarning, setUnsavedChanges } = useNav();
     const initialSource = useRef(null);
-    
+
+    const fields = useMemo(() =>
+            Object.values(sections).reduce((acc, section) => ({...acc, ...section.fields}), {}),
+    [sections]);
+
     useEffect(() => {
         if (source && initialSource.current == null)
             initialSource.current = structuredClone(source);
@@ -50,30 +282,26 @@ const EditForm = ({
             const newFormData = Object.entries(fields).reduce((acc, [name, config]) => {
                 if (!name)
                     return acc;
-
-                const fieldType = config.type;
-                const teamCompliance = config.teamCompliance;
                 let value = presetData[name];
 
                 if (presetData && value !== undefined) {
-                    if (fieldType === 'id-list' && Array.isArray(value)) {
-                        if (teamCompliance)
-                            value = value.filter(item => item.team.id === presetData.id);
+                    if (config.array && Array.isArray(value)) {
+                        if (config.teamCompliance)
+                            value = value.filter(item => item?.team?.id === presetData.id);
 
                         value = value.map(item => {
-                            if (['string', 'number', 'boolean'].includes(typeof item))
-                                return item;
+                            if (typeof item === 'object')
+                                return item.id;
 
-                            return item.id;
+                            return item;
                         });
                     }
                     acc[name] = value;
                 } else {
-                    if (fieldType.includes('list')) {
+                    if (config.array)
                         acc[name] = [null];
-                    } else {
+                    else
                         acc[name] = null;
-                    }
                 }
 
                 return acc;
@@ -84,23 +312,25 @@ const EditForm = ({
 
     const validateField = (field, value, config, data) => {
         const required = typeof config.required === 'function' ? config.required(data) : config.required;
+        const type = typeof config.type === 'function' ? config.type(data) : config.type;
+
         if (!required)
             return false; // Not invalid if not required
 
         let invalid;
 
-        if (['input', 'text', 'date', 'textarea'].includes(config.inputType)) {
-            invalid = value == null || value === '';
-        } else if (config.inputType === 'checkbox') {
-            invalid = !value;
-        } else if (['dropdown', 'multi-dropdown'].includes(config.inputType)) {
+        if (type === 'multi-dropdown') {
             if (Array.isArray(value)) {
-                invalid = value.filter(v => v != null).length === 0;
+               invalid = value.filter(v => v != null).length === 0;
             } else {
-                invalid = value == null;
+               invalid = value == null;
             }
+        } else if (type === 'checkbox') {
+            invalid = !value;
+        } else if (config.array) {
+            invalid = !Array.isArray(value);
         } else {
-            invalid = value == null || (Array.isArray(value) && value.length === 0);
+            invalid = value == null || value === '' || (Array.isArray(value) && value.length === 0);
         }
 
         return invalid;
@@ -163,7 +393,7 @@ const EditForm = ({
             setErrors(errors);
 
             Object.entries(fields).forEach(([name, config]) => {
-                if (!name || !config.inputType)
+                if (!name || !config.type)
                     return;
 
                 const invalid = validateField(name, data[name], config, data);
@@ -211,260 +441,25 @@ const EditForm = ({
         }
     };
 
-    const formSections = useMemo(() => {
-        const formSections = structuredClone(sections || {});
-
-        Object.entries(fields).forEach(([name, config]) => {
-            const { section, ...field } = config;
-
-            if (!formSections[section])
-                formSections[section] = { fields: {} };
-
-            else if (!formSections[section].fields)
-                formSections[section].fields = {};
-
-            formSections[section].fields[name] = { ...field };
-        });
-
-        Object.keys(formSections).forEach(key => {
-            if (!formSections[key].fields || Object.keys(formSections[key].fields).length === 0)
-                delete formSections[key];
-        });
-
-        return formSections;
-    }, [sections, fields]);
-
-    const getHeader = useCallback(() => {
-        if (typeof header === 'function')
-            return header(formData);
-
-        return header;
-    }, [header, formData]);
-
-    const getInputClassName = (baseClass, name) => {
-        return `${baseClass}${errors[name] ? ' error' : ''}`;
-    };
-
-    const getComponentClassName = (name, group) => {
-        return `${group.className || ''}${errors[name] ? ' error' : ''}`;
-    };
-
-    // TODO: Separate form from header akin to Details and Table component. Set calculated max-height to the component
-    //  of form itself "form-content" and set overflow-y: auto so it can be scrollable, but header stays fixed.
-    //
-
-    // <div className={'form'}>
-    //     <header className={'form-header'}>
-    //         ...
-    //     </header>
-    //     <form className={'form-content app-scroll'}>
-    //         ...
-    //     </form>
-    // </div>
-
-    // TODO: Like with Table and Details, split the form component into smaller components for Header, Sections and Fields.
 
     // TODO: Buttons to be displayed with flex, but in reverse-order, so the save button is on the very right side of the form!
 
-    return <form
-                className={'app-form' + (className ? ' ' + className : '')}
-                onSubmit={handleSubmit}
-                style={style}
-            >
-                {header && <h1 className={'app-form-header'} style={headerStyle}>{getHeader()}</h1>}
-
-                {Object.values(formSections).map((section, key) => {
-                    return <div
-                        key={key}
-                        className={'form-section' + (section.className ? ' ' + section.className : '')}
-                        style={section.style}
-                    >
-                        {section.header && <h2>{section.header}</h2>}
-                        {Object.entries(section.fields).map(([name, group], index) => {
-
-                            const type = typeof group.type === 'function' ? group.type(formData) : group.type;
-
-                            if ( type === 'hidden')
-                                return null;
-
-                            let groupContent;
-
-                            if (group.type === 'content')
-                                groupContent = typeof group.content === 'function' ?
-                                    group.content(formData) : group.content;
-
-                            if (group.inputType === 'input' || group.inputType === 'text')
-                                groupContent = <input
-                                    className={getInputClassName('form-input', name)}
-                                    type={'text'}
-                                    name={name}
-                                    value={source?.[name] || formData?.[name] || ''}
-                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
-                                    placeholder={`${group.placeholder || group.label}`}
-                                    required={group.required}
-                                    disabled={group.disabled}
-                                />;
-
-                            if (group.inputType === 'date')
-                                groupContent = <input
-                                    className={getInputClassName('form-input', name)}
-                                    type={'date'}
-                                    name={name}
-                                    value={source?.[name] || formData?.[name] || ''}
-                                    min={typeof group.min === 'function' ? group.min(formData) : group.min }
-                                    max={typeof group.max === 'function' ? group.max(formData) : group.max }
-                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
-                                    placeholder={`${group.placeholder || group.label}`}
-                                    required={group.required}
-                                    disabled={group.disabled}
-                                />;
-
-                            if (group.inputType === 'time')
-                                groupContent = <input
-                                    className={getInputClassName('form-input', name)}
-                                    type={'time'}
-                                    name={name}
-                                    value={source?.[name] || formData?.[name] || ''}
-                                    min={typeof group.min === 'function' ? group.min(formData) : group.min }
-                                    max={typeof group.max === 'function' ? group.max(formData) : group.max }
-                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
-                                    placeholder={`${group.placeholder || group.label}`}
-                                    required={group.required}
-                                    disabled={group.disabled}
-                                />;
-
-                            if (group.inputType === 'textarea')
-                                groupContent = <textarea
-                                    className={getInputClassName('form-textarea', name)}
-                                    name={name}
-                                    value={source?.[name] || formData?.[name] || ''}
-                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
-                                    placeholder={`${group.placeholder || group.label}`}
-                                    required={group.required}
-                                    disabled={group.disabled}
-                                />;
-
-                            if (group.inputType === 'checkbox')
-                                groupContent = <CheckBox
-                                    className={getComponentClassName(name, group)}
-                                    id={name}
-                                    name={name}
-                                    checked={source?.[name] || formData?.[name] || false}
-                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
-                                    label={group.inputLabel}
-                                />;
-
-                            if (group.inputType === 'radio'){
-                                groupContent = <div
-                                    className={'form-radio-group'
-                                        + (group.className ? ' ' + group.className : '')
-                                        + (group.disabled ? ' disabled' : '')}
-                                    style={group.style}
-                                >
-                                    {group.options.map((option, index) => (
-                                        <label key={index} className={'radio-label'}>
-                                            <input
-                                                type='radio'
-                                                name={name}
-                                                value={option.id}
-                                                checked={(source?.[name] || formData?.[name]) === option.id}
-                                                onChange={handleChange}
-                                                disabled={typeof group.disabled === 'function' ? group.disabled(formData) : group.disabled}
-                                            />
-                                            {option.label &&
-                                                <span className={'radio-label-text'}>{option.label}</span>
-                                            }
-                                            {option.image &&
-                                                <img
-                                                    className={'radio-label-image'}
-                                                    src={option.image}
-                                                    alt={option.id}
-                                                />
-                                            }
-                                        </label>
-                                    ))}
-
-                                </div>;
-                            }
-
-                            if (['dropdown', 'combobox'].includes(group.inputType))
-                                groupContent = <ComboBox
-                                    className={getComponentClassName(name, group)}
-                                    style={group.inputStyle}
-                                    selectedStyle={group.selectedStyle}
-                                    optionsStyle={group.optionsStyle}
-                                    placeholder={`${group.placeholder || 'Select ' + group.label}`}
-                                    name={name}
-                                    value={source?.[name] || formData?.[name] || group.default || null}
-                                    options={typeof group.options === 'function' ? group.options(source || formData) :
-                                        group.options || [{id: null, name: 'None'}]}
-                                    onChange={(e) => {handleChange(e); group.onChange && group.onChange(e, formData);}}
-                                    searchable={group.searchable}
-                                    noneAllowed={group.noneAllowed}
-                                    disabled={group.disabled}
-                                    required={typeof group.required === 'function' ? group.required(formData) : group.required}
-                                />;
-
-                            if (group.inputType === 'multi-dropdown') {
-
-                                let itemExcludedIds = [];
-
-                                if (group.itemExcludedIds) {
-                                    if (group.itemExcludedIds.data)
-                                        itemExcludedIds.push(...group.itemExcludedIds.data);
-
-                                    if (group.itemExcludedIds.formData)
-                                        group.itemExcludedIds.formData.forEach(field => {
-                                            if (Array.isArray(formData[field]) && formData[field].length)
-                                                itemExcludedIds.push(...formData[field]);
-                                            else
-                                                itemExcludedIds.push(formData[field]);
-                                        });
-                                }
-
-                                groupContent = <MultiComboBox
-                                    formData={formData}
-                                    dataField={name}
-                                    onChange={handleChange}
-                                    itemSource={group.itemSource}
-                                    itemNameField={group.itemNameField}
-                                    itemName={group.itemName}
-                                    itemExcludedIds={itemExcludedIds}
-                                />;
-                            }
-
-                            if (group.type === 'listing')
-                                groupContent = <div>{
-                                    formData[name]?.map((item) => {
-                                        let name = item[group.nameField];
-                                        if (Array.isArray(group.nameField)) {
-                                            name = group.nameField.map(field => item[field]).join(' ');
-                                        }
-                                        return name;
-                                    }).join(', ')
-                                }</div>;
-
-                            return (
-                                <div
-                                    key={index}
-                                    className={'form-group' +
-                                        (group.className ? ' ' + group.className : '') +
-                                        (group.disabled ? ' disabled' : '')
-                                    }
-                                    style={group.style}
-                                >
-                                    {group.label && <h3 className={'form-group-label'} style={group.labelStyle}>
-                                        {group.icon && <Icon i={group.icon} s={true} style={group.iconStyle}/>}
-                                        {group.label}
-                                    </h3>}
-                                    {groupContent}
-                                </div>
-                            );
-
-                        })}
-                    </div>
-                })}
-                <div className='form-section align-center'>
+    return (
+        <div
+            className={'form-page' + (className ? ' ' + className : '')}
+            style={style}
+        >
+            <Header header={header} data={formData}/>
+            <form className={'form-content app-scroll'} onSubmit={handleSubmit}>
+                {Object.values(sections).map((section, key) => <Section
+                    key={key}
+                    section={section}
+                    formData={formData}
+                    source={source}
+                    errors={errors}
+                    handleChange={handleChange}
+                />)}
+                <div className='form-section form-buttons'>
                     {!hideSubmit && <Button
                         className={'save-button'}
                         style={submitStyle}
@@ -482,6 +477,8 @@ const EditForm = ({
                     />}
                 </div>
             </form>
+        </div>
+    );
 };
 
 export default EditForm;

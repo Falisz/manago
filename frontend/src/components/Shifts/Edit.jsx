@@ -27,43 +27,45 @@ const ShiftEdit = ({ shiftId, modal }) => {
             || [{id: null, name: 'None'}]
     }), [users, jobPosts]);
 
-    const fields = useMemo(() => ({
-        user: {
-            section: 0,
-            type: 'string',
-            inputType: 'dropdown',
-            label: 'User',
-            options: fieldOptions.users,
-            required: true
+    const sections = useMemo(() => ({
+        0: {
+            fields: {
+                user: {
+                    type: 'dropdown',
+                    label: 'User',
+                    options: fieldOptions.users,
+                    required: true
+                }
+            }
         },
-        date: {
-            section: 1,
-            type: 'date',
-            inputType: 'date',
-            label: 'Date',
-            required: true
+        1: {
+            fields: {
+                date: {
+                    type: 'date',
+                    label: 'Date',
+                    required: true
+                },
+                start_time: {
+                    type: 'time',
+                    label: 'Start Time',
+                    required: true
+                },
+                end_time: {
+                    type: 'time',
+                    label: 'End Time',
+                    required: true
+                },
+            }
         },
-        start_time: {
-            section: 1,
-            type: 'time',
-            inputType: 'time',
-            label: 'Start Time',
-            required: true
-        },
-        end_time: {
-            section: 1,
-            type: 'time',
-            inputType: 'time',
-            label: 'End Time',
-            required: true
-        },
-        job_post: {
-            section: 2,
-            type: 'string',
-            inputType: 'dropdown',
-            label: 'Job Post',
-            options: fieldOptions.job_posts,
-            required: true
+        2: {
+            fields: {
+                job_post: {
+                    type: 'dropdown',
+                    label: 'Job Post',
+                    options: fieldOptions.job_posts,
+                    required: true
+                }
+            }
         }
     }), [fieldOptions]);
 
@@ -77,8 +79,8 @@ const ShiftEdit = ({ shiftId, modal }) => {
         return <Loader/>;
 
     return <EditForm
-        header={'Editting a Shift'}
-        fields={fields}
+        header={'Editing a Shift'}
+        sections={sections}
         onSubmit={async (data) => await saveShift({id: shiftId, data})}
         modal={modal}
         presetData={presetData}

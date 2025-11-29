@@ -21,7 +21,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
         <div className={'app-schedule-header'}>
             <h1>Current Schedule</h1>
             <div
-                className={'app-form'}
+                className={'form-content'}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'flex-start',
@@ -118,12 +118,13 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
     );
 };
 
+// TODO: Implement publish button.
 const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
     return (
         <div className={'app-schedule-header'}>
             <h1>Draft Preview: {schedule?.name}</h1>
             <div
-                className={'app-form'}
+                className={'form-content'}
                 style={{
                     flexDirection: 'row',
                     alignItems: 'flex-start',
@@ -137,8 +138,8 @@ const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
                 <div className={'form-group'}>
                     <label>Date Range</label>
                     <span style={{padding: '8px', whiteSpace: 'nowrap'}}>
-                                {schedule?.start_date} - {schedule?.end_date}
-                            </span>
+                        {schedule?.start_date} - {schedule?.end_date}
+                    </span>
                 </div>
             </div>
             <Button

@@ -39,79 +39,91 @@ export const TeamAssignment = ({team, modal}) => {
         }
     }, [team]);
 
-    const fields = useMemo(() => {
+    const sections = useMemo(() => {
         const batchMode = Array.isArray(team);
 
         if (batchMode)
             return {
-                teams: {
-                    section: 0,
-                    label: 'Selected Teams',
-                    nameField: 'name',
-                    type: 'listing'
+                0: {
+                    fields: {
+                        teams: {
+                            label: 'Selected Teams',
+                            nameField: 'name',
+                            type: 'listing'
+                        }
+                    }
                 },
-                mode: {
-                    section: 1,
-                    label: 'Mode',
-                    type: 'string',
-                    inputType: 'dropdown',
-                    options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
-                    searchable: false
+                1: {
+                    fields: {
+                        mode: {
+                            type: 'dropdown',
+                            label: 'Mode',
+                            options: [{id: 'set', name: 'Set'}, {id: 'add', name: 'Add'}, {id: 'del', name: 'Remove'}],
+                            searchable: false
+                        },
+                    }
+
                 },
-                user: {
-                    section: 2,
-                    label: 'User',
-                    type: 'number',
-                    inputType: 'dropdown',
-                    options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
-                },
-                role: {
-                    section: 2,
-                    label: 'Role',
-                    type: 'number',
-                    inputType: 'dropdown',
-                    options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
-                    searchable: false
+                2: {
+                    style: {flexDirection: 'row'},
+                    fields: {
+                        user: {
+                            type: 'dropdown',
+                            label: 'User',
+                            options: users?.map((user) => ({id: user.id, name: user.first_name + ' ' + user.last_name}))
+                        },
+                        role: {
+                            type: 'dropdown',
+                            label: 'Role',
+                            options: [{id: 1, name: 'Member'}, {id: 2, name: 'Leader'}, {id: 3, name: 'Manager'}],
+                            searchable: false
+                        }
+                    }
                 }
             }
         else
             return {
-                managers: {
-                    section: 0,
-                    type: 'id-list',
-                    teamCompliance: true,
-                    inputType: 'multi-dropdown',
-                    label: 'Team Managers',
-                    itemSource: managers,
-                    itemNameField: ['first_name', 'last_name'],
-                    itemExcludedIds: {formData: ['leaders', 'members']}
+                0: {
+                    fields: {
+                        managers: {
+                            type: 'multi-dropdown',
+                            array: true,
+                            teamCompliance: true,
+                            label: 'Team Managers',
+                            itemSource: managers,
+                            itemNameField: ['first_name', 'last_name'],
+                            itemExcludedIds: {formData: ['leaders', 'members']}
+                        }
+                    }
                 },
-                leaders: {
-                    section: 1,
-                    type: 'id-list',
-                    teamCompliance: true,
-                    inputType: 'multi-dropdown',
-                    label: 'Team Leaders',
-                    itemSource: users,
-                    itemNameField: ['first_name', 'last_name'],
-                    itemExcludedIds: {formData: ['managers', 'members']}
+                1: {
+                    fields: {
+                        leaders: {
+                            type: 'multi-dropdown',
+                            array: true,
+                            teamCompliance: true,
+                            label: 'Team Leaders',
+                            itemSource: users,
+                            itemNameField: ['first_name', 'last_name'],
+                            itemExcludedIds: {formData: ['managers', 'members']}
+                        }
+                    }
                 },
-                members: {
-                    section: 2,
-                    type: 'id-list',
-                    teamCompliance: true,
-                    inputType: 'multi-dropdown',
-                    label: 'Team Members',
-                    itemSource: users,
-                    itemNameField: ['first_name', 'last_name'],
-                    itemExcludedIds: {formData: ['leaders', 'managers']}
+                2: {
+                    fields: {
+                        members: {
+                            type: 'multi-dropdown',
+                            array: true,
+                            teamCompliance: true,
+                            label: 'Team Members',
+                            itemSource: users,
+                            itemNameField: ['first_name', 'last_name'],
+                            itemExcludedIds: {formData: ['leaders', 'managers']}
+                        }
+                    }
                 }
             }
     }, [team, users, managers]);
-
-    const sections = {
-        2: {style: {flexDirection: 'row'}}
-    };
 
     const onSubmit = useCallback(async (data) => {
 
@@ -152,7 +164,6 @@ export const TeamAssignment = ({team, modal}) => {
 
     return <EditForm
         header={header}
-        fields={fields}
         sections={sections}
         onSubmit={onSubmit}
         modal={modal}
@@ -206,59 +217,70 @@ const TeamEdit = ({ teamId, parentId, modal }) => {
         return teams.filter(t => t && typeof t.id === 'number' && !nonAvailableParentTeams.has(t.id));
     }, [teamId, team, teams]);
 
-    const fields = useMemo(() => ({
-        name: {
-            section: 0,
-            type: 'string',
-            inputType: 'input',
-            label: 'Name',
-            required: true,
+    const sections = useMemo(() => ({
+        0: {
+            fields: {
+                name: {
+                    type: 'string',
+                    label: 'Name',
+                    required: true,
+                },
+                code_name: {
+                    type: 'string',
+                    label: 'Codename',
+                    required: true,
+                }
+            }
         },
-        code_name: {
-            section: 0,
-            type: 'string',
-            inputType: 'input',
-            label: 'Codename',
-            required: true,
+        1: {
+            fields: {
+                parent_team: {
+                    type: 'dropdown',
+                    label: 'Parent Team',
+                    options: getAvailableParentTeams(),
+                    noneAllowed: true
+                }
+            }
         },
-        parent_team: {
-            section: 1,
-            type: 'item',
-            inputType: 'dropdown',
-            label: 'Parent Team',
-            options: getAvailableParentTeams(),
-            noneAllowed: true
+        2: {
+            fields: {
+                managers: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    teamCompliance: true,
+                    label: 'Team Managers',
+                    itemSource: managers,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['leaders', 'members'] }
+                }
+            }
         },
-        managers: {
-            section: 2,
-            type: 'id-list',
-            teamCompliance: true,
-            inputType: 'multi-dropdown',
-            label: 'Team Managers',
-            itemSource: managers,
-            itemNameField: ['first_name', 'last_name'],
-            itemExcludedIds: { formData: ['leaders', 'members'] }
+        3: {
+            fields: {
+                leaders: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    teamCompliance: true,
+                    label: 'Team Leaders',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['managers', 'members'] }
+                }
+            }
         },
-        leaders: {
-            section: 3,
-            type: 'id-list',
-            teamCompliance: true,
-            inputType: 'multi-dropdown',
-            label: 'Team Leaders',
-            itemSource: users,
-            itemNameField: ['first_name', 'last_name'],
-            itemExcludedIds: { formData: ['managers', 'members'] }
+        4: {
+            fields: {
+                members: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    teamCompliance: true,
+                    label: 'Team Members',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['leaders', 'managers'] }
+                }
+            }
         },
-        members: {
-            section: 4,
-            type: 'id-list',
-            teamCompliance: true,
-            inputType: 'multi-dropdown',
-            label: 'Team Members',
-            itemSource: users,
-            itemNameField: ['first_name', 'last_name'],
-            itemExcludedIds: { formData: ['leaders', 'managers'] }
-        }
     }), [getAvailableParentTeams, managers, users]);
 
     const presetData = useMemo(() => {
@@ -274,7 +296,7 @@ const TeamEdit = ({ teamId, parentId, modal }) => {
 
     return <EditForm
         header={teamId ? `Editing ${team?.name}` : `Creating new ${parentId ? 'SubTeam' : 'Team'}`}
-        fields={fields}
+        sections={sections}
         onSubmit={async (data) => await saveTeam({id: teamId, data})}
         modal={modal}
         presetData={presetData} 
