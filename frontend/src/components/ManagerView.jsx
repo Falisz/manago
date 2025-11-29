@@ -119,6 +119,7 @@ const ManagerView = () => {
 
     const pageTitle = currentSubPage?.title || currentMainPage?.title || null;
 
+    //TODO: Consider going with grid display layout for app body here. https://www.youtube.com/watch?v=aEj6k-gi9-s
     return (
         <>
             <Helmet>
