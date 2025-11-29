@@ -27,19 +27,21 @@ const ConfirmPrompt = ({
     return (
         <div className='confirm-prompt'>
             <p>{message}</p>
-            <Button
-                onClick={confirmAction}
-                label={confirmLabel}
-            />
-            {onConfirm2 && <Button
-                onClick={confirm2Action}
-                label={confirmLabel2}
-            />}
-            <Button
-                className={'discard'}
-                onClick={closeTopModal}
-                label={cancelLabel}
-            />
+            <div className={'confirm-prompt-buttons'}>
+                <Button
+                    onClick={confirmAction}
+                    label={confirmLabel}
+                />
+                {onConfirm2 && <Button
+                    onClick={confirm2Action}
+                    label={confirmLabel2}
+                />}
+                <Button
+                    className={'discard'}
+                    onClick={closeTopModal}
+                    label={cancelLabel}
+                />
+            </div>
         </div>
     );
 }

@@ -1,9 +1,10 @@
 .confirm-prompt {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
 }
-.confirm-prompt p {
-    width: 100%;
-    flex: 1 100%;
+.confirm-prompt-buttons {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 10px;
 }

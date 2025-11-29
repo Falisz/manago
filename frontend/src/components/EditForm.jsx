@@ -441,9 +441,6 @@ const EditForm = ({
         }
     };
 
-
-    // TODO: Buttons to be displayed with flex, but in reverse-order, so the save button is on the very right side of the form!
-
     return (
         <div
             className={'form-page' + (className ? ' ' + className : '')}

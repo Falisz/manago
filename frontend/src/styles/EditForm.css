@@ -28,7 +28,7 @@
 .form-section.align-center {
     align-items: center;
 }
-.form-section.buttons {
+.form-section.form-buttons {
     flex-direction: row-reverse;
 }
 .form-group {
