@@ -337,6 +337,9 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         
     const dates = generateDateList(schedule.start_date, schedule.end_date);
 
+    // TODO: Apply this sticky header logic: https://www.youtube.com/watch?v=_dpSEjaKqSE
+    // remove the highlighting on hover and round corners of the header cells, then apply sticky + top:0 to thead and z-index: 5
+    // same with first column in each row!
     return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table' + (editable ? ' editable' : '')}>
             <thead>

@@ -17,7 +17,7 @@ const Header = ({ header, data }) => {
 
     return (
         <div
-            className={'app-details-header' + (className ? ' ' + className : '')}
+            className={'details-header' + (className ? ' ' + className : '')}
             style={style}
         >
             {prefix && <div
@@ -230,7 +230,7 @@ const Section = ({section, data}) => {
 
     return (
         <div
-            className={'app-details-section' + (className ? ' ' + className : '')}
+            className={'details-section' + (className ? ' ' + className : '')}
             style={style}
         >
             {header && <SectionHeader header={header}/>}
@@ -244,12 +244,11 @@ const Details = ({className, style, header, sections, data}) => {
         return null;
 
     return (
-        <div
-            className={'app-details app-scroll app-overflow-y' + (className ? ' ' + className : '')}
-            style={style}
-        >
+        <div className={'details-page' + (className ? ' ' + className : '')}  style={style}>
             {header && <Header header={header} data={data}/>}
-            {Object.values(sections).map((section, index) => <Section key={index} section={section} data={data}/>)}
+            <div className={'details-content app-scroll'}>
+                {Object.values(sections).map((section, index) => <Section key={index} section={section} data={data}/>)}
+            </div>
         </div>
     );
 };

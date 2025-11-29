@@ -249,6 +249,23 @@ const EditForm = ({
         return `${group.className || ''}${errors[name] ? ' error' : ''}`;
     };
 
+    // TODO: Separate form from header akin to Details and Table component. Set calculated max-height to the component
+    //  of form itself "form-content" and set overflow-y: auto so it can be scrollable, but header stays fixed.
+    //
+
+    // <div className={'form'}>
+    //     <header className={'form-header'}>
+    //         ...
+    //     </header>
+    //     <form className={'form-content app-scroll'}>
+    //         ...
+    //     </form>
+    // </div>
+
+    // TODO: Like with Table and Details, split the form component into smaller components for Header, Sections and Fields.
+
+    // TODO: Buttons to be displayed with flex, but in reverse-order, so the save button is on the very right side of the form!
+
     return <form
                 className={'app-form' + (className ? ' ' + className : '')}
                 onSubmit={handleSubmit}

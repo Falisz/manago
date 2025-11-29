@@ -15,6 +15,7 @@ import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
 
+// TODO: Grey out Edit button if schedule does not have all 4 scope-fields filled out.
 const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
     return (
         <div className={'app-schedule-header'}>

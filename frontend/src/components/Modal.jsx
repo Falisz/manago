@@ -42,20 +42,20 @@ const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton 
     return (
         <>
             <div
-                className={`app-modal-overlay${!isVisible ? ' hidden' : ''}`}
+                className={`modal-overlay${!isVisible ? ' hidden' : ''}`}
                 style={{ zIndex }}
                 onClick={() => onClose()}
                 role='presentation'
             />
             <div
-                className={`app-modal-content app-scroll app-overflow-y  ${type}${!isVisible ? ' hidden' : ''}`}
+                className={`modal ${type}${!isVisible ? ' hidden' : ''}`}
                 style={{ ...style, zIndex: zIndex + 1 }}
                 tabIndex='-1'
                 ref={modalRef}
             >
                 {children}
                 {closeButton && <Button
-                    className={'app-modal-close-button'}
+                    className={'modal-close-button'}
                     icon={'close'}
                     onClick={onClose}
                     transparent={true}

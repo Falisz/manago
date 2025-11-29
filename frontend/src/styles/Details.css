@@ -1,21 +1,22 @@
-.detail-content {
+.details-page {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 10px;
 }
-.detail-header {
+
+.details-header {
     font-size: 2em;
+    display: flex;
     gap: 10px;
     flex-direction: row;
     align-items: baseline;
 }
-.detail-header .detail-title-prefix {
+.details-header .details-title-prefix,
+.details-header .details-title-suffix {
     cursor: help;
     font-size: 0.5em;
-    margin-right: 10px;
 }
-.detail-header .app-button {
+.details-header .app-button {
     color: var(--text-color-3);
     background: none;
     border: none;
@@ -26,118 +27,32 @@
     border-radius: 12px;
     padding: 10px;
 }
-.detail-header .app-button .icon {
+.details-header .app-button .icon {
     font-size: 1.5rem;
 }
-.detail-header .app-button.edit:hover {
+.details-header .app-button.edit:hover {
     color: var(--link-color);
 }
-.detail-header .app-button.delete:hover {
+.details-header .app-button.delete:hover {
     color: firebrick;
 }
-.detail-section {
+.details-content {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
-.detail-section-header {
-    font-size: 1.25em;
-    text-transform: uppercase;
-    font-weight: 400;
-}
-.detail-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-left: 5px;
-}
-.detail-group.linear {
-    flex-direction: row;
-    align-items: center;
-}
-.detail-group label {
-    margin-left: -5px;
-    font-weight: bold;
-    font-family: var(--font-family-condensed), sans-serif;
+.modal .details-content {
+    max-height: calc(100vh - 200px - 50px - 45px);
+    overflow-y: auto;
 }
 
-.detail-link {
-    color: var(--link-color);
-    cursor: pointer;
-    transition: .3s ease-in-out;
-    width: fit-content;
-}
-.detail-link:hover {
-    color: var(--link-hover-color);
-}
-.detail-group .icon {
-    font-size: 1.1em;
-    padding: 3px;
-    margin-right: 5px;
-    border-radius: 10px;
-}
-.detail-group .icon.true {
-    background-color: yellowgreen;
-    color: white;
-}
-.detail-group .icon.false {
-    background-color: coral;
-    color: white;
-}
-.detail-placeholder {
-    font-style: italic;
-    opacity: 0.6;
-}
-
-
-/* NEW CSS */
-.app-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-}
-
-.app-details-header {
-    font-size: 2em;
-    display: flex;
-    gap: 10px;
-    flex-direction: row;
-    align-items: baseline;
-}
-.app-details-header .details-title-prefix,
-.app-details-header .details-title-suffix {
-    cursor: help;
-    font-size: 0.5em;
-}
-.app-details-header .app-button {
-    color: var(--text-color-3);
-    background: none;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    transition: .3s ease-in-out;
-    width: fit-content;
-    border-radius: 12px;
-    padding: 10px;
-}
-.app-details-header .app-button .icon {
-    font-size: 1.5rem;
-}
-.app-details-header .app-button.edit:hover {
-    color: var(--link-color);
-}
-.app-details-header .app-button.delete:hover {
-    color: firebrick;
-}
-
-.app-details-section {
+.details-section {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-.app-details-section .section-header {
+.details-section .section-header {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -145,44 +60,44 @@
     text-transform: uppercase;
     font-weight: 400;
 }
-.app-details-section .section-header .app-button {
+.details-section .section-header .app-button {
     padding: 5px;
 }
-.app-details-section .data-group {
+.details-section .data-group {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 3px;
     padding-left: 5px;
 }
-.app-details-section .data-group.linear {
+.details-section .data-group.linear {
     flex-direction: row;
 }
-.app-details-section .data-group label {
+.details-section .data-group label {
     margin-left: -5px;
     font-weight: bold;
     font-family: var(--font-family-condensed), sans-serif;
 }
-.app-details-section .data-group.clickable {
+.details-section .data-group.clickable {
     color: var(--link-color);
     cursor: pointer;
     transition: .3s ease-in-out;
     width: fit-content;
 }
-.app-details-section .data-group.clickable:hover {
+.details-section .data-group.clickable:hover {
     color: var(--link-hover-color);
 }
-.app-details-section .data-group .icon {
+.details-section .data-group .icon {
     font-size: 1.1em;
     padding: 3px;
     margin-right: 5px;
     border-radius: 10px;
 }
-.app-details-section .data-group .icon.true {
+.details-section .data-group .icon.true {
     background-color: rgba(154, 205, 50, 0.5);
     color: white;
 }
-.app-details-section .data-group .icon.false {
+.details-section .data-group .icon.false {
     background-color: rgba(255, 127, 80, 0.5);
     color: white;
 }
