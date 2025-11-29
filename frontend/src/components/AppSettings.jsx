@@ -189,6 +189,8 @@ const AppStyles = () => {
 
     return <EditForm
         className={'seethrough app-scroll app-overflow-y'}
+        style={{padding: '20px'}}
+        header={'App Style'}
         sections={sections}
         onSubmit={async () => await saveConfig(formConfig)}
         hideCancel={true}
@@ -202,9 +204,6 @@ const AppSettings = () => {
     return (
         <>
             <div className='page-section'>
-                <div className='page-header'>
-                    <h1 className={'page-title'}> App Style</h1>
-                </div>
                 <AppStyles/>
             </div>
             <div className={'page-section'}>

@@ -8,6 +8,7 @@
     margin: 0;
     font-size: 2rem;
     font-weight: 300;
+    font-family: var(--font-family-condensed), sans-serif;
 }
 .form-content {
     display: flex;

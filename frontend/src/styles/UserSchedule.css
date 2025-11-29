@@ -1,9 +1,43 @@
 
 /* User Schedule table */
+.app.fluent .app-schedule-content {
+    clip-path: inset(0 round var(--big-border-radius));
+}
+
 .app-schedule-table {
     min-width: 100%;
+    border-spacing: 0;
     border-collapse: collapse;
 }
+
+.app-schedule-table .user-header,
+.app-schedule-table .day-header,
+.app-schedule-table .user-cell {
+    position: sticky;
+    background: var(--background-color);
+}
+
+.app-schedule-table .user-header {
+    top: 0;
+    left: 0;
+    z-index: 3;
+}
+.app-schedule-table .day-header {
+    top: 0;
+    z-index: 2;
+}
+.app-schedule-table .user-cell {
+    left: 0;
+    z-index: 1;
+}
+
+.app.fluent .app-schedule-table .day-header,
+.app.fluent .app-schedule-table .user-header,
+.app.fluent .app-schedule-table .user-cell {
+    background: var(--seethrough-background-2);
+    backdrop-filter: blur(10px);
+}
+
 .app-schedule-table tr:not(:last-child) td {
     border-bottom: 1px solid var(--text-color-3);
 }
@@ -21,7 +55,6 @@
     text-align: left;
 }
 .app-schedule-table .day-header {
-    border-radius: var(--big-border-radius) var(--big-border-radius) 0 0;
     font-weight: 300;
 }
 .app-schedule-table .day-header .date {

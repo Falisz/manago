@@ -106,22 +106,6 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         show({ event: e, props: item });
     }
 
-    const getSelector = (e) => {
-        const user = e.currentTarget.getAttribute('data-user');
-        const date = e.currentTarget.getAttribute('data-date');
-
-        if (user && date)
-            return `td[data-user='${user}'], td[data-date='${date}'], th[data-user='${user}'], th[data-date='${date}']`;
-
-        else if (user)
-            return `td[data-user='${user}'], th[data-user='${user}']`;
-
-        else if (date)
-            return `td[data-date='${date}'], th[data-date='${date}']`;
-
-        else return null;
-    }
-
     const handleCellSelection = useCallback((e) => {
         const data = e.target['dataset'];
         const cell = `${data.user}-${data.date}`;
@@ -168,38 +152,6 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
 
     const handleShiftSelection = (shift) => {
         updateUserShift({ shift: {...shift, selected: !shift.selected}, action: 'update' });
-    };
-
-    const handleMouseEnter = (e) => {
-        if (editable)
-            return;
-
-        const selector = getSelector(e);
-
-        if (selector)
-            document
-                .querySelectorAll(selector)
-                .forEach(cell => cell.classList.add('column-highlight'));
-
-    };
-
-    const handleMouseLeave = (e) => {
-        if (editable)
-            return;
-        const user = e.currentTarget.getAttribute('data-user');
-        const date = e.currentTarget.getAttribute('data-date');
-        let selector = '';
-        if (user && date) {
-            selector = `td[data-user='${user}'], td[data-date='${date}'], th[data-user='${user}'], th[data-date='${date}']`;
-        } else if (user) {
-            selector = `td[data-user='${user}'], th[data-user='${user}']`;
-        } else if (date) {
-            selector = `td[data-date='${date}'], th[data-date='${date}']`;
-        }
-        if (selector)
-            document
-                .querySelectorAll(selector)
-                .forEach(cell => cell.classList.remove('column-highlight'));
     };
 
     const dragPreviewRef = useRef(null);
@@ -337,9 +289,6 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         
     const dates = generateDateList(schedule.start_date, schedule.end_date);
 
-    // TODO: Apply this sticky header logic: https://www.youtube.com/watch?v=_dpSEjaKqSE
-    // remove the highlighting on hover and round corners of the header cells, then apply sticky + top:0 to thead and z-index: 5
-    // same with first column in each row!
     return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table' + (editable ? ' editable' : '')}>
             <thead>
@@ -361,7 +310,6 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                             data-date={formattedDate}
                             className={'day-header' + (dayIdx === 0 || dayIdx === 6 ? ' weekend' :
                                 isDate ? ' holiday' : '')}
-                            onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}
                         >
                             <div className='date'>{formattedDate}</div>
                             <div className='short-day' title={dayIdx === 0 || dayIdx === 6 ? 'Weekend' :
@@ -380,8 +328,6 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                     <td
                         className={'user-cell'}
                         data-user={user.id}
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
                     >
                         <span
                             className={'app-clickable'}
@@ -434,8 +380,6 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                                 data-date={dateStr}
                                 colSpan={colSpan}
                                 onClick={handleCellSelection}
-                                onMouseEnter={handleMouseEnter}
-                                onMouseLeave={handleMouseLeave}
                                 onDoubleClick={(e) =>
                                     handleShiftAdd({user: e.target['dataset'].user, date: e.target['dataset'].date})}
                                 onDragOver={editable ? handleCellDragOver(user.id, dateStr) : null}
