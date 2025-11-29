@@ -220,7 +220,11 @@ const useSchedules = () => {
 
     }, [fetchUsers, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers]);
 
+    //TODO: Fix that it is not being saved on the existiig draft sched.
     const saveSchedule = useCallback( async ({publish = false, overwrite = false} = {}) => {
+
+        if (!schedule)
+            return null;
 
         const { id, name, description, start_date, end_date, user_scope, user_scope_id } = schedule;
 
