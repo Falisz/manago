@@ -50,7 +50,7 @@ const PopUp = ({id, type, header, content, onClick, isVisible, noClose}) => {
 
 const PopUps = ({popUps = {}}) => (
     <div className='app-popups'>
-        {Object.values(popUps).slice(-10).map(popUp => <PopUp key={popUp.id} {...popUp}/>)}
+        {Object.values(popUps).slice(-10).map((popUp, index) => <PopUp key={index} {...popUp}/>)}
     </div>
 );
 

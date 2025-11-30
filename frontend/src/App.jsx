@@ -1,10 +1,9 @@
 // FRONTEND/App.jsx
 import React, { useMemo } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom';
 import useApp, { AppProvider } from './contexts/AppContext';
 import { NavProvider } from './contexts/NavContext';
 import Login from './components/Login';
-import Logout from './components/Logout';
 import NotFound from './components/NotFound';
 import NoAccess from './components/NoAccess';
 import Loader from './components/Loader';
@@ -14,7 +13,7 @@ import ManagerView from './components/ManagerView';
 import './styles/App.css';
 
 const AppContent = () => {
-    const { user, loading, pages } = useApp();
+    const { user, loading, pages, logoutUser } = useApp();
 
     const router = useMemo(() => {
         let routes;
@@ -25,7 +24,7 @@ const AppContent = () => {
         } else if (!user.active) {
             routes = [
                 { path: "*", element: <NoAccess /> },
-                { path: "logout", element: <Logout /> }
+                { path: "logout", loader: async () => { await logoutUser(); return redirect("/"); } }
             ];
         } else {
             routes = [
@@ -53,14 +52,14 @@ const AppContent = () => {
                             ]
                         })),
                         { path: 'test', element: <Test /> },
-                        { path: "logout", element: <Logout /> },
+                        { path: "logout", loader: async () => { await logoutUser(); return redirect("/"); } },
                         { path: "*", element: <NotFound /> }
                     ]
                 }
             ];
         }
         return createBrowserRouter(routes);
-    }, [user, pages]);
+    }, [user, pages, logoutUser]);
 
     if (loading)
         return <Loader />;

@@ -1,33 +1,38 @@
-.app-login {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    background: url('../assets/office_background.jpg') no-repeat;
-    background-size: cover;
+.app.login {
+    /*background: url('../assets/office_background.jpg') no-repeat;*/
+    /*background-size: cover;*/
 }
-.app-login .login-wrapper {
+.app.fluent.login {
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-wrapper {
+    margin-left: auto;
     display: flex;
     height: calc(100% - 40px);
     flex-direction: column;
     align-items: center;
-    background: var(--background-color);
-    padding: 20px 60px;
-    box-shadow: var(--weak-shade);
+    background: var(--background-gradient);
+    padding: 150px 60px 0 60px;
+    box-shadow: 0 0 10px 5px rgba(0, 0, 0, .15);
 }
-.app.fluent .app-login {
+.app.fluent .login-wrapper {
+    margin-top: -50px;
     justify-content: center;
     align-items: center;
-}
-.app.fluent .app-login .login-wrapper {
-    margin: -50px 20px 50px;
+    padding: 20px 60px;
     border-radius: var(--big-border-radius);
     background: var(--seethrough-background);
     backdrop-filter: blur(10px);
     height: fit-content;
+    box-shadow: var(--weak-shade);
 }
 
-.app-login .app-logo {
+.login-wrapper .app-logo {
     margin: 20px auto;
     width: 100px;
     height: auto;
@@ -35,29 +40,28 @@
     fill: white;
     opacity: 1;
     transition: ease-in-out 0.3s;
-    background: var(--background-color-3);
     padding: 20px;
     border-radius: 100px;
 }
-.app-login .app-logo {
+.login-wrapper .app-logo {
     fill: var(--color);
 }
-.app-login .login-form {
+.login-form {
     display: flex;
     flex-direction: column;
     min-width: 250px;
     max-width: 33%;
 }
-.app-login .login-form input:focus,
-.app-login .login-form button:focus {
+.login-form input:focus,
+.login-form button:focus {
     outline: none;
 }
-.app-login .login-form .input-field {
+.login-form .input-field {
     position: relative;
     display: flex;
     margin: 10px 0;
 }
-.app-login .login-form .input-icon {
+.login-form .input-icon {
     position: absolute;
     color: var(--color-dark);
     top: calc(50% - 2px);
@@ -65,8 +69,8 @@
     left: 10px;
     transition: ease-in-out 0.3s;
 }
-.app-login .login-form .input-field input,
-.app-login .login-form .input-field input:-webkit-autofill {
+.login-form .input-field input,
+.login-form .input-field input:-webkit-autofill {
     background: var(--background-color-3);
     color: var(--text-color);
     appearance: unset;
@@ -81,20 +85,20 @@
     opacity: 0.8;
     transition: ease-in-out 0.3s;
 }
-.app-login .login-form .input-field input:hover,
-.app-login .login-form .input-field input:focus {
+.login-form .input-field input:hover,
+.login-form .input-field input:focus {
     opacity: 1;
 }
-.app-login .login-form .input-field input:hover~.input-icon,
-.app-login .login-form .input-field input:focus~.input-icon {
+.login-form .input-field input:hover~.input-icon,
+.login-form .input-field input:focus~.input-icon {
     color: var(--color);
 }
-.app.fluent .app-login .login-form .input-field input,
-.app.fluent .app-login .login-form .input-field input:-webkit-autofill {
+.app.fluent .login-form .input-field input,
+.app.fluent .login-form .input-field input:-webkit-autofill {
     background: var(--seethrough-background-3);
 }
-.app-login .login-form button {
-    background: var(--color-gradient);
+.login-form button {
+    background: var(--button-color);
     -webkit-tap-highlight-color: transparent;
     color: white;
     border: 0;
@@ -108,21 +112,24 @@
     cursor: pointer;
     transition: ease-in-out 0.3s;
 }
-.app.fluent .app-login .login-form button {
+.login-form button:hover {
+    background: var(--highlight-color);
+}
+.app.fluent .login-form button {
     background: var(--seethrough-background-2);
     color: var(--color);
 }
-.app.fluent .app-login .login-form button:hover {
+.app.fluent .login-form button:hover {
     background: var(--seethrough-background-3);
 }
-.app-login .login-form .error {
+.login-form .error {
     color: orange;
     border-radius: 10px;
     border: 2px solid orange;
     padding: 10px;
     align-self: center;
 }
-.app.fluent .app-login .login-form .error {
+.app.fluent .login-form .error {
     background: var(--color);
     border: none;
     color: white;
@@ -130,17 +137,17 @@
 
 
 @media (max-width: 768px) {
-    .app-login .login-form {
+    .login-form {
         width: 90%;
         max-width: unset;
         min-width: unset;
     }
-    .app-login .login-form .input-field input {
+    .login-form .input-field input {
         padding: 15px 40px 15px;
         font-size: 24px;
     }
-    .app-login .login-form .input-field,
-    .app-login .login-form button {
+    .login-form .input-field,
+    .login-form button {
         margin: 25px 0;
         font-size: 24px;
     }

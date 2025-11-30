@@ -75,8 +75,8 @@ export const AppProvider = ({ children }) => {
         setAppState(prev => ({ ...prev, loading }));
     }, []);
 
-    const setUser = useCallback((user) => {
-        setAppState(prev => ({ ...prev, user: {...prev.user, ...user} }));
+    const setUser = useCallback((updater) => {
+        setAppState(prev => ({ ...prev, user: typeof updater === 'function' ? updater(prev.user) : updater}));
     }, []);
 
     const showPopUp = useCallback((popUp, life=30000) => {
@@ -177,21 +177,20 @@ export const AppProvider = ({ children }) => {
         }
     }, []);
 
-    // TODO: Fix logging out logic.
     // App's Callbacks
     const logoutUser = useCallback(async () => {
-        setLoading(true);
         try {
-            setUser(null);
             const res = await axios.get('/logout', { withCredentials: true });
+            if (!res)
+                return null;
             if (res?.data?.message)
                 showPopUp({ type: 'success', content: res.data.message });
+            setUser(null);
         } catch (err) {
             console.error('Logout error', err);
-        } finally {
-            setLoading(false);
+            return null;
         }
-    }, [setLoading, showPopUp, setUser]);
+    }, [showPopUp, setUser]);
 
     const refreshConfig = useCallback(async (hasRetried = false) => {
         setLoading(true);
@@ -283,7 +282,7 @@ export const AppProvider = ({ children }) => {
                 { manager_view: toggleValue },
                 { withCredentials: true }
             );
-            setUser({ manager_view_enabled: result.data?.manager_view });
+            setUser(prev => ({...prev, manager_view_enabled: result.data?.manager_view }));
             await refreshPages();
         } catch (err) {
             console.error('View switching error: ', err);
@@ -300,7 +299,7 @@ export const AppProvider = ({ children }) => {
                 { theme_mode },
                 { withCredentials: true }
             );
-            setUser({ theme_mode: result.data?.theme_mode });
+            setUser(prev => ({...prev, theme_mode: result.data?.theme_mode }));
         } catch (err) {
             console.error('Theme switching error: ', err);
         }
@@ -366,6 +365,9 @@ export const AppProvider = ({ children }) => {
 
     const appClasses = useMemo(() => {
         let classes = [];
+
+        if (!appState.user)
+            classes.push('login');
 
         if (appState.style)
             classes.push(appState.style);

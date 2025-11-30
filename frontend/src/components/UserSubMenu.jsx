@@ -1,13 +1,20 @@
 // FRONTEND/components/UserSubMenu.jsx
 import React from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import useApp from '../contexts/AppContext';
 import Icon from './Icon';
+import Button from './Button';
 
 const UserSubMenu = () => {
-    const { user, toggleView, toggleTheme } = useApp();
+    const { user, toggleView, toggleTheme, logoutUser } = useApp();
+    const navigate = useNavigate();
 
     const new_theme_mode = user?.theme_mode === 'dark' ? 'light' : 'dark';
+
+    const handleLogout = React.useCallback(async () => {
+        await logoutUser();
+        navigate('/', { replace: true });
+    },[logoutUser, navigate]);
 
     return (
         <nav className='app-sub-menu'>
@@ -41,14 +48,14 @@ const UserSubMenu = () => {
                     <Icon i={'view_compact_alt'} />
                 </Link>
             }
-            <Link
+            <Button
                 key='logout'
                 className='sub-menu-link logout'
-                to='/logout'
+                onClick={handleLogout}
             >
                 Logout
                 <Icon i={'logout'} />
-            </Link>
+            </Button>
         </nav>
     );
 
