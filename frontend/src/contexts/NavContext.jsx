@@ -13,6 +13,7 @@ import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {UserAssignment} from '../components/Users/Edit';
+import {LeaveRequestForm} from '../components/Leaves/Index';
 
 const ANIMATION_DURATION = 300;
 
@@ -88,6 +89,11 @@ const MODALS = {
     shiftEdit: {
         urlParam: 'editShift',
         component: (modal) => <ShiftEdit shiftId={modal.contentId} modal={modal.id}/>
+    },
+    leaveNew: {
+        urlParam: 'new',
+        urlParamValue: 'leave',
+        component: (modal) => <LeaveRequestForm modal={modal.id}/>
     },
     postDetails: {
         urlParam: 'post',
@@ -233,6 +239,7 @@ export const NavProvider = ({ children }) => {
                 type: 'pop-up',
                 message: 'Changes were made. Are you sure you want to discard them?',
                 onConfirm: () => {
+                    setUnsavedChanges(false);
                     setDiscardWarning(topId, false);
                     closeModal(topId);
                 },
@@ -244,7 +251,7 @@ export const NavProvider = ({ children }) => {
 
         closeModal(topId, isConfirm); // Closing the topModal if there is no discardWarning on it.
 
-    }, [closeModal, openModal, setDiscardWarning]);
+    }, [closeModal, openModal, setDiscardWarning, setUnsavedChanges]);
 
     const updateModalProps = useCallback((id, newProps) => {
         setModals((prev) => {

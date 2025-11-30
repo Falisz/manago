@@ -144,7 +144,7 @@ const TableField = ({field, data, selectionMode}) => {
         case 'string':
             content = (
                 <span
-                    className='app-clickable'
+                    className={field.openModal ? 'app-clickable' : ''}
                     onClick={() => {
                         if (!selectionMode && field.openModal) {
                             openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
@@ -170,6 +170,21 @@ const TableField = ({field, data, selectionMode}) => {
                     style={field.iconStyle || null}
                 />
             );
+            break;
+        case 'item':
+            if (value) {
+                content = <span
+                        key={value.id}
+                        className={`app-clickable sub-item ${field.className || ''}`}
+                        onClick={() => {
+                            if (!selectionMode && field.openModal) {
+                                openDialog({ content: field.openModal, contentId: value.id });
+                            }
+                        }}
+                    >
+                        {value.name || `${value.first_name || ''} ${value.last_name || ''}`}
+                    </span>
+            }
             break;
         case 'list':
             if (value && value.length > 0) {

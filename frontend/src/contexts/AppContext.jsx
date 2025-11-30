@@ -177,19 +177,21 @@ export const AppProvider = ({ children }) => {
         }
     }, []);
 
+    // TODO: Fix logging out logic.
     // App's Callbacks
     const logoutUser = useCallback(async () => {
         setLoading(true);
         try {
-            document.getElementById('root').classList.remove('staff', 'manager');
             setUser(null);
-            await axios.get('/logout', { withCredentials: true });
+            const res = await axios.get('/logout', { withCredentials: true });
+            if (res?.data?.message)
+                showPopUp({ type: 'success', content: res.data.message });
         } catch (err) {
             console.error('Logout error', err);
         } finally {
             setLoading(false);
         }
-    }, [setLoading, setUser]);
+    }, [setLoading, showPopUp, setUser]);
 
     const refreshConfig = useCallback(async (hasRetried = false) => {
         setLoading(true);
