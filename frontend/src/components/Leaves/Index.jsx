@@ -6,8 +6,27 @@ import { useLeaves, useRequestStatuses, useLeaveTypes } from '../../hooks/useRes
 import Button from "../Button";
 import EditForm from "../EditForm";
 
-
 // TODO: Leave Item component
+const LeaveItem = ({leave, requestStatuses}) => {
+
+    if (!leave)
+        return null;
+
+    const { type, color, start_date, end_date, days, user_note, approver, approver_note, status } = leave;
+
+    return (
+        <div>
+            <h2 style={{color}}>{type || 'Leave'}</h2>
+            <p>{start_date} - {end_date} ({days} day{days !== 1 && 's'})</p>
+            {user_note && <p>{user_note}</p>}
+            <p>Status: {requestStatuses?.find(s => s.id === status)?.name || 'Unknown'}</p>
+            {approver && <p>Approved by: {approver.first_name} {approver.last_name}</p>}
+            {approver_note && <p>{approver_note}</p>}
+        </div>
+    );
+};
+
+
 const LeaveRequestForm = () => {
 
     const { user } = useApp();
@@ -99,13 +118,7 @@ const YourLeaves = () => {
                     onClick={() => openModal({content: 'component', component: LeaveRequestForm})}
                 />
             </div>
-            {leaves?.map(leave => (
-                leave &&
-                <div key={leave.id}>
-                    <p>{Object.entries(leave).map(([key, value]) => <span key={key}><b>{key}:</b> {value?.toString()}&nbsp;&nbsp;</span>)}</p>
-                    <p>Status: {requestStatuses?.find(status => status.id === leave.status)?.name || 'Unknown'}</p>
-                </div>
-            ))}
+            {leaves?.map(leave => <LeaveItem key={leave.id} leave={leave} requestStatuses={requestStatuses}/>)}
         </div>
     );
 };
