@@ -44,7 +44,7 @@ const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton 
             <div
                 className={`modal-overlay${!isVisible ? ' hidden' : ''}`}
                 style={{ zIndex }}
-                onClick={() => onClose()}
+                onClick={onClose}
                 role='presentation'
             />
             <div

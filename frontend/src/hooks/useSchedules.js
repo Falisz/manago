@@ -1,15 +1,19 @@
 // FRONTEND/hooks/useSchedules.js
 import {useCallback, useState, useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 import {useUsers, useLeaves, useShifts, useScheduleDrafts} from './useResource';
 
 const useSchedules = () => {
     const { showPopUp } = useApp();
+    const { openPopUp, setUnsavedChanges, closeTopModal } = useNav();
     const { fetchUsers } = useUsers();
     const { fetchLeaves } = useLeaves();
     const { fetchShifts } = useShifts();
     const { fetchSchedule, deleteSchedule } = useScheduleDrafts();
+    const navigate = useNavigate();
 
     const [ schedule, setSchedule ] = useState(null);
     const [ loading, setLoading ] = useState(true);
@@ -220,9 +224,7 @@ const useSchedules = () => {
 
     }, [fetchUsers, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers]);
 
-    //TODO: Fix that it is not being saved on the existiig draft sched.
-    const saveSchedule = useCallback( async ({publish = false, overwrite = false} = {}) => {
-
+    const saveSchedule = useCallback( async ({schedule, publish, overwrite} = {}) => {
         if (!schedule)
             return null;
 
@@ -268,7 +270,49 @@ const useSchedules = () => {
             const message = 'Error occurred while saving Schedule Draft. Please try again.';
             showPopUp({type: 'error', content: message});
         }
-    }, [schedule, setSchedule, mapUsers, showPopUp]);
+    }, [setSchedule, mapUsers, showPopUp]);
+
+    const publishSchedule = useCallback(async (schedule, isNew = false) => {
+
+        const { start_date, end_date, user_scope, user_scope_id } = schedule;
+
+        const viewPath = `/schedules/view?from=${start_date}&to=${end_date}` +
+            `&scope=${user_scope}&sid=${user_scope_id}`;
+
+        const publishedShifts = await fetchShifts({
+            start_date,
+            end_date,
+            user_scope,
+            user_scope_id,
+            schedule_id: null
+        });
+
+        const showWarning = !isNew && publishedShifts?.length > 0;
+
+        const message = !isNew ? 'Are you sure you want to publish the Schedule? Publishing saves all the shifts from this' +
+            ' draft to the official Schedule. This action cannot be undone.' +
+            (showWarning ? ' There are already shifts published on this date range. ' +
+                'Do you wish to append or overwrite?' : '') : 'Are you sure you want to re-publish the Schedule?';
+
+        openPopUp({
+            content: 'confirm',
+            message,
+            onConfirm: () => {
+                saveSchedule({ schedule, publish: true}).then();
+                setUnsavedChanges(false);
+                closeTopModal();
+                navigate(viewPath);
+            },
+            confirmLabel: showWarning ? 'Publish without overwriting' : isNew ? 'Re-publish' : 'Publish',
+            onConfirm2: showWarning ? () => {
+                saveSchedule({ schedule, publish: true, overwrite: true}).then();
+                setUnsavedChanges(false);
+                closeTopModal();
+                navigate(viewPath);
+            } : null,
+            confirmLabel2: showWarning ? 'Publish overwriting current Schedule' : null,
+        });
+    }, [saveSchedule, fetchShifts, openPopUp, setUnsavedChanges, closeTopModal, navigate]);
 
     const discardSchedule = useCallback( async (id) => id && deleteSchedule({id}), [deleteSchedule]);
 
@@ -280,6 +324,7 @@ const useSchedules = () => {
         getSchedule,
         updateUserShift,
         saveSchedule,
+        publishSchedule,
         discardSchedule,
     };
 };

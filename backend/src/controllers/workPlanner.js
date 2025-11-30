@@ -169,6 +169,11 @@ export async function deleteSchedule(id, delete_shifts=true) {
     const transaction = await sequelize.transaction();
     
     try {
+        if (delete_shifts)
+            await Shift.destroy({ where: { schedule: id }, transaction });
+        else
+            await Shift.update({ schedule: null }, { where: { schedule: id } });
+
         const deletedCount = await Schedule.destroy({ where: { id }, transaction });
 
         if (!deletedCount) {
@@ -179,12 +184,6 @@ export async function deleteSchedule(id, delete_shifts=true) {
                  ${Array.isArray(id) ? id.join(', ') : id}` 
             };
         }
-
-        if (delete_shifts)
-            await Shift.destroy({ where: { schedule: id }, transaction });
-        
-        else
-            await Shift.update({ schedule: null }, { where: { schedule: id } });
 
         await transaction.commit();
 

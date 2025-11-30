@@ -31,8 +31,9 @@ const SchedulesIndex = () => {
             content: 'confirm',
             type: 'pop-up',
             message: 'Are you sure you want to discard this Schedule Draft? This action cannot be undone.',
-            onConfirm: () => {
-                deleteSchedule({id}).then();
+            onConfirm: async () => {
+                const success = await deleteSchedule({id});
+                if (!success) return;
                 refreshData('scheduleDrafts', true);
                 closeTopModal();
             },

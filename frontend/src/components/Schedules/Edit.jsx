@@ -11,6 +11,7 @@ import EditForm from '../EditForm';
 import Loader from '../Loader';
 import UserSchedule from './UserSchedule';
 import '../../styles/Schedules.css';
+import Modal from "../Modal";
 
 export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isEmpty }) => {
     const { appState } = useApp();
@@ -103,6 +104,7 @@ export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isE
                                         schedule.user_scope === 'branch' ? scopeOptions.branches :
                                             [{ id: null, name: 'None'}],
                         required: !['you', 'all'].includes(schedule.user_scope),
+                        placeholder: `Select ${schedule.user_scope}`,
                         disabled: !isEmpty.current
                     }
                 }
@@ -120,12 +122,12 @@ export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isE
         };
     }, [schedule, setSchedule, scopeOptions, isEmpty]);
 
-    const onSubmit = useCallback(() => {
+    const onSubmit = useCallback(async () => {
         for (const field of ['start_date', 'end_date', 'user_scope', 'user_scope_id'])
             if (schedule[field] == null)
                 return false;
 
-        handleSave();
+        await handleSave();
 
         if (schedule.user_scope && schedule.user_scope_id)
             isEmpty.current = false;
@@ -136,19 +138,22 @@ export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isE
 
         return true;
     }, [isEmpty, isNew, handleSave, schedule, closeTopModal]);
+
+    if (!schedule)
+        return <Loader/>;
     
     return <EditForm 
-        header={schedule?.id ? `Editing Details of ${schedule.name}` : `Creating a new Schedule Draft`}
+        header={isNew.current ? `Creating a new Schedule Draft` : `Editing Details of ${schedule.name}`}
         sections={sections}
         onSubmit={onSubmit}
         onCancel={() => {closeTopModal(); isNew.current && navigate(-1);}}
-        submitLabel={schedule?.id ? 'Save Changes' : 'Start planning'}
+        submitLabel={schedule?.id ? 'Start planning' : 'Save Changes' }
         source={schedule}
         setSource={setSchedule} 
     />;
 };
 
-const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave, publishSchedule}) => {
+const ScheduleHeader = ({schedule, mode, discardChanges, openEditForm, handleSave, publishSchedule}) => {
 
     const title = mode ==='new' ? 'New Schedule Draft' :
         mode === 'current' ? 'Editing Current Schedule' :
@@ -162,10 +167,10 @@ const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave
             <span style={{marginRight: 'auto', fontSize: '2rem'}}>{title}</span>
             <Button icon={'close'} label={'Discard Changes'} onClick={discardChanges}/>
             { mode === 'current' ? <>
-                <Button icon={'save'} label={'Save to Drafts'} onClick={editDetails}/>
+                <Button icon={'save'} label={'Save to Drafts'} onClick={openEditForm}/>
                 <Button icon={'publish'} label={'Re-Publish'} onClick={publishSchedule}/>
             </> : <>
-                <Button icon={'edit'} label={'Edit Details'} onClick={editDetails}/>
+                <Button icon={'edit'} label={'Edit Details'} onClick={openEditForm}/>
                 <Button icon={'save'} label={'Save'} onClick={handleSave}/>
                 <Button icon={'publish'} label={'Publish'} onClick={publishSchedule}/>
             </> }
@@ -175,18 +180,18 @@ const ScheduleHeader = ({schedule, mode, discardChanges, editDetails, handleSave
 
 const ScheduleEdit = () => {
     const { appCache } = useApp();
-    const { openModal, updateModalProps, closeTopModal, setUnsavedChanges } = useNav();
+    const { setUnsavedChanges } = useNav();
     const { scheduleId } = useParams();
     const {
         schedule,
         setSchedule,
-        loading,
-        setLoading,
         updateUserShift,
         getSchedule,
-        saveSchedule
+        saveSchedule,
+        publishSchedule
     } = useSchedules();
     const { jobPosts, fetchJobPosts } = useJobPosts();
+    const [ showModal, setShowModal ] = useState(false);
     const { search } = useLocation();
     const navigate = useNavigate();
     const params = useMemo(() => new URLSearchParams(search), [search]);
@@ -195,53 +200,26 @@ const ScheduleEdit = () => {
     const isNew = useRef(!scheduleId);
     const isEmpty = useRef(true);
     const isMounted = useRef(false);
-    const modalIdRef = useRef(null);
 
     const discardChanges = useCallback(() => {
         setUnsavedChanges(false);
         navigate('/schedules');
     }, [navigate, setUnsavedChanges]);
 
-    const handleSave = useCallback(() => {
+    const openEditForm = useCallback(() => {
+        setShowModal(true);
+    },[setShowModal]);
+
+    const closeEditForm = useCallback(() => {
+        setShowModal(false);
+    }, [setShowModal]);
+
+    const handleSave = useCallback(async () => {
         setUnsavedChanges(false);
-        saveSchedule().then();
-    }, [setUnsavedChanges, saveSchedule]);
-
-    const publishSchedule = useCallback(() => {
-
-        const viewPath = `/schedules/view?from=${schedule.start_date}&to=${schedule.end_date}` +
-            `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`;
-
-        openModal({
-            content: 'confirm',
-            type: 'pop-up',
-            message: `Are you sure you want to publish the Schedule? Publishing posts all the shifts in the draft to 
-            the official Schedule. This action cannot be undone.`,
-            onConfirm: () => {
-                saveSchedule({ schedule, publish: true}).then();
-                setUnsavedChanges(false);
-                closeTopModal();
-                navigate(viewPath);
-            },
-            confirmLabel: 'Publish without overwriting',
-            onConfirm2: () => {
-                saveSchedule({ schedule, publish: true, overwrite: true}).then();
-                setUnsavedChanges(false);
-                closeTopModal();
-                navigate(viewPath);
-            },
-            confirmLabel2: 'Publish overwriting current Schedule',
-        });
-    }, [saveSchedule, openModal, setUnsavedChanges, schedule, closeTopModal, navigate]);
-
-    const editDetails = useCallback(() => {
-        modalIdRef.current = openModal({
-            content: 'component',
-            type: 'dialog',
-            component: ScheduleEditForm,
-            props: {schedule, setSchedule, handleSave, isNew, isEmpty}
-        });
-    }, [openModal, schedule, setSchedule, handleSave]);
+        const success = await saveSchedule({ schedule });
+        if (!success) return;
+        closeEditForm();
+    }, [schedule, setUnsavedChanges, saveSchedule, closeEditForm]);
 
     useEffect(() => {
         if (scheduleId || !isMounted.current)
@@ -262,7 +240,6 @@ const ScheduleEdit = () => {
 
         isMounted.current = true;
 
-        setLoading(true);
         fetchJobPosts().then();
 
         if (scheduleId) {
@@ -271,8 +248,6 @@ const ScheduleEdit = () => {
             isEmpty.current = false;
             return;
         }
-
-        setLoading(true);
 
         const from = params.get('from');
         const start_date = from && !isNaN(Date.parse(from)) ? from : null;
@@ -287,22 +262,12 @@ const ScheduleEdit = () => {
 
         if (paramMissing) {
             setMode('new');
-            editDetails();
-            setLoading(false);
+            openEditForm();
         } else {
             setMode('current');
         }
 
-    }, [isMounted, appCache, params, scheduleId, setLoading,
-        getSchedule, editDetails, fetchJobPosts]);
-
-    useEffect(() => {
-        if (modalIdRef.current !== null)
-            updateModalProps(modalIdRef.current, { schedule, saveSchedule });
-    }, [schedule, saveSchedule, updateModalProps]);
-
-    if (loading)
-        return <Loader/>;
+    }, [isMounted, appCache, params, scheduleId, getSchedule, openEditForm, fetchJobPosts]);
 
     return (
         <div className={'app-schedule seethrough'}>
@@ -310,9 +275,9 @@ const ScheduleEdit = () => {
                 schedule={schedule}
                 mode={mode}
                 discardChanges={discardChanges}
-                editDetails={editDetails}
+                openEditForm={openEditForm}
                 handleSave={handleSave}
-                publishSchedule={publishSchedule}
+                publishSchedule={() => publishSchedule(schedule, isNew)}
             />
             {schedule ? <UserSchedule
                 schedule={schedule}
@@ -320,6 +285,19 @@ const ScheduleEdit = () => {
                 editable={true}
                 jobPosts={jobPosts}
             /> : <Loader/>}
+            <Modal
+                type={'dialog'}
+                onClose={closeEditForm}
+                isVisible={showModal}
+            >
+                <ScheduleEditForm
+                    schedule={schedule}
+                    setSchedule={setSchedule}
+                    handleSave={handleSave}
+                    isNew={isNew}
+                    isEmpty={isEmpty}
+                />
+            </Modal>
         </div>
     );
 }

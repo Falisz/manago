@@ -10,8 +10,9 @@ import {
     deleteSchedule,
     createShift,
     updateShift,
-    deleteShift
+    deleteShift, getShift
 } from '../controllers/workPlanner.js';
+import {getUsersByScope} from "../controllers/users.js";
 
 // API Handlers
 /**
@@ -62,14 +63,13 @@ const createHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        schedule.author = req.session.user;
-
         if (publish) {
-            // TODO: Implement schedule re-publishing logic.
-            // In case of re-publishing, we do not use overwrite flag from the schedule, as republishing itself is meant
-            //  to overwrite the current schedule.
-            console.log('Republishing current schedule:', schedule);
+
+            await updateScheduleShifts(null, shifts);
+
         } else {
+            schedule.author = req.session.user;
+
             const { success, message, id } = await createSchedule(schedule);
 
             if (!success)
@@ -106,24 +106,38 @@ const updateHandler = async (req, res) => {
     
     try {
 
+        let success, message;
+
+        ({ success, message } = await updateSchedule(parseInt(id), schedule));
+
+        if (!success)
+            return res.status(400).json({ message });
+
+        if (shifts)
+            await updateScheduleShifts(id, shifts);
+
+        const updatedSchedule = await getSchedule({id});
+
         if (publish) {
-            // TODO: Implement schedule publishing logic.
-            // In case of shift publishing, we use overwrite flag from the schedule,
-            //  if we want to overwrite the shifts from currently published scopes of users and dates in prev schedule.
-            console.log('Publishing schedule draft:', schedule, overwrite);
-        } else {
-            const { success, message } = await updateSchedule(parseInt(id), schedule);
 
-            if (!success)
-                return res.status(400).json({ message });
+            if (overwrite) {
+                const { start_date, end_date, user_scope, user_scope_id } = updatedSchedule;
+                const users = await getUsersByScope({ scope: user_scope, scope_id: user_scope_id});
+                const shiftsToDelete = await getShift({
+                    schedule: null,
+                    user: users.map(u => u.id),
+                    from: start_date,
+                    to: end_date}
+                );
+                await deleteShift(shiftsToDelete.map(s => s.id));
+            }
 
-            if (shifts)
-                await updateScheduleShifts(id, shifts);
+            await deleteSchedule(id, false);
 
-            const updatedSchedule = await getSchedule({id});
-
-            res.json({ message, schedule: updatedSchedule });
+            message = 'Schedule published successfully.';
         }
+
+        res.json({ message, schedule: publish ? updatedSchedule : undefined, published: publish ? true : undefined });
         
     } catch (err) {
         console.error('Error updating a Schedule:', err, 'Provided data: ', req.body);

@@ -3,9 +3,8 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import useApp from '../../contexts/AppContext';
-import useNav from "../../contexts/NavContext";
 import useSchedules from '../../hooks/useSchedules';
-import {useTeams, useUsers, useShifts} from '../../hooks/useResource';
+import {useTeams, useUsers} from '../../hooks/useResource';
 import Button from '../Button';
 import ComboBox from '../ComboBox';
 import InWorks from '../InWorks';
@@ -128,51 +127,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
 
 const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
 
-    const { openPopUp, setUnsavedChanges, closeTopModal, navigate } = useNav();
-    const { saveSchedule } = useSchedules();
-    const { fetchShifts } = useShifts();
-
-    const publishSchedule = useCallback(async () => {
-
-        const { start_date, end_date, user_scope, user_scope_id } = schedule;
-
-        const viewPath = `/schedules/view?from=${start_date}&to=${end_date}` +
-            `&scope=${user_scope}&sid=${user_scope_id}`;
-
-        const publishedShifts = await fetchShifts({
-            start_date,
-            end_date,
-            user_scope,
-            user_scope_id,
-            schedule_id: null
-        });
-
-        const showWarning = publishedShifts?.length > 0;
-
-        const message = 'Are you sure you want to publish the Schedule? Publishing posts all the shifts in the draft ' +
-            'to the official Schedule. This action cannot be undone.' +
-            (showWarning ? ' There are already shifts published on this date range. ' +
-                'Do you wish to append or overwrite?' : '');
-
-        openPopUp({
-            content: 'confirm',
-            message,
-            onConfirm: () => {
-                saveSchedule({ schedule, publish: true}).then();
-                setUnsavedChanges(false);
-                closeTopModal();
-                navigate(viewPath);
-            },
-            confirmLabel: showWarning ? 'Publish without overwriting' : 'Publish',
-            onConfirm2: showWarning ? () => {
-                saveSchedule({ schedule, publish: true, overwrite: true}).then();
-                setUnsavedChanges(false);
-                closeTopModal();
-                navigate(viewPath);
-            } : null,
-            confirmLabel2: showWarning ? 'Publish overwriting current Schedule' : null,
-        });
-    }, [saveSchedule, fetchShifts, openPopUp, setUnsavedChanges, schedule, closeTopModal, navigate]);
+    const { publishSchedule } = useSchedules();
 
     return (
         <div className={'app-schedule-header'}>
@@ -213,7 +168,7 @@ const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
 
 
 const ScheduleView = () => {
-    const { appState, user } = useApp();
+    const { appState, user, refreshTriggers } = useApp();
     const { modules } = appState;
     const { scheduleId } = useParams();
     const { schedule, loading, setLoading, getSchedule } = useSchedules();
@@ -289,6 +244,20 @@ const ScheduleView = () => {
 
     }, [scheduleId, schedule, navigate]);
 
+
+    useEffect(() => {
+       if (!isMounted.current)
+           return;
+
+       const refresh = refreshTriggers?.shifts || false;
+
+       if (refresh)
+            delete refreshTriggers.shifts;
+
+       if (schedule && refresh)
+           getSchedule(schedule).then();
+
+    }, [isMounted, refreshTriggers, getSchedule, schedule]);
     /**
      * Component initializer logic. If draftId is provided, skipping the rest of logic.
      */
