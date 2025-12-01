@@ -29,7 +29,7 @@ const fetchLeavesHandler = async (req, res) => {
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});
 
-        query.id = id;
+        query.id = parseInt(id);
     } else {
 
         if (req.query.user) {

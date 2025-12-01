@@ -774,10 +774,32 @@ export async function deleteLeaveType(id) {
  */
 export async function getLeave({id, user, approver, date, start_date, end_date} = {}) {
 
-    const where = {};
+    const include = [
+        { model: User, attributes: ['id', 'first_name', 'last_name'] },
+        { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver' },
+        { model: LeaveType, attributes: ['name', 'color'] }
+    ];
 
-    if (isNumberOrNumberArray(id))
-        where.id = id;
+    if (isNumberOrNumberArray(id)) {
+        const leave = await Leave.findOne({where: {id}, include});
+
+        console.log(leave);
+
+        if (!leave)
+            return null;
+
+        const data = leave.toJSON();
+        data.user = leave['User'].toJSON();
+        data.approver = leave['Approver']?.toJSON();
+        data.type = leave['LeaveType']?.name;
+        data.color = leave['LeaveType']?.color;
+        delete data['User'];
+        delete data['Approver'];
+        delete data['LeaveType'];
+        return data;
+    }
+
+    const where = {};
 
     if (isNumberOrNumberArray(user))
         where.user = user;
@@ -797,16 +819,10 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
             where.end_date = {[Op.lte]: end_date};
     }
 
-    const include = [
-        { model: User, attributes: ['id', 'first_name', 'last_name'] }, 
-        { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver' },
-        { model: LeaveType, attributes: ['name', 'color'] }
-    ];
-
     const leaves = await Leave.findAll({ where, include });
 
-    if (!leaves || leaves.length === 0)
-        return [];
+    if (!leaves || !leaves.length)
+        return null;
 
     return await Promise.all(leaves.map(async leave => {
         const rawData = leave.toJSON();
