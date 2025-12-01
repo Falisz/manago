@@ -1,25 +1,64 @@
 // FRONTEND/components/Roles/Index.js
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useLeaves, useRequestStatuses, useLeaveTypes, useUsers} from '../../hooks/useResource';
 import Button from "../Button";
 import EditForm from "../EditForm";
-import '../../styles/Leaves.css';
 import Loader from "../Loader";
 import Table from "../Table";
+import '../../styles/Leaves.css';
 
 // TODO: Leave Item component
 const LeaveItem = ({leave, requestStatuses}) => {
 
+    const { refreshData } = useApp();
+    const { openModal, openDialog, closeTopModal } = useNav();
+    const { saveLeave, deleteLeave } = useLeaves();
+
+    const handleDiscard = useCallback(() => {
+        openModal({
+            content: 'confirm',
+            type: 'pop-up',
+            message: 'Are you sure you want to delete this planned Leave?',
+            onConfirm: async () => {
+                const success = await deleteLeave({id: leave.id});
+                if (!success) return;
+                refreshData('leaves', true);
+                closeTopModal();
+            },
+        });
+
+    }, [openModal, deleteLeave, refreshData, closeTopModal, leave.id]);
+
+    const handleCancel = useCallback(() => {
+        openModal({
+            content: 'confirm',
+            type: 'pop-up',
+            message: 'Are you sure you want to request for cancelation?',
+            onConfirm: async () => {
+                const success = await saveLeave({id: leave.id, data: {status: 4}});
+                if (!success) return;
+                refreshData('leaves', true);
+                closeTopModal();
+            },
+        });
+    }, [openModal, saveLeave, refreshData, closeTopModal, leave.id]);
+
     if (!leave)
         return null;
 
-    const { type, color, start_date, end_date, days, user_note, approver, approver_note, status } = leave;
+    const { id, type, color, start_date, end_date, days, user_note, approver, approver_note, status } = leave;
 
     return (
-        <div className={'index-leave-item'}>
-            <h2 style={{color}}>{type || 'Leave'}</h2>
+        <div className={'index-leave-item'} onClick={()=>openDialog({content: 'leaveDetails', contentId: id})}>
+            <div className={'index-leave-item-header'}>
+                <h2 style={{color}}>{type || 'Leave'}</h2>
+                {(status === 0 || status === 1) && 
+                    <Button icon={'delete'} transparent title={'Discard'} onClick={handleDiscard}/>}
+                {status === 2 && 
+                    <Button icon={'cancel'} transparent title={'Request Cancelation'} onClick={handleCancel}/>}
+            </div>
             <p>{start_date} - {end_date} ({days} day{days !== 1 && 's'})</p>
             {user_note && <p>{user_note}</p>}
             <p>Status: {requestStatuses?.find(s => s.id === status)?.name || 'Unknown'}</p>
@@ -181,7 +220,7 @@ const LeaveRequests = ({requestStatuses}) => {
             </div>
             <div className={'leaves-container app-scroll'}>
                 {loading && <Loader/>}
-                {leaves &&
+                {!loading && leaves &&
                     <Table
                         style={{width: '100%'}}
                         data={leaves}

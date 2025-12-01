@@ -4,6 +4,8 @@ import { useSearchParams, useLocation, useBlocker } from 'react-router-dom';
 import ConfirmPrompt from '../components/ConfirmPrompt';
 import InWorks from '../components/InWorks';
 import Modal from "../components/Modal";
+import LeaveDetails from '../components/Leaves/Details';
+import {LeaveRequestForm} from '../components/Leaves/Index';
 import PostDetails from '../components/Posts/Details';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
@@ -13,7 +15,6 @@ import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {UserAssignment} from '../components/Users/Edit';
-import {LeaveRequestForm} from '../components/Leaves/Index';
 
 const ANIMATION_DURATION = 300;
 
@@ -94,6 +95,11 @@ const MODALS = {
         urlParam: 'new',
         urlParamValue: 'leave',
         component: (modal) => <LeaveRequestForm modal={modal.id}/>
+    },
+    leaveDetails: {
+        urlParam: 'leave',
+        component: (modal) => <LeaveDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog'
     },
     postDetails: {
         urlParam: 'post',

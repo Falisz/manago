@@ -35,7 +35,7 @@
     flex-direction: column;
     gap: 10px;
     padding: 15px;
-    flex: 1 0 20%;
+    flex: 0 0 20%;
     background: var(--background-gradient);
     border-radius: var(--def-border-radius);
 }
@@ -44,8 +44,13 @@
     box-shadow: var(--weak-shade);
     background: var(--seethrough-background-2);
 }
+.index-leave-item-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
 .index-leave-item h2 {
-    margin: 0;
+    margin: 0 auto 0 0;
     font-size: 1.7rem;
     font-weight: 400;
 }
