@@ -122,7 +122,7 @@ const TableField = ({field, data, selectionMode}) => {
 
     const { openModal, openDialog } = useNav();
 
-    const { name, type, display, style } = field;
+    const { name, type, display, style, onClick } = field;
 
     if ((display !== undefined && !display) || type === 'description')
         return null;
@@ -227,6 +227,7 @@ const TableField = ({field, data, selectionMode}) => {
             key={name}
             className={`app-table-row-cell ${name}`}
             style={style}
+            onClick={onClick ? () => onClick(data) : null}
         >
             {content}
         </div>

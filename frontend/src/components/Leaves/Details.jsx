@@ -2,14 +2,21 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import {useLeaves} from '../../hooks/useResource';
+import {useLeaves, useRequestStatuses} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 
 const LeaveDetails = ({ id }) => {
-    const { leave, loading, fetchLeave, deleteLeave } = useLeaves();
-    const { refreshData, refreshTriggers } = useApp();
+    const { refreshData, refreshTriggers, user } = useApp();
     const { openModal, openDialog, closeTopModal } = useNav();
+    const { leave, loading, fetchLeave, deleteLeave } = useLeaves();
+    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
+
+    console.log(user);
+
+    useEffect(() => {
+        fetchRequestStatuses()
+    }, [fetchRequestStatuses]);
 
     useEffect(() => {
         const reload = refreshTriggers?.leave?.data === parseInt(id);
@@ -83,22 +90,18 @@ const LeaveDetails = ({ id }) => {
             fields: {
                 0: {
                     label: 'Status',
-                    dataType: 'item',
                     dataField: 'status',
-                    item: {
-                        idField: 'id',
-                        dataField: 'name'
-                    }
+                    format: () => requestStatuses?.find(status => status.id === leave?.status)?.name
                 }
             }
         }
-    }), [openDialog]);
+    }), [openDialog, requestStatuses, leave?.status]);
 
     if (loading)
         return <Loader />;
 
     if (!leave)
-        return <h1>Role not found!</h1>;
+        return <h1>Leave not found!</h1>;
 
     return <Details header={header} sections={sections} data={leave} />;
 };

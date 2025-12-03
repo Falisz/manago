@@ -51,9 +51,13 @@ const LeaveItem = ({leave, requestStatuses}) => {
     const { id, type, color, start_date, end_date, days, user_note, approver, approver_note, status } = leave;
 
     return (
-        <div className={'index-leave-item'} onClick={()=>openDialog({content: 'leaveDetails', contentId: id})}>
+        <div className={'index-leave-item'}>
             <div className={'index-leave-item-header'}>
-                <h2 style={{color}}>{type || 'Leave'}</h2>
+                <h2
+                    className={'app-clickable'}
+                    style={{color}}
+                    onClick={()=>openDialog({content: 'leaveDetails', contentId: id})}
+                >{type || 'Leave'}</h2>
                 {(status === 0 || status === 1) && 
                     <Button icon={'delete'} transparent title={'Discard'} onClick={handleDiscard}/>}
                 {status === 2 && 
@@ -162,7 +166,8 @@ const YourLeaves = ({requestStatuses}) => {
             </div>
             <div className={'leaves-container app-scroll'}>
                 {loading && <Loader/>}
-                {leaves?.map(leave => <LeaveItem key={leave.id} leave={leave} requestStatuses={requestStatuses}/>)}
+                {!loading && leaves?.map(leave =>
+                    <LeaveItem key={leave.id} leave={leave} requestStatuses={requestStatuses}/>)}
             </div>
         </div>
     );
@@ -172,6 +177,7 @@ const YourLeaves = ({requestStatuses}) => {
 const LeaveRequests = ({requestStatuses}) => {
 
     const { user } = useApp();
+    const { openDialog } = useNav();
     const { users, fetchUsers } = useUsers();
     const { leaves, loading, fetchLeaves } = useLeaves();
 
@@ -186,15 +192,17 @@ const LeaveRequests = ({requestStatuses}) => {
 
     const fields = useMemo(() => ({
         0: {
+            label: 'Leave',
+            name: 'type',
+            type: 'string',
+            style: {cursor: 'pointer'},
+            onClick: (data) => openDialog({content: 'leaveDetails', contentId: data.id})
+        },
+        1: {
             label: 'User',
             name: 'user',
             type: 'item',
             openModal: 'userDetails'
-        },
-        1: {
-            label: 'Leave Type',
-            name: 'type',
-            type: 'string'
         },
         2: {
             label: 'From',
@@ -211,7 +219,7 @@ const LeaveRequests = ({requestStatuses}) => {
             name: 'status',
             value: (data) => requestStatuses?.find(s => s.id === data.status)?.name
         }
-    }), [requestStatuses]);
+    }), [requestStatuses, openDialog]);
 
     return (
         <div className='leave-page-section seethrough'>
