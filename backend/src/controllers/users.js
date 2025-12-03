@@ -16,15 +16,17 @@ import {getProjectUsers} from "./projects.js";
  * @param {string} group - optional - Kind of group users to be fetched - currently available: employees, managers
  * @param {boolean} roles - optional - Should Roles be added to the output User
  * @param {boolean} managers - optional - Should Managers be added to the output User
+ * @param all_managers
  * @param permissions
  * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
+ * @param all_managed_users
  * @param {boolean} removed - optional - default false - Should be removed Users included
  * @param {boolean} include_ppi - optional - Should PPI data be included
  * @param {boolean} include_configs - optional - Should User configurations be included
  * @returns {Promise<Object|Object[]|null>} User, array of Users, or null
  */
-export async function getUser({id, group, roles=true, managers=true, permissions=false,
-                                  managed_users=true, removed=false, include_ppi=false,
+export async function getUser({id, group, roles=true, managers=true, all_managers=false, permissions=false,
+                                  managed_users=true, all_managed_users=false, removed=false, include_ppi=false,
                                   include_configs=false} = {}) {
 
     let exclude = ['password', 'removed'];
@@ -95,11 +97,11 @@ export async function getUser({id, group, roles=true, managers=true, permissions
             if (permissions)
                 user.permissions = await fetchPermissions(user);
 
-            if (managers)
-                user.managers = await getUserManagers({user: user.id});
+            if (managers || all_managers)
+                user.managers = await getUserManagers({user: user.id, include_all_managers: all_managers});
 
-            if (managed_users)
-                user.managed_users = await getUserManagers({manager: user.id});
+            if (managed_users || all_managed_users)
+                user.managed_users = await getUserManagers({manager: user.id, include_all_users: all_managed_users});
             
             return user;
         }));
@@ -121,11 +123,11 @@ export async function getUser({id, group, roles=true, managers=true, permissions
     if (permissions)
         user.permissions = await fetchPermissions(user);
 
-    if (managers)
-        user.managers = await getUserManagers({user: id});
+    if (managers || all_managers)
+        user.managers = await getUserManagers({user: user.id, include_all_managers: all_managers});
 
-    if (managed_users)
-        user.managed_users = await getUserManagers({manager: id});
+    if (managed_users || all_managed_users)
+        user.managed_users = await getUserManagers({manager: user.id, include_all_users: all_managed_users});
 
     return user;
 }

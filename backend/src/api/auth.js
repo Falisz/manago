@@ -22,7 +22,7 @@ const authHandler = async (req, res) => {
             id: req.session.user,
             roles: false,
             managers: false,
-            managed_users: false,
+            all_managed_users: true,
             include_configs: true,
             permissions: true
         });

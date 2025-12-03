@@ -783,8 +783,6 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
     if (isNumberOrNumberArray(id)) {
         const leave = await Leave.findOne({where: {id}, include});
 
-        console.log(leave);
-
         if (!leave)
             return null;
 
