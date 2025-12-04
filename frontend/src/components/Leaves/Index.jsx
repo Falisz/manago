@@ -80,10 +80,16 @@ const YourLeaves = () => {
         <div className={'your-leaves-section  seethrough'}>
             <div className={'your-leaves-section-header'}>
                 <h1>Your Leaves</h1>
-                <Button
-                    label={'Request new Leave'}
-                    onClick={() => openDialog({content: 'leaveNew'})}
-                />
+                <div className={'header-buttons'}>
+                    <Button
+                        label={'Request new Leave'}
+                        onClick={() => openDialog({content: 'leaveNew'})}
+                    />
+                    <Button
+                        label={'Open Leave Planner'}
+                        onClick={() => openDialog({content: 'leavePlanner'})}
+                    />
+                </div>
             </div>
             <div className={'leaves-container app-scroll'}>
                 {loading && <Loader/>}
@@ -173,7 +179,10 @@ const OthersLeaves = ({requests}) => {
 
     return (
         <Table
-            header={requests ? {title: 'Leave Requests'} : {title: 'Users Leaves'}}
+            header={requests ?
+                {title: 'Leave Requests'} :
+                {title: 'Users Leaves', itemName: 'Leave', newItemModal: 'userLeaveNew'}
+            }
             className={requests ? 'leave-requests-table' : 'leave-reportees-table'}
             data={leaves?.filter(leave =>
                 requests ? [1, 4].includes(leave.status) : [2, 3, 5].includes(leave.status))}

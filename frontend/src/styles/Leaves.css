@@ -29,6 +29,12 @@
     font-weight: 300;
     font-family: 'Roboto Condensed', sans-serif;
 }
+.header-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-left: auto;
+}
 .leaves-container {
     display: flex;
     flex-wrap: nowrap;

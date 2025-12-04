@@ -842,32 +842,32 @@ const leaveTypes = [
 const leaves = [
     {
         type: 1, // AL
-        start_date: '2025-12-06',
-        end_date: '2025-12-08',
+        start_date: '2025-12-08',
+        end_date: '2025-12-10',
         days: 3,
-        status: 1, // Approved
+        status: 1, // Pending
         user: 100013, // Employee One
-        approver: 100007, // Leader1
+        approver: 100004, // Manager1
         user_note: 'Taking a short vacation',
         approver_note: 'Approved for rest and relaxation'
     },
     {
         type: 3, // SL
         start_date: '2025-12-01',
-        end_date: '2025-10-06',
-        days: 6,
-        status: 1, // Approved
+        end_date: '2025-12-05',
+        days: 5,
+        status: 2, // Approved
         user: 100014, // Employee Two
-        approver: 100007, // Leader1
+        approver: 100004, // Manager1
         user_note: 'Medical leave for recovery',
         approver_note: 'Approved, wishing a speedy recovery'
     },
     {
         type: 2, // LOD
-        start_date: '2025-12-09',
-        end_date: '2025-12-09',
+        start_date: '2025-12-01',
+        end_date: '2025-12-01',
         days: 1,
-        status: 0, // Pending
+        status: 2, // Approved
         user: 100015, // Employee Three
         approver: null,
         user_note: 'Need a day off for personal reasons',
