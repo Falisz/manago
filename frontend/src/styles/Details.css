@@ -9,11 +9,29 @@
     gap: 10px;
     flex-direction: row;
     align-items: baseline;
+    border-bottom: 1px solid var(--text-color-3);
+    padding-bottom: 5px;
 }
 .details-header .details-title-prefix,
 .details-header .details-title-suffix {
-    cursor: help;
     font-size: 0.5em;
+}
+.details-header .details-title-prefix[title],
+.details-header .details-title-suffix[title] {
+    cursor: help;
+}
+.details-subtitle {
+    font-size: 0.9rem;
+    margin-top: -5px;
+    font-style: italic;
+}
+.details-subtitle[title] {
+    cursor: help;
+}
+.details-header .header-buttons {
+    display: flex;
+    gap: 5px;
+    margin-left: auto;
 }
 .details-header .app-button {
     color: var(--text-color-3);
