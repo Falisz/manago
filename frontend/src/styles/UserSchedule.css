@@ -126,8 +126,8 @@
 }
 
 /* Shift and Leave items */
-.shift-item,
-.leave-item {
+.user-schedule-shift-item,
+.user-schedule-leave-item {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -141,33 +141,33 @@
     color: var(--text-color-3);
     white-space: nowrap;
 }
-.shift-item+.shift-item {
+.user-schedule-shift-item+.user-schedule-shift-item {
     margin-top: 5px;
 }
-.app.fluent .shift-item,
-.app.fluent .leave-item {
+.app.fluent .user-schedule-shift-item,
+.app.fluent .user-schedule-leave-item {
     border-radius: var(--big-border-radius);
     font-size: 0.8rem;
 }
-.shift-item .subtitle,
-.leave-item .subtitle {
+.user-schedule-shift-item .subtitle,
+.user-schedule-leave-item .subtitle {
     font-style: italic;
     font-size: 0.8rem;
     font-weight: 600;
 }
-.app.fluent .shift-item .subtitle,
-.app.fluent .leave-item .subtitle {
+.app.fluent .user-schedule-shift-item .subtitle,
+.app.fluent .user-schedule-leave-item .subtitle {
     font-size: 0.7rem;
 }
 
-.shift-item .time-range {
+.user-schedule-shift-item .time-range {
     font-size: 1rem;
     line-height: 1rem;
     font-weight: 400;
     font-family: 'Roboto Condensed', sans-serif;
     letter-spacing: 0;
 }
-.shift-item .time-range input {
+.user-schedule-shift-item .time-range input {
     -webkit-appearance: none;
     appearance: none;
     border: none;
@@ -194,6 +194,6 @@
 [type="time"]::-webkit-calendar-picker-indicator {
     display: none;
 }
-.app-schedule-table .shift-item .app-combo-box .icon {
+.app-schedule-table .user-schedule-shift-item .app-combo-box .icon {
     display: none;
 }

@@ -9,12 +9,26 @@ import '../../styles/UserSchedule.css';
 import InWorks from "../InWorks";
 
 
-const LeaveItem = ({ days, type, color }) => (
-    <div className={'leave-item'} style={{background: color+'90'}}>
-        <span>{days || 1}-day{days > 1 ? 's' : ''} Leave</span>
-        <span className={'subtitle'}>{type}</span>
-    </div>
-);
+const LeaveItem = ({ leave }) => {
+
+    const { openDialog } = useNav();
+
+    if (!leave)
+        return null;
+
+    const { id, days, type, color, status } = leave;
+
+    return (
+        <div
+            className={'user-schedule-leave-item app-clickable'}
+            style={{background: color+'90', opacity: status !== 1 ? 1 : .75}}
+            onClick={() => openDialog({content: 'leaveDetails', contentId: id, closeButton: false})}
+        >
+            <span>{days || 1}-day{days > 1 ? 's' : ''} Leave {status === 1 ? '(pending approval)' : ''}</span>
+            <span className={'subtitle'}>{type}</span>
+        </div>
+    );
+}
 
 const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onClick,
                        selectShift, updateShift, jobPosts }) => {
@@ -44,14 +58,16 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
     }
 
     return <div
-        className={'shift-item' + (shift.selected ? ' selected' : '') + (!editMode ? ' app-clickable' : '')}
+        className={'user-schedule-shift-item' + (shift.selected ? ' selected' : '') + (!editMode ? ' app-clickable' : '')}
         style={{background: (shift.job_post ? shift.job_post.color+'90' : 'var(--seethrough-background)'), position: 'relative'}}
         draggable={editMode}
         onDragStart={editMode ? (e) => onDragStart(e, shift) : undefined}
         onDragEnd={editMode ? (e) => onDragEnd(e, shift) : undefined}
         onContextMenu={editMode ? (e) => onContextMenu(e, shift) : undefined}
-        onClick={editMode ? (e) => onClick(e, shift) : () => openDialog({content: 'shiftDetails', contentId: shift.id})}
-    >
+        onClick={editMode ?
+            (e) => onClick(e, shift) :
+            () => openDialog({content: 'shiftDetails', contentId: shift.id, closeButton: false})}
+        >
         <span className={'time-range'}>{editMode ?
             <><input
                 value={shift.start_time.slice(0, 5)}
@@ -341,7 +357,8 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                     {dates?.map((date, dateIndex) => {
                         const dateStr = formatDate(date);
 
-                        const leave = user.leaves?.find((l) => date >= new Date(l.start_date) && date <= new Date(l.end_date));
+                        const leave = user.leaves?.find((l) =>
+                            date >= new Date(l.start_date) && date <= new Date(l.end_date) && [1, 2, 4].includes(l.status));
 
                         const isLeaveStart = leave ? sameDay(date, new Date(leave.start_date)) : false;
 
@@ -387,9 +404,8 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                             >
                                 {isLeaveStart ?
                                     <LeaveItem
-                                        days={leave.days}
-                                        type={leave.type}
-                                        color={leave.color}
+                                        key={leave.id}
+                                        leave={leave}
                                     /> : shifts.length > 0 ? shifts.map((shift, index) =>
                                         <ShiftItem
                                             key={index}
