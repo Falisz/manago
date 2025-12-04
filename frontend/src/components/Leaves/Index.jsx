@@ -2,48 +2,36 @@
 import React, {useCallback, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import {useLeaves, useRequestStatuses, useLeaveTypes, useUsers} from '../../hooks/useResource';
-import Button from "../Button";
-import EditForm from "../EditForm";
-import Loader from "../Loader";
-import Table from "../Table";
+import {useLeaves, useRequestStatuses} from '../../hooks/useResource';
+import Button from '../Button';
+import Loader from '../Loader';
+import Table from '../Table';
 import '../../styles/Leaves.css';
 
-// TODO: Leave Item component
 const LeaveItem = ({leave, requestStatuses}) => {
 
-    const { refreshData } = useApp();
-    const { openModal, openDialog, closeTopModal } = useNav();
+    const { openPopUp, openDialog, closeTopModal } = useNav();
     const { saveLeave, deleteLeave } = useLeaves();
 
-    const handleDiscard = useCallback(() => {
-        openModal({
-            content: 'confirm',
-            type: 'pop-up',
-            message: 'Are you sure you want to delete this planned Leave?',
-            onConfirm: async () => {
-                const success = await deleteLeave({id: leave.id});
-                if (!success) return;
-                refreshData('leaves', true);
-                closeTopModal();
-            },
-        });
-
-    }, [openModal, deleteLeave, refreshData, closeTopModal, leave.id]);
-
     const handleCancel = useCallback(() => {
-        openModal({
+
+        const discard = leave.status === 0 || leave.status === 1;
+        const message = discard ?
+            'Are you sure you want to delete this Planned Leave?' :
+            'Are you sure you want to request for cancellation of this Leave?';
+
+        openPopUp({
             content: 'confirm',
-            type: 'pop-up',
-            message: 'Are you sure you want to request for cancelation?',
+            message,
             onConfirm: async () => {
-                const success = await saveLeave({id: leave.id, data: {status: 4}});
+                const success = discard ?
+                    await deleteLeave({id: leave.id}) :
+                    await saveLeave({id: leave.id, data: {status: 4}});
                 if (!success) return;
-                refreshData('leaves', true);
                 closeTopModal();
             },
         });
-    }, [openModal, saveLeave, refreshData, closeTopModal, leave.id]);
+    }, [openPopUp, saveLeave, deleteLeave, closeTopModal, leave.id, leave.status]);
 
     if (!leave)
         return null;
@@ -56,93 +44,22 @@ const LeaveItem = ({leave, requestStatuses}) => {
                 <h2
                     className={'app-clickable'}
                     style={{color}}
-                    onClick={()=>openDialog({content: 'leaveDetails', contentId: id})}
+                    onClick={()=>openDialog({content: 'leaveDetails', contentId: id, closeButton: false})}
                 >{type || 'Leave'}</h2>
                 {(status === 0 || status === 1) && 
-                    <Button icon={'delete'} transparent title={'Discard'} onClick={handleDiscard}/>}
+                    <Button icon={'remove_circle'} transparent title={'Discard'} onClick={handleCancel}/>}
                 {status === 2 && 
-                    <Button icon={'cancel'} transparent title={'Request Cancelation'} onClick={handleCancel}/>}
+                    <Button icon={'cancel'} transparent title={'Request Cancellation'} onClick={handleCancel}/>}
             </div>
             <p>{start_date} - {end_date} ({days} day{days !== 1 && 's'})</p>
             {user_note && <p>{user_note}</p>}
-            <p>Status: {requestStatuses?.find(s => s.id === status)?.name || 'Unknown'}</p>
+            <p><i>{requestStatuses?.find(s => s.id === status)?.name || 'Unknown status'}</i></p>
             {approver && <p>Approved by: {approver.first_name} {approver.last_name}</p>}
             {approver_note && <p>{approver_note}</p>}
         </div>
     );
 };
 
-
-export const LeaveRequestForm = ({modal}) => {
-
-    const { user } = useApp();
-    const { leaveTypes, fetchLeaveTypes } = useLeaveTypes();
-    const { saveLeave } = useLeaves();
-
-    React.useEffect(() => {
-        fetchLeaveTypes().then();
-    }, [fetchLeaveTypes]);
-
-    const sections = useMemo(() => ({
-        0: {
-            fields: {
-                type: {
-                    type: 'combobox',
-                    label: 'Leave Type',
-                    searchable: false,
-                    required: true,
-                    options: leaveTypes?.map(type => ({id: type.id, name: type.name})) || []
-                }
-            }
-        },
-        1: {
-            fields: {
-                start_date: {
-                    type: 'date',
-                    label: 'Start Date',
-                    required: true,
-                    max: (data) => data.end_date,
-                },
-                end_date: {
-                    type: 'date',
-                    label: 'End Date',
-                    required: true,
-                    min: (data) => data.start_date,
-                },
-                days: {
-                    type: 'content',
-                    label: 'Days',
-                    content: (data) => {
-                        let days = 0;
-
-                        if (data.start_date && data.end_date) {
-                            const start = new Date(data.start_date);
-                            const end = new Date(data.end_date);
-
-                            if (!isNaN(start) && !isNaN(end)) {
-                                const diffInMs = end - start;
-                                days = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
-                            }
-                        }
-                        return <p>{days} days</p>;
-                    }
-                }
-            }
-        }
-    }), [leaveTypes]);
-
-    const presetData = useMemo(() => ({status: 0, user: user.id}), [user]);
-
-    return (
-        <EditForm
-            header={'Leave Request'}
-            sections={sections}
-            onSubmit={async (data) => await saveLeave({data})}
-            modal={modal}
-            presetData={presetData}
-        />
-    );
-};
 
 const YourLeaves = ({requestStatuses}) => {
     const { user, refreshTriggers } = useApp();
@@ -153,7 +70,7 @@ const YourLeaves = ({requestStatuses}) => {
         const refresh = refreshTriggers?.leaves || false;
         if (refresh) delete refreshTriggers.leaves;
         if (refresh || !leaves) fetchLeaves({ user: user.id });
-    })
+    });
 
     return (
         <div className={'leave-page-section seethrough'}>
@@ -173,22 +90,31 @@ const YourLeaves = ({requestStatuses}) => {
     );
 };
 
-
 const LeaveRequests = ({requestStatuses}) => {
 
-    const { user } = useApp();
-    const { openDialog } = useNav();
-    const { users, fetchUsers } = useUsers();
-    const { leaves, loading, fetchLeaves } = useLeaves();
+    const { user, refreshTriggers } = useApp();
+    const { openDialog, openPopUp, closeTopModal } = useNav();
+    const { leaves, loading, fetchLeaves, saveLeave } = useLeaves();
 
     React.useEffect(() => {
-        fetchUsers({ user_scope: 'manager', user_scope_id: user.id }).then();
-    }, [fetchUsers, user.id]);
+        if (!user.id) return;
+        const refresh = refreshTriggers?.leaves || refreshTriggers?.leave || false;
+        if (refresh) delete refreshTriggers.leaves;
+        if (refresh) delete refreshTriggers.leave;
+        if (refresh || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();
+    }, [fetchLeaves, leaves, refreshTriggers, user.id]);
 
-    React.useEffect(() => {
-        if (!users) return;
-        fetchLeaves({ user: users.map(u => u.id) }).then();
-    }, [fetchLeaves, users]);
+    const handleApproval = useCallback((id, status, action = 'accept') => {
+        openPopUp({
+            content: 'confirm',
+            message: `Are you sure you want to ${action} this Leave request?`,
+            onConfirm: async () => {
+                const success = await saveLeave({id, data: {status}});
+                if (!success) return;
+                closeTopModal();
+            },
+        });
+    }, [openPopUp, saveLeave, closeTopModal]);
 
     const fields = useMemo(() => ({
         0: {
@@ -196,7 +122,7 @@ const LeaveRequests = ({requestStatuses}) => {
             name: 'type',
             type: 'string',
             style: {cursor: 'pointer'},
-            onClick: (data) => openDialog({content: 'leaveDetails', contentId: data.id})
+            onClick: (data) => openDialog({content: 'leaveDetails', contentId: data.id, closeButton: false})
         },
         1: {
             label: 'User',
@@ -218,8 +144,24 @@ const LeaveRequests = ({requestStatuses}) => {
             label: 'Status',
             name: 'status',
             value: (data) => requestStatuses?.find(s => s.id === data.status)?.name
+        },
+        5: {
+            label: 'Action',
+            value: (data) => {
+                if (data.status === 1 || data.status === 4)
+                    return <div style={{display: 'flex', gap: '5px'}}>
+                        <Button icon={'check_circle'} transparent label={'Approve'} onClick={
+                            () => handleApproval(data.id, data.status === 1 ? 2 : data.status === 4 ? 5 : null, 'accept')}
+                        />
+                        <Button icon={'cancel'} transparent label={'Reject'} onClick={
+                            () => handleApproval(data.id, data.status === 1 ? 3 : data.status === 4 ? 2 : null, 'reject')}
+                        />
+                    </div>
+                else
+                    return null;
+            }
         }
-    }), [requestStatuses, openDialog]);
+    }), [requestStatuses, handleApproval, openDialog]);
 
     return (
         <div className='leave-page-section seethrough'>
@@ -227,13 +169,13 @@ const LeaveRequests = ({requestStatuses}) => {
                 <h1>Leave Requests</h1>
             </div>
             <div className={'leaves-container app-scroll'}>
-                {loading && <Loader/>}
-                {!loading && leaves &&
+                {leaves &&
                     <Table
                         style={{width: '100%'}}
-                        data={leaves}
+                        data={leaves.filter(leave => [1, 4].includes(leave.status))}
                         fields={fields}
                         dataPlaceholder={'No leave requests found.'}
+                        loading={loading}
                     />
                 }
             </div>

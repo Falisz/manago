@@ -27,7 +27,9 @@
 .leaves-container {
     display: flex;
     flex-wrap: nowrap;
+    align-items: center;
     gap: 15px;
+    min-height: 130px;
     overflow: auto hidden;
 }
 .index-leave-item {
