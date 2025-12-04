@@ -3,7 +3,6 @@ Following roadmap and tasks to-do as of 2025-10-02:
 ### Work Planner (till 14-12-25)
 - RequestTypes, LeaveBalance, Holidays, JobPosts and JobLocations backend implementation.
 - Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
-- Dispo Planner - yet separate editor.
 - Dashboard widgets for the your and your team schedules. And pending leave approvals. Also additional dashboard widget for "your oncoming leaves".
 ### Users (till 14-12-25)
 - Users have contractual data added - time joined company, contract types, start and end-dates.
@@ -27,6 +26,8 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
 # MVP ENDS HERE
 ### Work Planner
+- Dispo Planner - yet separate editor.
+- Dispositions and DispoPresets.
 - App Settings with configs like enabling job locations and job posts.
 - Shift Templates - for example, a shift template for a full-time employee.
 - Schedule exporting and importing to Excel
