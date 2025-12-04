@@ -1,21 +1,50 @@
 // FRONTEND/components/Details.jsx
 import React from 'react';
+import useNav from '../contexts/NavContext';
 import Button from './Button';
 import Icon from './Icon';
+import Loader from './Loader';
 import '../styles/Details.css';
-import useNav from "../contexts/NavContext";
 
-const Header = ({ header, data, modal }) => {
+const Header = ({ header, data, modal, loading, placeholder = '404 - Not Found' }) => {
 
     const { closeModal } = useNav();
     const { className, style, prefix, title, subtitle, suffix, buttons } = header;
 
-    const getData = (data, field, placeholder) => {
+    const getData = (data, field, placeholder = '') => {
+        if (!data)
+            return placeholder;
         if (Array.isArray(field))
             return field.map(f => data[f] ?? '').join(' ');
         else
             return data[field] ?? placeholder;
     }
+
+    if (loading)
+        return (
+            <div className={'details-header' + (className ? ' ' + className : '')} style={style}>
+                <div className={'details-title'} title={placeholder}>...</div>
+                {modal &&
+                    <div className={'header-buttons'}>
+                        <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>
+                    </div>
+                }
+            </div>
+        )
+
+    if (!data)
+        return (
+            <div className={'details-header' + (className ? ' ' + className : '')} style={style}>
+                <div className={'details-title'} title={placeholder}>
+                    {placeholder}
+                </div>
+                {modal &&
+                    <div className={'header-buttons'}>
+                        <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>
+                    </div>
+                }
+            </div>
+        )
 
     return (
         <>
@@ -276,15 +305,16 @@ const Section = ({section, data}) => {
     );
 }
 
-const Details = ({className, style, header, sections, data, modal}) => {
-    if (!data || !sections)
-        return null;
-
+const Details = ({className, style, header, sections, data, modal, loading, placeholder}) => {
     return (
-        <div className={'details-page' + (className ? ' ' + className : '')}  style={style}>
-            {header && <Header header={header} data={data} modal={modal}/>}
+        <div
+            className={'details-page' + (className ? ' ' + className : '')}
+            style={style}
+        >
+            {header && <Header header={header} data={data} modal={modal} placeholder={placeholder} loading={loading}/>}
             <div className={'details-content app-scroll'}>
-                {Object.values(sections).map((section, index) =>
+                {loading && <Loader/>}
+                {!loading && data && sections && Object.values(sections).map((section, index) =>
                     section && <Section key={index} section={section} data={data}/>)}
             </div>
         </div>

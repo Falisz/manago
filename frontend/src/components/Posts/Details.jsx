@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loader from '../Loader';
 
-const PostDetails = ({ postId }) => {
+const PostDetails = ({ id }) => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -11,7 +11,7 @@ const PostDetails = ({ postId }) => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const res = await axios.get(`/posts/${postId}`, { withCredentials: true });
+                const res = await axios.get(`/posts/${id}`, { withCredentials: true });
                 setPost(res.data);
                 setLoading(false);
             } catch (err) {
@@ -22,7 +22,7 @@ const PostDetails = ({ postId }) => {
         };
 
         fetchPost().then();
-    }, [postId]);
+    }, [id]);
 
     if (loading) {
         return (

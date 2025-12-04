@@ -4,23 +4,17 @@ import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useUsers} from '../../hooks/useResource';
 import Details from '../Details';
-import Loader from '../Loader';
 
-const UserDetails = ({ userId, modal }) => {
+const UserDetails = ({ id, modal }) => {
     const { user, loading, fetchUser, deleteUser } = useUsers();
     const { refreshData, refreshTriggers } = useApp();
     const { openModal, openDialog, openPopUp, closeTopModal } = useNav();
 
     useEffect(() => {
-        const refresh = refreshTriggers.user?.data === userId;
-
-        if (refresh)
-            delete refreshTriggers.user;
-
-        if (userId && (!user || refresh))
-            fetchUser({id: userId, reload: refresh}).then();
-
-    }, [fetchUser, user, userId, refreshTriggers.user]);
+        const reload = refreshTriggers.user?.data === parseInt(id);
+        if (reload) delete refreshTriggers.user;
+        if (id && (!user || reload)) fetchUser({id, reload}).then();
+    }, [fetchUser, user, id, refreshTriggers.user]);
 
     const handleDelete = useCallback(() => {
         const deletePopUp = {
@@ -28,14 +22,14 @@ const UserDetails = ({ userId, modal }) => {
             type: 'pop-up',
             message: 'Are you sure you want to delete this user? This action cannot be undone.',
             onConfirm: async () => {
-                const success = await deleteUser({id: userId});
+                const success = await deleteUser({id});
                 if (!success) return;
                 refreshData('users', true);
                 closeTopModal();
             },
         }
         openPopUp(deletePopUp);
-    }, [userId, openPopUp, deleteUser, refreshData, closeTopModal]);
+    }, [id, openPopUp, deleteUser, refreshData, closeTopModal]);
 
     const header = useMemo(() => ({
         title: {
@@ -51,7 +45,7 @@ const UserDetails = ({ userId, modal }) => {
                 className: 'edit',
                 icon: 'edit',
                 label: 'Edit',
-                onClick: () => openModal({content: 'userEdit', contentId: userId})
+                onClick: () => openModal({content: 'userEdit', contentId: id})
             },
             delete: {
                 className: 'delete',
@@ -60,7 +54,7 @@ const UserDetails = ({ userId, modal }) => {
                 onClick: handleDelete
             }
         }
-    }), [openModal, userId, handleDelete]);
+    }), [openModal, id, handleDelete]);
 
     const sections = useMemo(() => ({
         0: {
@@ -169,13 +163,14 @@ const UserDetails = ({ userId, modal }) => {
         }
     }), [user, openDialog]);
 
-    if (loading) 
-        return <Loader />;
-
-    if (!user)
-        return <h1>User not found!</h1>;
-
-    return <Details header={header} sections={sections} data={user} modal={modal} />;
+    return <Details
+        header={header}
+        sections={sections}
+        data={user}
+        modal={modal}
+        loading={loading}
+        placeholder={'User not found!'}
+    />;
 };
 
 export default UserDetails;

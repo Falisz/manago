@@ -416,9 +416,10 @@ const EditForm = ({
 
         if (success) {
             setUnsavedChanges(false);
+
             if (modal) {
                 setDiscardWarning(modal, false);
-                (!keepOpen || !keepOpenOnSubmit) && closeModal(modal);
+                (!keepOpen || !keepOpenOnSubmit) && setTimeout(() => closeModal(modal), 500);
             }
         }
     };

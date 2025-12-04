@@ -1,16 +1,16 @@
 // BACKEND/controller/workPlanner.js
-import { 
-    Shift, 
-    JobPost, 
-    Schedule, 
-    Holiday, 
-    LeaveType, 
-    Leave, 
-    RequestStatus, 
-    HolidayWorking,  
+import {
+    Shift,
+    JobPost,
+    Schedule,
+    Holiday,
+    LeaveType,
+    Leave,
+    RequestStatus,
+    HolidayWorking,
     WeekendWorking,
     Disposition,
-    DispositionPreset
+    DispositionPreset, JobLocation
 } from '../models/workPlanner.js';
 import { User } from '../models/users.js';
 import {getUser, getUsersByScope} from './users.js';
@@ -369,7 +369,7 @@ export async function getShift({id, user, job_post, schedule, date, from, to} = 
     else if (to)
         where.date = {[Op.lte]: to};
 
-    const include = [{ model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, Schedule ];
+    const include = [{ model: User, attributes: ['id', 'first_name', 'last_name']}, JobPost, JobLocation, Schedule ];
 
     const shifts = await Shift.findAll({ where, include });
 
@@ -382,10 +382,12 @@ export async function getShift({id, user, job_post, schedule, date, from, to} = 
         rawData.user = shift['User'].toJSON();
         rawData.job_post = shift['JobPost']?.toJSON();
         rawData.schedule = shift['Schedule']?.toJSON();
+        rawData.job_location = shift['JobLocation']?.toJSON();
 
         delete rawData['User'];
         delete rawData['JobPost'];
         delete rawData['Schedule'];
+        delete rawData['JobLocation'];
 
         return rawData;
     }));
@@ -570,10 +572,15 @@ export async function deleteShift(id) {
  * @returns {Promise<Object|Object[]|null>} Single Holiday, array of Holidays, or null
  */
 export async function getHoliday({id, date} = {}) {
-    if (!id)         
-        return await Holiday.findAll({ where: { date } }) || {};
+    if (id)
+        return await Holiday.findByPk(id) || null;
 
-    return await Holiday.findByPk(id) || null;
+    const where = {};
+
+    if (date)
+        where.date = date;
+
+    return await Holiday.findAll({where}) || {};
 }
 
 /**

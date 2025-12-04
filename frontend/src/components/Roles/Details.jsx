@@ -4,41 +4,37 @@ import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useRoles} from '../../hooks/useResource';
 import Details from '../Details';
-import Loader from '../Loader';
 
-const RoleDetails = ({ roleId, modal }) => {
+const RoleDetails = ({ id, modal }) => {
     const { role, loading, fetchRole, deleteRole } = useRoles();
     const { refreshData, refreshTriggers } = useApp();
-    const { openDialog, openModal, closeTopModal } = useNav();
+    const { openDialog, openModal, openPopUp, closeTopModal } = useNav();
 
     useEffect(() => {
-        const refresh = refreshTriggers?.role?.data === parseInt(roleId);
+        const reload = refreshTriggers?.role?.data === parseInt(id);
+        if (reload) delete refreshTriggers.role;
+        if (id && (!role || reload)) fetchRole({id, reload}).then();
+    }, [fetchRole, role, id, refreshTriggers.role]);
 
-        if (refresh)
-            delete refreshTriggers.role;
+    const handleDelete = useCallback(() => {
+        let message = 'Are you sure you want to delete this Role?'
+        const userCount = role?.users?.length;
 
-        if (roleId && (!role || refresh))
-            fetchRole({id: roleId, reload: refresh}).then();
+        if (userCount)
+            message += ` This Role is currently assigned to ${userCount} User${userCount > 1 ? 's' : ''}.`
+        message += ' This action cannot be undone.';
 
-    }, [fetchRole, role, roleId, refreshTriggers.role]);
-
-    const handleDelete = useCallback((users = 0) => {
-        let message = 'Are you sure you want to delete this role? This action cannot be undone.'
-        if (users > 0) {
-            message += ` This role is currently assigned to ${users} user${users > 1 ? 's' : ''}.`
-        }
-        openModal({
+        openPopUp({
             content: 'confirm',
-            type: 'pop-up',
             message: message,
             onConfirm: async () => {
-                const success = await deleteRole({roleId});
+                const success = await deleteRole({id});
                 if (!success) return;
                 refreshData('roles', true);
                 closeTopModal();
             },
         });
-    }, [roleId, openModal, deleteRole, refreshData, closeTopModal]);
+    }, [id, role, openPopUp, deleteRole, refreshData, closeTopModal]);
 
     const header = useMemo(() => ({
         title: {
@@ -54,7 +50,7 @@ const RoleDetails = ({ roleId, modal }) => {
                 className: 'edit',
                 icon: 'edit',
                 label: 'Edit',
-                onClick: () => openModal({content: 'roleEdit', contentId: roleId})
+                onClick: () => openModal({content: 'roleEdit', contentId: id})
             },
             delete: {
                 className: 'delete',
@@ -63,7 +59,7 @@ const RoleDetails = ({ roleId, modal }) => {
                 onClick: handleDelete
             }
         } : null
-    }), [role, openModal, roleId, handleDelete]);
+    }), [role, openModal, id, handleDelete]);
 
     const sections = useMemo(() => ({
         0: {
@@ -101,13 +97,14 @@ const RoleDetails = ({ roleId, modal }) => {
         }
     }), [openDialog]);
 
-    if (loading)
-        return <Loader />;
-
-    if (!role)
-        return <h1>Role not found!</h1>;
-
-    return <Details header={header} sections={sections} data={role} modal={modal} />;
+    return <Details
+        header={header}
+        sections={sections}
+        data={role}
+        modal={modal}
+        loading={loading}
+        placeholder={'Role not found!'}
+    />;
 };
 
 export default RoleDetails;

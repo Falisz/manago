@@ -4,23 +4,17 @@ import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useTeams} from '../../hooks/useResource';
 import Details from '../Details';
-import Loader from '../Loader';
 
-const TeamDetails = ({ teamId, modal }) => {
+const TeamDetails = ({ id, modal }) => {
     const { team, loading, fetchTeam, deleteTeam } = useTeams();
     const { refreshData, refreshTriggers } = useApp();
     const { openModal, openDialog, openPopUp, closeTopModal } = useNav();
 
     useEffect(() => {
-        const refresh = refreshTriggers?.team?.data === teamId;
-
-        if (refresh)
-            delete refreshTriggers.team;
-
-        if (teamId && (!team || refresh))
-            fetchTeam({id: teamId, reload: refresh}).then();
-
-    }, [fetchTeam, team, teamId, refreshTriggers.team]);
+        const reload = refreshTriggers?.team?.data === id;
+        if (reload) delete refreshTriggers.team;
+        if (id && (!team || reload)) fetchTeam({id, reload}).then();
+    }, [fetchTeam, team, id, refreshTriggers.team]);
 
     const handleDelete = useCallback(() => {
         let message = `Are you sure you want to delete this role? This action cannot be undone.`
@@ -41,13 +35,13 @@ const TeamDetails = ({ teamId, modal }) => {
             content: 'confirm',
             message: message,
             onConfirm: async () => {
-                const success = await deleteTeam({id: teamId});
+                const success = await deleteTeam({id});
                 if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
             },
             onConfirm2: subteamsCount > 0 ? async () => {
-                const success = await deleteTeam({id: teamId, cascade: true});
+                const success = await deleteTeam({id, cascade: true});
                 if (!success) return;
                 refreshData('teams', true);
                 closeTopModal();
@@ -55,7 +49,7 @@ const TeamDetails = ({ teamId, modal }) => {
             confirmLabel: subteamsCount > 0 ? 'Delete only this team' : 'Delete the team',
             confirmLabel2: 'Delete team and subteams',
         });
-    }, [team, teamId, openPopUp, deleteTeam, refreshData, closeTopModal]);
+    }, [team, id, openPopUp, deleteTeam, refreshData, closeTopModal]);
     
     const userStructure = useMemo(() => ({
         idField: 'id',
@@ -90,7 +84,7 @@ const TeamDetails = ({ teamId, modal }) => {
                 className: 'edit',
                 icon: 'edit',
                 label: 'Edit',
-                onClick: () => openModal({content: 'teamEdit', contentId: teamId})
+                onClick: () => openModal({content: 'teamEdit', contentId: id})
             },
             delete: {
                 className: 'delete',
@@ -99,7 +93,7 @@ const TeamDetails = ({ teamId, modal }) => {
                 onClick: handleDelete
             }
         }
-    }), [openModal, teamId, handleDelete]);
+    }), [openModal, id, handleDelete]);
 
     const sections = useMemo(() => ({
         0: {
@@ -125,7 +119,7 @@ const TeamDetails = ({ teamId, modal }) => {
                     items: teamStructure,
                     button: {
                         label: 'Add Subteam',
-                        onClick: () => openModal({content: 'subteamNew', parentId: teamId})
+                        onClick: () => openModal({content: 'subteamNew', parentId: id})
                     }
                 }
             }
@@ -159,15 +153,16 @@ const TeamDetails = ({ teamId, modal }) => {
                 }
             }
         }
-    }), [openModal, teamId, teamStructure, userStructure]);
+    }), [openModal, id, teamStructure, userStructure]);
 
-    if (loading)
-        return <Loader />;
-
-    if (!team)
-        return <h1>Team not found!</h1>;
-
-    return <Details header={header} sections={sections} data={team} modal={modal} />;
+    return <Details
+        header={header}
+        sections={sections}
+        data={team}
+        modal={modal}
+        loading={loading}
+        placeholder={'Team not found!'}
+    />;
 };
 
 export default TeamDetails;

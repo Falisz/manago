@@ -4,7 +4,16 @@ import sequelize from '../utils/database.js';
 import {AppConfig, AppModule, AppPage} from '../models/app.js';
 import {User, UserManager, Role, UserRole, Permission, RolePermission, UserPermission} from '../models/users.js';
 import {Team, TeamRole, TeamUser} from '../models/teams.js';
-import {Schedule, JobPost, Shift, Holiday, RequestStatus, LeaveType, Leave} from '../models/workPlanner.js';
+import {
+    Schedule,
+    JobPost,
+    Shift,
+    Holiday,
+    RequestStatus,
+    LeaveType,
+    Leave,
+    JobLocation
+} from '../models/workPlanner.js';
 import {Post, Channel} from '../models/posts.js';
 
 // Data to seed
@@ -721,10 +730,47 @@ const schedules = [
 ];
 
 const jobPosts = [
+    { id: 1, name: 'Support', color: '#9fdd5d' },
+    { id: 2, name: 'Leader', color: '#4dcaa4' },
+    { id: 3, name: 'Manager', color: '#9537d3' },
+    { id: 4, name: 'Training', color: '#c6a10b' },
+    { id: 5, name: 'Trainer', color: '#b85606' }
+];
+
+const jobLocations = [
     { id: 1, name: 'Office', color: '#4CAF50' },
     { id: 2, name: 'WFH', color: '#2196F3' },
     { id: 3, name: 'Client\'s Office', color: '#FF9800' },
     { id: 4, name: 'Field', color: '#F44336' }
+];
+
+const holidays = [
+    { id: 1, date: '2025-01-01', name: "New Year's Day", requestable_working: true },
+    { id: 2, date: '2025-01-06', name: 'Epiphany', requestable_working: true },
+    { id: 3, date: '2025-04-20', name: 'Easter Sunday', requestable_working: true },
+    { id: 4, date: '2025-04-21', name: 'Easter Monday', requestable_working: true },
+    { id: 5, date: '2025-05-01', name: 'Labour Day', requestable_working: true },
+    { id: 6, date: '2025-05-03', name: 'Constitution Day', requestable_working: true },
+    { id: 7, date: '2025-06-08', name: 'Pentecost Sunday', requestable_working: true },
+    { id: 8, date: '2025-06-19', name: 'Corpus Christi', requestable_working: true },
+    { id: 9, date: '2025-08-15', name: 'Assumption of Mary', requestable_working: true },
+    { id: 10, date: '2025-11-01', name: "All Saints' Day", requestable_working: true },
+    { id: 11, date: '2025-11-11', name: 'Independence Day', requestable_working: true },
+    { id: 12, date: '2025-12-25', name: 'Christmas Day', requestable_working: true },
+    { id: 13, date: '2025-12-26', name: 'Second Day of Christmas', requestable_working: true },
+    { id: 14, date: '2026-01-01', name: "New Year's Day", requestable_working: true },
+    { id: 15, date: '2026-01-06', name: 'Epiphany', requestable_working: true },
+    { id: 16, date: '2026-04-05', name: 'Easter Sunday', requestable_working: true },
+    { id: 17, date: '2026-04-06', name: 'Easter Monday', requestable_working: true },
+    { id: 18, date: '2026-05-01', name: 'Labour Day', requestable_working: true },
+    { id: 19, date: '2026-05-03', name: 'Constitution Day', requestable_working: true },
+    { id: 20, date: '2026-05-24', name: 'Pentecost Sunday', requestable_working: true },
+    { id: 21, date: '2026-06-04', name: 'Corpus Christi', requestable_working: true },
+    { id: 22, date: '2026-08-15', name: 'Assumption of Mary', requestable_working: true },
+    { id: 23, date: '2026-11-01', name: "All Saints' Day", requestable_working: true },
+    { id: 24, date: '2026-11-11', name: 'Independence Day', requestable_working: true },
+    { id: 25, date: '2026-12-25', name: 'Christmas Day', requestable_working: true },
+    { id: 26, date: '2026-12-26', name: 'Second Day of Christmas', requestable_working: true }
 ];
 
 const shifts = [
@@ -742,40 +788,35 @@ const shifts = [
         }
         return [
             { user: 100007, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 1 },
+                end_time: `17:00:00`, job_location: 1 },
             { user: 100013, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 1 },
+                end_time: `17:00:00`, job_location: 1 },
             { user: 100014, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 2 },
+                end_time: `17:00:00`, job_location: 2 },
             { user: 100015, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 3 },
+                end_time: `17:00:00`, job_location: 3 },
             { user: 100016, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 4 },
+                end_time: `17:00:00`, job_location: 4 },
             { user: 100017, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 1 },
+                end_time: `17:00:00`, job_location: 1 },
             // Washington team members
             { user: 100008, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 1 },
+                end_time: `17:00:00`, job_location: 1 },
             { user: 100018, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 2 },
+                end_time: `17:00:00`, job_location: 2 },
             { user: 100019, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 3 },
+                end_time: `17:00:00`, job_location: 3 },
             { user: 100020, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 4 },
+                end_time: `17:00:00`, job_location: 4 },
             { user: 100021, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 1 },
+                end_time: `17:00:00`, job_location: 1 },
             { user: 100022, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 2 },
+                end_time: `17:00:00`, job_location: 2 },
             // Manager
             { user: 100004, date: formattedDate,  start_time: `09:00:00`,
-                end_time: `17:00:00`, job_post: 1 }
+                end_time: `17:00:00`, job_location: 1 }
         ];
     }).flat()
-];
-
-const holidays = [
-    { id: 1, date: '2025-10-03', name: 'Test Holiday 1', requestable_working: true },
-    { id: 2, date: '2025-10-07', name: 'Test Holiday 2', requestable_working: true }
 ];
 
 const requestStatuses = [
@@ -882,6 +923,7 @@ const seedStructure = [
     { model: UserManager, tableName: 'user_managers', data: userManagers, itemsName: 'user manager assignments' },
     { model: Schedule, tableName: 'schedules', data: schedules, itemsName: 'schedules' },
     { model: JobPost, tableName: 'job_posts', data: jobPosts, itemsName: 'job posts' },
+    { model: JobLocation, tableName: 'job_locations', data: jobLocations, itemsName: 'job locations' },
     { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },

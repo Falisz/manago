@@ -57,9 +57,15 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
         updateShift({ shift: {...shift, ...newData}});
     }
 
+    const background = shift.job_post ? shift.job_post.color+'90' : shift.job_location ? shift.job_location.color+'90' :
+        'var(--seethrough-background)';
+
+    const subTitle = (shift.job_post ? shift.job_post.name : '') + (shift.job_post && shift.job_location ? ' | ' : '') +
+        (shift.job_location ? shift.job_location.name : '');
+
     return <div
         className={'user-schedule-shift-item' + (shift.selected ? ' selected' : '') + (!editMode ? ' app-clickable' : '')}
-        style={{background: (shift.job_post ? shift.job_post.color+'90' : 'var(--seethrough-background)'), position: 'relative'}}
+        style={{background, position: 'relative'}}
         draggable={editMode}
         onDragStart={editMode ? (e) => onDragStart(e, shift) : undefined}
         onDragEnd={editMode ? (e) => onDragEnd(e, shift) : undefined}
@@ -93,8 +99,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
                 style={{padding: 0, background: 'none'}}
                 selectedStyle={{padding: 0, background: 'none'}}
                 selectedTextStyle={{padding: 0, color: 'white', fontSize: '.8rem', fontWeight: '600'}}
-            /> :
-            shift.job_post && shift.job_post.name
+            /> : subTitle
         }
         </span>}
         {editMode &&

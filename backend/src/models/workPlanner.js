@@ -53,6 +53,7 @@ export const JobLocation = sequelize.define('JobLocation', {
         allowNull: false,
         unique: true,
     },
+    description: DataTypes.TEXT,
     color: DataTypes.STRING(7)
 }, {
     tableName: 'job_locations',
@@ -155,7 +156,7 @@ export const Leave = sequelize.define('Leave', {
         type: DataTypes.DATEONLY,
         allowNull: false,
     },
-    days : {
+    days: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
@@ -298,6 +299,10 @@ JobPost.hasMany(Shift, { foreignKey: 'job_post', sourceKey: 'id' });
 Shift.belongsTo(JobPost, { foreignKey: 'job_post', targetKey: 'id' });
 //
 // JobPost <-> Shift
+JobLocation.hasMany(Shift, { foreignKey: 'job_location', sourceKey: 'id' });
+Shift.belongsTo(JobLocation, { foreignKey: 'job_location', targetKey: 'id' });
+//
+// Schedule <-> Shift
 Schedule.hasMany(Shift, { foreignKey: 'schedule', sourceKey: 'id' });
 Shift.belongsTo(Schedule, { foreignKey: 'schedule', targetKey: 'id' });
 //

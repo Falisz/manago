@@ -14,6 +14,7 @@ import RolesIndex from '../components/Roles/Index';
 import TeamsIndex from '../components/Teams/Index';
 import InWorks from '../components/InWorks';
 import PopUps from '../components/PopUps';
+import WorkPlannerSettings from '../components/WorkPlannerSettings';
 
 const COMPONENT_MAP = {
     UsersIndex,
@@ -25,6 +26,7 @@ const COMPONENT_MAP = {
     ScheduleView,
     ScheduleEdit,
     LeavesIndex,
+    WorkPlannerSettings,
     PostsIndex,
     AppSettings
 };
@@ -67,7 +69,12 @@ export const AppProvider = ({ children }) => {
         leaves: {},
         jobPosts: {}
     });
-    const [refreshTriggers, setRefreshTriggers] = useState({});
+    const [refreshTriggers, setRefreshTriggers] = useState({
+        users: null,
+        leaves: null,
+        teams: null,
+        holidays: null
+    });
     const isCheckingUserRef = useRef(false);
 
     // State and Ref setters

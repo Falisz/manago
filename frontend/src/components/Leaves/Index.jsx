@@ -74,7 +74,7 @@ const YourLeaves = () => {
         const refresh = refreshTriggers?.leaves || false;
         if (refresh) delete refreshTriggers.leaves;
         if (refresh || !leaves) fetchLeaves({ user: user.id });
-    });
+    }, [fetchLeaves, leaves, refreshTriggers, user.id]);
 
     return (
         <div className={'your-leaves-section  seethrough'}>

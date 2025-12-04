@@ -499,4 +499,6 @@ export const useShifts = () => useResource('shift');
 export const useLeaves = () => useResource('leave');
 export const useLeaveTypes = () => useResource('leaveType');
 export const useJobPosts = () => useResource('jobPost');
+export const useJobLocations = () => useResource('jobLocation');
+export const useHolidays = () => useResource('holiday');
 export const useRequestStatuses = () => useResource('requestStatus');

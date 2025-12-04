@@ -4,7 +4,6 @@ import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useLeaves, useRequestStatuses} from '../../hooks/useResource';
 import Details from '../Details';
-import Loader from '../Loader';
 
 const LeaveDetails = ({ id, modal }) => {
     const { refreshTriggers, user } = useApp();
@@ -146,13 +145,14 @@ const LeaveDetails = ({ id, modal }) => {
         }
     }), [openDialog, requestStatuses, user.id, leave]);
 
-    if (loading)
-        return <Loader />;
-
-    if (!leave)
-        return <h1>Leave not found!</h1>;
-
-    return <Details header={header} sections={sections} data={leave} modal={modal} />;
+    return <Details
+        header={header}
+        sections={sections}
+        data={leave}
+        modal={modal}
+        loading={loading}
+        placeholder={'Leave not found!'}
+    />;
 };
 
 export default LeaveDetails;

@@ -21,8 +21,9 @@ const fetchHolidaysHandler = async (req, res) => {
     try {
         const holidays = await getHoliday({
             id,
-            start_date: req.query.start_date,
-            end_date: req.query.start_date
+            date: req.query.date || null,
+            start_date: req.query.start_date || null,
+            end_date: req.query.start_date || null
         });
 
         if (req.params.id && !holidays)

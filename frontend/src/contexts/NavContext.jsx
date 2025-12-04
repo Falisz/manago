@@ -29,7 +29,7 @@ const MODALS = {
     },
     userDetails: {
         urlParam: 'user',
-        component: (modal) => <UserDetails userId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <UserDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },
@@ -54,7 +54,7 @@ const MODALS = {
     },
     roleDetails: {
         urlParam: 'role',
-        component: (modal) => <RoleDetails roleId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <RoleDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },
@@ -69,7 +69,7 @@ const MODALS = {
     },
     teamDetails: {
         urlParam: 'team',
-        component: (modal) => <TeamDetails teamId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <TeamDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },
@@ -87,7 +87,7 @@ const MODALS = {
     },
     shiftDetails: {
         urlParam: 'shift',
-        component: (modal) => <ShiftDetails shiftId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <ShiftDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },
@@ -108,7 +108,7 @@ const MODALS = {
     },
     postDetails: {
         urlParam: 'post',
-        component: (modal) => <PostDetails postId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <PostDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog'
     },
     confirm: {
@@ -168,35 +168,28 @@ export const NavProvider = ({ children }) => {
         setSearchParams(newParams, { replace: true });
     }, [search, setSearchParams]);
 
-    const openModal = useCallback((modalConfig) => {
-
-        let id = null;
-        let isDuplicate = false;
-
-        setModals((prev) => {
-            isDuplicate = Object.values(prev).some(
-                (existing) =>
-                    existing.content === modalConfig.content &&
-                    existing.contentId === modalConfig.contentId
-            );
-
-            if (isDuplicate)
-                return prev;
-
-            id = nextModalId.current++;
-
-            const next = {
-                ...prev,
-                [id]: { ...modalConfig, id, props: modalConfig.props || {}, isVisible: false, discardWarning: false }
-            };
-            // Sync URL with the upcoming state
-            if (blocker.state !== 'blocked' &&  modalConfig.content !== 'confirm' && modalConfig.content !== 'component')
-                syncUrlWithModals(next);
-            return next;
-        });
+    const openModal = useCallback((modalConfig, skipUrlSyncing = false) => {
+        const currentModals = modalsRef.current;
+        const isDuplicate = Object.values(currentModals).some(
+            (existing) =>
+                existing.content === modalConfig.content &&
+                existing.contentId === modalConfig.contentId
+        );
 
         if (isDuplicate)
-            return id;
+            return null;
+
+        const id = nextModalId.current++;
+        const newModal = { ...modalConfig, id, props: modalConfig.props || {}, isVisible: false, discardWarning: false };
+        const next = { ...currentModals, [id]: newModal };
+
+        skipUrlSyncing = skipUrlSyncing || blocker.state === 'blocked'
+            || modalConfig.content === 'confirm' || modalConfig.content === 'component';
+
+        if (!skipUrlSyncing)
+            syncUrlWithModals(next);
+
+        setModals(next);
 
         setTimeout(() => {
             setModals((prev) => ({
@@ -208,6 +201,30 @@ export const NavProvider = ({ children }) => {
         return id;
     }, [syncUrlWithModals, blocker.state]);
 
+    const closeModal = useCallback((id, skipSyncing = false) => {
+        if (id == null) return;
+
+        setModals((prev) => ({
+            ...prev,
+            [id]: { ...prev[id], isVisible: false },
+        }));
+
+        const current = modalsRef.current;
+        const next = { ...current };
+        delete next[id];
+
+        if (!skipSyncing) {
+            syncUrlWithModals(next);
+        }
+
+        setTimeout(() => {
+            setModals((prev) => {
+                const { [id]: _, ...rest } = prev;
+                return rest;
+            });
+        }, ANIMATION_DURATION);
+    }, [syncUrlWithModals]);
+
     const setDiscardWarning = useCallback((id, value) => {
         setModals((prev) => {
             if (!prev[id]) return prev;
@@ -217,22 +234,6 @@ export const NavProvider = ({ children }) => {
             };
         });
     }, []);
-
-    const closeModal = useCallback((id, skipSyncing=false) => {
-        setModals((prev) => ({
-            ...prev,
-            [id]: { ...prev[id], isVisible: false },
-        }));
-
-        setTimeout(() => {
-            setModals((prev) => {
-                const { [id]: _, ...rest } = prev;
-                if (!skipSyncing)
-                    syncUrlWithModals(rest);
-                return rest;
-            });
-        }, ANIMATION_DURATION);
-    }, [syncUrlWithModals]);
 
     const closeTopModal = useCallback(() => {
         const currentModals = modalsRef.current;
@@ -286,7 +287,10 @@ export const NavProvider = ({ children }) => {
             const contentId = searchParams.get(config.urlParam);
             
             if (contentId) 
-                openModal({ content: key, contentId, type: config.type || 'pane', closeButton: config.closeButton });
+                openModal(
+                    { content: key, contentId, type: config.type || 'pane', closeButton: config.closeButton },
+                    true
+                );
         });
         
         const newResource = searchParams.get('new');
@@ -294,7 +298,10 @@ export const NavProvider = ({ children }) => {
             const modalConfig = Object.entries(MODALS)
                 .find(([_key, config]) => config.urlParam === 'new' && config.urlParamValue === newResource);
             if (modalConfig)
-                openModal({ content: modalConfig[0]});
+                openModal(
+                    { content: modalConfig[0] },
+                    true
+                );
         }
     }, [openModal, searchParams]);
 

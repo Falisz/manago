@@ -4,23 +4,17 @@ import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useShifts} from '../../hooks/useResource';
 import Details from '../Details';
-import Loader from '../Loader';
 
-const ShiftDetails = ({ shiftId, modal }) => {
+const ShiftDetails = ({ id, modal }) => {
     const { shift, loading, fetchShift, deleteShift } = useShifts();
     const { refreshData, refreshTriggers } = useApp();
     const { openModal, openDialog, closeModal, closeTopModal } = useNav();
 
     useEffect(() => {
-        const refresh = refreshTriggers?.shift?.data === parseInt(shiftId);
-
-        if (refresh)
-            delete refreshTriggers.shift;
-
-        if (shiftId && (!shift || refresh))
-            fetchShift({id: shiftId, reload: refresh}).then();
-
-    }, [fetchShift, shift, shiftId, refreshTriggers.shift]);
+        const reload = refreshTriggers?.shift?.data === parseInt(id);
+        if (reload) delete refreshTriggers.shift;
+        if (id && (!shift || reload)) fetchShift({id, reload}).then();
+    }, [fetchShift, shift, id, refreshTriggers.shift]);
 
     const handleDelete = useCallback((users = 0) => {
         let message = 'Are you sure you want to delete this role? This action cannot be undone.'
@@ -32,16 +26,17 @@ const ShiftDetails = ({ shiftId, modal }) => {
             type: 'pop-up',
             message: message,
             onConfirm: async () => {
-                const success = await deleteShift({id: shiftId});
+                const success = await deleteShift({id});
                 if (!success) return;
                 refreshData('roles', true);
                 closeTopModal();
             },
         });
-    }, [shiftId, openModal, deleteShift, refreshData, closeTopModal]);
+    }, [id, openModal, deleteShift, refreshData, closeTopModal]);
 
     const header = useMemo(() => ({
         title: 'Shift Details',
+        style: { borderBottom: '2px solid ' + (shift?.job_post?.color || shift?.job_location?.color || 'var(--text-color-3)') },
         subtitle: {
             hash: true,
             dataField: 'id',
@@ -54,7 +49,7 @@ const ShiftDetails = ({ shiftId, modal }) => {
                 label: 'Edit',
                 onClick: () => {
                     closeModal(modal);
-                    openDialog({content: 'shiftEdit', contentId: shiftId});
+                    openDialog({content: 'shiftEdit', contentId: id});
                 }
             },
             delete: {
@@ -64,7 +59,7 @@ const ShiftDetails = ({ shiftId, modal }) => {
                 onClick: handleDelete
             }
         }
-    }), [shiftId, modal, openDialog, closeModal, handleDelete]);
+    }), [id, shift, modal, openDialog, closeModal, handleDelete]);
 
     const sections = useMemo(() => ({
         0: {
@@ -162,14 +157,15 @@ const ShiftDetails = ({ shiftId, modal }) => {
             }
         }
     }), [shift, openDialog]);
-
-    if (loading)
-        return <Loader/>;
-
-    if (!shift)
-        return <h1>Shift not found!</h1>;
-
-    return <Details header={header} sections={sections} data={shift} modal={modal} />;
+    console.log(shift);
+    return <Details
+        header={header}
+        sections={sections}
+        data={shift}
+        modal={modal}
+        loading={loading}
+        placeholder={'Shift not found!'}
+    />;
 };
 
 export default ShiftDetails;

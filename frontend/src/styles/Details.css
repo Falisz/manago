@@ -32,7 +32,7 @@
 }
 .details-header .header-buttons {
     display: flex;
-    gap: 5px;
+    gap: 10px;
     margin-left: auto;
 }
 .details-header .app-button {
@@ -44,12 +44,12 @@
     transition: .3s ease-in-out;
     width: fit-content;
     border-radius: 12px;
-    padding: 10px;
+    padding: 5px;
 }
 .details-header .app-button .icon {
     font-size: 1.5rem;
 }
-.details-header .app-button.edit:hover {
+.details-header .app-button:hover {
     color: var(--link-color);
 }
 .details-header .app-button.delete:hover {
@@ -63,6 +63,7 @@
 .modal .details-content {
     max-height: calc(100vh - 200px - 50px - 45px);
     overflow-y: auto;
+    width: 100%;
 }
 
 .details-section {

@@ -1,12 +1,15 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### Work Planner (till 14-12-25)
-- RequestTypes, LeaveBalance, Holidays, JobPosts and JobLocations backend implementation.
-- Leave Planner - separate component from Schedules Editor and Dispositions Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
+### Work Planner and Users (till 14-12-25)
+- Monthly grid view of shifts
+- Holidays
+- Holiday and Weekend Working
+- Users - contractual data, like time when joined company, contract types, start and end-dates, notice-period info.
+- LeaveBalance API
+- JobPosts and JobLocations API
+- Leave Planner - separate component from Schedules Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
 - Dashboard widgets for the your and your team schedules. And pending leave approvals. Also additional dashboard widget for "your oncoming leaves".
-### Users (till 14-12-25)
-- Users have contractual data added - time joined company, contract types, start and end-dates.
-### Timesheets (till 14-12-25)
+### TimeSheets (till 14-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
 - Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
