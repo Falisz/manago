@@ -784,6 +784,9 @@ export async function getUsersByScope({scope, scope_id}={}) {
     if (scope === 'all')
         return await getUser();
 
+    else if (scope === 'manager')
+        return await getUserManagers({manager: scope_id, include_all_users: true});
+
     else if (scope === 'you' || scope === 'user')
         return await getUser({id: scope_id});
 
