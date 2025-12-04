@@ -3,10 +3,12 @@ import React from 'react';
 import Button from './Button';
 import Icon from './Icon';
 import '../styles/Details.css';
+import useNav from "../contexts/NavContext";
 
-const Header = ({ header, data }) => {
+const Header = ({ header, data, modal }) => {
 
-    const { className, style, prefix, title, suffix, buttons } = header;
+    const { closeModal } = useNav();
+    const { className, style, prefix, title, subtitle, suffix, buttons } = header;
 
     const getData = (data, field, placeholder) => {
         if (Array.isArray(field))
@@ -16,49 +18,83 @@ const Header = ({ header, data }) => {
     }
 
     return (
-        <div
-            className={'details-header' + (className ? ' ' + className : '')}
-            style={style}
-        >
-            {prefix && <div
-                key={'title-prefix'}
-                className={'details-title-prefix' + (prefix.className ? ' ' + prefix.className : '')}
-                title={prefix.title}
-                style={prefix.style}
+        <>
+            <div
+                className={'details-header' + (className ? ' ' + className : '')}
+                style={style}
             >
-                {getData(data, prefix.dataField, prefix.placeholder)}
-            </div>}
+                {typeof prefix === 'string' && <div
+                    key={'title-string-prefix'}
+                    className={'details-title-prefix'}
+                >
+                    {prefix}
+                </div>}
 
-            {typeof title === 'string' && <div
-                key={'title'}
-                className={'details-title'}
-                title={title}
+                {prefix && typeof prefix === 'object' && <div
+                    key={'title-prefix'}
+                    className={'details-title-prefix' + (prefix.className ? ' ' + prefix.className : '')}
+                    title={prefix.title}
+                    style={prefix.style}
+                >
+                    {prefix.hash ? '#' : ''}{getData(data, prefix.dataField, prefix.placeholder)}
+                </div>}
+
+                {typeof title === 'string' && <div
+                    key={'string-title'}
+                    className={'details-title'}
+                    title={title}
+                >
+                    {title}
+                </div>}
+
+                {title && typeof title === 'object' && <div
+                    key={'title'}
+                    className={'details-title' + (title.className ? ' ' + title.className : '')}
+                    title={title.title}
+                    style={title.style}
+                >
+                    {title.content ? title.content : getData(data, title.dataField, title.placeholder)}
+                </div>}
+
+                {typeof suffix === 'string' && <div
+                    key={'title-string-suffix'}
+                    className={'details-title-suffix'}
+                >
+                    {suffix}
+                </div>}
+
+                {suffix && typeof suffix === 'object' && <div
+                    key={'title-suffix'}
+                    className={'details-title-suffix' + (suffix.className ? ' ' + suffix.className : '')}
+                    title={suffix.title}
+                    style={suffix.style}
+                >
+                    {getData(data, suffix.dataField, suffix.placeholder)}
+                </div>}
+
+                {(buttons || modal) &&
+                    <div className={'header-buttons'}>
+                        {Object.values(buttons).map((button, key) =>
+                            button && <Button key={key} {...{transparent: true, ...button}} />)}
+                        {modal && <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>}
+                    </div>
+                }
+            </div>
+            {subtitle && typeof subtitle === 'object' && <div
+                key={'subtitle'}
+                className={'details-subtitle' + (subtitle.className ? ' ' + subtitle.className : '')}
+                title={subtitle.title}
+                style={subtitle.style}
             >
-                {title}
+                {subtitle.hash ? '#' : ''}{subtitle.content ? subtitle.content : getData(data, subtitle.dataField, subtitle.placeholder)}
             </div>}
-
-            {typeof title === 'object' && <div
-                key={'title'}
-                className={'details-title' + (title.className ? ' ' + title.className : '')}
-                title={title.title}
-                style={title.style}
+            {typeof subtitle === 'string' && <div
+                key={'string-subtitle'}
+                className={'details-subtitle'}
             >
-                {title.content ? title.content : getData(data, title.dataField, title.placeholder)}
+               {subtitle}
             </div>}
-
-            {suffix && <div
-                key={'title-prefix'}
-                className={'details-title-suffix' + (suffix.className ? ' ' + suffix.className : '')}
-                title={suffix.title}
-                style={suffix.style}
-            >
-                {getData(data, suffix.dataField, suffix.placeholder)}
-            </div>}
-
-            {buttons && Object.values(buttons).map((button, key) =>
-                <Button key={key} {...{transparent: true, ...button}} />
-            )}
-        </div>
+        </>
     );
 };
 
@@ -234,20 +270,22 @@ const Section = ({section, data}) => {
             style={style}
         >
             {header && <SectionHeader header={header}/>}
-            {Object.values(fields).map((field, key) => <SectionField key={key} field={field} data={data}/>)}
+            {Object.values(fields).map((field, key) =>
+                field && <SectionField key={key} field={field} data={data}/>)}
         </div>
     );
 }
 
-const Details = ({className, style, header, sections, data}) => {
+const Details = ({className, style, header, sections, data, modal}) => {
     if (!data || !sections)
         return null;
 
     return (
         <div className={'details-page' + (className ? ' ' + className : '')}  style={style}>
-            {header && <Header header={header} data={data}/>}
+            {header && <Header header={header} data={data} modal={modal}/>}
             <div className={'details-content app-scroll'}>
-                {Object.values(sections).map((section, index) => <Section key={index} section={section} data={data}/>)}
+                {Object.values(sections).map((section, index) =>
+                    section && <Section key={index} section={section} data={data}/>)}
             </div>
         </div>
     );
