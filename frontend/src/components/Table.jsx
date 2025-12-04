@@ -7,6 +7,7 @@ import Icon from './Icon';
 import ToggleSwitch from './ToggleSwitch';
 import 'react-contexify/dist/ReactContexify.css';
 import '../styles/Table.css';
+import Loader from "./Loader";
 
 const TableHeader = ({header, selectionMode, selectedItems, setSelectedItems}) => {
     const { openModal } = useNav();
@@ -59,7 +60,7 @@ const ColumnHeaders = ({
     const collapseButton = (tableSortable || tableFilterable);
 
     return <div className={`app-table-header ${headerCollapsed ? 'collapsed' : ''}`}>
-                {Object.values(fields).map((field) => {
+                {Object.values(fields).map((field, index) => {
                     const {
                         label = '',
                         name = '',
@@ -69,9 +70,6 @@ const ColumnHeaders = ({
                         style = {}
                     } = field;
 
-                    if (!name)
-                        return null;
-
                     const sortable = tableSortable && fieldSortable;
                     const filterable = tableFilterable && fieldFilterable;
 
@@ -80,8 +78,8 @@ const ColumnHeaders = ({
 
                     return (
                         <div
-                            className={`app-table-header-cell ${name}`}
-                            key={name.toString()}
+                            className={`app-table-header-cell${name ? ' ' + name : ''}`}
+                            key={index}
                             style={style}
                         >
                             {label && <div className={'app-table-header-cell-label'}>
@@ -219,7 +217,7 @@ const TableField = ({field, data, selectionMode}) => {
             content = value ?? 0;
             break;
         default:
-            content = value?.toString() ?? '';
+            content = value ?? '';
     }
 
     return (
@@ -355,6 +353,7 @@ const Table = ({
                    sortable = false,
                    selectableRows = false,
                    contextMenuActions,
+                   loading = false,
                    dataPlaceholder = null,
                }) => {
 
@@ -558,7 +557,7 @@ const Table = ({
                 />
             )}
             <div className={'app-table-body app-overflow-y app-scroll'}>
-                {!displayData.length ? (
+                {loading ? <Loader/> : !displayData.length ? (
                     <p className={'app-table-no-matches'}>
                         {dataPlaceholder ?? 'No matching items found.'}
                     </p>
