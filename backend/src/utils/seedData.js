@@ -732,11 +732,11 @@ const shifts = [
     // Users in Los Angeles (team 4): 100007 (leader), 100013-100017
     // Users in Washington (team 5): 100008 (leader), 100018-100022
     // Manager (team 1): 100004
-    // October 1-14, 2025, standard 8-hour shifts (9:00-17:00)
+    // Dec 1-14, 2025, standard 8-hour shifts (9:00-17:00)
     // Assigning shifts to Los Angeles team members
     ...Array.from({ length: 14 }, (_, i) => {
-        const date = new Date(2025, 10, i + 1); // November 1-14, 2025
-        const formattedDate = `2025-11-${String(i + 1).padStart(2, '0')}`;
+        const date = new Date(2025, 11, i + 1); // Dec 1-14, 2025
+        const formattedDate = `2025-12-${String(i + 1).padStart(2, '0')}`;
         if (date.getDay() === 0 || date.getDay() === 6) {
             return [];
         }
@@ -788,20 +788,21 @@ const requestStatuses = [
 ];
 
 const leaveTypes = [
-    { id: 1, name: 'AL', amount: 26, color: '#4CAF50' },
-    { id: 2, name: 'LOD', parent_type: 1, amount: 4, color: '#FF9800' },
-    { id: 3, name: 'SL', color: '#F44336' },
-    { id: 4, name: 'CompOffs', color: '#2196F3' },
+    { id: 1, name: 'Annual Leave', amount: 26, color: '#FF9800' },
+    { id: 2, name: 'Leave on Demand', parent_type: 1, amount: 4, color: '#F44336' },
+    { id: 3, name: 'Sick Leaves', color: '#4CAF50' },
+    { id: 4, name: 'Compensatory OFF', color: '#2196F3' },
     { id: 5, name: 'Personal Leave', parent_type: 1, amount: 2, color: '#9C27B0' },
     { id: 6, name: 'Maternity Leave', parent_type: 1, color: '#E91E63' },
-    { id: 7, name: 'Paternity Leave', parent_type: 1, color: '#3F51B5' }
+    { id: 7, name: 'Paternity Leave', parent_type: 1, color: '#3F51B5' },
+    { id: 11, name: 'Unpaid Leave', color: '#777777' },
 ];
 
 const leaves = [
     {
         type: 1, // AL
-        start_date: '2025-10-06',
-        end_date: '2025-10-08',
+        start_date: '2025-12-06',
+        end_date: '2025-12-08',
         days: 3,
         status: 1, // Approved
         user: 100013, // Employee One
@@ -811,9 +812,9 @@ const leaves = [
     },
     {
         type: 3, // SL
-        start_date: '2025-10-10',
-        end_date: '2025-10-13',
-        days: 4,
+        start_date: '2025-12-01',
+        end_date: '2025-10-06',
+        days: 6,
         status: 1, // Approved
         user: 100014, // Employee Two
         approver: 100007, // Leader1
@@ -822,12 +823,12 @@ const leaves = [
     },
     {
         type: 2, // LOD
-        start_date: '2025-10-09',
-        end_date: '2025-10-09',
+        start_date: '2025-12-09',
+        end_date: '2025-12-09',
         days: 1,
         status: 0, // Pending
         user: 100015, // Employee Three
-        approver: 100007, // Leader1
+        approver: null,
         user_note: 'Need a day off for personal reasons',
         approver_note: null
     }

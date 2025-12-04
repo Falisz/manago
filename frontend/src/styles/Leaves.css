@@ -1,24 +1,29 @@
 .leaves-page {
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 10px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+            "yours yours"
+            "requests reportees";
     width: 100%;
     height: 100%;
     overflow: hidden;
 }
-.leave-page-section {
+.your-leaves-section {
+    grid-area: yours;
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 20px;
 }
-.leave-page-section-header {
+.your-leaves-section-header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
 }
-.leave-page-section-header h1 {
+.your-leaves-section-header h1 {
     margin: 0;
     font-size: 2em;
     font-weight: 300;
@@ -28,7 +33,7 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     min-height: 130px;
     overflow: auto hidden;
 }

@@ -56,32 +56,36 @@ const LeaveDetails = ({ id, modal }) => {
 
         const yours = leave?.user?.id === user.id;
         const managed = user?.managed_users?.find(user => leave?.user?.id === user.id);
-        const preApproved = leave?.status === 0 || leave?.status === 1;
+        const planned = leave?.status === 0
+        const requested = leave?.status === 1;
         const approved = leave?.status === 2;
+        const rejected = leave?.status === 3;
 
         return {
-            delete: yours && preApproved && {
+            delete: yours && (planned || requested) && {
                 className: 'delete',
                 icon: 'delete',
-                label: 'Discard Leave',
+                label: 'Discard',
                 onClick: handleCancel
             },
-            accept: managed && preApproved && {
+            accept: managed && (requested || rejected) && {
                 className: 'accept',
                 icon: 'check_circle',
-                label: 'Accept Leave',
-                onClick: () => handleApproval(leave.id, leave.status === 1 ? 2 : leave.status === 4 ? 5 : null, 'approve')
+                label: rejected ? 'Re-Approve' : 'Accept',
+                onClick: () =>
+                    handleApproval(leave.id, [1,3].includes(leave.status) ? 2 : leave.status === 4 ? 5 : null, 'approve')
             },
-            reject: managed && preApproved && {
+            reject: managed && requested && {
                 className: 'reject',
                 icon: 'cancel',
-                label: 'Reject Leave',
-                onClick: () => handleApproval(leave.id, leave.status === 1 ? 3 : leave.status === 4 ? 2 : null, 'reject')
+                label: 'Reject',
+                onClick: () =>
+                    handleApproval(leave.id, leave.status === 1 ? 3 : leave.status === 4 ? 2 : null, 'reject')
             },
             cancel: yours && approved && {
                 className: 'cancel',
                 icon: 'cancel',
-                label: 'Request Cancellation',
+                label: 'Request',
                 onClick: handleCancel
             }
         };

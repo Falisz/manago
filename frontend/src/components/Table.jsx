@@ -61,6 +61,9 @@ const ColumnHeaders = ({
 
     return <div className={`app-table-header ${headerCollapsed ? 'collapsed' : ''}`}>
                 {Object.values(fields).map((field, index) => {
+                    if (!field)
+                        return null;
+
                     const {
                         label = '',
                         name = '',
@@ -119,6 +122,9 @@ const ColumnHeaders = ({
 const TableField = ({field, data, selectionMode}) => {
 
     const { openModal, openDialog } = useNav();
+
+    if (!field)
+        return null;
 
     const { name, type, display, style, onClick } = field;
 

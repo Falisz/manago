@@ -60,11 +60,15 @@ const LeaveItem = ({leave, requestStatuses}) => {
     );
 };
 
-
-const YourLeaves = ({requestStatuses}) => {
+const YourLeaves = () => {
     const { user, refreshTriggers } = useApp();
     const { openDialog } = useNav();
     const { leaves, loading, fetchLeaves } = useLeaves();
+    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
+
+    React.useEffect(() => {
+        fetchRequestStatuses();
+    }, [fetchRequestStatuses]);
 
     React.useEffect(() => {
         const refresh = refreshTriggers?.leaves || false;
@@ -73,8 +77,8 @@ const YourLeaves = ({requestStatuses}) => {
     });
 
     return (
-        <div className={'leave-page-section seethrough'}>
-            <div className={'leave-page-section-header'}>
+        <div className={'your-leaves-section  seethrough'}>
+            <div className={'your-leaves-section-header'}>
                 <h1>Your Leaves</h1>
                 <Button
                     label={'Request new Leave'}
@@ -90,11 +94,15 @@ const YourLeaves = ({requestStatuses}) => {
     );
 };
 
-const LeaveRequests = ({requestStatuses}) => {
-
+const OthersLeaves = ({requests}) => {
     const { user, refreshTriggers } = useApp();
     const { openDialog, openPopUp, closeTopModal } = useNav();
     const { leaves, loading, fetchLeaves, saveLeave } = useLeaves();
+    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
+
+    React.useEffect(() => {
+        fetchRequestStatuses().then();
+    }, [fetchRequestStatuses]);
 
     React.useEffect(() => {
         if (!user.id) return;
@@ -145,7 +153,7 @@ const LeaveRequests = ({requestStatuses}) => {
             name: 'status',
             value: (data) => requestStatuses?.find(s => s.id === data.status)?.name
         },
-        5: {
+        5: requests ? {
             label: 'Action',
             value: (data) => {
                 if (data.status === 1 || data.status === 4)
@@ -160,42 +168,31 @@ const LeaveRequests = ({requestStatuses}) => {
                 else
                     return null;
             }
-        }
-    }), [requestStatuses, handleApproval, openDialog]);
+        } : null
+    }), [requests, requestStatuses, handleApproval, openDialog]);
 
     return (
-        <div className='leave-page-section seethrough'>
-            <div className={'leave-page-section-header'}>
-                <h1>Leave Requests</h1>
-            </div>
-            <div className={'leaves-container app-scroll'}>
-                {leaves &&
-                    <Table
-                        style={{width: '100%'}}
-                        data={leaves.filter(leave => [1, 4].includes(leave.status))}
-                        fields={fields}
-                        dataPlaceholder={'No leave requests found.'}
-                        loading={loading}
-                    />
-                }
-            </div>
-        </div>
+        <Table
+            header={requests ? {title: 'Leave Requests'} : {title: 'Users Leaves'}}
+            className={requests ? 'leave-requests-table' : 'leave-reportees-table'}
+            data={leaves?.filter(leave =>
+                requests ? [1, 4].includes(leave.status) : [2, 3, 5].includes(leave.status))}
+            fields={fields}
+            dataPlaceholder={'No leave requests found.'}
+            loading={loading}
+        />
     );
 
 };
+const LeaveRequests = () => <OthersLeaves requests />;
+const ReporteesLeaves = () => <OthersLeaves/>
 
 const LeavesIndex = () => {
-
-    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
-
-    React.useEffect(() => {
-        fetchRequestStatuses();
-    }, [fetchRequestStatuses]);
-
     return (
         <div className={'leaves-page'}>
-            <YourLeaves requestStatuses={requestStatuses}/>
-            <LeaveRequests requestStatuses={requestStatuses}/>
+            <YourLeaves/>
+            <LeaveRequests/>
+            <ReporteesLeaves/>
         </div>
     );
 };
