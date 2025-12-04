@@ -9,7 +9,7 @@ import Loader from '../Loader';
 const RoleDetails = ({ roleId, modal }) => {
     const { role, loading, fetchRole, deleteRole } = useRoles();
     const { refreshData, refreshTriggers } = useApp();
-    const { openModal, closeTopModal } = useNav();
+    const { openDialog, openModal, closeTopModal } = useNav();
 
     useEffect(() => {
         const refresh = refreshTriggers?.role?.data === parseInt(roleId);
@@ -94,12 +94,12 @@ const RoleDetails = ({ roleId, modal }) => {
                     placeholder: 'No Users with this Role.',
                     items: {
                         dataField: ['first_name', 'last_name'],
-                        onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
+                        onClick: (id) => {openDialog({ content: 'userDetails', contentId: id, closeButton: false })}
                     }
                 }
             }
         }
-    }), [openModal]);
+    }), [openDialog]);
 
     if (loading)
         return <Loader />;
