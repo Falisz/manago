@@ -6,10 +6,10 @@ import {useUsers} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 
-const UserDetails = ({ userId }) => {
+const UserDetails = ({ userId, modal }) => {
     const { user, loading, fetchUser, deleteUser } = useUsers();
     const { refreshData, refreshTriggers } = useApp();
-    const { openModal, openPopUp, closeTopModal } = useNav();
+    const { openModal, openDialog, openPopUp, closeTopModal } = useNav();
 
     useEffect(() => {
         const refresh = refreshTriggers.user?.data === userId;
@@ -38,24 +38,25 @@ const UserDetails = ({ userId }) => {
     }, [userId, openPopUp, deleteUser, refreshData, closeTopModal]);
 
     const header = useMemo(() => ({
-        prefix: {
-            dataField: 'id',
-            title: 'User ID',
-        },
         title: {
             dataField: ['first_name', 'last_name'],
+        },
+        subtitle: {
+            hash: true,
+            dataField: 'id',
+            title: 'User ID',
         },
         buttons: {
             edit: {
                 className: 'edit',
                 icon: 'edit',
-                title: 'Edit User',
+                label: 'Edit',
                 onClick: () => openModal({content: 'userEdit', contentId: userId})
             },
             delete: {
                 className: 'delete',
                 icon: 'delete',
-                title: 'Delete User',
+                label: 'Delete',
                 onClick: handleDelete
             }
         }
@@ -86,7 +87,7 @@ const UserDetails = ({ userId }) => {
             header: {
                 text: 'Roles',
                 button: {
-                    onClick: () => openModal({content: 'userRoleAssignment', data: user, type: 'dialog'})
+                    onClick: () => openDialog({content: 'userRoleAssignment', data: user, closeButton: false})
                 }
             },
             fields: {
@@ -97,7 +98,7 @@ const UserDetails = ({ userId }) => {
                     items: {
                         idField: 'id',
                         dataField: 'name',
-                        onClick: (id) => openModal({ content: 'roleDetails', contentId: id, type: 'dialog' })
+                        onClick: (id) => openDialog({ content: 'roleDetails', contentId: id, closeButton: false })
                     }
                 }
             }
@@ -129,7 +130,7 @@ const UserDetails = ({ userId }) => {
             header: {
                 text: 'Managers',
                 button: {
-                    onClick: () => openModal({content: 'userManagerAssignment', data: user, type: 'dialog'}),
+                    onClick: () => openDialog({content: 'userManagerAssignment', data: user}),
                 }
             },
             fields: {
@@ -140,7 +141,7 @@ const UserDetails = ({ userId }) => {
                     items: {
                         idField: 'id',
                         dataField: ['first_name', 'last_name'],
-                        onClick: (id) => {openModal({ content: 'userDetails', contentId: id, type: 'dialog' })}
+                        onClick: (id) => {openDialog({ content: 'userDetails', contentId: id, closeButton: false })}
                     }
                 }
             }
@@ -149,7 +150,7 @@ const UserDetails = ({ userId }) => {
             header: {
                 text: 'Reportees',
                 button: {
-                    onClick: () => openModal({content: 'userReporteeAssignment', data: [user], type: 'dialog'}),
+                    onClick: () => openDialog({ content: 'userReporteeAssignment', data: [user] }),
                 }
             },
             fields: {
@@ -160,13 +161,13 @@ const UserDetails = ({ userId }) => {
                     items: {
                         idField: 'id',
                         dataField: ['first_name', 'last_name'],
-                        onClick: () => {openModal({ content: 'userDetails', contentId: userId, type: 'dialog'})}
+                        onClick: (id) => {openDialog({ content: 'userDetails', contentId: id, closeButton: false })}
                     }
                 }
             },
             hideEmpty: true
         }
-    }), [user, userId, openModal]);
+    }), [user, openDialog]);
 
     if (loading) 
         return <Loader />;
@@ -174,7 +175,7 @@ const UserDetails = ({ userId }) => {
     if (!user)
         return <h1>User not found!</h1>;
 
-    return <Details header={header} sections={sections} data={user} />;
+    return <Details header={header} sections={sections} data={user} modal={modal} />;
 };
 
 export default UserDetails;

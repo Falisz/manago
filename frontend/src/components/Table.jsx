@@ -145,7 +145,7 @@ const TableField = ({field, data, selectionMode}) => {
                     className={field.openModal ? 'app-clickable' : ''}
                     onClick={() => {
                         if (!selectionMode && field.openModal) {
-                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
+                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id, closeButton: false });
                         }
                     }}
                 >
@@ -160,7 +160,7 @@ const TableField = ({field, data, selectionMode}) => {
                     className={field.openModal ? 'app-clickable' : ''}
                     onClick={() => {
                         if (!selectionMode && field.openModal) {
-                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id });
+                            openModal({ content: field.openModal, type: 'dialog', contentId: data.id, closeButton: false });
                         }
                     }}
                     i={value}
@@ -176,7 +176,7 @@ const TableField = ({field, data, selectionMode}) => {
                         className={`app-clickable sub-item ${field.className || ''}`}
                         onClick={() => {
                             if (!selectionMode && field.openModal) {
-                                openDialog({ content: field.openModal, contentId: value.id });
+                                openDialog({ content: field.openModal, contentId: value.id, closeButton: false });
                             }
                         }}
                     >
@@ -192,7 +192,7 @@ const TableField = ({field, data, selectionMode}) => {
                         className={`app-clickable sub-item ${field.className || ''}`}
                         onClick={() => {
                             if (!selectionMode && field.openModal) {
-                                openDialog({ content: field.openModal, contentId: item.id });
+                                openDialog({ content: field.openModal, contentId: item.id, closeButton: false });
                             }
                         }}
                     >

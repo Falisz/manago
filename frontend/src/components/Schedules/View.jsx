@@ -246,17 +246,11 @@ const ScheduleView = () => {
 
 
     useEffect(() => {
-       if (!isMounted.current)
-           return;
-
-       const refresh = refreshTriggers?.shifts || false;
-
-       if (refresh)
-            delete refreshTriggers.shifts;
-
-       if (schedule && refresh)
-           getSchedule(schedule).then();
-
+       if (!isMounted.current) return;
+       const refresh = refreshTriggers?.shifts || refreshTriggers?.leaves || false;
+       if (refresh) delete refreshTriggers.shifts;
+       if (refresh) delete refreshTriggers.leaves;
+       if (schedule && refresh) getSchedule(schedule).then();
     }, [isMounted, refreshTriggers, getSchedule, schedule]);
     /**
      * Component initializer logic. If draftId is provided, skipping the rest of logic.

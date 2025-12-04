@@ -74,7 +74,7 @@ const Header = ({ header, data, modal }) => {
 
                 {(buttons || modal) &&
                     <div className={'header-buttons'}>
-                        {Object.values(buttons).map((button, key) =>
+                        {buttons && Object.values(buttons).map((button, key) =>
                             button && <Button key={key} {...{transparent: true, ...button}} />)}
                         {modal && <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>}
                     </div>

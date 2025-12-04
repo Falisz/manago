@@ -42,11 +42,16 @@ const ShiftDetails = ({ shiftId, modal }) => {
 
     const header = useMemo(() => ({
         title: 'Shift Details',
+        subtitle: {
+            hash: true,
+            dataField: 'id',
+            title: 'Shift ID',
+        },
         buttons: {
             edit: {
                 className: 'edit',
                 icon: 'edit',
-                title: 'Edit User',
+                label: 'Edit',
                 onClick: () => {
                     closeModal(modal);
                     openDialog({content: 'shiftEdit', contentId: shiftId});
@@ -55,7 +60,7 @@ const ShiftDetails = ({ shiftId, modal }) => {
             delete: {
                 className: 'delete',
                 icon: 'delete',
-                title: 'Delete Shift',
+                label: 'Delete',
                 onClick: handleDelete
             }
         }
@@ -71,7 +76,7 @@ const ShiftDetails = ({ shiftId, modal }) => {
                     item: {
                         idField: 'id',
                         dataField: ['first_name', 'last_name'],
-                        onClick: (id) => openDialog({content: 'userDetails', contentId: id})
+                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false}),
                     }
                 }
             }
@@ -164,7 +169,7 @@ const ShiftDetails = ({ shiftId, modal }) => {
     if (!shift)
         return <h1>Shift not found!</h1>;
 
-    return <Details header={header} sections={sections} data={shift} />;
+    return <Details header={header} sections={sections} data={shift} modal={modal} />;
 };
 
 export default ShiftDetails;

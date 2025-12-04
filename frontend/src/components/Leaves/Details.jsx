@@ -109,7 +109,7 @@ const LeaveDetails = ({ id, modal }) => {
                     item: {
                         idField: 'id',
                         dataField: ['first_name', 'last_name'],
-                        onClick: (id) => openDialog({content: 'userDetails', contentId: id})
+                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
                     }
                 }
             }

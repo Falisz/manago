@@ -5,7 +5,7 @@ import ConfirmPrompt from '../components/ConfirmPrompt';
 import InWorks from '../components/InWorks';
 import Modal from "../components/Modal";
 import LeaveDetails from '../components/Leaves/Details';
-import {LeaveRequestForm} from '../components/Leaves/Index';
+import LeaveRequestForm from '../components/Leaves/RequestForm';
 import PostDetails from '../components/Posts/Details';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
@@ -30,7 +30,8 @@ const MODALS = {
     userDetails: {
         urlParam: 'user',
         component: (modal) => <UserDetails userId={modal.contentId} modal={modal.id}/>,
-        type: 'dialog'
+        type: 'dialog',
+        closeButton: false
     },
     userEdit: {
         urlParam: 'editUser',
@@ -54,7 +55,8 @@ const MODALS = {
     roleDetails: {
         urlParam: 'role',
         component: (modal) => <RoleDetails roleId={modal.contentId} modal={modal.id}/>,
-        type: 'dialog'
+        type: 'dialog',
+        closeButton: false
     },
     roleEdit: {
         urlParam: 'editRole',
@@ -68,7 +70,8 @@ const MODALS = {
     teamDetails: {
         urlParam: 'team',
         component: (modal) => <TeamDetails teamId={modal.contentId} modal={modal.id}/>,
-        type: 'dialog'
+        type: 'dialog',
+        closeButton: false
     },
     teamEdit: {
         urlParam: 'editTeam',
@@ -85,7 +88,8 @@ const MODALS = {
     shiftDetails: {
         urlParam: 'shift',
         component: (modal) => <ShiftDetails shiftId={modal.contentId} modal={modal.id}/>,
-        type: 'dialog'
+        type: 'dialog',
+        closeButton: false
     },
     shiftEdit: {
         urlParam: 'editShift',
@@ -99,7 +103,8 @@ const MODALS = {
     leaveDetails: {
         urlParam: 'leave',
         component: (modal) => <LeaveDetails id={modal.contentId} modal={modal.id}/>,
-        type: 'dialog'
+        type: 'dialog',
+        closeButton: false
     },
     postDetails: {
         urlParam: 'post',
@@ -149,8 +154,7 @@ export const NavProvider = ({ children }) => {
         const currentModals = modalsOverride || modalsRef.current || {};
 
         const newParams = new URLSearchParams(search);
-        const modalKeys = ['new', 'user', 'editUser', 'role', 'editRole', 'team', 'editTeam', 'post'];
-        modalKeys.forEach((k) => newParams.delete(k));
+        Object.values(MODALS).map((config) => config.urlParam).forEach((key) => newParams.delete(key));
 
         Object.values(currentModals).forEach((modal) => {
             const modalConfig = MODALS[modal.content];
@@ -282,7 +286,7 @@ export const NavProvider = ({ children }) => {
             const contentId = searchParams.get(config.urlParam);
             
             if (contentId) 
-                openModal({ content: key, contentId, type: config.type || 'pane' });
+                openModal({ content: key, contentId, type: config.type || 'pane', closeButton: config.closeButton });
         });
         
         const newResource = searchParams.get('new');
@@ -355,6 +359,7 @@ export const NavProvider = ({ children }) => {
                     key={index}
                     type={modal.type}
                     isVisible={modal.isVisible}
+                    closeButton={modal.closeButton}
                     style={modal.style}
                     zIndex={1000 + index * 10}
                     onClose={closeTopModal}

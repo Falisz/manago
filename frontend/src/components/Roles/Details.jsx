@@ -6,7 +6,7 @@ import {useRoles} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 
-const RoleDetails = ({ roleId }) => {
+const RoleDetails = ({ roleId, modal }) => {
     const { role, loading, fetchRole, deleteRole } = useRoles();
     const { refreshData, refreshTriggers } = useApp();
     const { openModal, closeTopModal } = useNav();
@@ -41,24 +41,25 @@ const RoleDetails = ({ roleId }) => {
     }, [roleId, openModal, deleteRole, refreshData, closeTopModal]);
 
     const header = useMemo(() => ({
-        prefix: {
-            dataField: 'id',
-            title: 'Role ID',
-        },
         title: {
             dataField: 'name',
+        },
+        subtitle: {
+            hash: true,
+            dataField: 'id',
+            title: 'Role ID',
         },
         buttons: !role?.system_default ? {
             edit: {
                 className: 'edit',
                 icon: 'edit',
-                title: 'Edit User',
+                label: 'Edit',
                 onClick: () => openModal({content: 'roleEdit', contentId: roleId})
             },
             delete: {
                 className: 'delete',
                 icon: 'delete',
-                title: 'Delete User',
+                label: 'Delete',
                 onClick: handleDelete
             }
         } : null
@@ -106,7 +107,7 @@ const RoleDetails = ({ roleId }) => {
     if (!role)
         return <h1>Role not found!</h1>;
 
-    return <Details header={header} sections={sections} data={role} />;
+    return <Details header={header} sections={sections} data={role} modal={modal} />;
 };
 
 export default RoleDetails;

@@ -6,10 +6,10 @@ import {useTeams} from '../../hooks/useResource';
 import Details from '../Details';
 import Loader from '../Loader';
 
-const TeamDetails = ({ teamId }) => {
+const TeamDetails = ({ teamId, modal }) => {
     const { team, loading, fetchTeam, deleteTeam } = useTeams();
     const { refreshData, refreshTriggers } = useApp();
-    const { openModal, openPopUp, closeTopModal } = useNav();
+    const { openModal, openDialog, openPopUp, closeTopModal } = useNav();
 
     useEffect(() => {
         const refresh = refreshTriggers?.team?.data === teamId;
@@ -60,41 +60,42 @@ const TeamDetails = ({ teamId }) => {
     const userStructure = useMemo(() => ({
         idField: 'id',
         dataField: ['first_name', 'last_name'],
-        onClick: (id) => openModal({ content: 'userDetails', contentId: id, type: 'dialog' }),
+        onClick: (id) => openDialog({ content: 'userDetails', contentId: id, closeButton: false }),
         suffix: {
             dataField: 'team',
             idField: 'id',
             nameField: 'name',
             condition: 'neq',
-            onClick: (id) => openModal({content: 'teamDetails', contentId: id, type: 'dialog' }),
+            onClick: (id) => openDialog({content: 'teamDetails', contentId: id, closeButton: false }),
         }
-    }), [openModal]);
+    }), [openDialog]);
 
     const teamStructure = useMemo(() => ({
         idField: 'id',
         dataField: 'name',
-        onClick: (id) => {openModal({ content: 'teamDetails', contentId: id, type: 'dialog' })}
-    }), [openModal]);
+        onClick: (id) => {openDialog({ content: 'teamDetails', contentId: id, closeButton: false })}
+    }), [openDialog]);
 
     const header = useMemo(() => ({
-        prefix: {
-            dataField: 'id',
-            title: 'Team ID'
-        },
         title: {
             dataField: 'name',
+        },
+        subtitle: {
+            hash: true,
+            dataField: 'id',
+            title: 'Team ID'
         },
         buttons: {
             edit: {
                 className: 'edit',
                 icon: 'edit',
-                title: 'Edit Team',
+                label: 'Edit',
                 onClick: () => openModal({content: 'teamEdit', contentId: teamId})
             },
             delete: {
                 className: 'delete',
                 icon: 'delete',
-                title: 'Delete Team',
+                label: 'Delete',
                 onClick: handleDelete
             }
         }
@@ -166,7 +167,7 @@ const TeamDetails = ({ teamId }) => {
     if (!team)
         return <h1>Team not found!</h1>;
 
-    return <Details header={header} sections={sections} data={team} />;
+    return <Details header={header} sections={sections} data={team} modal={modal} />;
 };
 
 export default TeamDetails;
