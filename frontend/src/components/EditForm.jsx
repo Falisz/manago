@@ -225,7 +225,7 @@ const Section = ({section, formData, source, errors, handleChange}) => {
             style={style}
         >
             {header && <h2 className={'form-section-header'}>{header}</h2>}
-            {Object.entries(fields).map(([name, field], index) => <Field
+            {Object.entries(fields).map(([name, field], index) => field && <Field
                 key={index}
                 name={name}
                 field={field}
@@ -280,7 +280,7 @@ const EditForm = ({
         // Initialization of localized data into formData, if the mounting is not yet done and there is structure inputs.
         if (fields) {
             const newFormData = Object.entries(fields).reduce((acc, [name, config]) => {
-                if (!name)
+                if (!name || !config)
                     return acc;
                 let value = presetData[name];
 

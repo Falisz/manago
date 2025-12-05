@@ -41,6 +41,21 @@ function LeavesPlanner( {modal} ) {
     const currentMonth = `${year}-${month}`;
 
     const handleSelection = React.useCallback((date) => {
+        if (!leaveTypes?.find(leave => leave.id === newLeave.type)?.multiple) {
+
+            const {start_date} = newLeave;
+
+            if (start_date === date) {
+                setNewLeave({...newLeave, start_date: null});
+                setSelectedDates(new Set([]));
+            } else {
+                setNewLeave({...newLeave, start_date: date});
+                setSelectedDates(new Set([date]));
+            }
+
+            return;
+        }
+
         const {start_date, end_date} = newLeave;
 
         if (!start_date && !end_date) {
@@ -77,7 +92,7 @@ function LeavesPlanner( {modal} ) {
             setNewLeave({...newLeave, start_date: date, end_date: null});
             setSelectedDates(new Set([date]));
         }
-    },[newLeave]);
+    },[newLeave, leaveTypes]);
 
     const changeMonth = React.useCallback((val=0) => {
 
@@ -111,7 +126,7 @@ function LeavesPlanner( {modal} ) {
                     required: true,
                     max: newLeave.end_date,
                 },
-                end_date: {
+                end_date: leaveTypes?.find(leave => leave.id === newLeave.type)?.multiple && {
                     type: 'date',
                     label: 'End Date',
                     required: true,
@@ -121,19 +136,21 @@ function LeavesPlanner( {modal} ) {
                 days: {
                     type: 'content',
                     label: 'Days',
-                    content: (data) => {
+                    content: () => {
                         let days = 0;
 
-                        if (data.start_date && data.end_date) {
-                            const start = new Date(data.start_date);
-                            const end = new Date(data.end_date);
+                        if (newLeave.start_date && newLeave.end_date) {
+                            const start = new Date(newLeave.start_date);
+                            const end = new Date(newLeave.end_date);
 
                             if (!isNaN(start) && !isNaN(end)) {
                                 const diffInMs = end - start;
                                 days = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
                             }
+                        } else {
+                            days = 1;
                         }
-                        return <span style={{padding: '5px'}}>{days} days</span>;
+                        return <span style={{padding: '5px'}}>{days} day{days !== 1 && 's'}</span>;
                     }
                 }
             }
