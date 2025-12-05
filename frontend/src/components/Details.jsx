@@ -172,7 +172,7 @@ const SectionField = ({ field, data }) => {
         if (!item)
             return null;
 
-        const { idField = 'id', dataField: itemDataField, text: itemText, onClick, style = {} } = field.item;
+        const { idField = 'id', dataField: itemDataField = 'name', text: itemText, onClick, style = {} } = (field.item || {});
 
         const itemId = item[idField];
 

@@ -784,24 +784,29 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
     const include = [
         { model: User, attributes: ['id', 'first_name', 'last_name'] },
         { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver' },
+        { model: RequestStatus, attributes: ['id', 'name']},
         { model: LeaveType, attributes: ['name', 'color'] }
     ];
 
-    if (isNumberOrNumberArray(id)) {
-        const leave = await Leave.findOne({where: {id}, include});
-
+    const flattenLeave = (leave) => {
         if (!leave)
             return null;
 
         const data = leave.toJSON();
         data.user = leave['User'].toJSON();
         data.approver = leave['Approver']?.toJSON();
-        data.type = leave['LeaveType']?.name;
-        data.color = leave['LeaveType']?.color;
+        data.type = leave['LeaveType']?.toJSON();
+        data.status = leave['RequestStatus']?.toJSON();
         delete data['User'];
         delete data['Approver'];
         delete data['LeaveType'];
+        delete data['RequestStatus'];
         return data;
+    };
+
+    if (isNumberOrNumberArray(id)) {
+        const leave = await Leave.findOne({where: {id}, include});
+        return flattenLeave(leave);
     }
 
     const where = {};
@@ -829,20 +834,7 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
     if (!leaves || !leaves.length)
         return null;
 
-    return await Promise.all(leaves.map(async leave => {
-        const rawData = leave.toJSON();
-
-        rawData.user = leave['User'].toJSON();
-        rawData.approver = leave['Approver']?.toJSON();
-        rawData.type = leave['LeaveType']?.name;
-        rawData.color = leave['LeaveType']?.color;
-
-        delete rawData['User'];
-        delete rawData['Approver'];
-        delete rawData['LeaveType'];
-
-        return rawData;
-    }));
+    return leaves.map(leave => flattenLeave(leave));
 }
 
 /**

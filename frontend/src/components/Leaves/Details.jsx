@@ -6,7 +6,7 @@ import {useLeaves, useRequestStatuses} from '../../hooks/useResource';
 import Details from '../Details';
 
 const LeaveDetails = ({ id, modal }) => {
-    const { refreshTriggers, user } = useApp();
+    const { refreshData, refreshTriggers, user } = useApp();
     const { openPopUp, openDialog, closeTopModal } = useNav();
     const { leave, loading, fetchLeave, saveLeave, deleteLeave } = useLeaves();
     const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
@@ -14,10 +14,22 @@ const LeaveDetails = ({ id, modal }) => {
     useEffect(() => { fetchRequestStatuses(); }, [fetchRequestStatuses]);
 
     useEffect(() => {
-        const reload = refreshTriggers?.leave?.data === parseInt(id);
-        if (reload) delete refreshTriggers.leave;
+        const reload = refreshTriggers?.aleave?.data === parseInt(id);
+        if (reload) delete refreshTriggers.aleave;
         if (id && (!leave || reload)) fetchLeave({id, reload}).then();
-    }, [fetchLeave, leave, id, refreshTriggers.leave]);
+    }, [fetchLeave, leave, id, refreshTriggers.aleave]);
+
+    const handleRequest = useCallback(() => {
+        openPopUp({
+            content: 'confirm',
+            message: 'Are you sure you want to request for this Leave?',
+            onConfirm: async () => {
+                const success = await saveLeave({id, data: {status: 1}});
+                if (!success) return;
+                refreshData('aleave', id);
+            }
+        });
+    }, [id, refreshData]);
 
     const handleCancel = useCallback(() => {
 
@@ -34,10 +46,10 @@ const LeaveDetails = ({ id, modal }) => {
                     await deleteLeave({id}) :
                     await saveLeave({id, data: {status: 4}});
                 if (!success) return;
-                closeTopModal();
+                refreshData('aleave', id);
             },
         });
-    }, [id, leave, openPopUp, saveLeave, deleteLeave, closeTopModal]);
+    }, [id, leave, openPopUp, saveLeave, deleteLeave, closeTopModal, refreshData]);
 
     const handleApproval = useCallback((id, status, action = 'accept') => {
         openPopUp({
@@ -46,45 +58,52 @@ const LeaveDetails = ({ id, modal }) => {
             onConfirm: async () => {
                 const success = await saveLeave({id, data: {status}});
                 if (!success) return;
-                closeTopModal();
-            },
+                refreshData('aleave', id);
+            }
         });
-    }, [openPopUp, saveLeave, closeTopModal]);
+    }, [openPopUp, saveLeave, closeTopModal, refreshData]);
 
     const buttons = useMemo(() => {
 
         const yours = leave?.user?.id === user.id;
-        const managed = user?.managed_users?.find(user => leave?.user?.id === user.id);
-        const planned = leave?.status === 0
-        const requested = leave?.status === 1;
-        const approved = leave?.status === 2;
-        const rejected = leave?.status === 3;
+        const managed = user?.managed_users?.find(user => leave?.user?.id === user.id) || user.permissions.includes('*');
+        const planned = leave?.status.id === 0
+        const requested = leave?.status.id === 1;
+        const approved = leave?.status.id === 2;
+        const rejected = leave?.status.id === 3;
+        const cancelRequested = leave?.status.id === 4;
 
         return {
+            request: yours && planned && {
+                className: 'request',
+                icon: 'publish',
+                label: 'Request',
+                onClick: handleRequest
+            },
             delete: yours && (planned || requested) && {
                 className: 'delete',
                 icon: 'delete',
                 label: 'Discard',
                 onClick: handleCancel
             },
-            accept: managed && (requested || rejected) && {
+            accept: managed && (requested || rejected || cancelRequested) && {
                 className: 'accept',
                 icon: 'check_circle',
                 label: rejected ? 'Re-Approve' : 'Accept',
                 onClick: () =>
-                    handleApproval(leave.id, [1,3].includes(leave.status) ? 2 : leave.status === 4 ? 5 : null, 'approve')
+                    handleApproval(leave.id, [1,3].includes(leave.status.id) ? 2 : leave.status.id === 4 ? 5 : null, 'approve')
             },
-            reject: managed && requested && {
+            reject: managed && (requested || cancelRequested) && {
                 className: 'reject',
                 icon: 'cancel',
                 label: 'Reject',
                 onClick: () =>
-                    handleApproval(leave.id, leave.status === 1 ? 3 : leave.status === 4 ? 2 : null, 'reject')
+                    handleApproval(leave.id, leave.status.id === 1 ? 3 : leave.status.id === 4 ? 2 : null, 'reject')
             },
             cancel: yours && approved && {
                 className: 'cancel',
                 icon: 'cancel',
-                label: 'Request',
+                label: 'Cancel',
                 onClick: handleCancel
             }
         };
@@ -92,8 +111,8 @@ const LeaveDetails = ({ id, modal }) => {
     }, [leave, user, handleApproval, handleCancel]);
 
     const header = useMemo(() => ({
-        style: { borderBottom: '2px solid ' + (leave?.color || 'var(--text-color-3)') },
-        title: (user.id === leave?.user?.id ? 'Your ' : '') + leave?.type,
+        style: { borderBottom: '2px solid ' + (leave?.type?.color || 'var(--text-color-3)') },
+        title: (user.id === leave?.user?.id ? 'Your ' : '') + leave?.type?.name || 'Leave',
         subtitle: {
             hash: true,
             dataField: 'id',
@@ -139,7 +158,7 @@ const LeaveDetails = ({ id, modal }) => {
                 0: {
                     label: 'Status',
                     dataField: 'status',
-                    format: () => requestStatuses?.find(status => status.id === leave?.status)?.name
+                    dataType: 'item'
                 }
             }
         }

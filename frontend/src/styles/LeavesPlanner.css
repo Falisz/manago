@@ -23,3 +23,10 @@
 .leave-planner-preview-nav {
     margin-top: 50px;
 }
+.leave-planner-form {
+    flex-grow: 1;
+    align-self: stretch;
+}
+.leave-planner-form .form-section.form-buttons {
+    margin-top: auto;
+}

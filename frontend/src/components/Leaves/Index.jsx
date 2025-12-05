@@ -2,20 +2,20 @@
 import React, {useCallback, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import {useLeaves, useRequestStatuses} from '../../hooks/useResource';
+import {useLeaves} from '../../hooks/useResource';
 import Button from '../Button';
 import Loader from '../Loader';
 import Table from '../Table';
 import '../../styles/Leaves.css';
 
-const LeaveItem = ({leave, requestStatuses}) => {
+const LeaveItem = ({leave}) => {
 
     const { openPopUp, openDialog, closeTopModal } = useNav();
     const { saveLeave, deleteLeave } = useLeaves();
 
     const handleCancel = useCallback(() => {
 
-        const discard = leave.status === 0 || leave.status === 1;
+        const discard = leave.status.id === 0 || leave.status.id === 1;
         const message = discard ?
             'Are you sure you want to delete this Planned Leave?' :
             'Are you sure you want to request for cancellation of this Leave?';
@@ -36,26 +36,24 @@ const LeaveItem = ({leave, requestStatuses}) => {
     if (!leave)
         return null;
 
-    const { id, type, color, start_date, end_date, days, user_note, approver, approver_note, status } = leave;
+    const { id, type, start_date, end_date, days, user_note, status } = leave;
 
     return (
         <div className={'index-leave-item'}>
             <div className={'index-leave-item-header'}>
                 <h2
                     className={'app-clickable'}
-                    style={{color}}
+                    style={{color: type.color}}
                     onClick={()=>openDialog({content: 'leaveDetails', contentId: id, closeButton: false})}
-                >{type || 'Leave'}</h2>
-                {(status === 0 || status === 1) && 
+                >{type.name || 'Leave'}</h2>
+                {(status.id === 0 || status.id === 1) &&
                     <Button icon={'remove_circle'} transparent title={'Discard'} onClick={handleCancel}/>}
-                {status === 2 && 
+                {status.id === 2 &&
                     <Button icon={'cancel'} transparent title={'Request Cancellation'} onClick={handleCancel}/>}
             </div>
             <p>{start_date} - {end_date} ({days} day{days !== 1 && 's'})</p>
             {user_note && <p>{user_note}</p>}
-            <p><i>{requestStatuses?.find(s => s.id === status)?.name || 'Unknown status'}</i></p>
-            {approver && <p>Approved by: {approver.first_name} {approver.last_name}</p>}
-            {approver_note && <p>{approver_note}</p>}
+            <p><i>{status?.name || 'Unknown status'}</i></p>
         </div>
     );
 };
@@ -64,11 +62,6 @@ const YourLeaves = () => {
     const { user, refreshTriggers } = useApp();
     const { openDialog } = useNav();
     const { leaves, loading, fetchLeaves } = useLeaves();
-    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
-
-    React.useEffect(() => {
-        fetchRequestStatuses();
-    }, [fetchRequestStatuses]);
 
     React.useEffect(() => {
         const refresh = refreshTriggers?.leaves || false;
@@ -90,7 +83,7 @@ const YourLeaves = () => {
             <div className={'leaves-container app-scroll'}>
                 {loading && <Loader/>}
                 {!loading && leaves?.map(leave =>
-                    <LeaveItem key={leave.id} leave={leave} requestStatuses={requestStatuses}/>)}
+                    <LeaveItem key={leave.id} leave={leave}/>)}
             </div>
         </div>
     );
@@ -100,11 +93,6 @@ const OthersLeaves = ({requests}) => {
     const { user, refreshTriggers } = useApp();
     const { openDialog, openPopUp, closeTopModal } = useNav();
     const { leaves, loading, fetchLeaves, saveLeave } = useLeaves();
-    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
-
-    React.useEffect(() => {
-        fetchRequestStatuses().then();
-    }, [fetchRequestStatuses]);
 
     React.useEffect(() => {
         if (!user.id) return;
@@ -130,7 +118,7 @@ const OthersLeaves = ({requests}) => {
         0: {
             label: 'Leave',
             name: 'type',
-            type: 'string',
+            type: 'item',
             style: {cursor: 'pointer'},
             onClick: (data) => openDialog({content: 'leaveDetails', contentId: data.id, closeButton: false})
         },
@@ -153,27 +141,27 @@ const OthersLeaves = ({requests}) => {
         4: {
             label: 'Status',
             name: 'status',
-            value: (data) => requestStatuses?.find(s => s.id === data.status)?.name
+            type: 'item'
         },
         5: requests ? {
             label: 'Action',
             value: (data) => {
-                if (data.status === 1 || data.status === 4)
+                if (data.status.id === 1 || data.status.id === 4)
                     return <div style={{display: 'flex', gap: '5px'}}>
                         <Button icon={'check_circle'} transparent label={'Approve'} onClick={ () => handleApproval(
                             data.id,
-                            data.status === 1 ? 2 : data.status === 4 ? 5 : null, 'accept'
+                            data.status.id === 1 ? 2 : data.status.id === 4 ? 5 : null, 'accept'
                         )} />
                         <Button icon={'cancel'} transparent label={'Reject'} onClick={ () => handleApproval(
                             data.id,
-                            data.status === 1 ? 3 : data.status === 4 ? 2 : null, 'reject'
+                            data.status.id === 1 ? 3 : data.status.id === 4 ? 2 : null, 'reject'
                         )} />
                     </div>
                 else
                     return null;
             }
         } : null
-    }), [requests, requestStatuses, handleApproval, openDialog]);
+    }), [requests, handleApproval, openDialog]);
 
     return (
         <Table
@@ -183,7 +171,7 @@ const OthersLeaves = ({requests}) => {
             }
             className={requests ? 'leave-requests-table' : 'leave-reportees-table'}
             data={leaves?.filter(leave =>
-                requests ? [1, 4].includes(leave.status) : [2, 3, 5].includes(leave.status))}
+                requests ? [1, 4].includes(leave.status.id) : [2, 3, 5].includes(leave.status.id))}
             fields={fields}
             dataPlaceholder={'No leave requests found.'}
             loading={loading}

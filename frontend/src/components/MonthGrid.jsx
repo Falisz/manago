@@ -73,8 +73,8 @@ function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1 }
 
                         let numberTitle, color, onClick = () => setSelectedDate(dateStr);
                         if (item?.item_type === 'leave') {
-                            numberTitle = item.type + ' | ' + item.status;
-                            color = item.color;
+                            numberTitle = item.type?.name + ' | ' + item.status?.name;
+                            color = item.type?.color;
                             onClick = () => openDialog(
                                 {content: 'leaveDetails', contentId: item.id, closeButton: false}
                             );

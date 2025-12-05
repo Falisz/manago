@@ -103,6 +103,7 @@ function LeavesPlanner( {modal} ) {
             }
         },
         1: {
+            style: {flexWrap: 'nowrap'},
             fields: {
                 start_date: {
                     type: 'date',
@@ -116,12 +117,6 @@ function LeavesPlanner( {modal} ) {
                     required: true,
                     min: newLeave.start_date,
                     disabled: !newLeave.start_date
-                },
-                status: {
-                    type: 'checkbox',
-                    label: 'request',
-                    inputLabel: 'Request for Leave',
-                    style: {alignItems: 'flex-start'}
                 },
                 days: {
                     type: 'content',
@@ -138,8 +133,18 @@ function LeavesPlanner( {modal} ) {
                                 days = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
                             }
                         }
-                        return <p>{days} days</p>;
+                        return <span style={{padding: '5px'}}>{days} days</span>;
                     }
+                }
+            }
+        },
+        2: {
+            fields: {
+                status: {
+                    type: 'checkbox',
+                    label: 'request',
+                    inputLabel: 'Request for Leave',
+                    style: {alignItems: 'flex-start'}
                 }
             }
         }
@@ -163,7 +168,7 @@ function LeavesPlanner( {modal} ) {
 
     const leaveItems = useMemo(() => {
         const dates = {};
-        leaves?.forEach(leave => {
+        leaves?.filter(leave => ![3,5].includes(leave.status.id)).forEach(leave => {
             leave.item_type='leave';
             const { start_date, end_date } = leave;
             if (start_date && end_date)
@@ -209,6 +214,7 @@ function LeavesPlanner( {modal} ) {
                     onClick={() => changeMonth(1)}
                 />
                 <EditForm
+                    className={'leave-planner-form'}
                     sections={sections}
                     onSubmit={async () => await saveLeave({data: newLeave})}
                     onChange={handleChange}

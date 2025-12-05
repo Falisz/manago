@@ -71,6 +71,7 @@ export const AppProvider = ({ children }) => {
     });
     const [refreshTriggers, setRefreshTriggers] = useState({
         users: null,
+        aleave: null,
         leaves: null,
         teams: null,
         holidays: null
