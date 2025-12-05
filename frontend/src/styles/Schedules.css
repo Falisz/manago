@@ -3,6 +3,9 @@
     display: grid;
     grid-template-rows: 2fr 1fr;
     grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas:
+        "a b c"
+        "d d c";
     gap: 20px;
     padding: 10px;
     flex-wrap: wrap;
@@ -26,6 +29,18 @@
 .app.fluent .schedules-dashboard-widget {
     background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
+}
+.schedules-dashboard .your-schedules {
+    grid-area: a;
+}
+.schedules-dashboard .your-team-schedule {
+    grid-area: b;
+}
+.schedules-dashboard .schedule-drafts {
+    grid-area: c;
+}
+.schedules-dashboard .pending-approvals {
+    grid-area: d;
 }
 .schedules-dashboard-widget .header {
     display: flex;

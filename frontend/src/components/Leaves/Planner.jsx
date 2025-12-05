@@ -234,6 +234,7 @@ function LeavesPlanner( {modal} ) {
                     className={'leave-planner-form'}
                     sections={sections}
                     onSubmit={async () => await saveLeave({data: newLeave})}
+                    submitLabel={newLeave.status ? 'Request' : 'Save as Planned' }
                     onChange={handleChange}
                     modal={modal}
                     source={newLeave}

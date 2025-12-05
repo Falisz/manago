@@ -77,15 +77,15 @@ const JobPosts = () => {
 const WorkPlannerSettings = () => {
     return (
         <div className={'work-planner-settings'}>
-            <div className={'page-section general-settings'}>
+            <div className={'page-section seethrough general-settings'}>
                 <h1>Work Planner General Settings</h1>
             </div>
             <Holidays />
-            <div className={'page-section leave-types'}>
+            <div className={'page-section seethrough leave-types'}>
                 <h1>Leave Types</h1>
             </div>
             <JobPosts />
-            <div className={'page-section job-locations'}>
+            <div className={'page-section seethrough job-locations'}>
                 <h1>Job Locations</h1>
             </div>
         </div>
