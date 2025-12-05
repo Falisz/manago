@@ -153,14 +153,8 @@ export const Leave = sequelize.define('Leave', {
         type: DataTypes.DATEONLY,
         allowNull: false,
     },
-    end_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-    },
-    days: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
+    end_date: DataTypes.DATEONLY,
+    days: DataTypes.INTEGER,
     include_weekends: DataTypes.BOOLEAN,
     include_holidays: DataTypes.BOOLEAN, 
     status: {

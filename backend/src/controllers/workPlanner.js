@@ -849,12 +849,11 @@ export async function createLeave(data) {
     if (!data.user)
         return { success: false, message: 'User requesting a Leave not provided.'};
 
-    if (!data.start_date || !data.end_date || !data.days)
-        return { 
-            success: false,
-            message: `Leaves time range not provided. 
-            (start_date: ${data.start_date}, end_date: ${data.end_date}, days: ${data.days})` 
-        };
+    if (!data.start_date)
+        return { success: false, message: 'Leaves Date needed!'};
+
+    if (!data.end_date)
+        data.days = 1;
     
     if (!(await LeaveType.findOne({ where: { id: data.type } })))
         return { success: false, message: 'Leave Type not found.' };

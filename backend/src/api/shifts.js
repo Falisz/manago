@@ -152,7 +152,7 @@ const updateShiftHandler = async (req, res) => {
                 hasFullAccess,
                 allowedIds,
                 forbiddenIds 
-            } = await checkAccess(req.session.user, 'update', 'shift', Object.keys(shifts));
+            } = await checkAccess(req.session.user, 'update', 'shift', ids);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -167,8 +167,8 @@ const updateShiftHandler = async (req, res) => {
 
             const updated = [];
 
-            for (const [id, shift] of Object.entries(shifts)) {
-                const { success, message } = await updateShift(parseInt(id), shift);
+            for (const id of ids) {
+                const { success, message } = await updateShift(parseInt(id), data);
 
                 if (success)
                     updated.push(await getShift({ id }));
