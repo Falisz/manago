@@ -374,6 +374,9 @@ export const AppProvider = ({ children }) => {
     const appClasses = useMemo(() => {
         let classes = [];
 
+        if (appState.loading)
+            classes.push('loading');
+
         if (!appState.user)
             classes.push('login');
 

@@ -6,9 +6,13 @@ import MonthGrid from "./MonthGrid";
 
 const Test = () => {
 
-    const { showPopUp } = useApp();
+    const { showPopUp, setLoading } = useApp();
 
     return <div>
+        <Button
+            label={'Loading'}
+            onClick={() => setLoading(true)}
+        />
         <Button
             label={'info'}
             onClick={() => showPopUp({type: 'info', content: 'Info'})}

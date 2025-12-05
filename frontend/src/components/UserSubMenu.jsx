@@ -3,7 +3,6 @@ import React from 'react';
 import {Link, useNavigate} from 'react-router-dom';
 import useApp from '../contexts/AppContext';
 import Icon from './Icon';
-import Button from './Button';
 
 const UserSubMenu = () => {
     const { user, toggleView, toggleTheme, logoutUser } = useApp();
@@ -48,14 +47,15 @@ const UserSubMenu = () => {
                     <Icon i={'view_compact_alt'} />
                 </Link>
             }
-            <Button
+            <Link
                 key='logout'
-                className='sub-menu-link logout'
+                className='sub-menu-link'
+                to='#'
                 onClick={handleLogout}
             >
                 Logout
                 <Icon i={'logout'} />
-            </Button>
+            </Link>
         </nav>
     );
 

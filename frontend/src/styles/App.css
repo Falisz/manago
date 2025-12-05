@@ -198,6 +198,9 @@ button .material-symbols-rounded {
 .app a {
     color: var(--link-color);
 }
+.app.loading {
+    display: flex;
+}
 
 .app-notice {
     height: fit-content;
