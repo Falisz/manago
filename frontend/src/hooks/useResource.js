@@ -318,8 +318,10 @@ const useResource = (resource) => {
                 });
 
             refreshData(name[1], true);
-            if (!isNew && !batchMode)
+            if (!isNew && !batchMode) {
                 refreshData(name[0], parseInt(id));
+                resourceCache[id] = result[name[0]];
+            }
 
             return result[name[0]];
         } catch (err) {

@@ -97,7 +97,7 @@
     transition: opacity 0.3s;
 }
 .modal-close-button .icon {
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 .modal-close-button:hover {
     opacity: 1;

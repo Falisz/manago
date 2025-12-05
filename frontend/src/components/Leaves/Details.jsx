@@ -144,12 +144,13 @@ const LeaveDetails = ({ id, modal }) => {
             },
             fields: {
                 0: {
-                    label: 'Start Date',
+                    label: leave?.end_date ? 'Start Date' : 'Date',
                     dataField: 'start_date',
                 },
                 1: {
                     label: 'End Date',
-                    dataField: 'end_date'
+                    dataField: 'end_date',
+                    hideEmpty: true
                 }
             }
         },

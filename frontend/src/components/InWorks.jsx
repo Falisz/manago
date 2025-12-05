@@ -1,11 +1,11 @@
 // FRONTEND/Components/InWorks.jsx
 import {Link, useLocation} from 'react-router-dom';
-import useApp from '../contexts/AppContext';
+import useNav from '../contexts/NavContext';
 import Icon from './Icon';
 
-export const InWorks = ({ title, icon, description = null, modal = false, hideReturnLink = false }) => {
+export const InWorks = ({ title, icon, description = null, modal, hideReturnLink = false }) => {
     const location = useLocation();
-    const { closeTopModal } = useApp();
+    const { closeTopModal } = useNav();
     return (
         <div className='app-notice app-in-works'>
             <Icon className={'main-icon'} i={icon ? icon : 'manufacturing'} s={true} />

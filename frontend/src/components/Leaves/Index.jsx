@@ -96,7 +96,7 @@ const OthersLeaves = ({requests}) => {
 
     React.useEffect(() => {
         if (!user.id) return;
-        const refresh = refreshTriggers?.leaves || refreshTriggers?.leave || false;
+        const refresh = refreshTriggers?.leaves || refreshTriggers?.aleave || false;
         if (refresh) delete refreshTriggers.leaves;
         if (refresh) delete refreshTriggers.leave;
         if (refresh || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();

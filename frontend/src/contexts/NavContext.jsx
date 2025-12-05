@@ -20,7 +20,7 @@ const ANIMATION_DURATION = 300;
 
 const MODALS = {
     default: {
-        component: (modal) => <InWorks title={'Missing Modal'} modal={modal.id} />
+        component: (modal) => <InWorks title={'Missing'} modal={modal.id} />
     },
     userNew: {
         urlParam: 'new',

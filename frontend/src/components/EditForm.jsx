@@ -393,7 +393,7 @@ const EditForm = ({
             setErrors(errors);
 
             Object.entries(fields).forEach(([name, config]) => {
-                if (!name || !config.type)
+                if (!name || !config?.type)
                     return;
 
                 const invalid = validateField(name, data[name], config, data);
