@@ -1,13 +1,11 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
-- Monthly grid view of shifts
-- Holidays
-- Holiday and Weekend Working
+- Holidays API
+- Holiday and Weekend Working API
 - Users - contractual data, like time when joined company, contract types, start and end-dates, notice-period info.
 - LeaveBalance API
-- JobPosts and JobLocations API
-- Leave Planner - separate component from Schedules Editor, just for scheduling eventual Leaves. Leave requests should have one additional type "planned" meaning it is not yet pending but already can be seen by manager as a plan for a leave. From the Schedule planner those Leaves can be also already marked requested for approval. Need to make and refine eave requests, comp-offs and sick leaves here.
+- JobPosts and JobLocations API.
 - Dashboard widgets for the your and your team schedules. And pending leave approvals. Also additional dashboard widget for "your oncoming leaves".
 ### TimeSheets (till 14-12-25)
 - Recorded efforts and labor - to help bill the projects.
@@ -29,6 +27,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
 # MVP ENDS HERE
 ### Work Planner
+- Jobs and Months Schedules.
 - Dispo Planner - yet separate editor.
 - Dispositions and DispoPresets.
 - App Settings with configs like enabling job locations and job posts.
@@ -45,5 +44,8 @@ Following roadmap and tasks to-do as of 2025-10-02:
 ### Posts and channels
 - Posts-Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 ### Skills, Trainings and Assessments
+- TBD
 ### Blogs
+- TBD
 ### Goals and KPIs
+- TBD
