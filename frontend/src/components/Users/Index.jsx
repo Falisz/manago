@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useUsers} from '../../hooks/useResource';
-import Loader from '../Loader';
 import Table from '../Table';
 
 const UsersIndexPage = ({content='users'}) => {
@@ -169,9 +168,6 @@ const UsersIndexPage = ({content='users'}) => {
         }
     ]), [openModal, users, handleUserDelete, handleUsersDelete]);
 
-    if (loading) 
-        return <Loader />;
-
     return (
         <Table
             data={users}
@@ -181,6 +177,7 @@ const UsersIndexPage = ({content='users'}) => {
             filterable={true}
             contextMenuActions={contextMenuActions}
             selectableRows={true}
+            loading={loading}
             dataPlaceholder={'No Users found.'}
         />
     );

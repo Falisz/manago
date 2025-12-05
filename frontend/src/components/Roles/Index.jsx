@@ -2,7 +2,6 @@
 import React, { useEffect, useMemo } from 'react';
 import useApp from '../../contexts/AppContext';
 import {useRoles} from '../../hooks/useResource';
-import Loader from '../Loader';
 import Table from '../Table';
 
 const RolesIndex = () => {
@@ -52,18 +51,16 @@ const RolesIndex = () => {
         }
     }), []);
 
-    if (loading)
-        return <Loader />;
-
     return (
         <Table
+            style={{minWidth: '250px', maxWidth: 'max(40%, 500px)'}}
             data={roles}
             header={header}
             fields={fields}
             columnHeaders={false}
             descriptionFields={'description'}
+            loading={loading}
             dataPlaceholder={'No Roles found.'}
-            style={{maxWidth: 'max(40%, 500px)'}}
         />
     );
 };

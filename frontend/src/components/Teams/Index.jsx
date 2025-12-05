@@ -3,7 +3,6 @@ import React, { useEffect, useCallback, useMemo } from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useTeams} from '../../hooks/useResource';
-import Loader from '../Loader';
 import Table from '../Table';
 
 const TeamsIndex = () => {
@@ -170,9 +169,6 @@ const TeamsIndex = () => {
         },
     ]), [openModal, handleTeamDelete, handleTeamsDelete, teams]);
 
-    if (loading) 
-        return <Loader />;
-
     return (
         <Table
             data={teams && teams.filter(team => team.parent_team === null)}
@@ -184,6 +180,7 @@ const TeamsIndex = () => {
             filterable={true}
             contextMenuActions={contextMenuActions}
             selectableRows={true}
+            loading={loading}
             dataPlaceholder={'No Teams found.'}
         />
     );
