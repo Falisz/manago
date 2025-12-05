@@ -1,0 +1,25 @@
+.leave-planner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.leave-planner-header {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--text-color);
+}
+.leave-planner-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 300;
+    font-family: var(--font-family-condensed), sans-serif;
+}
+.leave-planner-content {
+    display: flex;
+    gap: 20px;
+    align-items: start;
+}
+.leave-planner-preview-nav {
+    margin-top: 50px;
+}

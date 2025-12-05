@@ -72,7 +72,7 @@ const Field = ({name, field, formData, source, errors, handleChange}) => {
             onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
             placeholder={`${field.placeholder || field.label}`}
             required={field.required}
-            disabled={field.disabled}
+            disabled={typeof field.disabled === 'function' ? field.disabled(formData) : field.disabled }
         />;
 
     if (type === 'time')
@@ -86,7 +86,7 @@ const Field = ({name, field, formData, source, errors, handleChange}) => {
             onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
             placeholder={`${field.placeholder || field.label}`}
             required={field.required}
-            disabled={field.disabled}
+            disabled={typeof field.disabled === 'function' ? field.disabled(formData) : field.disabled }
         />;
 
     if (type === 'textarea')
@@ -371,7 +371,7 @@ const EditForm = ({
             })()
         });
 
-        typeof onChange === 'function' && onChange(formData);
+        typeof onChange === 'function' && (!source ? onChange(formData) : onChange(e.target));
 
         setUnsavedChanges(true);
 

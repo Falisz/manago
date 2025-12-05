@@ -2,6 +2,7 @@
 import React from 'react';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
+import MonthGrid from "./MonthGrid";
 
 const Test = () => {
 
@@ -32,6 +33,20 @@ const Test = () => {
             label={'action'}
             onClick={() => showPopUp({type: 'action', content: 'action'})}
         />
+        <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center'}}>
+            <MonthGrid
+                date={'2025-10'}
+            />
+            <MonthGrid
+                date={'2025-11'}
+            />
+            <MonthGrid
+                date={'2025-12'}
+            />
+            <MonthGrid
+                date={'2026-01'}
+            />
+        </div>
     </div>;
 };
 

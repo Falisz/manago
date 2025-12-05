@@ -5,7 +5,7 @@ import ConfirmPrompt from '../components/ConfirmPrompt';
 import InWorks from '../components/InWorks';
 import Modal from "../components/Modal";
 import LeaveDetails from '../components/Leaves/Details';
-import LeaveRequestForm from '../components/Leaves/RequestForm';
+import LeavesPlanner from '../components/Leaves/Planner';
 import PostDetails from '../components/Posts/Details';
 import RoleDetails from '../components/Roles/Details';
 import RoleEdit from '../components/Roles/Edit';
@@ -98,7 +98,9 @@ const MODALS = {
     leaveNew: {
         urlParam: 'new',
         urlParamValue: 'leave',
-        component: (modal) => <LeaveRequestForm modal={modal.id}/>
+        component: (modal) => <LeavesPlanner modal={modal.id}/>,
+        type: 'dialog',
+        style: {width: 'calc(100% - 200px)'}
     },
     leaveDetails: {
         urlParam: 'leave',
@@ -288,7 +290,13 @@ export const NavProvider = ({ children }) => {
             
             if (contentId) 
                 openModal(
-                    { content: key, contentId, type: config.type || 'pane', closeButton: config.closeButton },
+                    {
+                        content: key,
+                        contentId,
+                        style: config.style || {},
+                        type: config.type || 'pane',
+                        closeButton: config.closeButton
+                    },
                     true
                 );
         });
@@ -299,7 +307,12 @@ export const NavProvider = ({ children }) => {
                 .find(([_key, config]) => config.urlParam === 'new' && config.urlParamValue === newResource);
             if (modalConfig)
                 openModal(
-                    { content: modalConfig[0] },
+                    {
+                        content: modalConfig[0],
+                        style: modalConfig[1]['style'] || {},
+                        type: modalConfig[1]['type'] || 'pane',
+                        closeButton: modalConfig[1]['closeButton'],
+                    },
                     true
                 );
         }

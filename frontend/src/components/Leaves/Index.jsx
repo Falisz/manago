@@ -82,12 +82,8 @@ const YourLeaves = () => {
                 <h1>Your Leaves</h1>
                 <div className={'header-buttons'}>
                     <Button
-                        label={'Request new Leave'}
-                        onClick={() => openDialog({content: 'leaveNew'})}
-                    />
-                    <Button
-                        label={'Open Leave Planner'}
-                        onClick={() => openDialog({content: 'leavePlanner'})}
+                        label={'New Leave'}
+                        onClick={() => openDialog({content: 'leaveNew', style:{ width: 'calc(100% - 200px)'}})}
                     />
                 </div>
             </div>
@@ -164,12 +160,14 @@ const OthersLeaves = ({requests}) => {
             value: (data) => {
                 if (data.status === 1 || data.status === 4)
                     return <div style={{display: 'flex', gap: '5px'}}>
-                        <Button icon={'check_circle'} transparent label={'Approve'} onClick={
-                            () => handleApproval(data.id, data.status === 1 ? 2 : data.status === 4 ? 5 : null, 'accept')}
-                        />
-                        <Button icon={'cancel'} transparent label={'Reject'} onClick={
-                            () => handleApproval(data.id, data.status === 1 ? 3 : data.status === 4 ? 2 : null, 'reject')}
-                        />
+                        <Button icon={'check_circle'} transparent label={'Approve'} onClick={ () => handleApproval(
+                            data.id,
+                            data.status === 1 ? 2 : data.status === 4 ? 5 : null, 'accept'
+                        )} />
+                        <Button icon={'cancel'} transparent label={'Reject'} onClick={ () => handleApproval(
+                            data.id,
+                            data.status === 1 ? 3 : data.status === 4 ? 2 : null, 'reject'
+                        )} />
                     </div>
                 else
                     return null;
