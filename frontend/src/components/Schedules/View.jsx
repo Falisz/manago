@@ -36,21 +36,21 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                     flexWrap: 'nowrap'
                 }}
             >
-                <div className={'form-group'} style={{flex: '0'}}>
-                    <label>View</label>
-                    <ComboBox
-                        name={'view'}
-                        style={{width: '5vw'}}
-                        searchable={false}
-                        value={schedule?.view || 'users'}
-                        options={[
-                            {id: 'users', name: 'Users'},
-                            {id: 'jobs', name: 'Jobs'},
-                            {id: 'monthly', name: 'Monthly'}
-                        ]}
-                        onChange={handleChange}
-                    />
-                </div>
+                {/*<div className={'form-group'} style={{flex: '0'}}>*/}
+                {/*    <label>View</label>*/}
+                {/*    <ComboBox*/}
+                {/*        name={'view'}*/}
+                {/*        style={{width: '5vw'}}*/}
+                {/*        searchable={false}*/}
+                {/*        value={schedule?.view || 'users'}*/}
+                {/*        options={[*/}
+                {/*            {id: 'users', name: 'Users'},*/}
+                {/*            {id: 'jobs', name: 'Jobs'},*/}
+                {/*            {id: 'monthly', name: 'Monthly'}*/}
+                {/*        ]}*/}
+                {/*        onChange={handleChange}*/}
+                {/*    />*/}
+                {/*</div>*/}
                 <div className={'form-group'} style={{flex: '0'}}>
                     <label>User Scope</label>
                     <div className={'form-group'} style={{flexDirection: 'row'}}>
