@@ -63,6 +63,12 @@ const appConfigs = [
         selectedOption: 'blur-1',
         module: 0,
         options: ['cloudy', 'blue-galaxy', 'violet-haze', 'raspberry-peach', 'blur-1', 'blur-2', 'blur-3', 'blur-4']
+    },
+    {
+        configName: 'dispositions',
+        selectedOption: false,
+        module: 4,
+        options: [false, true]
     }
 ];
 
@@ -829,14 +835,14 @@ const requestStatuses = [
 ];
 
 const leaveTypes = [
-    { id: 1, name: 'Annual Leave', amount: 26, color: '#FF9800' },
+    { id: 1, name: 'Annual Leave', amount: 26, color: '#FF9800', multiple: true },
     { id: 2, name: 'Leave on Demand', parent_type: 1, amount: 4, color: '#F44336' },
-    { id: 3, name: 'Sick Leaves', color: '#4CAF50' },
-    { id: 4, name: 'Compensatory OFF', color: '#2196F3' },
-    { id: 5, name: 'Personal Leave', parent_type: 1, amount: 2, color: '#9C27B0' },
+    { id: 3, name: 'Sick Leave', color: '#4CAF50', multiple: true },
+    { id: 4, name: 'Compensatory OFF', color: '#2196F3', multiple: true },
+    { id: 5, name: 'Personal Leave', parent_type: 1, amount: 2, color: '#9C27B0', multiple: true },
     { id: 6, name: 'Maternity Leave', parent_type: 1, color: '#E91E63' },
     { id: 7, name: 'Paternity Leave', parent_type: 1, color: '#3F51B5' },
-    { id: 11, name: 'Unpaid Leave', color: '#777777' },
+    { id: 11, name: 'Unpaid Leave', color: '#777777', multiple: true },
 ];
 
 const leaves = [

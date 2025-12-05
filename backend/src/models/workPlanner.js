@@ -135,7 +135,8 @@ export const LeaveType = sequelize.define('LeaveType', {
         references: { model: 'leave_types', key: 'id' }
     },
     amount: DataTypes.INTEGER,
-    color: DataTypes.STRING
+    color: DataTypes.STRING,
+    multiple: DataTypes.BOOLEAN
 }, { 
     tableName: 'leave_types',
     timestamps: false 
