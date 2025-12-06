@@ -336,7 +336,7 @@ const useResource = (resource) => {
 
             return null;
         }
-    }, [showPopUp, openModal, refreshData, name, config]);
+    }, [showPopUp, openModal, refreshData, name, config, resourceCache]);
 
     /**
      * Save assignment data for a resource by ID.

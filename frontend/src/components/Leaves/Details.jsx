@@ -7,9 +7,9 @@ import Details from '../Details';
 
 const LeaveDetails = ({ id, modal }) => {
     const { refreshData, refreshTriggers, user } = useApp();
-    const { openPopUp, openDialog, closeTopModal } = useNav();
+    const { openPopUp, openDialog } = useNav();
     const { leave, loading, fetchLeave, saveLeave, deleteLeave } = useLeaves();
-    const { requestStatuses, fetchRequestStatuses } = useRequestStatuses();
+    const { fetchRequestStatuses } = useRequestStatuses();
 
     useEffect(() => { fetchRequestStatuses(); }, [fetchRequestStatuses]);
 
@@ -29,7 +29,7 @@ const LeaveDetails = ({ id, modal }) => {
                 refreshData('aleave', id);
             }
         });
-    }, [id, refreshData]);
+    }, [openPopUp, saveLeave, id, refreshData]);
 
     const handleCancel = useCallback(() => {
 
@@ -49,7 +49,7 @@ const LeaveDetails = ({ id, modal }) => {
                 refreshData('aleave', id);
             },
         });
-    }, [id, leave, openPopUp, saveLeave, deleteLeave, closeTopModal, refreshData]);
+    }, [id, leave, openPopUp, saveLeave, deleteLeave, refreshData]);
 
     const handleApproval = useCallback((id, status, action = 'accept') => {
         openPopUp({
@@ -61,7 +61,7 @@ const LeaveDetails = ({ id, modal }) => {
                 refreshData('aleave', id);
             }
         });
-    }, [openPopUp, saveLeave, closeTopModal, refreshData]);
+    }, [openPopUp, saveLeave, refreshData]);
 
     const buttons = useMemo(() => {
 
@@ -108,7 +108,7 @@ const LeaveDetails = ({ id, modal }) => {
             }
         };
 
-    }, [leave, user, handleApproval, handleCancel]);
+    }, [leave, user, handleApproval, handleRequest, handleCancel]);
 
     const header = useMemo(() => ({
         style: { borderBottom: '2px solid ' + (leave?.type?.color || 'var(--text-color-3)') },
@@ -163,7 +163,7 @@ const LeaveDetails = ({ id, modal }) => {
                 }
             }
         }
-    }), [openDialog, requestStatuses, user.id, leave]);
+    }), [openDialog, user.id, leave]);
 
     return <Details
         header={header}
