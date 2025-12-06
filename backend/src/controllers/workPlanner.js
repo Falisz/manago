@@ -569,9 +569,11 @@ export async function deleteShift(id) {
  * Retrieves one Holiday by its ID or all Holidays if an ID is not provided.
  * @param {number|null} id - optional - Holiday ID to fetch a specific Holiday
  * @param {string} date - optional -
+ * @param from
+ * @param to
  * @returns {Promise<Object|Object[]|null>} Single Holiday, array of Holidays, or null
  */
-export async function getHoliday({id, date} = {}) {
+export async function getHoliday({id, date, from, to} = {}) {
     if (id)
         return await Holiday.findByPk(id) || null;
 
@@ -579,6 +581,15 @@ export async function getHoliday({id, date} = {}) {
 
     if (date)
         where.date = date;
+
+    else if (from && to)
+        where.date = {[Op.between]: [from, to]};
+
+    else if (from)
+        where.date = {[Op.gte]: from};
+
+    else if (to)
+        where.date = {[Op.lte]: to};
 
     return await Holiday.findAll({where}) || {};
 }
@@ -621,10 +632,13 @@ export async function updateHoliday(id, data) {
     if (!id)
         return { success: false, message: 'Holiday ID not provided.' };
 
+    if (!data)
+        return { success: false, message: 'Update data not provided.' };
+
     const holiday = await Holiday.findOne({ where: { id } });
 
     if (!holiday)
-        return { success: false, message: 'Role not found.' };
+        return { success: false, message: 'Holiday not found.' };
 
     if (data.holiday && await Holiday.findOne({ where: { date: data.date }}))
         return { success: false, message: 'There currently is other Holiday marked for the specified date.' };

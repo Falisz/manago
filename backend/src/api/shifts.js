@@ -24,7 +24,6 @@ const fetchShiftsHandler = async (req, res) => {
     let users = [];
 
     try {
-
         if (id) {
             const { hasAccess } = await checkAccess(req.session.user, 'read', 'shift', id);
 
@@ -32,12 +31,11 @@ const fetchShiftsHandler = async (req, res) => {
                 return res.status(403).json({message: 'Not permitted.'});
 
             query.id = parseInt(id);
-        } else {
 
+        } else {
             if (req.query.user) {
                 query.user = parseInt(req.query.user);
             } else if (req.query.user_scope) {
-
                 const scope = req.query.user_scope;
                 const scope_id = scope === 'you' ? req.session.user : req.query.user_scope_id;
 
@@ -54,7 +52,6 @@ const fetchShiftsHandler = async (req, res) => {
             } else {
                 if (req.query.start_date)
                     query.from = req.query.start_date;
-
                 if (req.query.end_date)
                     query.to = req.query.end_date;
             }
@@ -196,7 +193,7 @@ const updateShiftHandler = async (req, res) => {
             res.json({ message, shift });
         }
     } catch (err) {
-        console.error('Error updating a Shift:', err, 'Provided data: ', req.body);
+        console.error(`Error updating a Shift (ID: ${id}):`, err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };

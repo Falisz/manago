@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.9.0",
     "js-cookie": "^3.0.5",
+    "npm": "^11.6.4",
     "react": "^19.1.0",
     "react-contexify": "^6.0.0",
     "react-dom": "^19.1.0",
