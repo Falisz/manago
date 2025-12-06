@@ -35,7 +35,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
         hasAccess, 
         allowedIds, 
         forbiddenIds 
-    } = await checkAccess(req.session.user, 'delete', resourceName.toLowerCase(), ids);
+    } = await checkAccess(req.session.user, 'delete', resourceName.replace(' ', '-').toLowerCase(), ids);
 
     if (!hasAccess)
         return res.status(501).json({ message: `You are not permitted to delete ${resourceName}.` });

@@ -1,8 +1,5 @@
 // BACKEND/api/teams.js
 import express from 'express';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
 import {
     getTeam,
     createTeam,
@@ -11,6 +8,9 @@ import {
     updateTeamUsers,
     getTeamUsers
 } from '../controllers/teams.js';
+import checkAccess from '../utils/checkAccess.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -19,7 +19,7 @@ import {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const fetchTeamsHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'read', 'team', id);
@@ -49,7 +49,7 @@ const fetchTeamsHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const fetchTeamUsersHandler = async (req, res) => {
+const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'read', 'team', id);
@@ -80,7 +80,7 @@ const fetchTeamUsersHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const createTeamHandler = async (req, res) => {
+const createHandler = async (req, res) => {
 
     const { hasAccess } = await checkAccess(req.session.user, 'create', 'team');
 
@@ -120,7 +120,7 @@ const createTeamHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const updateTeamHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'update', 'team', id);
@@ -205,18 +205,16 @@ const updateAssignmentsHandler = async(req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteTeamHandler = async (req, res) => deleteResource(req, res, 'Team', deleteTeam, req.query.cascade === 'true');
+const deleteHandler = async (req, res) => deleteResource(req, res, 'Team', deleteTeam, req.query.cascade === 'true');
     
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchTeamsHandler);
-router.get('/:id', fetchTeamsHandler);
-router.get('/:id/users', checkResourceIdHandler, fetchTeamUsersHandler);
-router.post('/', createTeamHandler);
+router.get('/{:id}', fetchHandler);
+router.get('/:id/users', checkResourceIdHandler, fetchUsersHandler);
+router.post('/', createHandler);
 router.post('/assignments', updateAssignmentsHandler);
-router.put('/:id', checkResourceIdHandler, updateTeamHandler);
-router.delete('/', deleteTeamHandler);
-router.delete('/:id', deleteTeamHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

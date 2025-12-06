@@ -1,8 +1,9 @@
 // BACKEND/controller/workPlanner.js
 import {
-    Shift,
-    JobPost,
     Schedule,
+    Shift,
+    JobLocation,
+    JobPost,
     Holiday,
     LeaveType,
     Leave,
@@ -10,7 +11,7 @@ import {
     HolidayWorking,
     WeekendWorking,
     Disposition,
-    DispositionPreset, JobLocation
+    DispositionPreset
 } from '../models/workPlanner.js';
 import { User } from '../models/users.js';
 import {getUser, getUsersByScope} from './users.js';
@@ -56,50 +57,47 @@ export async function getSchedule({id, author, start_date, end_date} = {}) {
         return schedule;
 
     }
-        
-    // Logic if no ID is provided - fetch all Schedules
-    if (!id || isNaN(id)) {
-        
-        const where = {};
-
-        if (author) 
-            where.author = author;
-
-        if (start_date)
-            where.start_date = start_date;
-
-        if (end_date)
-            where.end_date = end_date;
-
-        const schedules = await Schedule.findAll({ where, raw: true });
-
-        if (!schedules || schedules.length === 0) 
-            return [];
-
-        return await Promise.all(
-            schedules.map( async (schedule) => await extendSchedule(schedule) )
-        );
-    }
 
     // Logic if the ID is provided - fetch a specific Schedule
-    const schedule = await Schedule.findOne({where: { id }, raw: true});
+    if (id && !isNaN(id)) {
+        const schedule = await Schedule.findByPk(id, {raw: true});
+        return await extendSchedule(schedule);
+    }
+        
+    // Logic if no ID is provided - fetch all Schedules
+    const where = {};
 
-    if (!schedule) 
-        return null;
+    if (author)
+        where.author = author;
 
-    return await extendSchedule(schedule);
+    if (start_date)
+        where.start_date = start_date;
+
+    if (end_date)
+        where.end_date = end_date;
+
+    const schedules = await Schedule.findAll({ where, raw: true });
+
+    if (!schedules || schedules.length === 0)
+        return [];
+
+    return await Promise.all(
+        schedules.map(async (schedule) => await extendSchedule(schedule))
+    );
 }
-
 /**
  * Creates a new Schedule.
  * @param {Object} data - Schedule data
  * @param {string} data.name - optional - Schedule name
  * @param {string} data.description - optional - Schedule description
+ * @param {string} data.user_scope - Schedule User Scope
+ * @param {number} data.user_scope_id - Schedule User Scope ID
  * @param {string} data.start_date - Schedule start date
  * @param {string} data.end_date - Schedule end date
  * @param {number} data.author - User ID of Schedule author
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
+
 export async function createSchedule(data) {
     if (!data.author) 
         return { success: false, message: 'Schedule Author not provided.' };
@@ -199,41 +197,159 @@ export async function deleteSchedule(id, delete_shifts=true) {
     }
 }
 
+// JobLocations
+/**
+ * Retrieves one Job Location by its ID or all Job Locations if an ID is not provided.
+ * @param {number|null} id - optional - Job Location ID to fetch a specific location
+ * @returns {Promise<Object|Object[]|null>} Single Job Location, array of Job Locations, or null
+ */
+export async function getJobLocation({ id } = {}) {
+
+    if (id && !isNaN(id)) {
+        const location = await JobLocation.findByPk(id, {raw: true });
+
+        if (!location)
+            return null;
+
+        return location;
+    }
+
+    const locations = await JobLocation.findAll({ raw: true });
+
+    if (!locations || locations.length === 0)
+        return [];
+
+    return locations;
+}
+
+/**
+ * Creates a new Job Location.
+ * @param {Object} data
+ * @param {string} data.name - Required - Location name (must be unique)
+ * @param {string} [data.description] - Optional description
+ * @param {string} [data.color] - Optional hex color (e.g. "#FF5733")
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
+export async function createJobLocation(data) {
+    if (!data.name)
+        return { success: false, message: 'Job Location name is required.' };
+
+    const existing = await JobLocation.findOne({ where: { name: data.name } });
+    if (existing)
+        return { success: false, message: 'There already is a Job Location with provided name. Use a different one.' };
+
+    const location = await JobLocation.create({
+        id: await randomId(JobLocation),
+        name: data.name,
+        description: data.description || null,
+        color: data.color || null
+    });
+
+    return { success: true, message: 'Job Location created successfully.', id: location.id };
+}
+
+/**
+ * Updates an existing Job Location.
+ * @param {number} id - Job Location ID
+ * @param {Object} data - Fields to update
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function updateJobLocation(id, data) {
+    if (!id)
+        return { success: false, message: 'Job Location ID not provided.' };
+
+    const location = await JobLocation.findOne({ where: { id } });
+
+    if (!location)
+        return { success: false, message: 'Job Location not found.' };
+
+    // Check name uniqueness if it's being changed
+    if (data.name) {
+        const existing = await JobLocation.findOne({
+            where: {
+                name: data.name,
+                id: { [Op.ne]: id } // not equal to current record
+            }
+        });
+        if (existing)
+            return { success: false, message: 'Another Job Location with this name already exists.' };
+    }
+
+    await location.update(data);
+
+    return { success: true, message: 'Job Location updated successfully.' };
+}
+
+/**
+ * Deletes one or multiple Job Locations.
+ * Shifts with this location will have job_location set to NULL (not deleted).
+ * @param {number|number[]} id - Single ID or array of IDs
+ * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
+ */
+export async function deleteJobLocation(id) {
+    if (!isNumberOrNumberArray(id))
+        return { success: false, message: `Invalid Job Location ID${Array.isArray(id) ? 's' : ''} provided.` };
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        // First: clear references in shifts (set job_location = NULL)
+        await Shift.update(
+            { job_location: null },
+            { where: { job_location: id }, transaction }
+        );
+
+        // Then: delete the location(s)
+        const deletedCount = await JobLocation.destroy({
+            where: { id },
+            transaction
+        });
+
+        if (!deletedCount) {
+            await transaction.rollback();
+            return {
+                success: false,
+                message: `No Job Locations found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${Array.isArray(id) ? id.join(', ') : id}`
+            };
+        }
+
+        await transaction.commit();
+
+        return {
+            success: true,
+            message: `${deletedCount} Job Location${deletedCount > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount
+        };
+
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+}
+
 // JobPosts
 /**
  * Retrieves one Job Post by its ID or all Job Posts if an ID is not provided.
  * @param {number|null} id - optional - Job Post ID to fetch a specific Job Post
- * @param {boolean} include_shifts - optional - Should there be shifts included for this fetched Job Post? False by default.
  * @returns {Promise<Object|Object[]|null>} Single Job Post, array of Job Posts, or null
  */
-export async function getJobPost({id, include_shifts=false} = {}) {
+export async function getJobPost({id} = {}) {
         
-    // Logic if no ID is provided - fetch all Job Posts
-    if (!id || isNaN(id)) {
-        const jobPosts = await JobPost.findAll({ raw: true });
+    if (id && !isNaN(id)) {
+        const jobPost = await JobPost.findByPk(id, {raw: true});
 
-        if (!jobPosts || jobPosts.length === 0)
-            return [];
+        if (!jobPost)
+            return null;
 
-        return await Promise.all(jobPosts.map(async jobPost => {
-            if (include_shifts)
-                jobPost.shifts = await getShift({job_post: jobPost.id});
-
-            return jobPost;
-        }))
-
+        return jobPost;
     }
 
-    // Logic if the ID is provided - fetch a specific Job Post
-    const jobPost = await JobPost.findOne({where: {id}, raw: true});
+    const jobPosts = await JobPost.findAll({ raw: true });
 
-    if (!jobPost)
-        return null;
+    if (!jobPosts || jobPosts.length === 0)
+        return [];
 
-    if (include_shifts)
-        jobPost.shifts = await getShift({job_post: jobPost.id});
-        
-    return jobPost;
+    return jobPosts;
 }
 
 /**
@@ -250,7 +366,7 @@ export async function createJobPost(data) {
     if (await JobPost.findOne({ where: { name: data.name } }))
         return { success: false, message: 'There already is a Job Post with provided name. Use different one.' }
 
-    const jobPost = JobPost.create({
+    const jobPost = await JobPost.create({
         id: await randomId(JobPost),
         name: data.name || null,
         color: data.color || null
@@ -443,7 +559,7 @@ export async function createShift(data) {
     if (!timeRegex.test(data.end_time))
         return { success: false, message: 'Invalid end time format. Use HH:mm or HH:mm:ss.' };
 
-    const shift = Shift.create({
+    const shift = await Shift.create({
         id: await randomId(Shift),
         user: data.user,
         date: data.date,
@@ -729,7 +845,7 @@ export async function createLeaveType(data) {
         color: data.color || null
     });
 
-    return { success: true, message: 'LeaveType created successfully.', id: type.id };
+    return { success: true, message: 'Leave Type created successfully.', id: type.id };
 }
 
 /**
@@ -769,6 +885,14 @@ export async function updateLeaveType(id, data) {
 export async function deleteLeaveType(id) {
     if (!isNumberOrNumberArray(id)) 
         return { success: false, message: 'Invalid Leave Type ID(s) provided.' };
+
+    const block = await Leave.findAll({ where: { status: id }, raw: true });
+    if (block?.length)
+        return {
+            success: false,
+            message: `Leave Type cannot be deleted.` +
+                `There are ${block.length} Leave${block.length !== 1 ? 's' : ''} using this Leave Type.`
+        };
     
     const deleted = await LeaveType.destroy({ where: { id } });
     
@@ -960,40 +1084,14 @@ export async function getRequestStatus({id} = {}) {
     return await RequestStatus.findByPk(id) || null;
 }
 
-export async function createRequestStatus(data) {
-    if (!data.name) {
-        return { success: false, message: 'Mandatory data not provided.' };
-    }
-    const status = await RequestStatus.create({
-        id: await randomId(RequestStatus),
-        name: data.name
-    });
-    return { success: true, message: 'RequestStatus created successfully.', id: status.id };
-}
-
-export async function updateRequestStatus(id, data) {
-    if (!id) return { success: false, message: 'RequestStatus ID not provided.' };
-    const status = await RequestStatus.findOne({ where: { id } });
-    if (!status) return { success: false, message: 'RequestStatus not found.' };
-    await status.update(data);
-    return { success: true, message: 'RequestStatus updated successfully.' };
-}
-
-export async function deleteRequestStatus(id) {
-    if (!isNumberOrNumberArray(id)) return { success: false, message: 'Invalid RequestStatus ID(s) provided.' };
-    const deleted = await RequestStatus.destroy({ where: { id } });
-    if (!deleted) return { success: false, message: 'No RequestStatuses found to delete.' };
-    return { success: true, message: `${deleted} RequestStatus${deleted > 1 ? 'es' : ''} deleted successfully.`, deletedCount: deleted };
-}
-
 // Holiday Working
 export async function getHolidayWorking({id} = {}) {
-    if (!id || isNaN(id)) {
-        const workings = await HolidayWorking.findAll({ raw: true });
-        if (!workings || workings.length === 0) return [];
-        return workings;
-    }
-    return await HolidayWorking.findByPk(id) || null;
+    if (id && !isNaN(id))
+        return await HolidayWorking.findByPk(id, {raw: true});
+
+    const workings = await HolidayWorking.findAll({ raw: true });
+    if (!workings || workings.length === 0) return [];
+    return workings;
 }
 
 export async function createHolidayWorking(data) {
@@ -1022,14 +1120,14 @@ export async function createHolidayWorking(data) {
 }
 
 export async function updateHolidayWorking(id, data) {
-    if (!id) return { success: false, message: 'HolidayWorking ID not provided.' };
+    if (!id) return { success: false, message: 'Holiday Working Agreement ID not provided.' };
     const working = await HolidayWorking.findOne({ where: { id } });
-    if (!working) return { success: false, message: 'HolidayWorking not found.' };
+    if (!working) return { success: false, message: 'Holiday Working Agreement not found.' };
     if (data.holiday && !(await Holiday.findOne({ where: { id: data.holiday } }))) {
         return { success: false, message: 'Holiday not found.' };
     }
-    if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) {
-        return { success: false, message: 'RequestStatus not found.' };
+    if (data.status && !(await RequestStatus.findByPk(data.status))) {
+        return { success: false, message: 'Request Status not found.' };
     }
     if (data.user && !(await User.findOne({ where: { id: data.user } }))) {
         return { success: false, message: 'User not found.' };
@@ -1038,7 +1136,7 @@ export async function updateHolidayWorking(id, data) {
         return { success: false, message: 'Approver not found.' };
     }
     await working.update(data);
-    return { success: true, message: 'HolidayWorking updated successfully.' };
+    return { success: true, message: 'Holiday Working Agreement updated successfully.' };
 }
 
 export async function deleteHolidayWorking(id) {
@@ -1050,12 +1148,12 @@ export async function deleteHolidayWorking(id) {
 
 // Weekend Working
 export async function getWeekendWorking({id} = {}) {
-    if (!id || isNaN(id)) {
-        const workings = await WeekendWorking.findAll({ raw: true });
-        if (!workings || workings.length === 0) return [];
-        return workings;
-    }
-    return await WeekendWorking.findByPk(id) || null;
+    if (id && !isNaN(id))
+        return await WeekendWorking.findByPk(id, { raw: true});
+
+    const workings = await WeekendWorking.findAll({ raw: true });
+    if (!workings || workings.length === 0) return [];
+    return workings;
 }
 
 export async function createWeekendWorking(data) {

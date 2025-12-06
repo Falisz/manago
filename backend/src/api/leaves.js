@@ -1,8 +1,5 @@
 // BACKEND/api/leaves.js
 import express from 'express';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
-import checkAccess from '../utils/checkAccess.js';
-import deleteResource from '../utils/deleteResource.js';
 import {
     getLeave,
     createLeave,
@@ -10,15 +7,18 @@ import {
     deleteLeave
 } from '../controllers/workPlanner.js';
 import {getUsersByScope} from "../controllers/users.js";
+import checkAccess from '../utils/checkAccess.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
- * Fetch a Leave or multiple Leaves.
+ * Fetch multiple Leaves or one by its ID.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const fetchLeavesHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
     let query = {};
     let users = [];
@@ -31,7 +31,6 @@ const fetchLeavesHandler = async (req, res) => {
 
         query.id = parseInt(id);
     } else {
-
         if (req.query.user) {
             query.user = parseInt(req.query.user);
         } else if (req.query.user_scope) {
@@ -79,12 +78,12 @@ const fetchLeavesHandler = async (req, res) => {
 };
 
 /**
- * Create a Leave or multiple Leaves.
+ * Create a new Leave.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const createLeaveHandler = async (req, res) => {
+const createHandler = async (req, res) => {
 
     const { hasAccess } = await checkAccess(req.session.user, 'create', 'leave');
 
@@ -92,26 +91,28 @@ const createLeaveHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        let leave = req.body;
-        leave.user = req.session.user;
-        leave.status = 0;
+        const data = req.body;
+        if (data.user == null) data.user = req.session.user;
+        if (data.status == null) data.status = 0;
 
-        if (leave.start_date && leave.end_date) {
-            const start = new Date(leave.start_date);
-            const end = new Date(leave.end_date);
+        if (data.start_date && data.end_date) {
+            const start = new Date(data.start_date);
+            const end = new Date(data.end_date);
 
             if (!isNaN(start) && !isNaN(end)) {
                 const diffInMs = end - start;
-                leave.days = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
+                data.days = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
             }
+        } else {
+            data.days = 1;
         }
     
-        const { success, message, id } = await createLeave(leave);
+        const { success, message, id } = await createLeave(data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        leave = await getLeave({id});
+        const leave = await getLeave({id});
 
         res.status(201).json({ message, leave });
 
@@ -127,7 +128,7 @@ const createLeaveHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const updateLeaveHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -223,18 +224,16 @@ const updateLeaveHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteLeaveHandler = async (req, res) =>
+const deleteHandler = async (req, res) =>
     deleteResource(req, res, 'Leave', deleteLeave);
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchLeavesHandler);
-router.get('/:id', fetchLeavesHandler);
-router.post('/', createLeaveHandler);
-router.put('/', updateLeaveHandler);
-router.put('/:id', checkResourceIdHandler, updateLeaveHandler);
-router.delete('/', deleteLeaveHandler);
-router.delete('/:id', deleteLeaveHandler);
+router.get('/{:id}', fetchHandler);
+router.post('/', createHandler);
+router.put('/', updateHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

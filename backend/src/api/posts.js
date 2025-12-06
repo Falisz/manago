@@ -10,7 +10,7 @@ import deleteResource from '../utils/deleteResource.js';
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchPostsHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -33,7 +33,7 @@ const fetchPostsHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const createPostHandler = async (req, res) => {
+const createHandler = async (req, res) => {
     try {
         const { channel, title, content } = req.body;
 
@@ -62,7 +62,7 @@ const createPostHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const updatePostHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     try {
         const { postId } = req.params;
         const { title, content } = req.body;
@@ -99,16 +99,15 @@ const updatePostHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const deletePostHandler = async (req, res) => deleteResource(req, res, 'Post', deletePost);
+const deleteHandler = async (req, res) =>
+    deleteResource(req, res, 'Post', deletePost);
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchPostsHandler);
-router.get('/:id', fetchPostsHandler);
-router.post('/new', createPostHandler);
-router.put('/:id', checkResourceIdHandler, updatePostHandler);
-router.delete('/', deletePostHandler);
-router.delete('/:id', deletePostHandler);
+router.get('/{:id}', fetchHandler);
+router.post('/', createHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

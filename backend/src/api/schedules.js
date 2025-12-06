@@ -1,8 +1,5 @@
 // BACKEND/api/schedules.js
 import express from 'express';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
 import {
     getSchedule,
     createSchedule,
@@ -10,9 +7,13 @@ import {
     deleteSchedule,
     createShift,
     updateShift,
-    deleteShift, getShift
+    deleteShift,
+    getShift
 } from '../controllers/workPlanner.js';
 import {getUsersByScope} from "../controllers/users.js";
+import checkAccess from '../utils/checkAccess.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -186,11 +187,9 @@ async function updateScheduleShifts(schedule, shifts) {
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchHandler);
-router.get('/:id', fetchHandler);
+router.get('/{:id}', fetchHandler);
 router.post('/', createHandler);
 router.put('/:id', checkResourceIdHandler, updateHandler);
-router.delete('/', deleteHandler);
-router.delete('/:id', deleteHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

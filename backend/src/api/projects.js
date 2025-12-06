@@ -1,6 +1,5 @@
 // BACKEND/api/projects.js
 import express from 'express';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     getProject,
     createProject,
@@ -9,6 +8,7 @@ import {
     updateProjectUsers,
     getProjectUsers
 } from '../controllers/projects.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
@@ -17,7 +17,7 @@ import deleteResource from '../utils/deleteResource.js';
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchProjectsHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -41,7 +41,7 @@ const fetchProjectsHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchProjectUsersHandler = async (req, res) => {
+const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -62,7 +62,7 @@ const fetchProjectUsersHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const createProjectHandler = async (req, res) => {
+const createHandler = async (req, res) => {
     try {
         const { success, message, id } = await createProject(req.body);
 
@@ -90,7 +90,7 @@ const createProjectHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const updateProjectHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -154,18 +154,16 @@ const updateAssignmentsHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteProjectHandler = async (req, res) => deleteResource(req, res, 'Project', deleteProject);
+const deleteHandler = async (req, res) => deleteResource(req, res, 'Project', deleteProject);
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchProjectsHandler);
-router.get('/:id', fetchProjectsHandler);
-router.get('/:id/users', checkResourceIdHandler, fetchProjectUsersHandler);
-router.post('/', createProjectHandler);
+router.get('/{:id}', fetchHandler);
+router.get('/:id/users', checkResourceIdHandler, fetchUsersHandler);
+router.post('/', createHandler);
 router.post('/assignments', updateAssignmentsHandler);
-router.put('/:id', checkResourceIdHandler, updateProjectHandler);
-router.delete('/', deleteProjectHandler);
-router.delete('/:id', deleteProjectHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

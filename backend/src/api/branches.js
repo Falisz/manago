@@ -1,7 +1,5 @@
 // BACKEND/api/branches.js
 import express from 'express';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
 import {
     getBranch,
     createBranch,
@@ -10,14 +8,16 @@ import {
     updateBranchUsers,
     getBranchUsers
 } from '../controllers/branches.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
- * Fetch all Branches or a Branch by its ID.
+ * Fetch multiple Branches or one by its ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchBranchesHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -41,7 +41,7 @@ const fetchBranchesHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const fetchBranchUsersHandler = async (req, res) => {
+const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -63,7 +63,7 @@ const fetchBranchUsersHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const createBranchHandler = async (req, res) => {
+const createHandler = async (req, res) => {
     try {
         const { success, message, id } = await createBranch(req.body);
 
@@ -92,11 +92,11 @@ const createBranchHandler = async (req, res) => {
 };
 
 /**
- * Update a specific Branch by ID.
+ * Update a specific Branch by its ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const updateBranchHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
@@ -162,23 +162,21 @@ const updateAssignmentsHandler = async (req, res) => {
 };
 
 /**
- * Delete a specific Branch by ID.
+ * Delete a specific Branch by its ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteBranchHandler = async (req, res) => deleteResource(req, res, 'Branch', deleteBranch);
+const deleteHandler = async (req, res) =>
+    deleteResource(req, res, 'Branch', deleteBranch);
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchBranchesHandler);
-router.get('/:id', fetchBranchesHandler);
-router.get('/:id/users', checkResourceIdHandler, fetchBranchUsersHandler);
-router.post('/', createBranchHandler);
+router.get('/{:id}', fetchHandler);
+router.get('/:id/users', checkResourceIdHandler, fetchUsersHandler);
+router.post('/', createHandler);
 router.post('/assignments', updateAssignmentsHandler);
-router.put('/:id', checkResourceIdHandler, updateBranchHandler);
-router.delete('/:id', checkResourceIdHandler, deleteBranchHandler);
-router.delete('/', deleteBranchHandler);
-router.delete('/:id', deleteBranchHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

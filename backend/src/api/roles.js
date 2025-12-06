@@ -1,7 +1,5 @@
 // BACKEND/api/roles.js
 import express from 'express';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
 import {
     createRole,
     updateRole,
@@ -9,16 +7,18 @@ import {
     getRole,
     getUserRoles,
 } from '../controllers/users.js';
+import checkAccess from '../utils/checkAccess.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
- * Fetch all Roles or a Role by its ID.
+ * Fetch multiple Roles or one by its ID.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const fetchRolesHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'read', 'role', id);
@@ -50,7 +50,7 @@ const fetchRolesHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const fetchUsersWithRoleHandler = async (req, res) => {
+const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'read', 'role', id);
@@ -75,7 +75,7 @@ const fetchUsersWithRoleHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const createRoleHandler = async (req, res) => {
+const createHandler = async (req, res) => {
 
     const { hasAccess } = await checkAccess(req.session.user, 'create', 'role');
 
@@ -104,7 +104,7 @@ const createRoleHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const updateRoleHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'update', 'role', id);
@@ -133,17 +133,15 @@ const updateRoleHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteRoleHandler = async (req, res) => deleteResource(req, res, 'Role', deleteRole);
+const deleteHandler = async (req, res) => deleteResource(req, res, 'Role', deleteRole);
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchRolesHandler);
-router.get('/:id', fetchRolesHandler);
-router.get('/:id/users', checkResourceIdHandler, fetchUsersWithRoleHandler);
-router.post('/', createRoleHandler);
-router.put('/:id', checkResourceIdHandler, updateRoleHandler);
-router.delete('/', deleteRoleHandler);
-router.delete('/:id', deleteRoleHandler);
+router.get('/{:id}', fetchHandler);
+router.get('/:id/users', checkResourceIdHandler, fetchUsersHandler);
+router.post('/', createHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

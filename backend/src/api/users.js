@@ -1,8 +1,5 @@
 // BACKEND/api/users.js
 import express from 'express';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
-import checkAccess from '../utils/checkAccess.js';
-import deleteResource from '../utils/deleteResource.js';
 import {
     getUser,
     createUser,
@@ -13,6 +10,9 @@ import {
     updateUserRoles,
     updateUserManagers
 } from '../controllers/users.js';
+import checkAccess from '../utils/checkAccess.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -23,7 +23,7 @@ import {
  * @param {boolean} req.include_configs
  * @param {express.Response} res
  */
-const fetchUsersHandler = async (req, res) => {
+const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'read', 'user', id);
@@ -137,7 +137,7 @@ const fetchManagedUsersHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const createUserHandler = async (req, res) => {
+const createHandler = async (req, res) => {
 
     const { hasAccess } = await checkAccess(req.session.user, 'create', 'user');
 
@@ -193,7 +193,7 @@ const checkUserIdHandler = async (req, res) => {
  * @param {Object} req.session
  * @param {express.Response} res
  */
-const updateUserHandler = async (req, res) => {
+const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     const { hasAccess } = await checkAccess(req.session.user, 'update', 'user', id);
@@ -271,21 +271,20 @@ const updateAssignmentsHandler = async (req, res) => {
  * @param {express.Request} req
  * @param {express.Response} res
  */
-const deleteUserHandler = async (req, res) => deleteResource(req, res, 'User', removeUser);
+const deleteHandler = async (req, res) =>
+    deleteResource(req, res, 'User', removeUser);
 
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchUsersHandler);
-router.get('/:id', fetchUsersHandler);
+router.get('/{:id}', fetchHandler);
 router.get('/:id/roles', checkResourceIdHandler, fetchUserRolesHandler);
 router.get('/:id/managers', checkResourceIdHandler, fetchUserManagersHandler);
 router.get('/:id/managed-users', checkResourceIdHandler, fetchManagedUsersHandler);
 router.get('/check-id/:id', checkResourceIdHandler, checkUserIdHandler);
-router.post('/', createUserHandler);
+router.post('/', createHandler);
 router.post('/assignments', updateAssignmentsHandler);
-router.put('/:id', checkResourceIdHandler, updateUserHandler);
-router.delete('/', deleteUserHandler);
-router.delete('/:id', deleteUserHandler);
+router.put('/:id', checkResourceIdHandler, updateHandler);
+router.delete('/{:id}', deleteHandler);
 
 export default router;

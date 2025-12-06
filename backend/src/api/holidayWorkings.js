@@ -1,71 +1,70 @@
-// BACKEND/api/holidays.js
+// BACKEND/api/holidayWorkings.js
 import express from 'express';
 import {
-    getHoliday,
-    createHoliday,
-    updateHoliday,
-    deleteHoliday,
+    getHolidayWorking,
+    createHolidayWorking,
+    updateHolidayWorking,
+    deleteHolidayWorking, getWeekendWorking,
 } from '../controllers/workPlanner.js';
-import checkAccess from "../utils/checkAccess.js";
+import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
- * Fetch multiple Holidays or one by its ID.
+ * Fetch multiple Holiday Working Agreements or one by its ID.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
-    let query = {};
+
+    const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday-working', id);
+
+    if (!hasAccess)
+        return res.status(403).json({message: 'Not permitted.'});
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday', id);
+            const result = await getWeekendWorking({ id: parseInt(id) });
 
-            if (!hasAccess)
-                return res.status(403).json({message: 'Not permitted.'});
+            if (!result)
+                return res.status(404).json({ message: 'Holiday Working Agreement not found.' });
 
-            query.id = parseInt(id);
-
-        } else {
-            if (req.query.date) {
-                query.date = req.query.date;
-            } else {
-                if (req.query.start_date)
-                    query.from = req.query.start_date;
-                if (req.query.end_date)
-                    query.to = req.query.end_date;
-            }
+            return res.json(result);
         }
 
-        const holidays = await getHoliday(query);
+        const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday-working');
 
-        if (id && !holidays)
-            return res.status(404).json({ message: 'Holiday not found.' });
+        if (!hasAccess)
+            return res.status(403).json({ message: 'Not permitted.' });
 
-        if (id && Array.isArray(holidays))
-            return res.json(holidays[0]);
+        // TODO: Holiday Working Fetch logic.
+        const query = {};
 
-        res.json(holidays);
+        const result = await getHolidayWorking(query);
+
+        if (id && Array.isArray(result))
+            return res.json(result[0]);
+
+        res.json(result);
 
     } catch (err) {
-        console.error(`Error fetching Holiday${id ? ' (ID: ' + id + ')' : 's'}:`, err);
+        console.error(`Error fetching Holiday Working Agreement${id ? ' (ID: ' + id + ')' : 's'}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Create a new Holiday.
+ * Create a new Holiday Working Agreement.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'holiday');
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'holiday-working');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -73,14 +72,14 @@ const createHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { success, message, id } = await createHoliday(data);
+        const { success, message, id } = await createHolidayWorking(data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getHoliday({id});
+        const holidayWorking = await getHolidayWorking({id});
 
-        res.status(201).json({ message, holiday });
+        res.status(201).json({ message, holidayWorking });
 
     } catch (err) {
         console.error('Error creating a Holiday:', err, 'Provided data: ', req.body);
@@ -89,7 +88,7 @@ const createHandler = async (req, res) => {
 };
 
 /**
- * Update a specific Holiday by ID.
+ * Update a specific Holiday Working Agreement by its ID.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
@@ -100,17 +99,17 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'holiday', id);
+        const { hasAccess } = await checkAccess(req.session.user, 'update', 'holiday-working', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});
 
-        const { success, message } = await updateHoliday(parseInt(id), data);
+        const { success, message } = await updateHolidayWorking(parseInt(id), data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getHoliday({id});
+        const holiday = await getHolidayWorking({id});
 
         res.json({ message, holiday });
 
@@ -121,12 +120,12 @@ const updateHandler = async (req, res) => {
 };
 
 /**
- * Delete a specific Holiday by ID.
+ * Delete a specific Holiday Working Agreement by its ID.
  * @param {express.Request} req
  * @param {express.Response} res
  */
 const deleteHandler = async (req, res) =>
-    deleteResource(req, res, 'Holiday', deleteHoliday);
+    deleteResource(req, res, 'Holiday Working', deleteHolidayWorking);
 
 // Router definitions
 export const router = express.Router();

@@ -8,12 +8,14 @@ import teamsRoutes from './teams.js';
 import projectsRoutes from './projects.js';
 import branchesRoutes from './branches.js'
 import schedulesRoutes from './schedules.js';
-import jobPostsRoutes from './job-posts.js';
+import jobPostsRoutes from './jobPosts.js';
 import shiftRoutes from './shifts.js';
 import leaveRoutes from './leaves.js';
-import leaveTypesRoutes from './leave-types.js';
+import leaveTypesRoutes from './leaveTypes.js';
 import holidaysRoutes from './holidays.js';
-import requestStatusRoutes from './request-statuses.js';
+import holidayWorkingsRoutes from './holidayWorkings.js';
+import weekendWorkingsRoutes from "./weekendWorkings.js";
+import requestStatusRoutes from './requestStatuses.js';
 import postsRoutes from './posts.js';
 import checkAuthHandler from '../utils/checkAuth.js';
 
@@ -45,6 +47,8 @@ router.use('/leave-types', leaveTypesRoutes);
 router.use('/request-statuses', requestStatusRoutes);
 router.use('/leaves', leaveRoutes);
 router.use('/holidays', holidaysRoutes);
+router.use('/holiday-workings', holidayWorkingsRoutes);
+router.use('/weekend-workings', weekendWorkingsRoutes);
 router.use('/posts', postsRoutes);
 
 export default router;

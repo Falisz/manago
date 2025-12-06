@@ -1,8 +1,5 @@
 // BACKEND/api/shifts.js
 import express from 'express';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
 import {
     getShift,
     createShift,
@@ -10,6 +7,9 @@ import {
     deleteShift
 } from '../controllers/workPlanner.js';
 import {getUsersByScope} from "../controllers/users.js";
+import checkAccess from '../utils/checkAccess.js';
+import checkResourceIdHandler from '../utils/checkResourceId.js';
+import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -95,13 +95,13 @@ const createShiftHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        const { shifts } = req.body;
+        const data = req.body;
 
-        if (shifts && Array.isArray(shifts)) {
+        if (Array.isArray(data)) {
             const newShifts = [];
             const errorMessages = [];
 
-            for (const shift of shifts) {
+            for (const shift of data) {
                 const { success, message, id } = await createShift(shift);
 
                 if (success)
@@ -113,14 +113,12 @@ const createShiftHandler = async (req, res) => {
             res.status(201).json({ message: `Created ${newShifts.length} new shifts.`, newShifts, errorMessages})
 
         } else {
-            let { shift } = req.body;
-        
-            const { success, message, id } = await createShift(shift);
+            const { success, message, id } = await createShift(data);
 
             if (!success)
                 return res.status(400).json({ message });
 
-            shift = await getShift({id});
+            const shift = await getShift({id});
 
             res.status(201).json({ message, shift });
         }
@@ -141,7 +139,23 @@ const updateShiftHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        if (!id) {
+        if (id) {
+            const { hasAccess } = await checkAccess(req.session.user, 'update', 'shift', id);
+
+            if (!hasAccess)
+                return res.status(403).json({message: 'Not permitted.'});
+
+            const data = req.body;
+
+            const { success, message } = await updateShift(parseInt(id), data);
+
+            if (!success)
+                return res.status(400).json({ message });
+
+            const shift = await getShift({id});
+
+            res.json({ message, shift });
+        } else {
             let { ids, data } = req.body;
 
             const {
@@ -159,7 +173,8 @@ const updateShiftHandler = async (req, res) => {
             if (!hasFullAccess) {
                 ids = Array.from(allowedIds);
 
-                warning.push(`You are not permitted to update ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
+                warning.push(`You are not permitted to update
+                 ${'Shift' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
             }
 
             const updated = [];
@@ -175,22 +190,6 @@ const updateShiftHandler = async (req, res) => {
 
             res.status(201).json({ message: `Updated ${updated.length} shifts.`, updated, warning})
 
-        } else {
-            let shift = req.body;
-
-            const { hasAccess } = await checkAccess(req.session.user, 'update', 'shift', id);
-
-            if (!hasAccess)
-                return res.status(403).json({message: 'Not permitted.'});
-
-            const { success, message } = await updateShift(parseInt(id), shift);
-            
-            if (!success)
-                return res.status(400).json({ message });
-    
-            shift = await getShift({id});
-    
-            res.json({ message, shift });
         }
     } catch (err) {
         console.error(`Error updating a Shift (ID: ${id}):`, err, 'Provided data: ', req.body);
@@ -209,12 +208,10 @@ const deleteShiftHandler = async (req, res) =>
 // Router definitions
 export const router = express.Router();
 
-router.get('/', fetchShiftsHandler);
-router.get('/:id', fetchShiftsHandler);
+router.get('/{:id}', fetchShiftsHandler);
 router.post('/', createShiftHandler);
 router.put('/', updateShiftHandler);
 router.put('/:id', checkResourceIdHandler, updateShiftHandler);
-router.delete('/', deleteShiftHandler);
-router.delete('/:id', deleteShiftHandler);
+router.delete('/{:id}', deleteShiftHandler);
 
 export default router;

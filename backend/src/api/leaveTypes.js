@@ -1,71 +1,57 @@
-// BACKEND/api/holidays.js
+// BACKEND/api/leaveTypes.js
 import express from 'express';
 import {
-    getHoliday,
-    createHoliday,
-    updateHoliday,
-    deleteHoliday,
+    getLeaveType,
+    createLeaveType,
+    updateLeaveType,
+    deleteLeaveType
 } from '../controllers/workPlanner.js';
-import checkAccess from "../utils/checkAccess.js";
+import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from '../utils/checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
- * Fetch multiple Holidays or one by its ID.
+ * Fetch multiple Leave Types or one by its ID.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
-    let query = {};
-
+    const query = {};
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday', id);
+            const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave-type', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
 
-            query.id = parseInt(id);
-
-        } else {
-            if (req.query.date) {
-                query.date = req.query.date;
-            } else {
-                if (req.query.start_date)
-                    query.from = req.query.start_date;
-                if (req.query.end_date)
-                    query.to = req.query.end_date;
-            }
+            query.id = id;
         }
 
-        const holidays = await getHoliday(query);
+        const job_posts = await getLeaveType(query);
 
-        if (id && !holidays)
-            return res.status(404).json({ message: 'Holiday not found.' });
+        if (id && !job_posts)
+            return res.status(404).json({ message: 'Request Status not found.' });
 
-        if (id && Array.isArray(holidays))
-            return res.json(holidays[0]);
-
-        res.json(holidays);
+        res.json(job_posts);
 
     } catch (err) {
-        console.error(`Error fetching Holiday${id ? ' (ID: ' + id + ')' : 's'}:`, err);
+        console.error(`Error fetching Leave Type${id ? ' (ID: ' + id + ')' : 's'}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Create a new Holiday.
+ * Create a new Leave Type.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'holiday');
+    const { hasAccess } = await checkAccess(req.session.user, 'create', 'leave-type');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -73,12 +59,12 @@ const createHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { success, message, id } = await createHoliday(data);
+        const { success, message, id } = await createLeaveType(data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getHoliday({id});
+        const holiday = await getLeaveType({id});
 
         res.status(201).json({ message, holiday });
 
@@ -89,7 +75,7 @@ const createHandler = async (req, res) => {
 };
 
 /**
- * Update a specific Holiday by ID.
+ * Update a specific Leave Type.
  * @param {express.Request} req
  * @param {Object} req.session
  * @param {express.Response} res
@@ -105,12 +91,12 @@ const updateHandler = async (req, res) => {
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});
 
-        const { success, message } = await updateHoliday(parseInt(id), data);
+        const { success, message } = await updateLeaveType(parseInt(id), data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getHoliday({id});
+        const holiday = await getLeaveType({id});
 
         res.json({ message, holiday });
 
@@ -121,12 +107,12 @@ const updateHandler = async (req, res) => {
 };
 
 /**
- * Delete a specific Holiday by ID.
+ * Delete a specific Leave Type or multiple Leave Types.
  * @param {express.Request} req
  * @param {express.Response} res
  */
 const deleteHandler = async (req, res) =>
-    deleteResource(req, res, 'Holiday', deleteHoliday);
+    deleteResource(req, res, 'Leave Type', deleteLeaveType);
 
 // Router definitions
 export const router = express.Router();

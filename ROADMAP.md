@@ -1,12 +1,11 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
-- Holidays API
-- Holiday and Weekend Working API
-- Users - contractual data, like time when joined company, contract types, start and end-dates, notice-period info.
-- LeaveBalance API
-- JobPosts and JobLocations API.
-- Dashboard widgets for the your and your team schedules. And pending leave approvals. Also additional dashboard widget for "your oncoming leaves".
+- Users - contractual data, like time when joined company, notice-period status, left company status.
+- UserContracts {user, type, start, end, fileName}, UserContractTypes {employment, B2B, etc.}
+- LeaveBalance API and Controllers
+- JobPosts and JobLocations API and Controllers.
+- Dashboard widgets for your and your team schedules. And pending leave approvals. Also, additional dashboard widget for "your oncoming leaves".
 ### TimeSheets (till 14-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
