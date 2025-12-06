@@ -3,6 +3,8 @@ import express from 'express';
 import { securityLog } from '../utils/securityLogs.js';
 import { authUser, getUser } from '../controllers/users.js';
 
+// TODO: Change to JWT.
+
 // API Handlers
 /**
  * Check user authorization.

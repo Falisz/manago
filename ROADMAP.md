@@ -1,6 +1,7 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
+- Add JWT authentication to the backend.
 - Users - contractual data, like time when joined company, notice-period status, left company status.
 - UserContracts {user, type, start, end, fileName}, UserContractTypes {employment, B2B, etc.}
 - LeaveBalance API and Controllers
