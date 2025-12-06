@@ -1,6 +1,8 @@
 // BACKEND/utils/checkAuth.js
 import checkAccess from './checkAccess.js';
 
+
+// TODO move to middleware folder and change into JWT validator instead of session
 /**
  * Middleware to check if a User is authenticated.
  * @param {Request} req
