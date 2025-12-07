@@ -259,11 +259,14 @@ const useSchedules = () => {
             if (message)
                 showPopUp({type: 'success', content: message});
 
-            schedule.users = mapUsers(schedule.shifts, schedule.users);
+            if (schedule) {
+                if (schedule?.shifts && schedule?.users)
+                    schedule.users = mapUsers(schedule.shifts, schedule.users);
+                setSchedule((prev) => ({...prev, ...schedule}));
+            }
 
-            setSchedule((prev) => ({...prev, ...schedule}));
             ['new', 'updated', 'deleted'].forEach(bin => shiftUpdates.current[bin] = []);
-            return schedule || null;
+            return schedule;
 
         } catch (err) {
             console.log('saveSchedule error:', err);

@@ -981,7 +981,7 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createLeave(data) {
-    if (!data.type)
+    if (data.type == null)
         return { success: false, message: 'Leave Type not provided.'};
 
     if (!data.user)
@@ -995,6 +995,8 @@ export async function createLeave(data) {
     
     if (!(await LeaveType.findOne({ where: { id: data.type } })))
         return { success: false, message: 'Leave Type not found.' };
+
+    data.status = Number(data.status);
     
     if (!(await RequestStatus.findOne({ where: { id: data.status } }))) 
         return { success: false, message: 'Request Status not found.' };

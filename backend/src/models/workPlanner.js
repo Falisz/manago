@@ -89,7 +89,8 @@ export const Shift = sequelize.define('Shift', {
     schedule: {
         type: DataTypes.INTEGER,
         references: { model: Schedule, key: 'id' }
-    }
+    },
+    note: DataTypes.TEXT,
 }, {
     tableName: 'shifts',
     timestamps: false,

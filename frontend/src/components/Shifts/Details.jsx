@@ -157,7 +157,7 @@ const ShiftDetails = ({ id, modal }) => {
             }
         }
     }), [shift, openDialog]);
-    console.log(shift);
+
     return <Details
         header={header}
         sections={sections}
