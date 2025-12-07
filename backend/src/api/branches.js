@@ -8,7 +8,7 @@ import {
     updateBranchUsers,
     getBranchUsers
 } from '../controllers/branches.js';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
+import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers

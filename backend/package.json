@@ -21,6 +21,7 @@
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "http-proxy": "^1.18.1",
+    "jsonwebtoken": "^9.0.3",
     "lorem-ipsum": "^2.0.8",
     "mssql": "^12.2.0",
     "pg": "^8.16.2",

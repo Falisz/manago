@@ -8,7 +8,7 @@ import {
     getUserRoles,
 } from '../controllers/users.js';
 import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from '../utils/checkResourceId.js';
+import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers

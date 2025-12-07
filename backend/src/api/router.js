@@ -17,7 +17,7 @@ import holidayWorkingsRoutes from './holidayWorkings.js';
 import weekendWorkingsRoutes from "./weekendWorkings.js";
 import requestStatusRoutes from './requestStatuses.js';
 import postsRoutes from './posts.js';
-import checkAuthHandler from '../utils/checkAuth.js';
+import checkJwtHandler from './checkJwt.js';
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ router.use((req, res, next) => {
     if (publicPaths.includes(req.path))
         return next();
 
-    return checkAuthHandler(req, res, next);
+    return checkJwtHandler(req, res, next);
 });
 
 // Base routes (authentication, app info, etc.)

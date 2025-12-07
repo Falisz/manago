@@ -1,6 +1,5 @@
-// BACKEND/utils/checkResourceId.js
+// BACKEND/api/checkResourceId.js
 
-// TODO move to middleware folder
 /**
  * Middleware to check if the ID is provided properly in the parameter.
  * @param {Request} req
