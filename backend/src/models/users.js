@@ -30,6 +30,12 @@ export const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false
     },
+    joined: DataTypes.DATEONLY,             // Date of joining the company
+    notice_period: DataTypes.INTEGER,       // Number of days before notice period expires
+    notice_start: DataTypes.DATEONLY,       // Date of notice period start
+    left: DataTypes.DATEONLY,               // Date of leaving the company
+    last_login_attempt: DataTypes.DATE,
+    last_login: DataTypes.DATE,
     active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
@@ -62,6 +68,40 @@ export const User = sequelize.define('User', {
     }
 }, {
     tableName: 'users',
+    timestamps: false
+});
+
+export const ContractTypes = sequelize.define('ContractTypes', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    description: DataTypes.TEXT
+}, {
+    tableName: 'contracts_types',
+    timestamps: false
+});
+
+export const UserContracts = sequelize.define('UserContract', {
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: User, key: 'id' }
+    },
+    contract: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: ContractTypes, key: 'id' }
+    },
+    start_date: DataTypes.DATEONLY,
+    end_date: DataTypes.DATEONLY,
+    parent_contract: {
+        type: DataTypes.INTEGER,
+        references: { model: 'user_contracts', key: 'id' }
+    },
+    file: DataTypes.STRING,
+}, {
+    tableName: 'user_contracts',
     timestamps: false
 });
 

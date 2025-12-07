@@ -1,9 +1,8 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
-- Users - contractual data, like time when joined company, notice-period status, left company status.
-- UserContracts {user, type, start, end, fileName}, UserContractTypes {employment, B2B, etc.}
 - LeaveBalance API and Controllers
+- Contractual Data API and Controllers.
 - JobPosts and JobLocations API and Controllers.
 - Dashboard widgets for your and your team schedules. And pending leave approvals. Also, additional dashboard widget for "your oncoming leaves".
 - Shift notes - adding them in shift edit
@@ -44,6 +43,8 @@ Following roadmap and tasks to-do as of 2025-10-02:
 ### Posts and channels
 - Posts-Channels will have scopes to specify whether it is company-wide, branch-wide, region-wide, project-wide or team.
 ### Skills, Trainings and Assessments
+- TBD
+### Files and Policies
 - TBD
 ### Blogs
 - TBD

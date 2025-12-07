@@ -1341,3 +1341,13 @@ export async function deleteDisposition(id) {
         deletedCount: deleted 
     };
 }
+
+
+//LEAVE BALANCE LOGIC:
+// based on the leave type amount for each year
+// checks first if Cx joined in the year of current balance pool
+// if so it checks how many months of this year are estimated i.e.: starts on march, means only 10month (12 - 2) is estimated
+// then it check if Cx has notice period starting in the year of current balance pool, if so it checks how many months of this year are estimated.
+// i.e.: notice period starts in october (november and december are subtracted), means only 10 (12 - 2) is estimated (in case of starting in march then 8, cuz 10 - 2)
+// no we now in this year pool balance user has 8/12 months of leave, so if leave type is relative to worked months checked, then
+// it calculated 8/12 * amount e.g. 8/12 * 26 - and that's availed balance
