@@ -25,7 +25,7 @@ const fetchHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'job-location', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'job-location', id);
 
             if (!hasAccess)
                 return res.status(403).json({ message: 'Not permitted.' });
@@ -39,7 +39,7 @@ const fetchHandler = async (req, res) => {
         }
 
         // Fetch all
-        const { hasAccess } = await checkAccess(req.session.user, 'read', 'job-location');
+        const { hasAccess } = await checkAccess(req.user, 'read', 'job-location');
         if (!hasAccess)
             return res.status(403).json({ message: 'Not permitted.' });
 
@@ -55,11 +55,11 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Job Location.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'job-location');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'job-location');
 
     if (!hasAccess)
         return res.status(403).json({ message: 'Not permitted.' });
@@ -85,7 +85,7 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Job Location by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -94,7 +94,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'job-location', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'job-location', id);
 
         if (!hasAccess)
             return res.status(403).json({ message: 'Not permitted.' });

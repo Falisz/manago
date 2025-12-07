@@ -6,9 +6,11 @@ import { securityLog } from '../utils/securityLogs.js';
 /**
  * Middleware to check if a User is authenticated.
  * @param {Request} req
- * @param {Object} req.session
  * @param {Response} res
  * @param {number} res.status
+ * @param {number} req.user
+ * @param {boolean} req.include_ppi
+ * @param {boolean} req.include_configs
  * @param {function} res.json
  * @param {NextFunction} next
  */
@@ -26,8 +28,8 @@ const checkJwtHandler = async (req, res, next) => {
             return res.status(401).json({ message: 'Access denied. No User ID found in the Token provided.' });
 
         req.user = userId;
-        req.include_ppi = await checkAccess(req.session.user, 'access', 'user-ppi');
-        req.include_configs = await checkAccess(req.session.user, 'access', 'user-configs');
+        req.include_ppi = await checkAccess(userId, 'access', 'user-ppi');
+        req.include_configs = await checkAccess(userId, 'access', 'user-configs');
 
         next();
     } catch (err) {

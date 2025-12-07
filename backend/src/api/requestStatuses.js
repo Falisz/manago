@@ -10,7 +10,7 @@ import checkAccess from '../utils/checkAccess.js';
  * Fetch a Shift or multiple Shifts.
  * @param {express.Request} req
  * @param {string | null} req.query.include_shifts
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
@@ -18,7 +18,7 @@ const fetchHandler = async (req, res) => {
     const query = {};
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'request-status', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'request-status', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});

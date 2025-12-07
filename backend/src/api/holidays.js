@@ -14,7 +14,7 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch multiple Holidays or one by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
@@ -23,7 +23,7 @@ const fetchHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'holiday', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -60,12 +60,12 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Holiday.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'holiday');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'holiday');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -91,7 +91,7 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Holiday by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -100,7 +100,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'holiday', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'holiday', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});

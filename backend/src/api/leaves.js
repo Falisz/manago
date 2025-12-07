@@ -15,7 +15,7 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch multiple Leaves or one by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
@@ -24,7 +24,7 @@ const fetchHandler = async (req, res) => {
     let users = [];
 
     if (id) {
-        const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave', id);
+        const { hasAccess } = await checkAccess(req.user, 'read', 'leave', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});
@@ -36,7 +36,7 @@ const fetchHandler = async (req, res) => {
         } else if (req.query.user_scope) {
 
             const scope = req.query.user_scope;
-            const scope_id = scope === 'you' ? req.session.user : req.query.user_scope_id;
+            const scope_id = scope === 'you' ? req.user : req.query.user_scope_id;
 
             users = await getUsersByScope({scope, scope_id});
 
@@ -80,19 +80,19 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Leave.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'leave');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'leave');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const data = req.body;
-        if (data.user == null) data.user = req.session.user;
+        if (data.user == null) data.user = req.user;
         if (data.status == null) data.status = 0;
 
         if (data.start_date && data.end_date) {
@@ -125,7 +125,7 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Leave or multiple Leaves.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -155,7 +155,7 @@ const updateHandler = async (req, res) => {
                 hasFullAccess,
                 allowedIds,
                 forbiddenIds 
-            } = await checkAccess(req.session.user, action, 'leave', ids);
+            } = await checkAccess(req.user, action, 'leave', ids);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -199,7 +199,7 @@ const updateHandler = async (req, res) => {
             else if (data.status === 4)
                 action = 'request-cancellation';
 
-            const { hasAccess } = await checkAccess(req.session.user, action, 'leave', id);
+            const { hasAccess } = await checkAccess(req.user, action, 'leave', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});

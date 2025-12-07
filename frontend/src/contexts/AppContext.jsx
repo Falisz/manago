@@ -15,59 +15,9 @@ import TeamsIndex from '../components/Teams/Index';
 import InWorks from '../components/InWorks';
 import PopUps from '../components/PopUps';
 import WorkPlannerSettings from '../components/WorkPlannerSettings';
+import setupAxiosInterceptor from "../utils/interceptors";
 
-axios.defaults.withCredentials = true;
-
-// Response interceptor for 401 → auto refresh
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error, token = null) => {
-    failedQueue.forEach(prom => {
-        if (error) prom.reject(error);
-        else prom.resolve(token);
-    });
-    failedQueue = [];
-};
-
-axios.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                // Queue request while another is refreshing
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                }).then(() => {
-                    return axios(originalRequest);
-                }).catch(err => {
-                    return Promise.reject(err);
-                });
-            }
-
-            originalRequest._retry = true;
-            isRefreshing = true;
-
-            try {
-                await axios.post('/api/refresh');
-                // Access token cookie is now updated
-                processQueue(null);
-                return axios(originalRequest);
-            } catch (refreshError) {
-                processQueue(refreshError);
-                // Force logout on refresh failure
-                window.location.href = '/';
-                return Promise.reject(refreshError);
-            } finally {
-                isRefreshing = false;
-            }
-        }
-
-        return Promise.reject(error);
-    }
-);
+setupAxiosInterceptor();
 
 const COMPONENT_MAP = {
     UsersIndex,
@@ -129,7 +79,6 @@ export const AppProvider = ({ children }) => {
         teams: null,
         holidays: null
     });
-    const isCheckingUserRef = useRef(false);
 
     // State and Ref setters
     const setLoading = useCallback((loading) => {
@@ -201,12 +150,12 @@ export const AppProvider = ({ children }) => {
 
     // API Get calls.
     const getUser = useCallback(async () => {
-        const response = await axios.get('/auth', { withCredentials: true });
+        const response = await axios.get('/auth');
         return response.data.user;
     }, []);
 
     const getConfig = useCallback(async () => {
-        const response = await axios.get('/config', { withCredentials: true });
+        const response = await axios.get('/config');
         const config = response.data;
         Cookies.set('style', config.style);
         Cookies.set('theme', config.theme);
@@ -216,13 +165,13 @@ export const AppProvider = ({ children }) => {
     }, []);
 
     const getConfigOptions = useCallback(async () => {
-        const response = await axios.get('/config-options', { withCredentials: true });
+        const response = await axios.get('/config-options');
         return response.data;
     }, []);
 
     const getModules = useCallback(async () => {
         try {
-            const response = await axios.get('/modules?psthr=true', { withCredentials: true });
+            const response = await axios.get('/modules?psthr=true');
             return response.data;
         } catch(err) {
             return [];
@@ -231,7 +180,7 @@ export const AppProvider = ({ children }) => {
 
     const getPages = useCallback(async () => {
         try {
-            const response = await axios.get('/pages?psthr=true', { withCredentials: true });
+            const response = await axios.get('/pages?psthr=true');
             return mapPagesToComponents(response.data);
         } catch(err) {
             return [];
@@ -239,19 +188,6 @@ export const AppProvider = ({ children }) => {
     }, []);
 
     // App's Callbacks
-    const logoutUser = useCallback(async () => {
-        try {
-            const res = await axios.get('/logout', { withCredentials: true });
-            if (!res)
-                return null;
-            if (res?.data?.message)
-                showPopUp({ type: 'success', content: res.data.message });
-            setUser(null);
-        } catch (err) {
-            console.error('Logout error', err);
-            return null;
-        }
-    }, [showPopUp, setUser]);
 
     const refreshConfig = useCallback(async (hasRetried = false) => {
         setLoading(true);
@@ -275,7 +211,7 @@ export const AppProvider = ({ children }) => {
 
     const saveConfig = useCallback(async (config) => {
         try {
-            await axios.put('/config', config, { withCredentials: true });
+            await axios.put('/config', config);
             await refreshConfig();
             return true;
         } catch (err) {
@@ -327,7 +263,7 @@ export const AppProvider = ({ children }) => {
     const toggleModule = useCallback(async (id, enabled) => {
         try {
             enabled = !enabled;
-            await axios.put(`/modules/${id}`, { enabled }, { withCredentials: true });
+            await axios.put(`/modules/${id}`, { enabled });
             await refreshModules();
             await refreshPages();
         } catch (error) {
@@ -338,11 +274,7 @@ export const AppProvider = ({ children }) => {
     const toggleView = useCallback(async (toggleValue) => {
         setLoading(true);
         try {
-            const result = await axios.post(
-                '/manager-view',
-                { manager_view: toggleValue },
-                { withCredentials: true }
-            );
+            const result = await axios.post('/manager-view', { manager_view: toggleValue });
             setUser(prev => ({...prev, manager_view_enabled: result.data?.manager_view }));
             await refreshPages();
         } catch (err) {
@@ -355,35 +287,51 @@ export const AppProvider = ({ children }) => {
     const toggleTheme = useCallback(async(userId, theme_mode) => {
         if (!userId) return null;
         try {
-            const result = await axios.put(
-                `/user-theme/${userId}`,
-                { theme_mode },
-                { withCredentials: true }
-            );
+            const result = await axios.put(`/user-theme/${userId}`, { theme_mode });
             setUser(prev => ({...prev, theme_mode: result.data?.theme_mode }));
         } catch (err) {
             console.error('Theme switching error: ', err);
         }
     }, [setUser]);
 
-    const authUser = useCallback(async (withLoader = false) => {
-        if (isCheckingUserRef.current) return;
-        isCheckingUserRef.current = true;
+
+    const loginUser = useCallback(async (username, password) => {
+        setLoading(true);
         try {
-            if (withLoader)
-                setLoading(true);
-            setUser(await getUser());
-            setLoading(false);
-        } catch (err) {
-            if (withLoader)
+            const response = await axios.post('/auth', { username, password });
+            const { user, message } = response.data;
+            if (user) {
+                setUser(user);
+                showPopUp({ type: 'success', content: message });
+                await refreshModules();
+                await refreshPages();
                 setLoading(false);
-            throw new Error(`Authentication failed: ${err.message}`);
-        } finally {
-            isCheckingUserRef.current = false;
-            await refreshModules();
-            await refreshPages();
+                return { success: true, user };
+            }
+            setLoading(false);
+            return { success: false, message };
+        } catch (err) {
+            console.error('Login error', err);
+            showPopUp({ type: 'error', content: err.response?.data?.message || 'Login failed' });
+            setLoading(false);
+            return { success: false, message: err.message };
         }
-    }, [getUser, refreshPages, refreshModules, setLoading, setUser]);
+    }, [setUser, showPopUp, refreshModules, refreshPages, setLoading]);
+
+    const logoutUser = useCallback(async () => {
+        try {
+            const response = await axios.get('/logout');
+            const { success, message } = response?.data || {};
+            if (!success) {
+                showPopUp({type: 'error', content: message || 'Logout failed.'});
+                return;
+            }
+            setUser(null);
+            showPopUp({type: 'success', content: message || 'Logout successful!'});
+        } catch (err) {
+            showPopUp({ type: 'error', content: err.response?.data?.message || 'Logout failed.' });
+        }
+    }, [setUser]);
 
     useEffect(() => {
         checkConnection().then();
@@ -420,7 +368,6 @@ export const AppProvider = ({ children }) => {
                 />
             </>
         }, 0);
-
                 
     }, [appState.is_connected, showPopUp]);
 
@@ -465,7 +412,7 @@ export const AppProvider = ({ children }) => {
         setLoading,
         showPopUp,
         killPopUp,
-        authUser,
+        loginUser,
         logoutUser,
         getConfigOptions,
         saveConfig,

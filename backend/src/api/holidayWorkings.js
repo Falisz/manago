@@ -14,13 +14,13 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch multiple Holiday Working Agreements or one by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday-working', id);
+    const { hasAccess } = await checkAccess(req.user, 'read', 'holiday-working', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -35,7 +35,7 @@ const fetchHandler = async (req, res) => {
             return res.json(result);
         }
 
-        const { hasAccess } = await checkAccess(req.session.user, 'read', 'holiday-working');
+        const { hasAccess } = await checkAccess(req.user, 'read', 'holiday-working');
 
         if (!hasAccess)
             return res.status(403).json({ message: 'Not permitted.' });
@@ -59,12 +59,12 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Holiday Working Agreement.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'holiday-working');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'holiday-working');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -90,7 +90,7 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Holiday Working Agreement by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -99,7 +99,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'holiday-working', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'holiday-working', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});

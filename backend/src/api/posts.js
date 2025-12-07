@@ -30,7 +30,7 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new post.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
@@ -42,7 +42,7 @@ const createHandler = async (req, res) => {
 
         const {id} = await createPost({
             channel_id: parseInt(channel),
-            author_id: req.session.user,
+            author_id: req.user,
             title: title || null,
             content
         });
@@ -59,7 +59,7 @@ const createHandler = async (req, res) => {
 /**
  * Update an existing post by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -73,7 +73,7 @@ const updateHandler = async (req, res) => {
         if (!content)
             return res.status(400).json({ message: 'Content is required.' });
 
-        const user = req.session.user;
+        const user = req.user;
         const post = await getPost(parseInt(postId));
 
         if (!post)
@@ -96,7 +96,7 @@ const updateHandler = async (req, res) => {
 /**
  * Delete a specific post by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const deleteHandler = async (req, res) =>

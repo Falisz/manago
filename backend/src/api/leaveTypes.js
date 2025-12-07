@@ -14,7 +14,7 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch multiple Leave Types or one by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
@@ -22,7 +22,7 @@ const fetchHandler = async (req, res) => {
     const query = {};
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'leave-type', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'leave-type', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -46,12 +46,12 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Leave Type.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'leave-type');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'leave-type');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -77,7 +77,7 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Leave Type.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -86,7 +86,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'holiday', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'holiday', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});

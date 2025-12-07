@@ -87,15 +87,6 @@ const resourceConfigs = {
             if (id) {
                 url = `/shifts/${id}`;
             } else {
-                if (user)
-                    queryParams.user = user;
-                else {
-                    if (user_scope)
-                        queryParams.user_scope = user_scope;
-                    if (user_scope_id)
-                        queryParams.user_scope_id = user_scope_id;
-                }
-
                 if (date)
                     queryParams.date = date;
                 else {
@@ -103,6 +94,15 @@ const resourceConfigs = {
                         queryParams.start_date = start_date;
                     if (end_date)
                         queryParams.end_date = end_date;
+                }
+
+                if (user)
+                    queryParams.user = user;
+                else {
+                    if (user_scope)
+                        queryParams.user_scope = user_scope;
+                    if (user_scope_id)
+                        queryParams.user_scope_id = user_scope_id;
                 }
 
                 if (schedule_id !== undefined)
@@ -170,6 +170,7 @@ const resourceConfigs = {
             if (id) {
                 url = `/leaves/${id}`;
             } else {
+                //eslint-disable-next-line
                 if (user)
                     queryParams.user = user;
                 else {
@@ -242,7 +243,7 @@ const useResource = (resource) => {
             if (!url)
                 return null;
 
-            const res = await axios.get(url, { withCredentials: true });
+            const res = await axios.get(url);
 
             if (!res) {
                 setLoading(false);
@@ -288,11 +289,11 @@ const useResource = (resource) => {
         try {
             let res;
             if (isNew)
-                res = await axios.post(config.buildUrl(), data, { withCredentials: true });
+                res = await axios.post(config.buildUrl(), data);
             else if (batchMode)
-                res = await axios.put(config.buildUrl(), {ids: id, data: data}, { withCredentials: true });
+                res = await axios.put(config.buildUrl(), {ids: id, data: data});
             else
-                res = await axios.put(config.buildUrl({id}), data, { withCredentials: true });
+                res = await axios.put(config.buildUrl({id}), data);
 
             if (!res)
                 return null;
@@ -363,11 +364,7 @@ const useResource = (resource) => {
             return null;
         try {
             const url = config.buildUrl() + '/assignments';
-            const res = await axios.post(
-                url,
-                {[name[0]+'Ids']: itemIds, resource, resourceIds, mode},
-                { withCredentials: true }
-            )
+            const res = await axios.post(url, {[name[0]+'Ids']: itemIds, resource, resourceIds, mode})
 
             if (!res)
                 return null;
@@ -406,7 +403,7 @@ const useResource = (resource) => {
 
         let { id } = params;
 
-        if (!id)
+        if (id == null)
             return null;
 
         let batchMode = false;
@@ -429,8 +426,8 @@ const useResource = (resource) => {
                 return null;
 
             const res = batchMode ?
-                await axios.delete(url, {data: {data: params}, withCredentials: true}) :
-                await axios.delete(url, {withCredentials: true});
+                await axios.delete(url, {data: {data: params}}) :
+                await axios.delete(url);
 
             if (!res)
                 return null;

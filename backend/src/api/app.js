@@ -10,11 +10,34 @@ import {
     setConfig
 } from '../controllers/app.js';
 import {
+    authUser,
+    getUser,
     updateUser,
     hasManagerView,
 } from '../controllers/users.js';
+import {
+    generateAccessToken,
+    generateRefreshToken,
+    verifyAccessToken,
+    verifyRefreshToken
+} from '../utils/jwt.js';
+import { securityLog } from '../utils/securityLogs.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
+
+const HALF_HOUR = 30 * 60 * 1000;
+const ONE_DAY = 24 * 60 * 60 * 1000;
+const ONE_MONTH = 30 * ONE_DAY;
+const ACCESS_TOKEN_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+};
+const REFRESH_TOKEN_OPTIONS = {
+    ...ACCESS_TOKEN_OPTIONS,
+    sameSite: 'strict',
+    path: '/refresh'
+};
 
 // API Handlers
 /**
@@ -36,6 +59,145 @@ const apiEndpointHandler = (_req, res) => {
     } catch (err) {
         console.error('API endpoint error:', err);
         res.status(500).json({ message: 'API Error.' });
+    }
+};
+
+/**
+ * Handle user login.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const loginHandler = async (req, res) => {
+    try {
+        const ip = req.ip || req.headers['x-forwarded-for'] || 'Unknown IP';
+        const host = req.headers.host || 'Unknown Host';
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            await securityLog(null, `${ip} ${host}`, 'Login', 'Failure: Missing credentials');
+            return res.status(400).json({ message: 'Both credentials are required!' });
+        }
+
+        const { success, status, message, id} = await authUser(username, password);
+        if (!success) {
+            if (id) await securityLog(id, `${ip} ${host}`, 'Login', `Failure: ${message}`);
+            return res.status(status).json({ message });
+        }
+
+        const accessToken = generateAccessToken({ userId: id });
+        const refreshToken = generateRefreshToken({ userId: id });
+        res.cookie('access_token', accessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
+        res.cookie('refresh_token', refreshToken, { ...REFRESH_TOKEN_OPTIONS, maxAge: ONE_MONTH });
+
+        await securityLog(id, `${ip} ${host}`, 'Login', 'Success');
+
+        const user = await getUser({
+            id: id,
+            roles: true,
+            managers: true,
+            all_managed_users: true,
+            include_configs: true,
+            permissions: true
+        });
+
+        return res.json({message, user});
+
+    } catch (err) {
+        console.error('Login error:', err);
+        await securityLog(null, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`, 'Login',
+            `Failure: ${err.message}`);
+        res.status(500).json({ message: 'Internal Login error.' });
+    }
+};
+
+/**
+ * Check user authorization.
+ * @param {express.Request} req
+ * @param {string} req.cookies.access_token
+ * @param {string} req.cookies.refresh_token
+ * @param {express.Response} res
+ */
+const authHandler = async (req, res) => {
+    try {
+        const { refresh } = req.query;
+        if (refresh) {
+            const refreshToken = req.cookies?.refresh_token;
+            if (!refreshToken)
+                return res.status(401).json({message: 'No User Refresh Token found.'});
+
+            const { userId } = verifyRefreshToken(refreshToken);
+            if (!userId)
+                return res.status(401).json({message: 'No User ID found.'});
+
+            const newAccessToken = generateAccessToken({ userId });
+
+            res.cookie('access_token', newAccessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
+            await securityLog(userId, req.ip, 'Token Refresh', 'Success');
+
+            return res.json({ message: 'Token refreshed!' });
+
+        }
+        const token = req.cookies?.access_token;
+        if (!token)
+            return res.json({
+                message: 'User Authentication failed, no User Access Token found.',
+                user: null
+            });
+
+        const { userId } = verifyAccessToken(token);
+        if (!userId)
+            return res.json({
+                message: 'User Authentication failed, no User ID in the Token found.',
+                user: null
+            });
+
+        const user = await getUser({
+            id: userId,
+            roles: true,
+            managers: true,
+            all_managed_users: true,
+            include_configs: true,
+            permissions: true
+        });
+
+        if (!user) {
+            await securityLog(userId, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
+                'Auth Check', 'Failure: No User found or User removed');
+            return res.json({
+                message: 'User Authentication failed, no User found.',
+                user: null
+            });
+        }
+
+        await securityLog(user['id'], `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
+            'Auth Check', 'Success');
+
+        return res.json({
+            message: 'User Authentication successful!',
+            user,
+        });
+
+    } catch (err) {
+        console.error('Access checkup error:', err);
+        return res.status(500).json({
+            message: 'User Authentication server error.',
+            user: null,
+        });
+    }
+};
+/**
+ * Logout User.
+ * @param {express.Request} req
+ * @param {express.Response} res
+ */
+const logoutHandler = async (req, res) => {
+    try {
+        res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
+        res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
+        return res.json({ success: true, message: 'Logged out successfully!' });
+    } catch (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ success: false, message: 'Logout failed.' });
     }
 };
 
@@ -77,12 +239,12 @@ const fetchConfigOptionsHandler = async (_req, res) => {
 /**
  * Update app configuration.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateConfigHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'update', 'app-config');
+    const { hasAccess } = await checkAccess(req.user, 'update', 'app-config');
 
     if (!hasAccess)
         return res.status(403).json({message: 'You do not have access to change App configs.'});
@@ -101,12 +263,13 @@ const updateConfigHandler = async (req, res) => {
 /**
  * Fetch app modules.
  * @param {express.Request} req
- * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchModulesHandler = async (req, res) => {
     try {
-        if (!req.session.user)
+        const token = req.cookies?.access_token;
+        const { userId } = token ? verifyAccessToken(token) : {};
+        if (!userId)
             return res.json([]);
 
         return res.json(await getModules());
@@ -120,12 +283,12 @@ const fetchModulesHandler = async (req, res) => {
 /**
  * Update module enabled status.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateModuleHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'update', 'app-modules');
+    const { hasAccess } = await checkAccess(req.user, 'update', 'app-modules');
 
     if (!hasAccess)
         return res.status(403).json({message: 'You do not have access to change App modules.'});
@@ -152,15 +315,17 @@ const updateModuleHandler = async (req, res) => {
 /**
  * Fetch app pages.
  * @param {express.Request} req
- * @param {Object} req.session
  * @param {express.Response} res
  */
 const fetchPagesHandler = async (req, res) => {
     try {
-        if (!req.session.user)
+
+        const token = req.cookies?.access_token;
+        const { userId } = token ? verifyAccessToken(token) : {};
+        if (!userId)
             return res.json([]);
 
-        const managerView = await hasManagerView(req.session.user);
+        const managerView = await hasManagerView(userId);
 
         res.json(await getPages(managerView ? 1 : 0));
     } catch (err) {
@@ -172,7 +337,7 @@ const fetchPagesHandler = async (req, res) => {
 /**
  * Toggle manager view for a user.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const toggleManagerViewHandler = async (req, res) => {
@@ -186,7 +351,7 @@ const toggleManagerViewHandler = async (req, res) => {
                 manager_view: false
             });
 
-        const hasAccess = await checkAccess(req.session.user, 'access', 'manager-view');
+        const hasAccess = await checkAccess(req.user, 'access', 'manager-view');
 
         if (!hasAccess)
             return res.status(403).json({
@@ -195,7 +360,7 @@ const toggleManagerViewHandler = async (req, res) => {
                 manager_view: false
             });
 
-        const { success, message } = await updateUser(req.session.user, {manager_view_enabled: manager_view});
+        const { success, message } = await updateUser(req.user, {manager_view_enabled: manager_view});
 
         if (success) {
             return res.json({
@@ -222,7 +387,7 @@ const toggleManagerViewHandler = async (req, res) => {
 /**
  * Toggle the main navigation collapse state in the Manager View.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const toggleManagerNavHandler = async (req, res) => {
@@ -233,7 +398,7 @@ const toggleManagerNavHandler = async (req, res) => {
 
         const { nav_collapsed } = req.body;
 
-        const { success, message } = await updateUser(req.session.user, {manager_nav_collapsed: nav_collapsed});
+        const { success, message } = await updateUser(req.user, {manager_nav_collapsed: nav_collapsed});
 
         if (success) {
             res.json({ success, navCollapse: nav_collapsed });
@@ -275,6 +440,11 @@ const updateUserThemeHandler = async (req, res) => {
 export const router = express.Router();
 
 router.get('/', apiEndpointHandler)
+
+router.post('/auth', loginHandler);
+router.get('/auth', authHandler);
+router.get('/logout', logoutHandler);
+
 router.get('/config', fetchConfigHandler);
 router.get('/config-options', fetchConfigOptionsHandler);
 router.put('/config', updateConfigHandler);

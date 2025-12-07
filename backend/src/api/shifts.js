@@ -15,7 +15,7 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch a Shift or multiple Shifts.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchShiftsHandler = async (req, res) => {
@@ -25,7 +25,7 @@ const fetchShiftsHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'shift', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'shift', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -37,7 +37,7 @@ const fetchShiftsHandler = async (req, res) => {
                 query.user = parseInt(req.query.user);
             } else if (req.query.user_scope) {
                 const scope = req.query.user_scope;
-                const scope_id = scope === 'you' ? req.session.user : req.query.user_scope_id;
+                const scope_id = scope === 'you' ? req.user : req.query.user_scope_id;
 
                 users = await getUsersByScope({scope, scope_id});
 
@@ -84,12 +84,12 @@ const fetchShiftsHandler = async (req, res) => {
 /**
  * Create a new Shift or multiple Shifts.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createShiftHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'shift');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'shift');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -132,7 +132,7 @@ const createShiftHandler = async (req, res) => {
 /**
  * Update a specific Shift or multiple Shifts.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateShiftHandler = async (req, res) => {
@@ -140,7 +140,7 @@ const updateShiftHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'update', 'shift', id);
+            const { hasAccess } = await checkAccess(req.user, 'update', 'shift', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -163,7 +163,7 @@ const updateShiftHandler = async (req, res) => {
                 hasFullAccess,
                 allowedIds,
                 forbiddenIds 
-            } = await checkAccess(req.session.user, 'update', 'shift', ids);
+            } = await checkAccess(req.user, 'update', 'shift', ids);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});

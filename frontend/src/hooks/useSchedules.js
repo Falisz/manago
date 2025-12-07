@@ -239,9 +239,9 @@ const useSchedules = () => {
             let res;
 
             if (id)
-                res = await axios.put(`/schedules/${id}`, scheduleData, {withCredentials: true});
+                res = await axios.put(`/schedules/${id}`, scheduleData);
             else
-                res = await axios.post('/schedules', scheduleData, {withCredentials: true});
+                res = await axios.post('/schedules', scheduleData);
 
             if (!res)
                 return null;

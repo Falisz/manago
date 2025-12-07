@@ -16,7 +16,7 @@ import deleteResource from '../utils/deleteResource.js';
  * @param {express.Request} req
  * @param {Object} req.query
  * @param {string | null} req.query.include_shifts
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
@@ -25,7 +25,7 @@ const fetchHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'job-post', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'job-post', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -53,12 +53,12 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Job Post.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'job-post');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'job-post');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -85,7 +85,7 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Job Post by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
@@ -94,7 +94,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'job-post', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'job-post', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});

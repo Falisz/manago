@@ -14,7 +14,7 @@ const PostIndex = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const response = await axios.get('/posts', { withCredentials: true });
+                const response = await axios.get('/posts');
                 setPosts(response.data);
                 setLoading(false);
             } catch (err) {

@@ -1,7 +1,6 @@
 // BACKEND/api/router.js
 import express from 'express';
 import appRoutes from './app.js';
-import authRoutes from './auth.js';
 import usersRoutes from './users.js';
 import rolesRoutes from './roles.js';
 import teamsRoutes from './teams.js';
@@ -21,18 +20,30 @@ import checkJwtHandler from './checkJwt.js';
 
 const router = express.Router();
 
-const publicPaths = ['/', '/config', '/config-options', '/modules', '/pages', '/auth', '/logout'];
+const publicRules = [
+    { path: '/', methods: ['GET'] },
+    { path: '/config', methods: ['GET'] },
+    { path: '/modules', methods: ['GET'] },
+    { path: '/pages', methods: ['GET'] },
+    { path: '/auth', methods: ['GET', 'POST'] }
+];
+
 
 router.use((req, res, next) => {
-    if (publicPaths.includes(req.path))
+    const isPublic = publicRules.some(rule =>
+        rule.path === req.path &&
+        rule.methods.includes(req.method)
+    );
+
+    if (isPublic)
         return next();
 
     return checkJwtHandler(req, res, next);
 });
 
+
 // Base routes (authentication, app info, etc.)
 router.use('/', appRoutes);
-router.use('/', authRoutes);
 
 // Resource routes
 router.use('/users', usersRoutes);

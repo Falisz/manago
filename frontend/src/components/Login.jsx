@@ -1,6 +1,5 @@
 // FRONTEND/Components/Login.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
 import useApp from '../contexts/AppContext';
 import Button from './Button';
 import Icon from './Icon';
@@ -8,19 +7,15 @@ import '../styles/Login.css';
 import { ReactComponent as AppLogo } from '../assets/app-logo.svg';
 
 const Login = () => {
-    const { authUser } = useApp();
+    const { loginUser } = useApp();
     const [ username, setUsername] = useState('');
     const [ password, setPassword] = useState('');
     const [ error, setError] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await axios.post('/auth', { username, password }, { withCredentials: true });
-            await authUser(true);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Login failed!');
-        }
+        const { success, message } = await loginUser(username, password);
+        if (!success) setError(message);
     };
 
     return (

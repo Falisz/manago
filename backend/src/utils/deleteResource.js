@@ -4,7 +4,7 @@ import checkAccess from './checkAccess.js';
 /**
  * Middleware to delete the resource provided as a parameter.
  * @param {Request} req
- * @param {object} req.session
+ * @param {number} req.user
  * @param {number} req.body.id
  * @param {Response} res
  * @param resourceName
@@ -35,7 +35,7 @@ const deleteResource = async (req, res, resourceName, deleteFunction, ...args) =
         hasAccess, 
         allowedIds, 
         forbiddenIds 
-    } = await checkAccess(req.session.user, 'delete', resourceName.replace(' ', '-').toLowerCase(), ids);
+    } = await checkAccess(req.user, 'delete', resourceName.replace(' ', '-').toLowerCase(), ids);
 
     if (!hasAccess)
         return res.status(501).json({ message: `You are not permitted to delete ${resourceName}.` });

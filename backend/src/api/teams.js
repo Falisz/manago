@@ -16,13 +16,13 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch all Teams or a Team by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'team', id);
+    const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -46,13 +46,13 @@ const fetchHandler = async (req, res) => {
 /**
  * Fetch Users for a specific team.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'team', id);
+    const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -77,12 +77,12 @@ const fetchUsersHandler = async (req, res) => {
 /**
  * Create a new Team.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'team');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'team');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -117,13 +117,13 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Team by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'update', 'team', id);
+    const { hasAccess } = await checkAccess(req.user, 'update', 'team', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -163,7 +163,7 @@ const updateHandler = async (req, res) => {
 /**
  * Update Team assignments (Managers or Leaders).
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateAssignmentsHandler = async(req, res) => {
@@ -174,7 +174,7 @@ const updateAssignmentsHandler = async(req, res) => {
         if (!teamIds || !teamIds.length)
             return res.status(400).json({ message: 'Team IDs are missing.' });
 
-        const { hasAccess } = await checkAccess(req.session.user, 'assign', 'team', teamIds, resource, resourceIds);
+        const { hasAccess } = await checkAccess(req.user, 'assign', 'team', teamIds, resource, resourceIds);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});

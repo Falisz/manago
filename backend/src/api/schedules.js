@@ -19,13 +19,13 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch a Working Schedule or multiple Working Schedules.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'schedule', id);
+    const { hasAccess } = await checkAccess(req.user, 'read', 'schedule', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -52,13 +52,13 @@ const fetchHandler = async (req, res) => {
 /**
  * Create a new Working Schedule.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
     const { publish, shifts, ...schedule } = req.body;
 
-    const { hasAccess } = await checkAccess(req.session.user, publish ? 'publish' : 'create', 'schedule');
+    const { hasAccess } = await checkAccess(req.user, publish ? 'publish' : 'create', 'schedule');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -69,7 +69,7 @@ const createHandler = async (req, res) => {
             await updateScheduleShifts(null, shifts);
 
         } else {
-            schedule.author = req.session.user;
+            schedule.author = req.user;
 
             const { success, message, id } = await createSchedule(schedule);
 
@@ -93,14 +93,14 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Working Schedule.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
     const { id } = req.params;
     const { publish, overwrite, shifts, ...schedule } = req.body;
 
-    const { hasAccess } = await checkAccess(req.session.user, publish ? 'publish' : 'update', 'schedule', id);
+    const { hasAccess } = await checkAccess(req.user, publish ? 'publish' : 'update', 'schedule', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});

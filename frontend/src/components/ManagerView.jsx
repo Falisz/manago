@@ -21,11 +21,7 @@ const MainNav = () => {
         setNavCollapsed(toggledValue);
 
         try {
-            await axios.post(
-                '/toggle-nav',
-                { user: user, nav_collapsed: toggledValue },
-                { withCredentials: true }
-            );
+            await axios.post('/toggle-nav', { user: user, nav_collapsed: toggledValue });
         } catch (error) {
             console.error('Error toggling nav:', error);
             setNavCollapsed(navCollapsed);

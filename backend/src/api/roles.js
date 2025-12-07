@@ -15,13 +15,13 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch multiple Roles or one by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'role', id);
+    const { hasAccess } = await checkAccess(req.user, 'read', 'role', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -47,13 +47,13 @@ const fetchHandler = async (req, res) => {
 /**
  * Fetch roles for a specific user.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'read', 'role', id);
+    const { hasAccess } = await checkAccess(req.user, 'read', 'role', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -72,12 +72,12 @@ const fetchUsersHandler = async (req, res) => {
 /**
  * Create a new Role.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
 
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'role');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'role');
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});
@@ -101,13 +101,13 @@ const createHandler = async (req, res) => {
 /**
  * Update a specific Role by ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.session.user, 'update', 'role', id);
+    const { hasAccess } = await checkAccess(req.user, 'update', 'role', id);
 
     if (!hasAccess)
         return res.status(403).json({message: 'Not permitted.'});

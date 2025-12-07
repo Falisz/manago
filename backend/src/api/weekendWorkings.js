@@ -14,7 +14,7 @@ import deleteResource from '../utils/deleteResource.js';
 /**
  * Fetch multiple Weekend Working Agreements or one by its ID.
  * @param {express.Request} req
- * @param {Object} req.session
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
@@ -22,7 +22,7 @@ const fetchHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.session.user, 'read', 'weekend-working', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'weekend-working', id);
 
             if (!hasAccess)
                 return res.status(403).json({ message: 'Not permitted.' });
@@ -35,7 +35,7 @@ const fetchHandler = async (req, res) => {
             return res.json(result);
         }
 
-        const { hasAccess } = await checkAccess(req.session.user, 'read', 'weekend-working');
+        const { hasAccess } = await checkAccess(req.user, 'read', 'weekend-working');
 
         if (!hasAccess)
             return res.status(403).json({ message: 'Not permitted.' });
@@ -57,7 +57,7 @@ const fetchHandler = async (req, res) => {
  * POST /api/weekend-workings
  */
 const createHandler = async (req, res) => {
-    const { hasAccess } = await checkAccess(req.session.user, 'create', 'weekend-working');
+    const { hasAccess } = await checkAccess(req.user, 'create', 'weekend-working');
     if (!hasAccess)
         return res.status(403).json({ message: 'Not permitted.' });
 
@@ -86,7 +86,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.session.user, 'update', 'weekend-working', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'weekend-working', id);
         if (!hasAccess)
             return res.status(403).json({ message: 'Not permitted.' });
 
