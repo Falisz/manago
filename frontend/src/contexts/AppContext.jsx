@@ -16,6 +16,59 @@ import InWorks from '../components/InWorks';
 import PopUps from '../components/PopUps';
 import WorkPlannerSettings from '../components/WorkPlannerSettings';
 
+axios.defaults.withCredentials = true;
+
+// Response interceptor for 401 → auto refresh
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) prom.reject(error);
+        else prom.resolve(token);
+    });
+    failedQueue = [];
+};
+
+axios.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            if (isRefreshing) {
+                // Queue request while another is refreshing
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                }).then(() => {
+                    return axios(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            try {
+                await axios.post('/api/refresh');
+                // Access token cookie is now updated
+                processQueue(null);
+                return axios(originalRequest);
+            } catch (refreshError) {
+                processQueue(refreshError);
+                // Force logout on refresh failure
+                window.location.href = '/';
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
+
 const COMPONENT_MAP = {
     UsersIndex,
     EmployeesIndex,
