@@ -1,6 +1,6 @@
 // BACKEND/index.js
 import express from 'express';
-import session from 'express-session';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import sequelize from './utils/database.js';
@@ -9,7 +9,6 @@ import apiRouter from './api/router.js';
 import { requestLoggerHandler, errorLoggerHandler } from './utils/logger.js';
 import { waitForKeypress } from './utils/keypress.js';
 import { validateEnv } from './utils/validateEnv.js';
-import { createSessionStore, getSessionConfig } from './utils/sessionStore.js';
 import { getCorsConfig } from './utils/corsConfig.js';
 import { INFO, ERROR, WARN } from './utils/consoleColors.js';
 
@@ -20,11 +19,9 @@ const PORT = process.env.PORT || 5000;
 
 // App and Middleware initialization.
 const app = express();
-const store = createSessionStore();
-
+app.use(cookieParser());
 app.use(cors(getCorsConfig()));
 app.use(express.json());
-app.use(session(getSessionConfig(store)));
 app.use(requestLoggerHandler);
 app.use(apiRouter);
 app.use(errorLoggerHandler);
@@ -46,11 +43,6 @@ async function startServer() {
             await sequelize.sync();
         } catch (err) {
             new Error(ERROR + ' Database model sync failed: ' + err.message);
-        }
-        try {
-            await store.sync();
-        } catch (err) {
-            new Error(ERROR + ' Session store sync failed: ' + err.message);
         }
 
         console.log(INFO + ' Database connection established. Data models and stores synced successfully.');
