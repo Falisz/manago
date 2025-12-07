@@ -6,6 +6,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - LeaveBalance API and Controllers
 - JobPosts and JobLocations API and Controllers.
 - Dashboard widgets for your and your team schedules. And pending leave approvals. Also, additional dashboard widget for "your oncoming leaves".
+- Shift notes - adding them in shift edit
 ### TimeSheets (till 14-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
