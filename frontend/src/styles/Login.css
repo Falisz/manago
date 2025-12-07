@@ -10,6 +10,10 @@
     justify-content: center;
 }
 
+.login #AppLogoSymbol {
+    fill: var(--color-gradient);
+}
+
 .login-wrapper {
     margin-left: auto;
     display: flex;

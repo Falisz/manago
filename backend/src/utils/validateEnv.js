@@ -6,7 +6,6 @@
  */
 export function validateEnv() {
     const requiredEnvVars = [
-        'SESSION_SECRET',
         'PORT',
         'DB_DIALECT',
         'DB_HOST',
