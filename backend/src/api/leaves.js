@@ -4,7 +4,7 @@ import {
     getLeave,
     createLeave,
     updateLeave,
-    deleteLeave
+    deleteLeave, getLeaveType
 } from '../controllers/workPlanner.js';
 import {getUsersByScope} from "../controllers/users.js";
 import checkAccess from '../utils/checkAccess.js';
@@ -227,9 +227,28 @@ const updateHandler = async (req, res) => {
 const deleteHandler = async (req, res) =>
     deleteResource(req, res, 'Leave', deleteLeave);
 
+/**
+ *
+ * @param req
+ * @param res
+ * @const {Object} leaveType
+ * @const {number} leaveType.id
+ * @returns {Promise<void>}
+ */
+const fetchBalanceHandler = async (req, res) => {
+    const result = {};
+    const leaveTypes = await getLeaveType();
+    for (const leaveType of leaveTypes) {
+        const balance = await getLeave({user: req.user, type: leaveType.id, year: '2025'});
+        result[leaveType.id] = balance.length;
+    }
+    res.json({result});
+}
+
 // Router definitions
 export const router = express.Router();
 
+router.get('/balance', fetchBalanceHandler);
 router.get('/{:id}', fetchHandler);
 router.post('/', createHandler);
 router.put('/', updateHandler);

@@ -124,7 +124,7 @@ export const RequestStatus = sequelize.define('RequestStatus', {
     tableName: 'request_statuses',
     timestamps: false,
 });
-// 0: planned, 1: rquested, 2: approved, 3: rejected, 4: cancellRequested, 5: cancelled
+
 
 export const LeaveType = sequelize.define('LeaveType', {
     name: {
@@ -135,14 +135,14 @@ export const LeaveType = sequelize.define('LeaveType', {
         type: DataTypes.INTEGER,
         references: { model: 'leave_types', key: 'id' }
     },
-    holiday_comp_off: DataTypes.BOOLEAN, // flag if the leave type is holiday comp-off
-    weekend_comp_off: DataTypes.BOOLEAN, // flag if the leave type is weekend comp-off
+    holiday_comp_off: DataTypes.BOOLEAN, // flag if the leave type is holiday comp-off - TO BE MOVED
+    weekend_comp_off: DataTypes.BOOLEAN, // flag if the leave type is weekend comp-off - TO BE MOVED
     amount: DataTypes.INTEGER,           // number of days of the leave in one year
     multiple: DataTypes.BOOLEAN,         // flag if more than one day of the leave can be applied on the request
     scaled: DataTypes.BOOLEAN,           // flag if the number should be scaled to the number of months worked in one year
-    transferrable: DataTypes.BOOLEAN,    // flag if the amount can be transferred to the next year
-    ref_required: DataTypes.BOOLEAN,     // flag if the referal number is required
-    file_required: DataTypes.BOOLEAN,    // flag if the referal document is required
+    transferable: DataTypes.BOOLEAN,     // flag if the remaining amount can be transferred to the next year
+    ref_required: DataTypes.BOOLEAN,     // flag if the referral number is required
+    file_required: DataTypes.BOOLEAN,    // flag if the referral document is required
     color: DataTypes.STRING
 }, { 
     tableName: 'leave_types',
@@ -150,6 +150,7 @@ export const LeaveType = sequelize.define('LeaveType', {
 });
 // e.g., Sick Leave, Annual Leave, Day Off (unpaid), etc.
 
+// Separate it from HolidayCompOffs and WeekendCompOffs to declutter
 export const Leave = sequelize.define('Leave', {
     type: {
         type: DataTypes.INTEGER,
@@ -163,7 +164,12 @@ export const Leave = sequelize.define('Leave', {
     end_date: DataTypes.DATEONLY,
     days: DataTypes.INTEGER,
     include_weekends: DataTypes.BOOLEAN,
-    include_holidays: DataTypes.BOOLEAN, 
+    include_holidays: DataTypes.BOOLEAN,
+    day_created: DataTypes.DATE,
+    day_requested: DataTypes.DATE,
+    day_approved: DataTypes.DATE,
+    day_rejected: DataTypes.DATE,
+    day_cancelled: DataTypes.DATE,
     status: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -178,8 +184,8 @@ export const Leave = sequelize.define('Leave', {
         type: DataTypes.INTEGER,
         references: { model: User, key: 'id' }
     },
-    compensated_holiday: DataTypes.NUMBER,                  // for Holiday comp-offs
-    compensated_weekend: DataTypes.DATEONLY,                // for Weekend comp-offs
+    compensated_holiday: DataTypes.NUMBER,                  // for Holiday comp-offs - TO BE MOVED
+    compensated_weekend: DataTypes.DATEONLY,                // for Weekend comp-offs - TO BE MOVED
     user_note: DataTypes.TEXT,
     approver_note: DataTypes.TEXT
 }, { 

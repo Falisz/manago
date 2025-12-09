@@ -1344,22 +1344,13 @@ export async function deleteDisposition(id) {
 }
 
 // Leave Balance
-//LEAVE BALANCE LOGIC:
-// based on the leave type amount for each year
-// checks first if Cx joined in the year of current balance pool
-// if so it checks how many months of this year are estimated i.e.: starts on march, means only 10month (12 - 2) is estimated
-// then it check if Cx has notice period starting in the year of current balance pool, if so it checks how many months of this year are estimated.
-// i.e.: notice period starts in october (november and december are subtracted), means only 10 (12 - 2) is estimated (in case of starting in march then 8, cuz 10 - 2)
-// no we now in this year pool balance user has 8/12 months of leave, so if leave type is relative to worked months checked, then
-// it calculated 8/12 * amount e.g. 8/12 * 26 - and that's availed balance
 export async function getLeaveBalance({userId, leaveType, year} = {}) {
-
-    const user = await User.findByPk(userId, { raw: true });
-    if (!user)
+    if (userId || leaveType || year)
         return {};
 
+    const user = await User.findByPk(userId, { raw: true });
     const leave = await LeaveType.findByPk(leaveType, { raw: true });
-    if (!leave) 
+    if (!user || !leave)
         return {};
 
     year = Number(year) || new Date().getFullYear();
@@ -1387,49 +1378,71 @@ export async function getLeaveBalance({userId, leaveType, year} = {}) {
     }
     
     if (leave.parent_type) {
-        const {totalBalance: parentBalance} = await getLeaveBalance({userId, leaveType: leave.parent_type, year});
+        const {availableBalance: parentBalance} = await getLeaveBalance({userId, leaveType: leave.parent_type, year});
         totalBalance = Math.min(totalBalance, parentBalance);
+    }
+
+    if (leave.transferable) {
+        const {availableBalance: prevBalance} = await getLeaveBalance({userId, leaveType: leave.parent_type, year});
+        if (prevBalance > 0)
+            totalBalance += prevBalance;
     }
 
     const yearStart = `${year}-01-01`;
     const yearEnd = `${year}-12-31`;
 
-    const where = {
-        user: userId,
-        status: [0, 1, 2, 4],
-        [Op.not]: {
-            [Op.or]: [
-                { start_date: { [Op.gt]: yearEnd } },
-                { end_date: { [Op.lt]: yearStart } }
-            ]
-        }
-    };
+    const subTypes = await LeaveType.findAll({ where: { parent_type: leaveType }, raw: true });
+    const types = subTypes.map(l => l.id);
 
-    const leaves = await Leave.findAll({ where, raw: true });
-    if (!leaves || leaves.length)
-        usedBalance = 0;
-
-    usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
+    const leaves = await Leave.findAll({
+        where: {
+            user: userId,
+            status: [0, 1, 2, 4],
+            type: [leaveType, ...types],
+            [Op.not]: {
+                [Op.or]: [
+                    { start_date: { [Op.gt]: yearEnd } },
+                    { end_date: { [Op.lt]: yearStart } }
+                ]
+            }
+        },
+        raw: true
+    });
+    if (leaves && !leaves.length)
+        usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
 
     return {totalBalance, usedBalance, availableBalance: totalBalance - usedBalance};
-};
+}
 
 export async function getUncompensatedHoliday({user} = {}) {
-    const approvedHolidayWorkings = await HolidayWorking.findAll({where: {user, status: [2, 4]}, raw: true})
-    const approvedHolidayWorkingsIds = approvedHolidayWorkings.map(hw => hw.id);
-    const approvedHolidays = await Holiday.findAll({where: {id: approvedHolidayWorkingsIds}, raw: true});
+    const approvedHolidays = await Holiday.findAll({
+        include: [{
+            model: HolidayWorking,                     // Search for approved Holidays with HolidayWorking
+            where: { user, status: [2, 4] },           // Only approved Holidays
+            required: true,                            // Only Holidays with HolidayWorking approved
+            attributes: []                             // No attributes for HolidayWorking needed
+        }],
+        raw: true
+    });
     const approvedDates = approvedHolidays.map(h => h.date);
-    const datesWorked = await TimeRecord.findAll({where: {user, date: approvedDates, status: 2}, raw: true});
+    const approvedWorkedDates = await TimeRecord.findAll({
+        where: {
+            user,                                      // TimeRecords for user
+            date: approvedDates,                       // On Approved Holidays
+            status: 2                                  // Approved TimeRecords
+        },
+        raw: true
+    });
+    const datesWorked = approvedWorkedDates.map(w => w.date);
     const workedHolidays = approvedHolidays.filter(h => datesWorked.includes(h.date));
     const holidayCompOffsTaken = await Leave.findAll({
         where: {
-            user, 
-            compensated_holiday: {[Op.not]: null}, 
-            status: [0, 1, 2, 4]
+            user,                                       // Absences for this user
+            compensated_holiday: {[Op.not]: null},      // Only Compensated Holidays
+            status: {[Op.not]: [3, 5]}                  // Excluded Rejected and Cancelled
         }, 
         raw: true
     });
     const compensatedHolidays = holidayCompOffsTaken.map(co => co.compensated_holiday);
-
     return workedHolidays.filter(h => !compensatedHolidays.includes(h.id));
-};
+}
