@@ -11,7 +11,8 @@ import {
     HolidayWorking,
     WeekendWorking,
     Disposition,
-    DispositionPreset
+    DispositionPreset,
+    TimeRecord
 } from '../models/workPlanner.js';
 import { User } from '../models/users.js';
 import {getUser, getUsersByScope} from './users.js';
@@ -1342,7 +1343,7 @@ export async function deleteDisposition(id) {
     };
 }
 
-
+// Leave Balance
 //LEAVE BALANCE LOGIC:
 // based on the leave type amount for each year
 // checks first if Cx joined in the year of current balance pool
@@ -1351,3 +1352,84 @@ export async function deleteDisposition(id) {
 // i.e.: notice period starts in october (november and december are subtracted), means only 10 (12 - 2) is estimated (in case of starting in march then 8, cuz 10 - 2)
 // no we now in this year pool balance user has 8/12 months of leave, so if leave type is relative to worked months checked, then
 // it calculated 8/12 * amount e.g. 8/12 * 26 - and that's availed balance
+export async function getLeaveBalance({userId, leaveType, year} = {}) {
+
+    const user = await User.findByPk(userId, { raw: true });
+    if (!user)
+        return {};
+
+    const leave = await LeaveType.findByPk(leaveType, { raw: true });
+    if (!leave) 
+        return {};
+
+    year = Number(year) || new Date().getFullYear();
+    let totalBalance = Number(leave.amount) || 0;
+    let usedBalance = 0;
+
+    if (leave.scaled) {
+        let months = 12;
+
+        if (user.joined){
+            const joinDate = new Date(user.joined);
+            if (!isNaN(joinDate) && joinDate.getFullYear() === year)
+                months -= (joinDate.getMonth());   
+        }
+
+        if (user.notice_start) {
+            const noticeDate = new Date(user.notice_start)
+            if (!isNaN(noticeDate) && noticeDate.getFullYear() === year)
+                months -= (12 - noticeDate.getMonth() - 1);
+        }
+
+        months = Math.max(0, Math.min(12, months));
+        
+        totalBalance = Math.ceil(totalBalance*(months/12));
+    }
+    
+    if (leave.parent_type) {
+        const {totalBalance: parentBalance} = await getLeaveBalance({userId, leaveType: leave.parent_type, year});
+        totalBalance = Math.min(totalBalance, parentBalance);
+    }
+
+    const yearStart = `${year}-01-01`;
+    const yearEnd = `${year}-12-31`;
+
+    const where = {
+        user: userId,
+        status: [0, 1, 2, 4],
+        [Op.not]: {
+            [Op.or]: [
+                { start_date: { [Op.gt]: yearEnd } },
+                { end_date: { [Op.lt]: yearStart } }
+            ]
+        }
+    };
+
+    const leaves = await Leave.findAll({ where, raw: true });
+    if (!leaves || leaves.length)
+        usedBalance = 0;
+
+    usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
+
+    return {totalBalance, usedBalance, availableBalance: totalBalance - usedBalance};
+};
+
+export async function getUncompensatedHoliday({user} = {}) {
+    const approvedHolidayWorkings = await HolidayWorking.findAll({where: {user, status: [2, 4]}, raw: true})
+    const approvedHolidayWorkingsIds = approvedHolidayWorkings.map(hw => hw.id);
+    const approvedHolidays = await Holiday.findAll({where: {id: approvedHolidayWorkingsIds}, raw: true});
+    const approvedDates = approvedHolidays.map(h => h.date);
+    const datesWorked = await TimeRecord.findAll({where: {user, date: approvedDates, status: 2}, raw: true});
+    const workedHolidays = approvedHolidays.filter(h => datesWorked.includes(h.date));
+    const holidayCompOffsTaken = await Leave.findAll({
+        where: {
+            user, 
+            compensated_holiday: {[Op.not]: null}, 
+            status: [0, 1, 2, 4]
+        }, 
+        raw: true
+    });
+    const compensatedHolidays = holidayCompOffsTaken.map(co => co.compensated_holiday);
+
+    return workedHolidays.filter(h => !compensatedHolidays.includes(h.id));
+};

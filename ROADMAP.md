@@ -6,7 +6,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - JobPosts and JobLocations API and Controllers.
 - Dashboard widgets for your and your team schedules. And pending leave approvals. Also, additional dashboard widget for "your oncoming leaves".
 - Shift notes - adding them in shift edit
-### TimeSheets (till 14-12-25)
+### TimeSheets (till 21-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
 - Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
@@ -14,16 +14,17 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Payroll planning.
 - Timesheet approval and rejection.
 - Option for both employees and managers to autofill the timesheet based on published schedule.
-### Projects (till 21-12-25)
+### Projects (till 31-12-25)
 - Project Roles - different from company-wide user roles.
 - Access to different resources.
-### Permissions (till 30-12-25)
+### Permissions (till 31-01-25)
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
 - Implement Roles and/or Permission based restrictions over the UI.
-### Branches (till 30-12-25)
+### Branches and Regions (till 31-01-25)
 - Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
 - Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
 - Branches-Teams assignment— if a Teams has null for a Branches, it is considered as a cross-branch Teams and can be a parent team of teams across different branches.
+- Regions for different LeaveTypes, Contracts, Etc. Region to be a large physical grouping (larger than branches)
 # MVP ENDS HERE
 ### Work Planner
 - Jobs and Months Schedules.

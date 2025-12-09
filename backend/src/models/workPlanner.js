@@ -135,9 +135,15 @@ export const LeaveType = sequelize.define('LeaveType', {
         type: DataTypes.INTEGER,
         references: { model: 'leave_types', key: 'id' }
     },
-    amount: DataTypes.INTEGER,
-    color: DataTypes.STRING,
-    multiple: DataTypes.BOOLEAN
+    holiday_comp_off: DataTypes.BOOLEAN, // flag if the leave type is holiday comp-off
+    weekend_comp_off: DataTypes.BOOLEAN, // flag if the leave type is weekend comp-off
+    amount: DataTypes.INTEGER,           // number of days of the leave in one year
+    multiple: DataTypes.BOOLEAN,         // flag if more than one day of the leave can be applied on the request
+    scaled: DataTypes.BOOLEAN,           // flag if the number should be scaled to the number of months worked in one year
+    transferrable: DataTypes.BOOLEAN,    // flag if the amount can be transferred to the next year
+    ref_required: DataTypes.BOOLEAN,     // flag if the referal number is required
+    file_required: DataTypes.BOOLEAN,    // flag if the referal document is required
+    color: DataTypes.STRING
 }, { 
     tableName: 'leave_types',
     timestamps: false 
@@ -172,6 +178,8 @@ export const Leave = sequelize.define('Leave', {
         type: DataTypes.INTEGER,
         references: { model: User, key: 'id' }
     },
+    compensated_holiday: DataTypes.NUMBER,                  // for Holiday comp-offs
+    compensated_weekend: DataTypes.DATEONLY,                // for Weekend comp-offs
     user_note: DataTypes.TEXT,
     approver_note: DataTypes.TEXT
 }, { 
@@ -281,6 +289,31 @@ export const Disposition = sequelize.define('Disposition', {
     tableName: 'dispositions',
     timestamps: false,
 });
+
+export const TimeRecord = sequelize.define('TimeRecord', {
+    date: {
+        type: DataTypes.DATEONLY,
+        allowNull: false
+    },
+    time: {
+        type: DataTypes.NUMBER,
+        allowNull: false
+    },
+    user: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'id' }
+    },
+    status: DataTypes.INTEGER,                                  // 0 - Empty, 1 - Submitted, 2 - Accepted, 3 - Rejected
+    approver: {
+        type: DataTypes.INTEGER,
+        references: { model: 'users', key: 'id' }
+    }
+
+}, {
+    tableName: 'time_records',
+    timestamps: true
+})
 
 //
 // Model Associations for workShifts.js
