@@ -1367,6 +1367,15 @@ export async function deleteDisposition(id) {
     };
 }
 
+// Change Leaves to Absences
+// Make an object AbsenceBalance to cache balances instead of constantly computing them.
+// getAbsenceBalance(user_id, year)
+// balanceRecord will have [leaveType, year, userId, collected, used, available, and compoff-related fields]
+// merge Leaves and CompOffs (yes Leaves, also will have collected, compensated and available dates, but only compoffs use them)
+// for each absence balance, check if it is in the absence balance, if not, add it to the absence balance
+// return the absence balance
+
+
 // Leave Balance
 export async function getLeaveBalance({userId, leaveType, year = new Date().getFullYear()} = {}) {
     if (!userId || !leaveType)
