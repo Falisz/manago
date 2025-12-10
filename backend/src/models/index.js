@@ -8,7 +8,6 @@ import Branch from './Branch.js';
 import BranchRole from './BranchRole.js';
 import BranchUser from './BranchUser.js';
 import Channel from './Channel.js';
-import CompOff from './CompOff.js';
 import Disposition from './Disposition.js';
 import DispositionPreset from './DispositionPreset.js';
 import Holiday from './Holiday.js';
@@ -229,7 +228,7 @@ DispositionPreset.hasMany(Disposition, { foreignKey: 'preset', sourceKey: 'id' }
 Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id' });
 
 export {
-    AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser, Channel, CompOff,
+    AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser, Channel,
     Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, Leave, LeaveType, Post,
     Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser,
     TimeRecord, User, UserManager, UserPermission, UserRole, WeekendWorking

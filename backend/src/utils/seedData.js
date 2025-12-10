@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
 import {
-    AppPage, AppModule, AppConfig, Channel, CompOff, CompOffType, Holiday, JobPost, JobLocation, Leave, LeaveType, Post,
+    AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Leave, LeaveType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
     UserPermission, UserRole
 } from '../models/index.js';
@@ -826,16 +826,6 @@ const requestStatuses = [
     { id: 5, name: 'Cancelled' }
 ];
 
-const compOffTypes = [
-    { id: 1, name: 'Holiday' },
-    { id: 2, name: 'Weekend' }
-];
-
-const compOffs = [
-    { id: 1, type: 1, holiday: 11, status: 2, user: 100007, approver: 100002 },
-    { id: 2, type: 2, date: '2025-12-14', status: 2, user: 100008, approver: 100002 }
-];
-
 const leaveTypes = [
     {
         id: 1,
@@ -884,7 +874,13 @@ const leaveTypes = [
         id: 11,
         name: 'Unpaid Leave',
         multiple: true,
-        color: '#777777' },
+        color: '#777777'
+    },
+    {
+        id: 100,
+        name: 'Compensatory Leave',
+        color: '#2196F3'
+    }
 ];
 
 const leaves = [
@@ -917,10 +913,12 @@ const leaves = [
         days: 1,
         status: 2, // Approved
         user: 100015, // Employee Three
-        approver: null,
+        approver: 100004,
         user_note: 'Need a day off for personal reasons',
         approver_note: null
-    }
+    },
+    { id: 101, type: 100, start_date: '2025-12-14', status: 2, user: 100007, approver: 100004 },
+    { id: 201, type: 100, start_date: '2025-12-14', status: 2, user: 100008, approver: 100004 }
 ];
 
 const channels = [
@@ -975,8 +973,6 @@ const seedStructure = [
     { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
-    { model: CompOffType, tableName: 'comp_off_types', data: compOffTypes, itemsName: 'comp off types' },
-    { model: CompOff, tableName: 'comp_offs', data: compOffs, itemsName: 'comp offs' },
     { model: LeaveType, tableName: 'leave_types', data: leaveTypes, itemsName: 'leave types' },
     { model: Leave, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },

@@ -4,9 +4,9 @@ import {
     getLeave,
     createLeave,
     updateLeave,
-    deleteLeave, getLeaveType, getLeaveBalance
+    deleteLeave, getLeaveType, getLeaveBalance, getCompOffBalance
 } from '../controllers/workPlanner.js';
-import {getUser, getUsersByScope} from "../controllers/users.js";
+import {getUsersByScope} from "../controllers/users.js";
 import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
@@ -237,19 +237,18 @@ const deleteHandler = async (req, res) =>
  */
 const fetchBalanceHandler = async (req, res) => {
     const result = {};
-    const user = await getUser({id: req.user});
-    let year;
-    if (user?.joined)
-        year = new Date(user?.joined).getFullYear();
-    else
-        year = new Date().getFullYear();
-    const current_year = new Date().getFullYear();
-
-    const leaveTypes = await getLeaveType();
-    for (year; year < current_year; year++)
+    try {
+        const leaveTypes = await getLeaveType();
+        const user = req.query.user || req.user;
         for (const leaveType of leaveTypes)
-            result[leaveType.id][year] = await getLeaveBalance({user: req.user, type: leaveType.id, year});
-    res.json({result});
+            if (leaveType.id === 100)
+                result[100] = await getCompOffBalance({user});
+            else
+                result[leaveType.id] = await getLeaveBalance({userId: user, leaveType: leaveType.id});
+        res.json({result});
+    } catch (err) {
+        res.status(500).json({message: 'Server error.'});
+    }
 }
 
 // Router definitions
