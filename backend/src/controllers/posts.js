@@ -1,6 +1,5 @@
 //BACKEND/controller/pages.js
-import {User} from '../models/users.js';
-import {Post, Channel} from '../models/posts.js';
+import {Post, Channel, User} from '../models/index.js';
 import randomId from '../utils/randomId.js';
 
 /** 

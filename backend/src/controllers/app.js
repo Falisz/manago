@@ -1,5 +1,5 @@
 //BACKEND/controllers/api.js
-import {AppConfig, AppModule, AppPage} from '../models/app.js';
+import {AppConfig, AppModule, AppPage} from '../models/index.js';
 
 /**
  * Retrieves the current configuration from the database.

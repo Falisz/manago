@@ -1,6 +1,5 @@
 // BACKEND/controller/projects.js
-import { Project, ProjectUser } from '../models/projects.js';
-import { User } from '../models/users.js';
+import { Project, ProjectUser, User } from '../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
 import randomId from '../utils/randomId.js';

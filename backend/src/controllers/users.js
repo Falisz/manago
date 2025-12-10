@@ -2,13 +2,13 @@
 import bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
-import { User, UserManager, Role, UserRole, Permission, UserPermission, RolePermission } from '../models/users.js';
-import { TeamUser } from '../models/teams.js';
+import { User, UserManager, Role, UserRole, Permission, UserPermission, RolePermission,
+    TeamUser } from '../models/index.js';
 import randomId from '../utils/randomId.js';
 import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
-import {getTeamUsers} from "./teams.js";
-import {getBranchUsers} from "./branches.js";
-import {getProjectUsers} from "./projects.js";
+import {getTeamUsers} from './teams.js';
+import {getBranchUsers} from './branches.js';
+import {getProjectUsers} from './projects.js';
 
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.

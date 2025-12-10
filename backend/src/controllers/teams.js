@@ -1,6 +1,5 @@
 // BACKEND/controller/teams.js
-import {Team, TeamRole, TeamUser} from '../models/teams.js';
-import { User } from '../models/users.js';
+import { Team, TeamRole, TeamUser, User } from '../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
 import randomId from '../utils/randomId.js';

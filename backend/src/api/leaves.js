@@ -4,9 +4,9 @@ import {
     getLeave,
     createLeave,
     updateLeave,
-    deleteLeave, getLeaveType
+    deleteLeave, getLeaveType, getLeaveBalance
 } from '../controllers/workPlanner.js';
-import {getUsersByScope} from "../controllers/users.js";
+import {getUser, getUsersByScope} from "../controllers/users.js";
 import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
@@ -84,6 +84,7 @@ const fetchHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
+    const data = req.body;
 
     const { hasAccess } = await checkAccess(req.user, 'create', 'leave');
 
@@ -91,7 +92,6 @@ const createHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        const data = req.body;
         if (data.user == null) data.user = req.user;
         if (data.status == null) data.status = 0;
 
@@ -237,11 +237,18 @@ const deleteHandler = async (req, res) =>
  */
 const fetchBalanceHandler = async (req, res) => {
     const result = {};
+    const user = await getUser({id: req.user});
+    let year;
+    if (user?.joined)
+        year = new Date(user?.joined).getFullYear();
+    else
+        year = new Date().getFullYear();
+    const current_year = new Date().getFullYear();
+
     const leaveTypes = await getLeaveType();
-    for (const leaveType of leaveTypes) {
-        const balance = await getLeave({user: req.user, type: leaveType.id, year: '2025'});
-        result[leaveType.id] = balance.length;
-    }
+    for (year; year < current_year; year++)
+        for (const leaveType of leaveTypes)
+            result[leaveType.id][year] = await getLeaveBalance({user: req.user, type: leaveType.id, year});
     res.json({result});
 }
 

@@ -1,20 +1,11 @@
 // BACKEND/utils/seed-data.js
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
-import {AppConfig, AppModule, AppPage} from '../models/app.js';
-import {User, UserManager, Role, UserRole, Permission, RolePermission, UserPermission} from '../models/users.js';
-import {Team, TeamRole, TeamUser} from '../models/teams.js';
 import {
-    Schedule,
-    JobPost,
-    Shift,
-    Holiday,
-    RequestStatus,
-    LeaveType,
-    Leave,
-    JobLocation
-} from '../models/workPlanner.js';
-import {Post, Channel} from '../models/posts.js';
+    AppPage, AppModule, AppConfig, Channel, CompOff, CompOffType, Holiday, JobPost, JobLocation, Leave, LeaveType, Post,
+    Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
+    UserPermission, UserRole
+} from '../models/index.js';
 
 // Data to seed
 const appModules = [
@@ -750,35 +741,6 @@ const jobLocations = [
     { id: 4, name: 'Field', color: '#F44336' }
 ];
 
-const holidays = [
-    { id: 1, date: '2025-01-01', name: "New Year's Day", requestable_working: true },
-    { id: 2, date: '2025-01-06', name: 'Epiphany', requestable_working: true },
-    { id: 3, date: '2025-04-20', name: 'Easter Sunday', requestable_working: true },
-    { id: 4, date: '2025-04-21', name: 'Easter Monday', requestable_working: true },
-    { id: 5, date: '2025-05-01', name: 'Labour Day', requestable_working: true },
-    { id: 6, date: '2025-05-03', name: 'Constitution Day', requestable_working: true },
-    { id: 7, date: '2025-06-08', name: 'Pentecost Sunday', requestable_working: true },
-    { id: 8, date: '2025-06-19', name: 'Corpus Christi', requestable_working: true },
-    { id: 9, date: '2025-08-15', name: 'Assumption of Mary', requestable_working: true },
-    { id: 10, date: '2025-11-01', name: "All Saints' Day", requestable_working: true },
-    { id: 11, date: '2025-11-11', name: 'Independence Day', requestable_working: true },
-    { id: 12, date: '2025-12-25', name: 'Christmas Day', requestable_working: true },
-    { id: 13, date: '2025-12-26', name: 'Second Day of Christmas', requestable_working: true },
-    { id: 14, date: '2026-01-01', name: "New Year's Day", requestable_working: true },
-    { id: 15, date: '2026-01-06', name: 'Epiphany', requestable_working: true },
-    { id: 16, date: '2026-04-05', name: 'Easter Sunday', requestable_working: true },
-    { id: 17, date: '2026-04-06', name: 'Easter Monday', requestable_working: true },
-    { id: 18, date: '2026-05-01', name: 'Labour Day', requestable_working: true },
-    { id: 19, date: '2026-05-03', name: 'Constitution Day', requestable_working: true },
-    { id: 20, date: '2026-05-24', name: 'Pentecost Sunday', requestable_working: true },
-    { id: 21, date: '2026-06-04', name: 'Corpus Christi', requestable_working: true },
-    { id: 22, date: '2026-08-15', name: 'Assumption of Mary', requestable_working: true },
-    { id: 23, date: '2026-11-01', name: "All Saints' Day", requestable_working: true },
-    { id: 24, date: '2026-11-11', name: 'Independence Day', requestable_working: true },
-    { id: 25, date: '2026-12-25', name: 'Christmas Day', requestable_working: true },
-    { id: 26, date: '2026-12-26', name: 'Second Day of Christmas', requestable_working: true }
-];
-
 const shifts = [
     // Team 1 (Parent team) and its subteams (Los Angeles, Washington)
     // Users in Los Angeles (team 4): 100007 (leader), 100013-100017
@@ -825,6 +787,36 @@ const shifts = [
     }).flat()
 ];
 
+const holidays = [
+    { id: 1, date: '2025-01-01', name: "New Year's Day", requestable_working: true },
+    { id: 2, date: '2025-01-06', name: 'Epiphany', requestable_working: true },
+    { id: 3, date: '2025-04-20', name: 'Easter Sunday', requestable_working: true },
+    { id: 4, date: '2025-04-21', name: 'Easter Monday', requestable_working: true },
+    { id: 5, date: '2025-05-01', name: 'Labour Day', requestable_working: true },
+    { id: 6, date: '2025-05-03', name: 'Constitution Day', requestable_working: true },
+    { id: 7, date: '2025-06-08', name: 'Pentecost Sunday', requestable_working: true },
+    { id: 8, date: '2025-06-19', name: 'Corpus Christi', requestable_working: true },
+    { id: 9, date: '2025-08-15', name: 'Assumption of Mary', requestable_working: true },
+    { id: 10, date: '2025-11-01', name: "All Saints' Day", requestable_working: true },
+    { id: 11, date: '2025-11-11', name: 'Independence Day', requestable_working: true },
+    { id: 12, date: '2025-12-24', name: 'Christmas Day\'s Eve', requestable_working: true },
+    { id: 13, date: '2025-12-25', name: 'Christmas Day', requestable_working: true },
+    { id: 14, date: '2025-12-26', name: 'Second Day of Christmas', requestable_working: true },
+    { id: 15, date: '2026-01-01', name: "New Year's Day", requestable_working: true },
+    { id: 16, date: '2026-01-06', name: 'Epiphany', requestable_working: true },
+    { id: 17, date: '2026-04-05', name: 'Easter Sunday', requestable_working: true },
+    { id: 18, date: '2026-04-06', name: 'Easter Monday', requestable_working: true },
+    { id: 19, date: '2026-05-01', name: 'Labour Day', requestable_working: true },
+    { id: 20, date: '2026-05-03', name: 'Constitution Day', requestable_working: true },
+    { id: 21, date: '2026-05-24', name: 'Pentecost Sunday', requestable_working: true },
+    { id: 22, date: '2026-06-04', name: 'Corpus Christi', requestable_working: true },
+    { id: 23, date: '2026-08-15', name: 'Assumption of Mary', requestable_working: true },
+    { id: 24, date: '2026-11-01', name: "All Saints' Day", requestable_working: true },
+    { id: 25, date: '2026-11-11', name: 'Independence Day', requestable_working: true },
+    { id: 26, date: '2026-12-25', name: 'Christmas Day', requestable_working: true },
+    { id: 27, date: '2026-12-26', name: 'Second Day of Christmas', requestable_working: true }
+];
+
 const requestStatuses = [
     { id: 0, name: 'Planned' },
     { id: 1, name: 'Request Pending' },
@@ -834,15 +826,65 @@ const requestStatuses = [
     { id: 5, name: 'Cancelled' }
 ];
 
+const compOffTypes = [
+    { id: 1, name: 'Holiday' },
+    { id: 2, name: 'Weekend' }
+];
+
+const compOffs = [
+    { id: 1, type: 1, holiday: 11, status: 2, user: 100007, approver: 100002 },
+    { id: 2, type: 2, date: '2025-12-14', status: 2, user: 100008, approver: 100002 }
+];
+
 const leaveTypes = [
-    { id: 1, name: 'Annual Leave', amount: 26, color: '#FF9800', multiple: true },
-    { id: 2, name: 'Leave on Demand', parent_type: 1, amount: 4, color: '#F44336' },
-    { id: 3, name: 'Sick Leave', color: '#4CAF50', multiple: true },
-    { id: 4, name: 'Compensatory OFF', color: '#2196F3' },
-    { id: 5, name: 'Personal Leave', parent_type: 1, amount: 2, color: '#9C27B0', multiple: true },
-    { id: 6, name: 'Maternity Leave', parent_type: 1, color: '#E91E63' },
-    { id: 7, name: 'Paternity Leave', parent_type: 1, color: '#3F51B5' },
-    { id: 11, name: 'Unpaid Leave', color: '#777777', multiple: true },
+    {
+        id: 1,
+        name: 'Annual Leave',
+        amount: 26,
+        multiple: true,
+        scaled: true,
+        transferable: true,
+        color: '#FF9800'
+    },
+    {
+        id: 2,
+        name: 'Sick Leave',
+        multiple: true,
+        ref_required: true,
+        color: '#4CAF50',
+    },
+    {
+        id: 3,
+        name: 'Leave on Demand',
+        parent_type: 1,
+        amount: 4,
+        color: '#F44336'
+    },
+    {
+        id: 4,
+        name: 'Personal Leave',
+        parent_type: 1,
+        amount: 2,
+        color: '#9C27B0',
+        multiple: true
+    },
+    {
+        id: 5,
+        name: 'Maternity Leave',
+        parent_type: 1,
+        color: '#E91E63'
+    },
+    {
+        id: 6,
+        name: 'Paternity Leave',
+        parent_type: 1,
+        color: '#3F51B5'
+    },
+    {
+        id: 11,
+        name: 'Unpaid Leave',
+        multiple: true,
+        color: '#777777' },
 ];
 
 const leaves = [
@@ -933,6 +975,8 @@ const seedStructure = [
     { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
+    { model: CompOffType, tableName: 'comp_off_types', data: compOffTypes, itemsName: 'comp off types' },
+    { model: CompOff, tableName: 'comp_offs', data: compOffs, itemsName: 'comp offs' },
     { model: LeaveType, tableName: 'leave_types', data: leaveTypes, itemsName: 'leave types' },
     { model: Leave, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },

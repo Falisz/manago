@@ -1,6 +1,5 @@
 // BACKEND/controller/branches.js
-import { Branch, BranchUser, BranchRole } from '../models/branches.js';
-import { User } from '../models/users.js';
+import { Branch, BranchUser, BranchRole, User } from '../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../utils/database.js';
 import randomId from '../utils/randomId.js';

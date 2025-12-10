@@ -12,11 +12,11 @@ import {
     WeekendWorking,
     Disposition,
     DispositionPreset,
-    TimeRecord
-} from '../models/workPlanner.js';
-import { User } from '../models/users.js';
-import {getUser, getUsersByScope} from './users.js';
+    User,
+    TimeRecord, CompOff
+} from '../models/index.js';
 import { Op } from 'sequelize';
+import { getUser, getUsersByScope } from './users.js';
 import randomId from '../utils/randomId.js';
 import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 import sequelize from '../utils/database.js';
@@ -56,7 +56,6 @@ export async function getSchedule({id, author, start_date, end_date} = {}) {
         });
 
         return schedule;
-
     }
 
     // Logic if the ID is provided - fetch a specific Schedule
@@ -1347,33 +1346,28 @@ export async function deleteDisposition(id) {
 export async function getLeaveBalance({userId, leaveType, year} = {}) {
     if (userId || leaveType || year)
         return {};
-
     const user = await User.findByPk(userId, { raw: true });
     const leave = await LeaveType.findByPk(leaveType, { raw: true });
     if (!user || !leave)
         return {};
-
     year = Number(year) || new Date().getFullYear();
-    let totalBalance = Number(leave.amount) || 0;
+
+    let totalBalance = leave.amount;
     let usedBalance = 0;
 
-    if (leave.scaled) {
+    if (leave.amount && leave.scaled) {
         let months = 12;
-
-        if (user.joined){
+        if (user.joined) {
             const joinDate = new Date(user.joined);
             if (!isNaN(joinDate) && joinDate.getFullYear() === year)
                 months -= (joinDate.getMonth());   
         }
-
         if (user.notice_start) {
             const noticeDate = new Date(user.notice_start)
             if (!isNaN(noticeDate) && noticeDate.getFullYear() === year)
                 months -= (12 - noticeDate.getMonth() - 1);
         }
-
         months = Math.max(0, Math.min(12, months));
-        
         totalBalance = Math.ceil(totalBalance*(months/12));
     }
     
@@ -1411,10 +1405,12 @@ export async function getLeaveBalance({userId, leaveType, year} = {}) {
     if (leaves && !leaves.length)
         usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
 
-    return {totalBalance, usedBalance, availableBalance: totalBalance - usedBalance};
+    const availableBalance = leave.amount ? totalBalance - usedBalance : null;
+
+    return {totalBalance, usedBalance, availableBalance};
 }
 
-export async function getUncompensatedHoliday({user} = {}) {
+export async function getCompOffBalance({user} = {}) {
     const approvedHolidays = await Holiday.findAll({
         include: [{
             model: HolidayWorking,                     // Search for approved Holidays with HolidayWorking
@@ -1424,7 +1420,16 @@ export async function getUncompensatedHoliday({user} = {}) {
         }],
         raw: true
     });
-    const approvedDates = approvedHolidays.map(h => h.date);
+    const approvedHolidayDates = approvedHolidays.map(h => h.date);
+
+    const approvedWeekends = await WeekendWorking.findAll({
+        where: { user, status: [2, 4] },
+        raw: true,
+        attributes: []
+    });
+    const approvedWeekendsDates = approvedWeekends.map(h => h.date);
+
+    const approvedDates = [...approvedHolidayDates, ...approvedWeekendsDates];
     const approvedWorkedDates = await TimeRecord.findAll({
         where: {
             user,                                      // TimeRecords for user
@@ -1434,15 +1439,19 @@ export async function getUncompensatedHoliday({user} = {}) {
         raw: true
     });
     const datesWorked = approvedWorkedDates.map(w => w.date);
-    const workedHolidays = approvedHolidays.filter(h => datesWorked.includes(h.date));
-    const holidayCompOffsTaken = await Leave.findAll({
+    const availedDates = approvedDates.filter(h => datesWorked.includes(h.date));
+    const holidayCompOffsTaken = await CompOff.findAll({
         where: {
             user,                                       // Absences for this user
-            compensated_holiday: {[Op.not]: null},      // Only Compensated Holidays
             status: {[Op.not]: [3, 5]}                  // Excluded Rejected and Cancelled
-        }, 
+        },
         raw: true
     });
-    const compensatedHolidays = holidayCompOffsTaken.map(co => co.compensated_holiday);
-    return workedHolidays.filter(h => !compensatedHolidays.includes(h.id));
+    const compensatedDates = holidayCompOffsTaken.map(co => co.date);
+
+    const totalBalance = availedDates.length;
+    const usedBalance = compensatedDates.length;
+    const availableBalance = Math.max(0, totalBalance - usedBalance);
+
+    return {totalBalance, usedBalance, availableBalance, availedDates, compensatedDates};
 }
