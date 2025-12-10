@@ -9,8 +9,12 @@ export const TimeRecord = sequelize.define('TimeRecord', {
         allowNull: false
     },
     time: {
-        type: DataTypes.NUMBER,
+        type: DataTypes.INTEGER,
         allowNull: false
+    },
+    project: {
+        type: DataTypes.INTEGER,
+        references: { model: 'projects', key: 'id' }
     },
     user: {
         type: DataTypes.INTEGER,

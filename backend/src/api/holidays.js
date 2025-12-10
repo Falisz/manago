@@ -41,6 +41,8 @@ const fetchHandler = async (req, res) => {
             }
         }
 
+        query.working = req.user;
+
         const holidays = await getHoliday(query);
 
         if (id && !holidays)

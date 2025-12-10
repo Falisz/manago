@@ -245,8 +245,9 @@ const fetchBalanceHandler = async (req, res) => {
                 result[100] = await getCompOffBalance({user});
             else
                 result[leaveType.id] = await getLeaveBalance({userId: user, leaveType: leaveType.id});
-        res.json({result});
+        res.json(result);
     } catch (err) {
+        console.error(err);
         res.status(500).json({message: 'Server error.'});
     }
 }

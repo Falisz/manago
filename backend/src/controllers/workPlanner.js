@@ -687,11 +687,19 @@ export async function deleteShift(id) {
  * @param {string} date - optional -
  * @param from
  * @param to
+ * @param working - optional - User ID to fetch working status for a specific user on a specific date
  * @returns {Promise<Object|Object[]|null>} Single Holiday, array of Holidays, or null
  */
-export async function getHoliday({id, date, from, to} = {}) {
-    if (id)
-        return await Holiday.findByPk(id) || null;
+export async function getHoliday({id, date, from, to, working} = {}) {
+
+    if (id) {
+        const holiday = await Holiday.findByPk(id);
+
+        if (holiday && working)
+            holiday.working = await HolidayWorking.findOne({where: {holiday: id, user: working}, raw: true});
+
+        return holiday;
+    }
 
     const where = {};
 
@@ -707,7 +715,24 @@ export async function getHoliday({id, date, from, to} = {}) {
     else if (to)
         where.date = {[Op.lte]: to};
 
-    return await Holiday.findAll({where}) || {};
+    const holidays = await Holiday.findAll({where, raw: true});
+
+    if (holidays?.length && working) {
+        const holidayIds = holidays.map(h => h.id);
+        const workingStatuses = await HolidayWorking.findAll({
+            where: {
+                user: working,
+                holiday: { [Op.in]: holidayIds}
+            },
+            raw: true
+        });
+        const workingMap = new Map(workingStatuses.map(status => [status.holiday, status]));
+        holidays.forEach(holiday => {
+            holiday.working = workingMap.get(holiday.id) || null;
+        });
+    }
+
+    return holidays || [];
 }
 
 /**
@@ -1343,79 +1368,65 @@ export async function deleteDisposition(id) {
 }
 
 // Leave Balance
-export async function getLeaveBalance({userId, leaveType} = {}) {
-
-    if (userId || leaveType)
+export async function getLeaveBalance({userId, leaveType, year = new Date().getFullYear()} = {}) {
+    if (!userId || !leaveType)
         return {};
-    const user = await User.findByPk(userId, { raw: true });
+    const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
     const leave = await LeaveType.findByPk(leaveType, { raw: true });
     if (!user || !leave)
         return {};
 
-    let totalBalance = null;
-    let usedBalance;
+    let totalBalance = leave.amount;
+    let usedBalance = 0;
 
-    async function getTotalLeaveBalance({leave, year} = {}) {
-
-        if (!leave)
-            return 0;
-
-        let totalBalance = leave.amount;
-
-        if (leave.amount && leave.scaled) {
-            let months = 12;
-            if (user.joined) {
-                const joinDate = new Date(user.joined);
-                if (!isNaN(joinDate) && joinDate.getFullYear() === year)
-                    months -= (joinDate.getMonth());
-            }
-            if (user.notice_start) {
-                const noticeDate = new Date(user.notice_start)
-                if (!isNaN(noticeDate) && noticeDate.getFullYear() === year)
-                    months -= (12 - noticeDate.getMonth() - 1);
-            }
-            months = Math.max(0, Math.min(12, months));
-            totalBalance = Math.ceil(totalBalance*(months/12));
+    if (leave.amount && leave.scaled) {
+        let months = 12;
+        if (user.joined) {
+            const joinDate = new Date(user.joined);
+            if (!isNaN(joinDate) && joinDate.getFullYear() === year)
+                months -= (joinDate.getMonth());
         }
-
-        if (leave.parent_type) {
-            const parentLeave = await LeaveType.findByPk(leave.parent_type, { raw: true });
-            const parentBalance = await getTotalLeaveBalance({user, leave: parentLeave, year});
-            const parentUsedBalance = await getUsedLeaveBalance({leave: parentLeave});
-            if (parentBalance)
-                totalBalance = Math.min(totalBalance, (parentBalance - parentUsedBalance));
+        if (user.notice_start) {
+            const noticeDate = new Date(user.notice_start)
+            if (!isNaN(noticeDate) && noticeDate.getFullYear() === year)
+                months -= (12 - noticeDate.getMonth() - 1);
         }
-
-        return totalBalance;
+        months = Math.max(0, Math.min(12, months));
+        totalBalance = Math.ceil(totalBalance*(months/12));
     }
 
-    async function getUsedLeaveBalance({leave} = {}) {
-        const subTypes = await LeaveType.findAll({ where: { parent_type: leave.id }, raw: true });
-        const types = subTypes.map(l => l.id);
-        let usedBalance = 0;
-
-        const leaves = await Leave.findAll({
-            where: {
-                user,
-                status: { [Op.ne]: [3, 5] },
-                type: [leave.id, ...types]
-            },
-            raw: true
-        });
-        if (leaves && !leaves.length)
-            usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
-
-        return usedBalance;
+    if (leave.amount && leave.parent_type) {
+        const parentLeave = await LeaveType.findByPk(leave.parent_type, { raw: true });
+        const {availableBalance: parentBalance} = await getLeaveBalance({user, leave: parentLeave, year});
+        if (parentBalance != null)
+            totalBalance = Math.min(totalBalance, parentBalance);
     }
 
-    if (leave.amount) {
-        const startYear = new Date(user.joined).getFullYear();
-        const currentYear = new Date().getFullYear();
-        for (let year = startYear; year <= currentYear; year++)
-            totalBalance += await getTotalLeaveBalance({user, leave, year});
+    if (leave.amount && leave.transferable) {
+        if (leave.amount) {
+            const limitYear = new Date(user.joined).getFullYear() || new Date().getFullYear();
+            for (let yr = year - 1; yr >= limitYear; yr--) {
+                const {availableBalance: remainingBalance} = await getLeaveBalance({userId, leaveType, year: yr});
+                if (remainingBalance != null)
+                    totalBalance += remainingBalance;
+            }
+        }
     }
 
-    usedBalance = await getUsedLeaveBalance({leave});
+    const subTypes = await LeaveType.findAll({ where: { parent_type: leave.id }, raw: true });
+    const types = subTypes.map(l => l.id);
+
+    const leaves = await Leave.findAll({
+        where: {
+            user: user.id,
+            status: [0, 1, 2, 4],
+            type: [leave.id, ...types],
+            start_date: { [Op.gte]: `${year}-01-01`, [Op.lte]: `${year}-12-31` }
+        },
+        raw: true
+    });
+    if (leaves && leaves.length)
+        usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
 
     const availableBalance = totalBalance ? totalBalance - usedBalance : null;
 
@@ -1426,7 +1437,7 @@ export async function getCompOffBalance({user} = {}) {
     const approvedHolidays = await Holiday.findAll({
         include: [{
             model: HolidayWorking,                     // Search for approved Holidays with HolidayWorking
-            where: { user, status: [2, 4] },           // Only approved Holidays
+            where: { user, status: [0, 1, 2, 4] },     // Only approved Holidays
             required: true,                            // Only Holidays with HolidayWorking approved
             attributes: []                             // No attributes for HolidayWorking needed
         }],
@@ -1435,7 +1446,7 @@ export async function getCompOffBalance({user} = {}) {
     });
     const approvedHolidayDates = approvedHolidays.map(h => h.date);
     const approvedWeekends = await WeekendWorking.findAll({
-        where: { user, status: [2, 4] },
+        where: { user, status: [0, 1, 2, 4] },
         attributes: ['date'],
         raw: true
     });
@@ -1455,7 +1466,7 @@ export async function getCompOffBalance({user} = {}) {
         where: {
             type: 100,
             user,                                       // Absences for this user
-            status: {[Op.ne]: [3, 5]}                   // Excluded Rejected and Cancelled
+            status: [0, 1, 2, 4]                        // Excluded Rejected and Cancelled
         },
         raw: true
     });
