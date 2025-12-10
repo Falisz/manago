@@ -1,6 +1,6 @@
 // FRONTEND/utils/dates.js
 
-export function generateDateList (fromDate, toDate) {
+export function generateDateList (fromDate, toDate, omitWeekends=false) {
     const dates = [];
     const currentDate = new Date(fromDate);
     currentDate.setUTCHours(0, 0, 0, 0);
@@ -8,6 +8,10 @@ export function generateDateList (fromDate, toDate) {
     endDate.setUTCHours(0, 0, 0, 0);
 
     while (currentDate <= endDate) {
+        if (omitWeekends && (currentDate.getUTCDay() === 0 || currentDate.getUTCDay() === 6)) {
+            currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+            continue;
+        }
         dates.push(new Date(currentDate));
         currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }

@@ -193,6 +193,12 @@ const resourceConfigs = {
             }
 
             return url;
+        },
+        otherMethods: {
+            fetchLeaveBalance: async ({user} = {}) => {
+                const res = await axios.get(`/leaves/balance${user ? '?user=' + user : ''}`)
+                return res?.data || null;
+            }
         }
     },
     jobPost: {
@@ -467,6 +473,8 @@ const useResource = (resource) => {
 
     }, [showPopUp, refreshData, name, config, resourceCache]);
 
+    const otherMethods = config.otherMethods || {};
+
     return {
         [name[0]]: data,
         [name[1]]: data,
@@ -484,6 +492,7 @@ const useResource = (resource) => {
         [`save${name[3]}Assignment`]: saveResourceAssignment,
         [`delete${name[2]}`]: deleteResource,
         [`delete${name[3]}`]: deleteResource,
+        ...otherMethods
     };
 };
 

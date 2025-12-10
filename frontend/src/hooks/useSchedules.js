@@ -269,7 +269,7 @@ const useSchedules = () => {
             return schedule;
 
         } catch (err) {
-            console.log('saveSchedule error:', err);
+            console.error('saveSchedule error:', err);
             const message = 'Error occurred while saving Schedule Draft. Please try again.';
             showPopUp({type: 'error', content: message});
         }

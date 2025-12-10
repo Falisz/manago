@@ -78,6 +78,13 @@ function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1 }
                             onClick = () => openDialog(
                                 {content: 'leaveDetails', contentId: item.id, closeButton: false}
                             );
+                        } else if (item?.item_type === 'holiday') {
+                            const working = [2,4].includes(item?.working?.status) ? 'Working' : 'Day Off';
+                            numberTitle = item?.name + ' | ' + working;
+                            color = '#9c0510';
+                            onClick = () => openDialog(
+                                {content: 'holidayDetails', contentId: item.id, closeButton: false}
+                            );
                         }
 
                         return (
