@@ -1,15 +1,15 @@
-// BACKEND/models/LeaveType.js
+// BACKEND/models/AbsenceType.js
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 
-export const LeaveType = sequelize.define('LeaveType', {
+export const AbsenceType = sequelize.define('AbsenceType', {
     name: {
         type: DataTypes.STRING,
         allowNull: false,
     },
     parent_type: {
         type: DataTypes.INTEGER,
-        references: { model: 'leave_types', key: 'id' }
+        references: { model: 'absence_types', key: 'id' }
     },
     amount: DataTypes.INTEGER,           // number of days of the leave in one year
     multiple: DataTypes.BOOLEAN,         // flag if more than one day of the leave can be applied on the request
@@ -19,7 +19,7 @@ export const LeaveType = sequelize.define('LeaveType', {
     file_required: DataTypes.BOOLEAN,    // flag if the referral document is required
     color: DataTypes.STRING
 }, {
-    tableName: 'leave_types',
+    tableName: 'absence_types',
     timestamps: false
 });
-export default LeaveType;
+export default AbsenceType;

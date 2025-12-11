@@ -1,15 +1,15 @@
 // BACKEND/models/Absence.js
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
-import LeaveType from './LeaveType.js';
+import AbsenceType from './AbsenceType.js';
 import RequestStatus from './RequestStatus.js';
 import User from './User.js';
 
-export const Absence = sequelize.define('Leave', {
+export const Absence = sequelize.define('Absence', {
     type: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: LeaveType, key: 'id' }
+        references: { model: AbsenceType, key: 'id' }
     },
     start_date: {
         type: DataTypes.DATEONLY,
@@ -41,7 +41,7 @@ export const Absence = sequelize.define('Leave', {
     },
     approver_note: DataTypes.TEXT
 }, {
-    tableName: 'leaves',
+    tableName: 'absences',
     timestamps: false
 });
 export default Absence;

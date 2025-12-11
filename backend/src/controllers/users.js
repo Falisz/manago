@@ -808,7 +808,12 @@ export async function createUserContract(data) {
         return null;
 
 }
+
 export async function updateUserContracts(id, data) {
+
+}
+
+export async function deleteUserContract(id) {
 
 }
 

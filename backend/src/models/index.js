@@ -16,7 +16,7 @@ import Holiday from './Holiday.js';
 import HolidayWorking from './HolidayWorking.js';
 import JobPost from './JobPost.js';
 import JobLocation from './JobLocation.js';
-import LeaveType from './LeaveType.js';
+import AbsenceType from './AbsenceType.js';
 import Post from './Post.js';
 import Permission from './Permission.js';
 import Project from './Project.js';
@@ -172,13 +172,13 @@ Shift.belongsTo(JobLocation, { foreignKey: 'job_location', targetKey: 'id' });
 Schedule.hasMany(Shift, { foreignKey: 'schedule', sourceKey: 'id' });
 Shift.belongsTo(Schedule, { foreignKey: 'schedule', targetKey: 'id' });
 //
-// LeaveType <-> LeaveType
-LeaveType.hasMany(LeaveType, { foreignKey: 'parent_type', sourceKey: 'id', as: 'SubType' });
-LeaveType.belongsTo(LeaveType, { foreignKey: 'parent_type', targetKey: 'id', as: 'ParentType' });
+// AbsenceType <-> AbsenceType
+AbsenceType.hasMany(AbsenceType, { foreignKey: 'parent_type', sourceKey: 'id', as: 'SubType' });
+AbsenceType.belongsTo(AbsenceType, { foreignKey: 'parent_type', targetKey: 'id', as: 'ParentType' });
 //
-// LeaveType <-> Absence
-LeaveType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
-Absence.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
+// AbsenceType <-> Absence
+AbsenceType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
+Absence.belongsTo(AbsenceType, { foreignKey: 'type', targetKey: 'id' });
 //
 // User <-> Absence (user)
 User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id' });
@@ -232,13 +232,13 @@ Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id'
 User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id', as: 'User' });
 Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
 //
-// LeaveType <-> Absence
-LeaveType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
-Absence.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
+// AbsenceType <-> Absence
+AbsenceType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
+Absence.belongsTo(AbsenceType, { foreignKey: 'type', targetKey: 'id' });
 // TODO: add user contracts and contract types associations here.
 export {
     Absence, AbsenceBalance, AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser,
-    Channel, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, LeaveType, Post,
+    Channel, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, AbsenceType, Post,
     Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser,
     TimeRecord, User, UserManager, UserPermission, UserRole, WeekendWorking
 }

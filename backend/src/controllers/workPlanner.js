@@ -5,7 +5,7 @@ import {
     JobLocation,
     JobPost,
     Holiday,
-    LeaveType,
+    AbsenceType,
     Absence,
     RequestStatus,
     HolidayWorking,
@@ -835,9 +835,9 @@ export async function deleteHoliday(id) {
  */
 export async function getLeaveType({id} = {}) {
     if (!id || isNaN(id)) 
-        return await LeaveType.findAll({ raw: true });
+        return await AbsenceType.findAll({ raw: true });
 
-    return await LeaveType.findOne({ where: {id}, raw: true });
+    return await AbsenceType.findOne({ where: {id}, raw: true });
 }
 
 /**
@@ -853,17 +853,17 @@ export async function createLeaveType(data) {
     if (!data.name)
         return { success: false, message: 'Absence Type name is required.' };
     
-    if (await LeaveType.findOne({ where: { name: data.name } }))
+    if (await AbsenceType.findOne({ where: { name: data.name } }))
         return { success: false, message: 'Absence Type name is currently used.' };
 
-    if (data.parent_type && !(await LeaveType.findOne({ where: { id: data.parent_type}})))
+    if (data.parent_type && !(await AbsenceType.findOne({ where: { id: data.parent_type}})))
         return { success: false, message: 'Parent Absence Type not found.'};
 
     if (data.amount && isNaN(data.amount))
         return { success: false, message: 'Absence amount must be a number.'};
     
-    const type = await LeaveType.create({
-        id: await randomId(LeaveType),
+    const type = await AbsenceType.create({
+        id: await randomId(AbsenceType),
         name: data.name,
         parent_type: data.parent_type || null,
         amount: data.amount || null,
@@ -881,17 +881,17 @@ export async function createLeaveType(data) {
  */
 export async function updateLeaveType(id, data) {
     if (!id) 
-        return { success: false, message: 'LeaveType ID not provided.' };
+        return { success: false, message: 'AbsenceType ID not provided.' };
     
-    const leaveType = await LeaveType.findOne({ where: { id } });
+    const leaveType = await AbsenceType.findOne({ where: { id } });
     
     if (!leaveType)
-        return { success: false, message: 'LeaveType not found.' };
+        return { success: false, message: 'AbsenceType not found.' };
     
-    if (data.name && await LeaveType.findOne({ where: { name: data.name } }))
+    if (data.name && await AbsenceType.findOne({ where: { name: data.name } }))
         return { success: false, message: 'Name provided is currently used by other Absence Type.' };
 
-    if (data.parent_type && !(await LeaveType.findOne({ where: { id: data.parent_type}})))
+    if (data.parent_type && !(await AbsenceType.findOne({ where: { id: data.parent_type}})))
         return { success: false, message: 'Provided parent Absence Type not found.'};
 
     if (data.amount && isNaN(data.amount))
@@ -919,7 +919,7 @@ export async function deleteLeaveType(id) {
                 `There are ${block.length} Leave${block.length !== 1 ? 's' : ''} using this Leave Type.`
         };
     
-    const deleted = await LeaveType.destroy({ where: { id } });
+    const deleted = await AbsenceType.destroy({ where: { id } });
     
     if (!deleted) 
         return { success: false, message: 'No Absence Types found to delete.' };
@@ -948,7 +948,7 @@ export async function getAbsence({id, user, approver, date, start_date, end_date
         { model: User, attributes: ['id', 'first_name', 'last_name'] },
         { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver' },
         { model: RequestStatus, attributes: ['id', 'name']},
-        { model: LeaveType, attributes: ['name', 'color'] }
+        { model: AbsenceType, attributes: ['name', 'color'] }
     ];
 
     const flattenAbsence = (leave) => {
@@ -958,11 +958,11 @@ export async function getAbsence({id, user, approver, date, start_date, end_date
         const data = leave.toJSON();
         data.user = leave['User'].toJSON();
         data.approver = leave['Approver']?.toJSON();
-        data.type = leave['LeaveType']?.toJSON();
+        data.type = leave['AbsenceType']?.toJSON();
         data.status = leave['RequestStatus']?.toJSON();
         delete data['User'];
         delete data['Approver'];
-        delete data['LeaveType'];
+        delete data['AbsenceType'];
         delete data['RequestStatus'];
         return data;
     };
@@ -1018,7 +1018,7 @@ export async function createAbsence(data) {
     if (!data.end_date)
         data.days = 1;
     
-    if (!(await LeaveType.findOne({ where: { id: data.type } })))
+    if (!(await AbsenceType.findOne({ where: { id: data.type } })))
         return { success: false, message: 'Absence Type not found.' };
 
     data.status = Number(data.status);
@@ -1066,7 +1066,7 @@ export async function updateAbsence(id, data) {
     if (!leave)
         return { success: false, message: 'Absence not found.' };
 
-    if (data.type && !(await LeaveType.findOne({ where: { id: data.type } })))
+    if (data.type && !(await AbsenceType.findOne({ where: { id: data.type } })))
         return { success: false, message: 'Absence Type not found.' };
 
     if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) 
@@ -1145,7 +1145,7 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
     if (!userId || !typeId)
         return {};
     const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
-    const leave = await LeaveType.findByPk(typeId, { raw: true });
+    const leave = await AbsenceType.findByPk(typeId, { raw: true });
     if (!user || !leave)
         return {};
 
@@ -1157,7 +1157,7 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
     let compensatedDates;
     let availableDates;
 
-    // Logic for all absences different than Comp Offs
+    // Logic for all absences different from Comp Offs
     if (leave.id !== 100) {
         totalBalance = leave.amount;
 
@@ -1241,7 +1241,7 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
     const type = [leave.id];
 
     if (leave.id !== 100) {
-        const subTypes = await LeaveType.findAll({ where: { parent_type: leave.id }, raw: true });
+        const subTypes = await AbsenceType.findAll({ where: { parent_type: leave.id }, raw: true });
         type.push(...subTypes.map(l => l.id));
     }
 

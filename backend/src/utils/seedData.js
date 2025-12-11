@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
 import {
-    AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, LeaveType, Post,
+    AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, AbsenceType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
     UserPermission, UserRole
 } from '../models/index.js';
@@ -826,10 +826,11 @@ const requestStatuses = [
     { id: 5, name: 'Cancelled' }
 ];
 
-const leaveTypes = [
+const absenceTypes = [
     {
         id: 1,
-        name: 'Annual Absence',
+        name: 'Annual Leave',
+        shortname: 'AL',
         amount: 26,
         multiple: true,
         scaled: true,
@@ -838,21 +839,24 @@ const leaveTypes = [
     },
     {
         id: 2,
-        name: 'Sick Absence',
+        name: 'Sick Leave',
+        shortname: 'SL',
         multiple: true,
         ref_required: true,
-        color: '#4CAF50',
+        color: '#71d162',
     },
     {
         id: 3,
-        name: 'Absence on Demand',
+        name: 'Leave on Demand',
+        shortname: 'LoD',
         parent_type: 1,
         amount: 4,
         color: '#F44336'
     },
     {
         id: 4,
-        name: 'Personal Absence',
+        name: 'Personal Leave',
+        shortname: 'PL',
         parent_type: 1,
         amount: 2,
         color: '#9C27B0',
@@ -860,30 +864,41 @@ const leaveTypes = [
     },
     {
         id: 5,
-        name: 'Maternity Absence',
+        name: 'Maternity Leave',
+        shortname: 'ML',
         parent_type: 1,
         color: '#E91E63'
     },
     {
         id: 6,
-        name: 'Paternity Absence',
+        name: 'Paternity Leave',
+        shortname: 'PL',
         parent_type: 1,
         color: '#3F51B5'
     },
     {
-        id: 11,
-        name: 'Unpaid Absence',
+        id: 7,
+        name: 'Unpaid Leave',
+        shortname: 'UL',
         multiple: true,
         color: '#777777'
     },
     {
+        id: 8,
+        name: 'Blood Donation Leave',
+        shortname: 'UL',
+        multiple: true,
+        color: '#048a1a'
+    },
+    {
         id: 100,
-        name: 'Compensatory Absence',
+        name: 'Compensatory Off',
+        shortname: 'C-OFF',
         color: '#2196F3'
     }
 ];
 
-const leaves = [
+const absences = [
     {
         type: 1, // AL
         start_date: '2025-12-08',
@@ -973,8 +988,8 @@ const seedStructure = [
     { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
-    { model: LeaveType, tableName: 'leave_types', data: leaveTypes, itemsName: 'leave types' },
-    { model: Absence, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
+    { model: AbsenceType, tableName: 'absence_types', data: absenceTypes, itemsName: 'absence types' },
+    { model: Absence, tableName: 'absences', data: absences, itemsName: 'absences' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },
     { model: Post, tableName: 'posts', data: posts, itemsName: 'posts' },
 ];

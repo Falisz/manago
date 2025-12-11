@@ -1,7 +1,7 @@
 // BACKEND/models/AbsenceBalance.js
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
-import LeaveType from './LeaveType.js';
+import AbsenceType from './AbsenceType.js';
 import User from "./User.js";
 
 export const AbsenceBalance = sequelize.define('AbsenceBalance', {
@@ -13,7 +13,7 @@ export const AbsenceBalance = sequelize.define('AbsenceBalance', {
     type: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {model: LeaveType, key: 'id'}
+        references: {model: AbsenceType, key: 'id'}
     },
     year: {
         type: DataTypes.INTEGER,
