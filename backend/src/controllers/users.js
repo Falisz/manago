@@ -9,6 +9,8 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 import {getTeamUsers} from './teams.js';
 import {getBranchUsers} from './branches.js';
 import {getProjectUsers} from './projects.js';
+import UserContract from "../models/UserContract.js";
+import ContractType from "../models/ContractType.js";
 
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.
@@ -774,6 +776,40 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
         await transaction.rollback();
         throw error;
     }
+}
+
+export async function getUserContracts({id, user, type} = {}) {
+
+    function flattenContract (data) {
+        const userContract = data.toJSON();
+        userContract.type = userContract['ContractType']?.toJSON();
+        delete userContract['ContractType'];
+        return userContract;
+    }
+
+    if (!Number.isNaN(id)) {
+        const result = await UserContract.findByPk(id, {include: ContractType});
+        return flattenContract(result);
+    }
+    const where = {};
+
+    if (!Number.isNaN(user))
+        where.user = user;
+
+    if (!Number.isNaN(type))
+        where.type = type;
+
+    const result = await UserContract.findAll({ where, include: ContractType });
+    return result.map(record => flattenContract(record));
+}
+
+export async function createUserContract(data) {
+    if (!data || typeof data !== 'object')
+        return null;
+
+}
+export async function updateUserContracts(id, data) {
+
 }
 
 export async function getUsersByScope({scope, scope_id}={}) {

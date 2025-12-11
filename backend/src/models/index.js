@@ -235,7 +235,7 @@ Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
 // LeaveType <-> Absence
 LeaveType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
 Absence.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
-
+// TODO: add user contracts and contract types associations here.
 export {
     Absence, AbsenceBalance, AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser,
     Channel, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, LeaveType, Post,

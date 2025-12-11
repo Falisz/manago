@@ -1,16 +1,16 @@
-// BACKEND/models/UserContracts.js
+// BACKEND/models/UserContract.js
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import User from './User.js';
 import ContractType from './ContractType.js';
 
-export const UserContracts = sequelize.define('UserContract', {
+export const UserContract = sequelize.define('UserContract', {
     user: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: User, key: 'id' }
     },
-    contract: {
+    type: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: ContractType, key: 'id' }
@@ -29,4 +29,4 @@ export const UserContracts = sequelize.define('UserContract', {
     tableName: 'user_contracts',
     timestamps: false
 });
-export default UserContracts;
+export default UserContract;
