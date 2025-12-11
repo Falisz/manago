@@ -21,6 +21,7 @@ export async function getConfig() {
  */
 export async function setConfig(newConfig) {
     const configs = await AppConfig.findAll();
+    /** @type {Map<string, string[]>} */
     const availableOptions = new Map(configs.map(config => [config.configName, config.options]));
 
     for (const [configName, value] of Object.entries(newConfig)) {
