@@ -1,4 +1,6 @@
 // BACKEND/models/index.js
+import Absence from './Absence.js';
+import AbsenceBalance from './AbsenceBalance.js';
 import AppAuditLog from './AppAuditLog.js';
 import AppConfig from './AppConfig.js';
 import AppModule from './AppModule.js';
@@ -14,7 +16,6 @@ import Holiday from './Holiday.js';
 import HolidayWorking from './HolidayWorking.js';
 import JobPost from './JobPost.js';
 import JobLocation from './JobLocation.js';
-import Absence from './Absence.js';
 import LeaveType from './LeaveType.js';
 import Post from './Post.js';
 import Permission from './Permission.js';
@@ -226,10 +227,18 @@ Disposition.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' })
 // DispositionPreset <-> Disposition
 DispositionPreset.hasMany(Disposition, { foreignKey: 'preset', sourceKey: 'id' });
 Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id' });
+//
+// User <-> Absence
+User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id', as: 'User' });
+Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+//
+// LeaveType <-> Absence
+LeaveType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
+Absence.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
 
 export {
-    AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser, Channel,
-    Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, Absence, LeaveType, Post,
+    Absence, AbsenceBalance, AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser,
+    Channel, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, LeaveType, Post,
     Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser,
     TimeRecord, User, UserManager, UserPermission, UserRole, WeekendWorking
 }

@@ -13,7 +13,7 @@ import {
     Disposition,
     DispositionPreset,
     User,
-    TimeRecord
+    TimeRecord, AbsenceBalance
 } from '../models/index.js';
 import { Op } from 'sequelize';
 import { getUser, getUsersByScope } from './users.js';
@@ -951,7 +951,7 @@ export async function getAbsence({id, user, approver, date, start_date, end_date
         { model: LeaveType, attributes: ['name', 'color'] }
     ];
 
-    const flattenLeave = (leave) => {
+    const flattenAbsence = (leave) => {
         if (!leave)
             return null;
 
@@ -969,7 +969,7 @@ export async function getAbsence({id, user, approver, date, start_date, end_date
 
     if (isNumberOrNumberArray(id)) {
         const leave = await Absence.findOne({where: {id}, include});
-        return flattenLeave(leave);
+        return flattenAbsence(leave);
     }
 
     const where = {};
@@ -982,7 +982,7 @@ export async function getAbsence({id, user, approver, date, start_date, end_date
 
     if (date) {        
         where.start_date = { [Op.gte]: date };
-        where.end_date = { [Op.lte]: date };
+        where.end_date = { [Op.or]: [{[Op.lte]: date }, {[Op.is]: null}]};
 
     } else {
         if (start_date)
@@ -997,7 +997,7 @@ export async function getAbsence({id, user, approver, date, start_date, end_date
     if (!leaves || !leaves.length)
         return null;
 
-    return leaves.map(leave => flattenLeave(leave));
+    return leaves.map(leave => flattenAbsence(leave));
 }
 
 /**
@@ -1045,6 +1045,9 @@ export async function createAbsence(data) {
         approver_note: data.approver_note || null
     });
 
+    const year = new Date(data.start_date).getFullYear();
+    await updateAbsenceBalance({userId: data.user, typeId: data.type, year});
+
     return { success: true, message: 'Absence created successfully.', id: leave.id };
 }
 
@@ -1077,6 +1080,9 @@ export async function updateAbsence(id, data) {
     
     await leave.update(data);
 
+    const year = new Date(data.start_date).getFullYear();
+    await updateAbsenceBalance({userId: data.user, typeId: data.type, year});
+
     return { success: true, message: 'Absence updated successfully.' };
 }
 
@@ -1088,22 +1094,33 @@ export async function updateAbsence(id, data) {
 export async function deleteAbsence(id) {
     if (!isNumberOrNumberArray(id)) 
         return { success: false, message: 'Invalid Absence ID(s) provided.' };
-    
+
+    const leaves = await Absence.findAll({ where: { id }, raw: true });
+
     const deleted = await Absence.destroy({ where: { id } });
-    
+
     if (!deleted)
         return { success: false, message: 'No Leaves found to delete.' };
-    
+
+    if (!leaves?.length) {
+        const updated = new Set();
+        for (const leave of leaves) {
+            const { user: userId, type: typeId } = leave;
+            const year = new Date(leave.start_date).getFullYear();
+            const key = `${userId}-${typeId}-${year}`;
+            if (!updated.has(key)) {
+                await updateAbsenceBalance({userId, typeId, year});
+                updated.add(key);
+            }
+        }
+    }
+
     return { 
         success: true, 
         message: `${deleted} Leave${deleted > 1 ? 's' : ''} deleted successfully.`,
         deletedCount: deleted
     };
 }
-
-// TODO: Split it into getAbsenceBalance and updateAbsenceBalance -
-//  the first one is to check from the database and the second one to update it if the first one does not find record
-//  or the record has createdTimeStamp a week old.
 
 /**
  * Retrieves Absence Balance for specified userId, absenceTypeId and year.
@@ -1113,6 +1130,18 @@ export async function deleteAbsence(id) {
  * @returns {Promise<{totalBalance: *, usedBalance: *, availableBalance: *, collectedDates: *, compensatedDates: *, availableDates: *}|{}>}
  */
 export async function getAbsenceBalance({userId, typeId, year = new Date().getFullYear()} = {}) {
+    if (!userId || !typeId)
+        return {};
+
+    const balance = await AbsenceBalance.findOne({ where: { user: userId, type: typeId, year }, raw: true });
+
+    if (!balance)
+        return await updateAbsenceBalance({userId, typeId, year});
+
+    return balance;
+}
+
+export async function updateAbsenceBalance({userId, typeId, year = new Date().getFullYear()} = {}) {
     if (!userId || !typeId)
         return {};
     const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
@@ -1128,7 +1157,7 @@ export async function getAbsenceBalance({userId, typeId, year = new Date().getFu
     let compensatedDates;
     let availableDates;
 
-    // Logic for all absences different than
+    // Logic for all absences different than Comp Offs
     if (leave.id !== 100) {
         totalBalance = leave.amount;
 
