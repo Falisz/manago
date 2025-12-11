@@ -16,7 +16,7 @@ import {
     TimeRecord, AbsenceBalance
 } from '../models/index.js';
 import { Op } from 'sequelize';
-import { getUser, getUsersByScope } from './users.js';
+import { getUser } from './users.js';
 import randomId from '../utils/randomId.js';
 import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 import sequelize from '../utils/database.js';
@@ -37,7 +37,7 @@ export async function getSchedule({id, author, start_date, end_date} = {}) {
         if (!schedule)
             return null;
 
-        const users = await getUsersByScope({
+        const users = await getUser({
             scope: schedule.user_scope,
             scope_id: schedule.user_scope_id
         });
@@ -518,6 +518,7 @@ export async function getShift({id, user, job_post, schedule, date, from, to} = 
  * @param {string} data.end_time - Shift end time
  * @param {number} data.job_post - optional - Shift Job Post ID
  * @param {number} data.schedule - optional - Shift Schedule ID
+ * @param {string} data.note - optional - Shift note
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
 export async function createShift(data) {
@@ -566,7 +567,8 @@ export async function createShift(data) {
         start_time: data.start_time,
         end_time: data.end_time,
         job_post: data.job_post?.id || data.job_post || null,
-        schedule: data.schedule || null
+        schedule: data.schedule || null,
+        note: data.note || null
     });
 
     return { success: true, message: 'Shift created successfully.', id: shift.id };
@@ -649,6 +651,9 @@ export async function updateShift(id, data) {
         }
         updates.schedule = data.schedule;
     }
+
+    if (data.note !== undefined)
+        updates.note = data.note;
 
     await shift.update(updates);
 
@@ -1280,12 +1285,23 @@ export async function getRequestStatus({id} = {}) {
 }
 
 // Holiday Working
-export async function getHolidayWorking({id} = {}) {
+export async function getHolidayWorking({id, user, holiday} = {}) {
     if (id && !isNaN(id))
         return await HolidayWorking.findByPk(id, {raw: true});
 
-    const workings = await HolidayWorking.findAll({ raw: true });
-    if (!workings || workings.length === 0) return [];
+    const where = {};
+
+    if (user)
+        where.user = user;
+
+    if (holiday)
+        where.holiday = holiday;
+
+    const workings = await HolidayWorking.findAll({ where, raw: true });
+
+    if (!workings?.length)
+        return [];
+
     return workings;
 }
 
@@ -1342,12 +1358,23 @@ export async function deleteHolidayWorking(id) {
 }
 
 // Weekend Working
-export async function getWeekendWorking({id} = {}) {
+export async function getWeekendWorking({id, user, date} = {}) {
     if (id && !isNaN(id))
         return await WeekendWorking.findByPk(id, { raw: true});
 
-    const workings = await WeekendWorking.findAll({ raw: true });
-    if (!workings || workings.length === 0) return [];
+    const where = {};
+
+    if (user)
+        where.user = user;
+
+    if (date)
+        where.date = date;
+
+    const workings = await WeekendWorking.findAll({ where, raw: true });
+
+    if (!workings?.length)
+        return [];
+
     return workings;
 }
 

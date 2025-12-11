@@ -45,9 +45,12 @@ router.use((req, res, next) => {
 // Base routes (authentication, app info, etc.)
 router.use('/', appRoutes);
 
+// TODO: Contracts API
+// TODO: Contract Types API
+// TODO: Job Locations API
+
 // Resource routes
 router.use('/users', usersRoutes);
-// TODO: Add Contracts API routes.
 router.use('/roles', rolesRoutes);
 router.use('/teams', teamsRoutes);
 router.use('/projects', projectsRoutes);

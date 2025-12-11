@@ -202,10 +202,7 @@ const updateHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-
-        // TODO: Add Contracts support.
-
-        const { roles, managers, contracts, ...userData } = req.body;
+        const { roles, managers, ...userData } = req.body;
 
         const { success, message } = await updateUser(parseInt(id), userData);
 
@@ -218,9 +215,6 @@ const updateHandler = async (req, res) => {
             await updateUserRoles([id], roles.filter(id => id !== null), 'set');
 
         if (managers != null)
-            await updateUserManagers([id], managers.filter(id => id !== null), 'set');
-
-        if (contracts != null)
             await updateUserManagers([id], managers.filter(id => id !== null), 'set');
 
         res.json({ message, user });

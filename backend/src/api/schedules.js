@@ -10,7 +10,7 @@ import {
     deleteShift,
     getShift
 } from '../controllers/workPlanner.js';
-import {getUsersByScope} from "../controllers/users.js";
+import {getUser} from "../controllers/users.js";
 import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
@@ -123,7 +123,7 @@ const updateHandler = async (req, res) => {
 
             if (overwrite) {
                 const { start_date, end_date, user_scope, user_scope_id } = updatedSchedule;
-                const users = await getUsersByScope({ scope: user_scope, scope_id: user_scope_id});
+                const users = await getUser({ scope: user_scope, scope_id: user_scope_id});
                 const shiftsToDelete = await getShift({
                     schedule: null,
                     user: users.map(u => u.id),

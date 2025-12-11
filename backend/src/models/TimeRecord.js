@@ -1,6 +1,8 @@
 // BACKEND/models/TimeRecord.js
 import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import Project from './Project.js';
+import User from './User.js';
 import TimeRecordStatus from './TimeRecordStatus.js';
 
 export const TimeRecord = sequelize.define('TimeRecord', {
@@ -14,12 +16,12 @@ export const TimeRecord = sequelize.define('TimeRecord', {
     },
     project: {
         type: DataTypes.INTEGER,
-        references: { model: 'projects', key: 'id' }
+        references: { model: Project, key: 'id' }
     },
     user: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'id' }
+        references: { model: User, key: 'id', as: 'User' }
     },
     status: {
         type: DataTypes.INTEGER,
@@ -28,7 +30,7 @@ export const TimeRecord = sequelize.define('TimeRecord', {
     },
     approver: {
         type: DataTypes.INTEGER,
-        references: { model: 'users', key: 'id' }
+        references: { model: User, key: 'id', as: 'Approver' }
     }
 }, {
     tableName: 'time_records',

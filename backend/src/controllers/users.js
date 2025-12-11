@@ -9,29 +9,31 @@ import isNumberOrNumberArray from '../utils/isNumberOrNumberArray.js';
 import {getTeamUsers} from './teams.js';
 import {getBranchUsers} from './branches.js';
 import {getProjectUsers} from './projects.js';
-import UserContract from "../models/UserContract.js";
+import Contract from "../models/Contract.js";
 import ContractType from "../models/ContractType.js";
 
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.
- * @param {number|string} id - optional - User ID to fetch a specific User or User group type.
+ * @param {number} id - optional - User ID to fetch a specific User or User group type.
+ * @param {string} scope
+ * @param {number} scope_id
  * @param {string} group - optional - Kind of group users to be fetched - currently available: employees, managers
  * @param {boolean} roles - optional - Should Roles be added to the output User
  * @param {boolean} managers - optional - Should Managers be added to the output User
- * @param all_managers
- * @param permissions
+ * @param {boolean} all_managers
+ * @param {boolean} permissions
  * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
- * @param all_managed_users
+ * @param {boolean} all_managed_users
  * @param {boolean} removed - optional - default false - Should be removed Users included
  * @param {boolean} include_ppi - optional - Should PPI data be included
  * @param {boolean} include_configs - optional - Should User configurations be included
  * @returns {Promise<Object|Object[]|null>} User, array of Users, or null
  */
-export async function getUser({id, group, roles=true, managers=true, all_managers=false, permissions=false,
-                                  managed_users=true, all_managed_users=false, removed=false, include_ppi=false,
-                                  include_configs=false} = {}) {
+export async function getUser({id, scope, scope_id, group, roles=true, managers=true, all_managers=false,
+                                  permissions=false, managed_users=true, all_managed_users=false,
+                                  removed=false, include_ppi=false, include_configs=false} = {}) {
 
-    let exclude = ['password', 'removed'];
+    const exclude = ['password', 'removed'];
 
     if (!include_ppi)
         exclude.push('login', 'email', 'address', 'city', 'postal_code', 'phone', 'country');
@@ -39,7 +41,29 @@ export async function getUser({id, group, roles=true, managers=true, all_manager
     if (!include_configs)
         exclude.push('locale', 'theme_mode', 'manager_view_enabled', 'manager_nav_collapsed');
 
-    const fetchPermissions = async (user) => {
+    async function extendUser(user) {
+        if (!user)
+            return null;
+
+        user.toJSON();
+        delete user['UserRoles'];
+
+        if (roles)
+            user.roles = await getUserRoles({user: user.id});
+
+        if (permissions)
+            user.permissions = await fetchPermissions(user);
+
+        if (managers || all_managers)
+            user.managers = await getUserManagers({user: user.id, include_all_managers: all_managers});
+
+        if (managed_users || all_managed_users)
+            user.managed_users = await getUserManagers({manager: user.id, include_all_users: all_managed_users});
+
+        return user;
+    }
+
+    async function fetchPermissions(user) {
         let roleIds;
 
         if (user.roles)
@@ -53,85 +77,73 @@ export async function getUser({id, group, roles=true, managers=true, all_manager
         return [...rolePermissions, ...userPermissions];
     }
 
-    // Logic if no ID is provided - fetch all Users
-    if (!id || isNaN(id)) {
-        const where = { removed };
-        let include = [];
+    // Logic if the ID is provided - fetch a specific User
+    if ((id && Number.isInteger(id)) || (scope === 'user' && Number.isInteger(scope_id))) {
+        if (scope_id)
+            id = scope_id;
 
-        if (group === 'employees')
-            include = [{
-                model: UserRole,
-                required: true,
-                include: [{
-                    model: Role,
-                    where: { name: ['Employee', 'Team Leader', 'Specialist'] }
-                }]
-        }];
-
-        else if (group === 'managers')
-            include = [{
-                model: UserRole,
-                required: true,
-                include: [{
-                    model: Role,
-                    where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] }
-                }]
-            }];
-
-        const users = await User.findAll({
+        const user = await User.findOne({
             attributes: { exclude },
-            where, 
-            include,
-            order: [['id', 'ASC']]
+            where: { id, removed },
+            raw: true
         });
 
-        if (!users || users.length === 0)
-            return [];
-
-        return await Promise.all(users.map(async user => {
-            user = user.toJSON();
-
-            delete user['UserRoles'];
-
-            if (roles)
-                user.roles = await getUserRoles({user: user.id});
-
-            if (permissions)
-                user.permissions = await fetchPermissions(user);
-
-            if (managers || all_managers)
-                user.managers = await getUserManagers({user: user.id, include_all_managers: all_managers});
-
-            if (managed_users || all_managed_users)
-                user.managed_users = await getUserManagers({manager: user.id, include_all_users: all_managed_users});
-            
-            return user;
-        }));
+        return await extendUser(user);
     }
 
-    // Logic if the ID is provided - fetch a specific User
-    const user = await User.findOne({
+    // Logic if no ID provided but there is a Scope specified
+
+    if (scope && scope_id) {
+        if (scope === 'manager')
+            return await getUserManagers({manager: scope_id, include_all_users: true});
+
+        else if (scope === 'team')
+            return await getTeamUsers({team: scope_id, include_subteams: true});
+
+        else if (scope === 'branch')
+            return await getBranchUsers({branch: scope_id});
+
+        else if (scope === 'project')
+            return await getProjectUsers({project: scope_id});
+    }
+
+    // Logic if no ID nor Scopes are provided - fetch all Users
+    const where = { removed };
+    let include = [];
+
+    if (group === 'employees')
+        include = [{
+            model: UserRole,
+            required: true,
+            include: [{
+                model: Role,
+                where: { name: ['Employee', 'Team Leader', 'Specialist'] }
+            }]
+    }];
+
+    else if (group === 'managers')
+        include = [{
+            model: UserRole,
+            required: true,
+            include: [{
+                model: Role,
+                where: { name: ['Manager', 'Branch Manager', 'Project Manager', 'CEO'] }
+            }]
+        }];
+
+    const users = await User.findAll({
         attributes: { exclude },
-        where: { id, removed },
-        raw: true
+        where,
+        include,
+        order: [['id', 'ASC']]
     });
 
-    if (!user)
-        return null;
+    if (!users?.length)
+        return [];
 
-    if (roles)
-        user.roles = await getUserRoles({user: id});
+    return await Promise.all(users.map(await extendUser));
 
-    if (permissions)
-        user.permissions = await fetchPermissions(user);
 
-    if (managers || all_managers)
-        user.managers = await getUserManagers({user: user.id, include_all_managers: all_managers});
-
-    if (managed_users || all_managed_users)
-        user.managed_users = await getUserManagers({manager: user.id, include_all_users: all_managed_users});
-
-    return user;
 }
 
 /**
@@ -778,7 +790,14 @@ export async function updateUserRoles(userIds, roleIds, mode = 'add') {
     }
 }
 
-export async function getUserContracts({id, user, type} = {}) {
+/**
+ * Retrieves multiple Contracts or just one Contract by its ID.
+ * @param id
+ * @param user
+ * @param type
+ * @returns {Promise<*>}
+ */
+export async function getContract({id, user, type} = {}) {
 
     function flattenContract (data) {
         const userContract = data.toJSON();
@@ -788,59 +807,372 @@ export async function getUserContracts({id, user, type} = {}) {
     }
 
     if (!Number.isNaN(id)) {
-        const result = await UserContract.findByPk(id, {include: ContractType});
+        const result = await Contract.findByPk(id, {include: ContractType});
         return flattenContract(result);
     }
+
     const where = {};
 
-    if (!Number.isNaN(user))
+    if (Number.isInteger(user))
         where.user = user;
 
-    if (!Number.isNaN(type))
+    if (Number.isInteger(type))
         where.type = type;
 
-    const result = await UserContract.findAll({ where, include: ContractType });
+    const result = await Contract.findAll({ where, include: ContractType });
     return result.map(record => flattenContract(record));
 }
 
-export async function createUserContract(data) {
-    if (!data || typeof data !== 'object')
+/**
+ * Creates a new Contract.
+ * @param {Object} data - Contract data
+ * @param {number} data.user - User ID
+ * @param {number} data.type - ContractType ID
+ * @param {string} data.start_date - Start date (DATEONLY)
+ * @param {string|null} data.end_date - End date (DATEONLY)
+ * @param {number|null} data.parent_contract - Parent Contract ID
+ * @param {number|null} data.hours_per_week - Hours per week
+ * @param {number|null} data.hours_per_day - Hours per day
+ * @param {string|null} data.notes - Notes
+ * @param {string|null} data.file - File path
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
+export async function createContract(data) {
+
+    if (!data || typeof data !== 'object' || !data.user || !data.type || !data.start_date)
+        return {
+            success: false,
+            message: 'Mandatory data (user, type, start_date) not provided.'
+        };
+
+    const userExists = await User.findByPk(data.user);
+    if (!userExists)
+        return {
+            success: false,
+            message: 'User not found.'
+        };
+
+    const typeExists = await ContractType.findByPk(data.type);
+    if (!typeExists)
+        return {
+            success: false,
+            message: 'ContractType not found.'
+        };
+
+    if (data.parent_contract) {
+        const parentExists = await Contract.findByPk(data.parent_contract);
+        if (!parentExists)
+            return {
+                success: false,
+                message: 'Parent Contract not found.'
+            };
+    }
+
+    const contract = await Contract.create({
+        id: await randomId(Contract),
+        user: data.user,
+        type: data.type,
+        start_date: data.start_date,
+        end_date: data.end_date || null,
+        parent_contract: data.parent_contract || null,
+        hours_per_week: data.hours_per_week || null,
+        hours_per_day: data.hours_per_day || null,
+        notes: data.notes || null,
+        file: data.file || null
+    });
+
+    return {
+        success: true,
+        message: 'Contract created successfully.',
+        id: contract.id
+    };
+}
+
+/**
+ * Updates an existing Contract.
+ * @param {number} id - Contract ID
+ * @param {Object} data - Contract data to update
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function updateContract(id, data) {
+
+    if (!id)
+        return {
+            success: false,
+            message: 'Contract ID not provided.'
+        };
+
+    const contract = await Contract.findByPk(id);
+
+    if (!contract)
+        return {
+            success: false,
+            message: 'Contract not found.'
+        };
+
+    if (data.user) {
+        const userExists = await User.findByPk(data.user);
+        if (!userExists)
+            return {
+                success: false,
+                message: 'User not found.'
+            };
+    }
+
+    if (data.type) {
+        const typeExists = await ContractType.findByPk(data.type);
+        if (!typeExists)
+            return {
+                success: false,
+                message: 'Contract Type not found.'
+            };
+    }
+
+    if (data.parent_contract) {
+        const parentExists = await Contract.findByPk(data.parent_contract);
+        if (!parentExists)
+            return {
+                success: false,
+                message: 'Parent Contract not found.'
+            };
+    }
+
+    await contract.update(data);
+
+    return {
+        success: true,
+        message: 'Contract updated successfully.'
+    };
+}
+
+/**
+ * Deletes one or multiple Contracts.
+ * @param {number|number[]} id - Contract ID or array of Contract IDs
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function deleteContract(id) {
+
+    if (!isNumberOrNumberArray(id))
+        return {
+            success: false,
+            message: `Invalid Contract ID${Array.isArray(id) ? 's' : ''} provided.`
+        };
+
+    const transaction = await sequelize.transaction();
+
+    try {
+        const childCount = await Contract.count({
+            where: { parent_contract: id },
+            transaction
+        });
+
+        if (childCount > 0) {
+            await transaction.rollback();
+            return {
+                success: false,
+                message: 'Cannot delete Contract(s) that have child Contracts.'
+            };
+        }
+
+        const deletedContracts = await Contract.destroy({
+            where: { id },
+            transaction
+        });
+
+        if (!deletedContracts) {
+            await transaction.rollback();
+            return {
+                success: false,
+                message: `No Contracts found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
+                 ${Array.isArray(id) ? id.join(', ') : id}`
+            };
+        }
+
+        await transaction.commit();
+
+        return {
+            success: true,
+            message: `${deletedContracts} Contract${deletedContracts > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount: deletedContracts
+        };
+
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
+}
+
+/**
+ * Retrieves one ContractType by its ID or all ContractTypes if ID is not provided.
+ * @param {number|null} id - optional - ContractType ID to fetch a specific ContractType
+ * @param {boolean} contracts - optional - Should Contracts be added to the output ContractType
+ * @returns {Promise<Object|Object[]|null>} ContractType, array of ContractTypes, or null
+ */
+export async function getContractType({id, contracts=false} = {}) {
+
+    if (!id || isNaN(id)) {
+        const types = await ContractType.findAll({
+            order: [['id', 'ASC']],
+            raw: true
+        });
+
+        if (!types?.length)
+            return [];
+
+        if (contracts)
+            return await Promise.all(types.map(async type => {
+                type.contracts = await getContract({type: type.id});
+                return type;
+            }));
+
+        return types;
+    }
+
+    let type = await ContractType.findOne({
+        where: { id },
+        raw: true
+    });
+
+    if (!type)
         return null;
 
+    if (contracts)
+        type.contracts = await getContract({type: id});
+
+    return type;
 }
 
-export async function updateUserContracts(id, data) {
+/**
+ * Creates a new ContractType.
+ * @param {Object} data - ContractType data
+ * @param {string} data.name - ContractType name
+ * @param {string|null} data.description - ContractType description
+ * @param {number|null} data.hours_per_week - Default hours per week
+ * @param {number|null} data.hours_per_day - Default hours per day
+ * @param {number|null} data.work_mode - Work mode (0 - office, 1 - remote, 2 - hybrid, 3 - field)
+ * @returns {Promise<{success: boolean, message: string, id?: number}>}
+ */
+export async function createContractType(data) {
+    if (!data.name)
+        return {
+            success: false,
+            message: 'Name is required to create a new Contract Type!'
+        };
 
+    if (await ContractType.findOne({ where: { name: data.name }}))
+        return {
+            success: false,
+            message: 'The Contract Type with this exact name already exists.'
+        };
+
+    const contractType = await ContractType.create({
+        id: await randomId(ContractType),
+        name: data.name,
+        description: data.description || null,
+        hours_per_week: data.hours_per_week || null,
+        hours_per_day: data.hours_per_day || null,
+        work_mode: data.work_mode || null
+    });
+
+    return {
+        success: true,
+        message: 'Contract Type created successfully.',
+        id: contractType.id
+    };
 }
 
-export async function deleteUserContract(id) {
+/**
+ * Updates an existing ContractType.
+ * @param {number} id - ContractType ID
+ * @param {Object} data - ContractType data to update
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function updateContractType(id, data) {
 
+    if (!id)
+        return {
+            success: false,
+            message: 'ContractType ID not provided.'
+        };
+
+    const contractType = await ContractType.findOne({ where: { id } });
+
+    if (!contractType)
+        return {
+            success: false,
+            message: 'ContractType not found.'
+        };
+
+    if (data.name && data.name !== contractType.name &&
+        await ContractType.findOne({ where: { name: data.name, id: { [Op.ne]: id } }}))
+        return {
+            success: false,
+            message: 'The other ContractType with this exact name already exists.'
+        };
+
+    await contractType.update(data);
+
+    return {
+        success: true,
+        message: 'ContractType updated successfully.'
+    };
 }
 
-export async function getUsersByScope({scope, scope_id}={}) {
+/**
+ * Deletes one or multiple ContractTypes.
+ * @param {number|number[]} id - ContractType ID or array of ContractType IDs
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export async function deleteContractType(id) {
 
-    if (scope !== 'all' && !scope_id)
-        return null;
+    if (!isNumberOrNumberArray(id))
+        return {
+            success: false,
+            message: `Invalid ContractType ID${Array.isArray(id) ? 's' : ''} provided.`
+        };
 
-    if (scope === 'all')
-        return await getUser();
+    const transaction = await sequelize.transaction();
 
-    else if (scope === 'manager')
-        return await getUserManagers({manager: scope_id, include_all_users: true});
+    try {
+        const usedCount = await Contract.count({
+            where: { type: id },
+            transaction
+        });
 
-    else if (scope === 'you' || scope === 'user')
-        return await getUser({id: scope_id});
+        if (usedCount > 0) {
+            await transaction.rollback();
+            return {
+                success: false,
+                message: 'Cannot delete ContractType(s) that are in use by Contracts.'
+            };
+        }
 
-    else if (scope === 'team')
-        return await getTeamUsers({team: scope_id, include_subteams: true});
+        const deletedTypes = await ContractType.destroy({
+            where: { id },
+            transaction
+        });
 
-    else if (scope === 'branch')
-        return await getBranchUsers({branch: scope_id});
+        if (!deletedTypes) {
+            await transaction.rollback();
+            return {
+                success: false,
+                message: `No ContractTypes found to delete for provided ID
+                ${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${Array.isArray(id) ? id.join(', ') : id}`
+            };
+        }
 
-    else if (scope === 'project')
-        return await getProjectUsers({project: scope_id});
+        await transaction.commit();
 
-    return null;
+        return {
+            success: true,
+            message: `${deletedTypes} ContractType${deletedTypes > 1 ? 's' : ''} deleted successfully.`,
+            deletedCount: deletedTypes
+        };
+
+    } catch (error) {
+        await transaction.rollback();
+        throw error;
+    }
 }
 
 /**

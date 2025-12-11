@@ -9,11 +9,16 @@ import {
 import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
+import {getUser} from "../controllers/users.js";
 
 // API Handlers
 /**
  * Fetch multiple Weekend Working Agreements or one by its ID.
  * @param {express.Request} req
+ * @param {object} req.query
+ * @param {number} req.query.user
+ * @param {number} req.query.managed
+ * @param {string} req.query.date
  * @param {number} req.user
  * @param {express.Response} res
  */
@@ -40,8 +45,16 @@ const fetchHandler = async (req, res) => {
         if (!hasAccess)
             return res.status(403).json({ message: 'Not permitted.' });
 
-        // TODO: Weekend Working Fetch logic.
         const query = {};
+
+        if (req.query.user)
+            query.user = parseInt(req.query.user);
+
+        if (req.query.managed)
+            query.user = getUser({scope: 'manager', scope_id: parseInt(req.query.managed)})
+
+        if (req.query.date)
+            query.date = req.query.date;
 
         const results = await getWeekendWorking(query);
 

@@ -6,7 +6,7 @@ import {
     updateShift,
     deleteShift
 } from '../controllers/workPlanner.js';
-import {getUsersByScope} from "../controllers/users.js";
+import {getUser} from "../controllers/users.js";
 import checkAccess from '../utils/checkAccess.js';
 import checkResourceIdHandler from './checkResourceId.js';
 import deleteResource from '../utils/deleteResource.js';
@@ -39,7 +39,7 @@ const fetchShiftsHandler = async (req, res) => {
                 const scope = req.query.user_scope;
                 const scope_id = scope === 'you' ? req.user : req.query.user_scope_id;
 
-                users = await getUsersByScope({scope, scope_id});
+                users = await getUser({scope, scope_id});
 
                 if (!Array.isArray(users))
                     users = [users];
