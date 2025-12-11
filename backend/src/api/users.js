@@ -203,6 +203,8 @@ const updateHandler = async (req, res) => {
 
     try {
 
+        // TODO: Add Contracts support.
+
         const { roles, managers, ...userData } = req.body;
 
         const { success, message } = await updateUser(parseInt(id), userData);

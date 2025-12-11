@@ -21,7 +21,10 @@ export const UserContracts = sequelize.define('UserContract', {
         type: DataTypes.INTEGER,
         references: { model: 'user_contracts', key: 'id' }
     },
-    file: DataTypes.STRING,
+    hours_per_week: DataTypes.INTEGER,
+    hours_per_day: DataTypes.INTEGER,
+    notes: DataTypes.TEXT,
+    file: DataTypes.STRING
 }, {
     tableName: 'user_contracts',
     timestamps: false

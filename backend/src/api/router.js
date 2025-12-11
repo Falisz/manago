@@ -47,6 +47,7 @@ router.use('/', appRoutes);
 
 // Resource routes
 router.use('/users', usersRoutes);
+// TODO: Add Contracts API routes.
 router.use('/roles', rolesRoutes);
 router.use('/teams', teamsRoutes);
 router.use('/projects', projectsRoutes);
