@@ -1,10 +1,12 @@
 // BACKEND/api/leaves.js
 import express from 'express';
 import {
-    getLeave,
-    createLeave,
-    updateLeave,
-    deleteLeave, getLeaveType, getLeaveBalance, getCompOffBalance
+    getAbsence,
+    getAbsenceBalance,
+    getLeaveType,
+    createAbsence,
+    updateAbsence,
+    deleteAbsence
 } from '../controllers/workPlanner.js';
 import {getUsersByScope} from "../controllers/users.js";
 import checkAccess from '../utils/checkAccess.js';
@@ -64,10 +66,10 @@ const fetchHandler = async (req, res) => {
     }
 
     try {
-        const leaves = await getLeave(query);
+        const leaves = await getAbsence(query);
 
         if (id && !leaves)
-            return res.status(404).json({ message: 'Leave not found.' });
+            return res.status(404).json({ message: 'Absence not found.' });
 
         res.json(leaves);
 
@@ -78,7 +80,7 @@ const fetchHandler = async (req, res) => {
 };
 
 /**
- * Create a new Leave.
+ * Create a new Absence.
  * @param {express.Request} req
  * @param {number} req.user
  * @param {express.Response} res
@@ -107,23 +109,23 @@ const createHandler = async (req, res) => {
             data.days = 1;
         }
     
-        const { success, message, id } = await createLeave(data);
+        const { success, message, id } = await createAbsence(data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const leave = await getLeave({id});
+        const leave = await getAbsence({id});
 
         res.status(201).json({ message, leave });
 
     } catch (err) {
-        console.error('Error creating a Leave:', err, 'Provided data: ', req.body);
+        console.error('Error creating a Absence:', err, 'Provided data: ', req.body);
         res.status(500).json({ message: 'Server error.' });
     }
 };
 
 /**
- * Update a specific Leave or multiple Leaves.
+ * Update a specific Absence or multiple Leaves.
  * @param {express.Request} req
  * @param {number} req.user
  * @param {express.Response} res
@@ -172,10 +174,10 @@ const updateHandler = async (req, res) => {
             const updated = [];
 
             for (const id of ids) {
-                const { success, message } = await updateLeave(parseInt(id), data);
+                const { success, message } = await updateAbsence(parseInt(id), data);
 
                 if (success)
-                    updated.push(await getLeave({ id }));
+                    updated.push(await getAbsence({ id }));
                 else
                     warning.push(message);
             }
@@ -204,12 +206,12 @@ const updateHandler = async (req, res) => {
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
 
-            const { success, message } = await updateLeave(parseInt(id), data);
+            const { success, message } = await updateAbsence(parseInt(id), data);
             
             if (!success)
                 return res.status(400).json({ message });
 
-            const leave = await getLeave({id});
+            const leave = await getAbsence({id});
     
             res.json({ message, leave });
         }
@@ -225,26 +227,25 @@ const updateHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const deleteHandler = async (req, res) =>
-    deleteResource(req, res, 'Leave', deleteLeave);
+    deleteResource(req, res, 'Absence', deleteAbsence);
 
 /**
- *
+ * Fetch the balance of all absence types for a specific user and year.
  * @param req
  * @param res
- * @const {Object} leaveType
- * @const {number} leaveType.id
  * @returns {Promise<void>}
  */
 const fetchBalanceHandler = async (req, res) => {
     const result = {};
     try {
         const leaveTypes = await getLeaveType();
-        const user = req.query.user || req.user;
-        for (const leaveType of leaveTypes)
-            if (leaveType.id === 100)
-                result[100] = await getCompOffBalance({user});
-            else
-                result[leaveType.id] = await getLeaveBalance({userId: user, leaveType: leaveType.id});
+        const userId = req.query.user || req.user;
+        const year = req.query.year || new Date().getFullYear();
+        for (const leaveType of leaveTypes) {
+            const typeId = leaveType?.id;
+            if (typeId) result[typeId] = await getAbsenceBalance({userId, typeId, year});
+        }
+
         res.json(result);
     } catch (err) {
         console.error(err);

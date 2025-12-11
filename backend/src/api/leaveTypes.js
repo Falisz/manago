@@ -12,7 +12,7 @@ import deleteResource from '../utils/deleteResource.js';
 
 // API Handlers
 /**
- * Fetch multiple Leave Types or one by its ID.
+ * Fetch multiple Absence Types or one by its ID.
  * @param {express.Request} req
  * @param {number} req.user
  * @param {express.Response} res
@@ -44,7 +44,7 @@ const fetchHandler = async (req, res) => {
 };
 
 /**
- * Create a new Leave Type.
+ * Create a new Absence Type.
  * @param {express.Request} req
  * @param {number} req.user
  * @param {express.Response} res
@@ -75,7 +75,7 @@ const createHandler = async (req, res) => {
 };
 
 /**
- * Update a specific Leave Type.
+ * Update a specific Absence Type.
  * @param {express.Request} req
  * @param {number} req.user
  * @param {express.Response} res
@@ -107,12 +107,12 @@ const updateHandler = async (req, res) => {
 };
 
 /**
- * Delete a specific Leave Type or multiple Leave Types.
+ * Delete a specific Absence Type or multiple Absence Types.
  * @param {express.Request} req
  * @param {express.Response} res
  */
 const deleteHandler = async (req, res) =>
-    deleteResource(req, res, 'Leave Type', deleteLeaveType);
+    deleteResource(req, res, 'Absence Type', deleteLeaveType);
 
 // Router definitions
 export const router = express.Router();

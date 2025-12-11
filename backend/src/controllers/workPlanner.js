@@ -6,7 +6,7 @@ import {
     JobPost,
     Holiday,
     LeaveType,
-    Leave,
+    Absence,
     RequestStatus,
     HolidayWorking,
     WeekendWorking,
@@ -51,7 +51,7 @@ export async function getSchedule({id, author, start_date, end_date} = {}) {
             to: schedule.end_date,
         });
 
-        schedule.leaves = await getLeave({
+        schedule.leaves = await getAbsence({
             user: users.map(user => user.id)
         });
 
@@ -827,11 +827,11 @@ export async function deleteHoliday(id) {
     }
 }
 
-// Leave Types
+// Absence Types
 /**
- * Retrieves one Leave Type by its ID or all Leave Types if an ID is not provided.
- * @param {number|null} id - optional - Leave Type ID to fetch a specific Leave Type
- * @returns {Promise<Object|Object[]|null>} Single Leave Type, array of Leave Types, or null
+ * Retrieves one Absence Type by its ID or all Absence Types if an ID is not provided.
+ * @param {number|null} id - optional - Absence Type ID to fetch a specific Absence Type
+ * @returns {Promise<Object|Object[]|null>} Single Absence Type, array of Absence Types, or null
  */
 export async function getLeaveType({id} = {}) {
     if (!id || isNaN(id)) 
@@ -841,9 +841,9 @@ export async function getLeaveType({id} = {}) {
 }
 
 /**
- * Creates a new Leave Type.
- * @param {Object} data - Leave Type data
- * @param {string} data.name - Leave Type name
+ * Creates a new Absence Type.
+ * @param {Object} data - Absence Type data
+ * @param {string} data.name - Absence Type name
  * @param {string} data.parent_type -
  * @param {string} data.amount -
  * @param {string} data.color -
@@ -851,16 +851,16 @@ export async function getLeaveType({id} = {}) {
  */
 export async function createLeaveType(data) {
     if (!data.name)
-        return { success: false, message: 'Leave Type name is required.' };
+        return { success: false, message: 'Absence Type name is required.' };
     
     if (await LeaveType.findOne({ where: { name: data.name } }))
-        return { success: false, message: 'Leave Type name is currently used.' };
+        return { success: false, message: 'Absence Type name is currently used.' };
 
     if (data.parent_type && !(await LeaveType.findOne({ where: { id: data.parent_type}})))
-        return { success: false, message: 'Parent Leave Type not found.'};
+        return { success: false, message: 'Parent Absence Type not found.'};
 
     if (data.amount && isNaN(data.amount))
-        return { success: false, message: 'Leave amount must be a number.'};
+        return { success: false, message: 'Absence amount must be a number.'};
     
     const type = await LeaveType.create({
         id: await randomId(LeaveType),
@@ -870,13 +870,13 @@ export async function createLeaveType(data) {
         color: data.color || null
     });
 
-    return { success: true, message: 'Leave Type created successfully.', id: type.id };
+    return { success: true, message: 'Absence Type created successfully.', id: type.id };
 }
 
 /**
- * Updates an existing Leave Type.
- * @param {number} id - Leave Type ID
- * @param {Object} data - Leave Type data to update
+ * Updates an existing Absence Type.
+ * @param {number} id - Absence Type ID
+ * @param {Object} data - Absence Type data to update
  * @returns {Promise<{success: boolean, message: string}>}
  */
 export async function updateLeaveType(id, data) {
@@ -889,29 +889,29 @@ export async function updateLeaveType(id, data) {
         return { success: false, message: 'LeaveType not found.' };
     
     if (data.name && await LeaveType.findOne({ where: { name: data.name } }))
-        return { success: false, message: 'Name provided is currently used by other Leave Type.' };
+        return { success: false, message: 'Name provided is currently used by other Absence Type.' };
 
     if (data.parent_type && !(await LeaveType.findOne({ where: { id: data.parent_type}})))
-        return { success: false, message: 'Provided parent Leave Type not found.'};
+        return { success: false, message: 'Provided parent Absence Type not found.'};
 
     if (data.amount && isNaN(data.amount))
-        return { success: false, message: 'Leave amount must be a number.'};
+        return { success: false, message: 'Absence amount must be a number.'};
     
     await leaveType.update(data);
 
-    return { success: true, message: 'Leave Type updated successfully.' };
+    return { success: true, message: 'Absence Type updated successfully.' };
 }
 
 /**
- * Deletes one or multiple Leave Types and their assignments.
- * @param {number|number[]} id - Single Leave Type ID or array of Leave Type IDs
+ * Deletes one or multiple Absence Types and their assignments.
+ * @param {number|number[]} id - Single Absence Type ID or array of Absence Type IDs
  * @returns {Promise<{success: boolean, message: string, deletedCount?: number}>}
  */
 export async function deleteLeaveType(id) {
     if (!isNumberOrNumberArray(id)) 
-        return { success: false, message: 'Invalid Leave Type ID(s) provided.' };
+        return { success: false, message: 'Invalid Absence Type ID(s) provided.' };
 
-    const block = await Leave.findAll({ where: { status: id }, raw: true });
+    const block = await Absence.findAll({ where: { status: id }, raw: true });
     if (block?.length)
         return {
             success: false,
@@ -922,7 +922,7 @@ export async function deleteLeaveType(id) {
     const deleted = await LeaveType.destroy({ where: { id } });
     
     if (!deleted) 
-        return { success: false, message: 'No Leave Types found to delete.' };
+        return { success: false, message: 'No Absence Types found to delete.' };
     
     return { 
         success: true, 
@@ -933,16 +933,16 @@ export async function deleteLeaveType(id) {
 
 // Leaves
 /**
- * Retrieves one Leave by its ID or all Leaves if an ID is not provided.
- * @param {number|null} id - optional - Leave ID to fetch a specific Leave
+ * Retrieves multiple Absences or a one by its ID.
+ * @param {number|null} id - optional - Absence ID to fetch a specific Absence
  * @param {number|number[]|null} user - optional - User ID or array of User IDs for which Leaves should be fetched
  * @param {number|number[]|null} approver - optional - Approver User ID or array of Approver User IDs for which Leaves should be fetched
  * @param date
  * @param start_date
  * @param end_date
- * @returns {Promise<Object|Object[]|null>} Single Leave, array of Leaves, or null
+ * @returns {Promise<Object|Object[]|null>} Single Absence, array of Leaves, or null
  */
-export async function getLeave({id, user, approver, date, start_date, end_date} = {}) {
+export async function getAbsence({id, user, approver, date, start_date, end_date} = {}) {
 
     const include = [
         { model: User, attributes: ['id', 'first_name', 'last_name'] },
@@ -968,7 +968,7 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
     };
 
     if (isNumberOrNumberArray(id)) {
-        const leave = await Leave.findOne({where: {id}, include});
+        const leave = await Absence.findOne({where: {id}, include});
         return flattenLeave(leave);
     }
 
@@ -992,7 +992,7 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
             where.end_date = {[Op.lte]: end_date};
     }
 
-    const leaves = await Leave.findAll({ where, include });
+    const leaves = await Absence.findAll({ where, include });
 
     if (!leaves || !leaves.length)
         return null;
@@ -1001,16 +1001,16 @@ export async function getLeave({id, user, approver, date, start_date, end_date} 
 }
 
 /**
- * Creates a new Leave.
- * @param {Object} data - Leave data
+ * Creates a new Absence.
+ * @param {Object} data - Absence data
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
-export async function createLeave(data) {
+export async function createAbsence(data) {
     if (data.type == null)
-        return { success: false, message: 'Leave Type not provided.'};
+        return { success: false, message: 'Absence Type not provided.'};
 
     if (!data.user)
-        return { success: false, message: 'User requesting a Leave not provided.'};
+        return { success: false, message: 'User requesting a Absence not provided.'};
 
     if (!data.start_date)
         return { success: false, message: 'Leaves Date needed!'};
@@ -1019,7 +1019,7 @@ export async function createLeave(data) {
         data.days = 1;
     
     if (!(await LeaveType.findOne({ where: { id: data.type } })))
-        return { success: false, message: 'Leave Type not found.' };
+        return { success: false, message: 'Absence Type not found.' };
 
     data.status = Number(data.status);
     
@@ -1032,8 +1032,8 @@ export async function createLeave(data) {
     if (data.approver && !(await User.findOne({ where: { id: data.approver } }))) 
         return { success: false, message: 'Approver not found.' };
 
-    const leave = await Leave.create({
-        id: await randomId(Leave),
+    const leave = await Absence.create({
+        id: await randomId(Absence),
         type: data.type,
         start_date: data.start_date,
         end_date: data.end_date,
@@ -1045,26 +1045,26 @@ export async function createLeave(data) {
         approver_note: data.approver_note || null
     });
 
-    return { success: true, message: 'Leave created successfully.', id: leave.id };
+    return { success: true, message: 'Absence created successfully.', id: leave.id };
 }
 
 /**
- * Updates an existing Leave.
+ * Updates an existing Absence.
  * @param id
- * @param {Object} data - Leave data
+ * @param {Object} data - Absence data
  * @returns {Promise<{success: boolean, message: string, id?: number}>}
  */
-export async function updateLeave(id, data) {
+export async function updateAbsence(id, data) {
     if (!id)
-        return { success: false, message: 'Leave ID not provided.' };
+        return { success: false, message: 'Absence ID not provided.' };
     
-    const leave = await Leave.findOne({ where: { id } });
+    const leave = await Absence.findOne({ where: { id } });
     
     if (!leave)
-        return { success: false, message: 'Leave not found.' };
+        return { success: false, message: 'Absence not found.' };
 
     if (data.type && !(await LeaveType.findOne({ where: { id: data.type } })))
-        return { success: false, message: 'Leave Type not found.' };
+        return { success: false, message: 'Absence Type not found.' };
 
     if (data.status && !(await RequestStatus.findOne({ where: { id: data.status } }))) 
         return { success: false, message: 'Request Status not found.' };
@@ -1077,19 +1077,19 @@ export async function updateLeave(id, data) {
     
     await leave.update(data);
 
-    return { success: true, message: 'Leave updated successfully.' };
+    return { success: true, message: 'Absence updated successfully.' };
 }
 
 /**
- * Deletes a Leave.
+ * Deletes an Absence.
  * @param {number|number[]} id - Single Shift ID or array of Shift IDs
  * @returns {Promise<{success: boolean, message: string, deletedCount: number}>}
  */
-export async function deleteLeave(id) {
+export async function deleteAbsence(id) {
     if (!isNumberOrNumberArray(id)) 
-        return { success: false, message: 'Invalid Leave ID(s) provided.' };
+        return { success: false, message: 'Invalid Absence ID(s) provided.' };
     
-    const deleted = await Leave.destroy({ where: { id } });
+    const deleted = await Absence.destroy({ where: { id } });
     
     if (!deleted)
         return { success: false, message: 'No Leaves found to delete.' };
@@ -1099,6 +1099,145 @@ export async function deleteLeave(id) {
         message: `${deleted} Leave${deleted > 1 ? 's' : ''} deleted successfully.`,
         deletedCount: deleted
     };
+}
+
+// TODO: Split it into getAbsenceBalance and updateAbsenceBalance -
+//  the first one is to check from the database and the second one to update it if the first one does not find record
+//  or the record has createdTimeStamp a week old.
+
+/**
+ * Retrieves Absence Balance for specified userId, absenceTypeId and year.
+ * @param userId
+ * @param typeId
+ * @param year
+ * @returns {Promise<{totalBalance: *, usedBalance: *, availableBalance: *, collectedDates: *, compensatedDates: *, availableDates: *}|{}>}
+ */
+export async function getAbsenceBalance({userId, typeId, year = new Date().getFullYear()} = {}) {
+    if (!userId || !typeId)
+        return {};
+    const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
+    const leave = await LeaveType.findByPk(typeId, { raw: true });
+    if (!user || !leave)
+        return {};
+
+    let totalBalance;
+    let usedBalance;
+    let availableBalance;
+
+    let collectedDates;
+    let compensatedDates;
+    let availableDates;
+
+    // Logic for all absences different than
+    if (leave.id !== 100) {
+        totalBalance = leave.amount;
+
+        if (leave.amount && leave.scaled) {
+            let months = 12;
+            if (user.joined) {
+                const joinDate = new Date(user.joined);
+                if (!isNaN(joinDate) && joinDate.getFullYear() === year)
+                    months -= (joinDate.getMonth());
+            }
+            if (user.notice_start) {
+                const noticeDate = new Date(user.notice_start)
+                if (!isNaN(noticeDate) && noticeDate.getFullYear() === year)
+                    months -= (12 - noticeDate.getMonth() - 1);
+            }
+            months = Math.max(0, Math.min(12, months));
+            totalBalance = Math.ceil(totalBalance*(months/12));
+        }
+
+        if (leave.amount && leave.parent_type) {
+            const {availableBalance: parentBalance} = await getAbsenceBalance({
+                userId: user.id,
+                typeId: leave.parent_type,
+                year
+            });
+            if (parentBalance != null)
+                totalBalance = Math.min(totalBalance, parentBalance);
+        }
+
+        if (leave.amount && leave.transferable) {
+            if (leave.amount) {
+                const limitYear = new Date(user.joined).getFullYear() || new Date().getFullYear();
+                for (let yr = year - 1; yr >= limitYear; yr--) {
+                    const {availableBalance: remainingBalance} = await getAbsenceBalance({
+                        userId: user.id,
+                        typeId: leave.id,
+                        year: yr
+                    });
+                    if (remainingBalance != null)
+                        totalBalance += remainingBalance;
+                }
+            }
+        }
+        // Logic for Comp Offs
+    } else {
+        totalBalance = 0;
+
+        const approvedHolidays = await Holiday.findAll({
+            include: [{
+                model: HolidayWorking,                     // Search for approved Holidays with HolidayWorking
+                where: { user: user.id, status: [2, 4] },  // Only approved Holidays
+                required: true,                            // Only Holidays with HolidayWorking approved
+                attributes: []                             // No attributes for HolidayWorking needed
+            }],
+            attributes: ['date'],
+            raw: true
+        });
+        const approvedHolidayDates = approvedHolidays.map(h => h.date);
+        const approvedWeekends = await WeekendWorking.findAll({
+            where: { user: user.id, status: [2, 4] },
+            attributes: ['date'],
+            raw: true
+        });
+        const approvedWeekendDates = approvedWeekends.map(h => h.date);
+        const approvedDates = [...approvedHolidayDates, ...approvedWeekendDates];
+
+        const approvedTimeSheets = await TimeRecord.findAll({
+            where: {
+                user: user.id,                             // TimeRecords for user
+                date: approvedDates,                       // On Approved Holidays
+                status: 2                                  // Approved TimeRecords
+            },
+            raw: true
+        });
+        const datesWorked = approvedTimeSheets.map(w => w.date);
+
+        collectedDates = approvedDates.filter(h => datesWorked.includes(h.date)) || [];
+        totalBalance = collectedDates.length;
+    }
+
+    const type = [leave.id];
+
+    if (leave.id !== 100) {
+        const subTypes = await LeaveType.findAll({ where: { parent_type: leave.id }, raw: true });
+        type.push(...subTypes.map(l => l.id));
+    }
+
+    const absences = await Absence.findAll({
+        where: {
+            user: user.id,
+            status: [0, 1, 2, 4],
+            type,
+            start_date: { [Op.gte]: `${year}-01-01`, [Op.lte]: `${year}-12-31` }
+        },
+        raw: true
+    });
+
+    if (leave.id !== 100) {
+        usedBalance = absences?.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0) || 0;
+        availableBalance = totalBalance ? totalBalance - usedBalance : null;
+    } else {
+        compensatedDates = absences.map(l => l.start_date) || [];
+        usedBalance = compensatedDates.length;
+
+        availableDates = collectedDates?.filter(d => !compensatedDates.includes(d)) || [];
+        availableBalance = Math.max(0, totalBalance - usedBalance);
+    }
+
+    return {totalBalance, usedBalance, availableBalance, collectedDates, compensatedDates, availableDates};
 }
 
 // Request Statuses
@@ -1364,136 +1503,5 @@ export async function deleteDisposition(id) {
         success: true, 
         message: `${deleted} Disposition${deleted > 1 ? 's' : ''} deleted successfully.`, 
         deletedCount: deleted 
-    };
-}
-
-// Change Leaves to Absences
-// Make an object AbsenceBalance to cache balances instead of constantly computing them.
-// getAbsenceBalance(user_id, year)
-// balanceRecord will have [leaveType, year, userId, collected, used, available, and compoff-related fields]
-// merge Leaves and CompOffs (yes Leaves, also will have collected, compensated and available dates, but only compoffs use them)
-// for each absence balance, check if it is in the absence balance, if not, add it to the absence balance
-// return the absence balance
-
-
-// Leave Balance
-export async function getLeaveBalance({userId, leaveType, year = new Date().getFullYear()} = {}) {
-    if (!userId || !leaveType)
-        return {};
-    const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
-    const leave = await LeaveType.findByPk(leaveType, { raw: true });
-    if (!user || !leave)
-        return {};
-
-    let totalBalance = leave.amount;
-    let usedBalance = 0;
-
-    if (leave.amount && leave.scaled) {
-        let months = 12;
-        if (user.joined) {
-            const joinDate = new Date(user.joined);
-            if (!isNaN(joinDate) && joinDate.getFullYear() === year)
-                months -= (joinDate.getMonth());
-        }
-        if (user.notice_start) {
-            const noticeDate = new Date(user.notice_start)
-            if (!isNaN(noticeDate) && noticeDate.getFullYear() === year)
-                months -= (12 - noticeDate.getMonth() - 1);
-        }
-        months = Math.max(0, Math.min(12, months));
-        totalBalance = Math.ceil(totalBalance*(months/12));
-    }
-
-    if (leave.amount && leave.parent_type) {
-        const parentLeave = await LeaveType.findByPk(leave.parent_type, { raw: true });
-        const {availableBalance: parentBalance} = await getLeaveBalance({user, leave: parentLeave, year});
-        if (parentBalance != null)
-            totalBalance = Math.min(totalBalance, parentBalance);
-    }
-
-    if (leave.amount && leave.transferable) {
-        if (leave.amount) {
-            const limitYear = new Date(user.joined).getFullYear() || new Date().getFullYear();
-            for (let yr = year - 1; yr >= limitYear; yr--) {
-                const {availableBalance: remainingBalance} = await getLeaveBalance({userId, leaveType, year: yr});
-                if (remainingBalance != null)
-                    totalBalance += remainingBalance;
-            }
-        }
-    }
-
-    const subTypes = await LeaveType.findAll({ where: { parent_type: leave.id }, raw: true });
-    const types = subTypes.map(l => l.id);
-
-    const leaves = await Leave.findAll({
-        where: {
-            user: user.id,
-            status: [0, 1, 2, 4],
-            type: [leave.id, ...types],
-            start_date: { [Op.gte]: `${year}-01-01`, [Op.lte]: `${year}-12-31` }
-        },
-        raw: true
-    });
-    if (leaves && leaves.length)
-        usedBalance = leaves.reduce((sum, leave) => sum + (Number(leave.days) || 0), 0);
-
-    const availableBalance = totalBalance ? totalBalance - usedBalance : null;
-
-    return {totalBalance, usedBalance, availableBalance};
-}
-
-export async function getCompOffBalance({user} = {}) {
-    const approvedHolidays = await Holiday.findAll({
-        include: [{
-            model: HolidayWorking,                     // Search for approved Holidays with HolidayWorking
-            where: { user, status: [0, 1, 2, 4] },     // Only approved Holidays
-            required: true,                            // Only Holidays with HolidayWorking approved
-            attributes: []                             // No attributes for HolidayWorking needed
-        }],
-        attributes: ['date'],
-        raw: true
-    });
-    const approvedHolidayDates = approvedHolidays.map(h => h.date);
-    const approvedWeekends = await WeekendWorking.findAll({
-        where: { user, status: [0, 1, 2, 4] },
-        attributes: ['date'],
-        raw: true
-    });
-    const approvedWeekendsDates = approvedWeekends.map(h => h.date);
-    const approvedDates = [...approvedHolidayDates, ...approvedWeekendsDates];
-
-    const approvedWorkedDates = await TimeRecord.findAll({
-        where: {
-            user,                                      // TimeRecords for user
-            date: approvedDates,                       // On Approved Holidays
-            status: 2                                  // Approved TimeRecords
-        },
-        raw: true
-    });
-    const datesWorked = approvedWorkedDates.map(w => w.date);
-    const holidayCompOffsTaken = await Leave.findAll({
-        where: {
-            type: 100,
-            user,                                       // Absences for this user
-            status: [0, 1, 2, 4]                        // Excluded Rejected and Cancelled
-        },
-        raw: true
-    });
-
-    const collectedDates = approvedDates.filter(h => datesWorked.includes(h.date));
-    const compensatedDates = holidayCompOffsTaken.map(co => co.date);
-    const availableDates = collectedDates.filter(d => !compensatedDates.includes(d));
-
-    const totalBalance = collectedDates.length;
-    const usedBalance = compensatedDates.length;
-    const availableBalance = Math.max(0, totalBalance - usedBalance);
-
-    return {
-        totalBalance,
-        usedBalance,
-        availableBalance,
-        collectedDates,
-        compensatedDates,
-        availableDates
     };
 }

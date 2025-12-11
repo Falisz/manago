@@ -1,7 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
-- LeaveBalance API and Controllers
 - Contractual Data API and Controllers.
 - JobPosts and JobLocations API and Controllers.
 - Dashboard widgets for your and your team schedules. And pending leave approvals. Also, additional dashboard widget for "your oncoming leaves".

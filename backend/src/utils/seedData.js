@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import sequelize from '../utils/database.js';
 import {
-    AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Leave, LeaveType, Post,
+    AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, LeaveType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
     UserPermission, UserRole
 } from '../models/index.js';
@@ -829,7 +829,7 @@ const requestStatuses = [
 const leaveTypes = [
     {
         id: 1,
-        name: 'Annual Leave',
+        name: 'Annual Absence',
         amount: 26,
         multiple: true,
         scaled: true,
@@ -838,21 +838,21 @@ const leaveTypes = [
     },
     {
         id: 2,
-        name: 'Sick Leave',
+        name: 'Sick Absence',
         multiple: true,
         ref_required: true,
         color: '#4CAF50',
     },
     {
         id: 3,
-        name: 'Leave on Demand',
+        name: 'Absence on Demand',
         parent_type: 1,
         amount: 4,
         color: '#F44336'
     },
     {
         id: 4,
-        name: 'Personal Leave',
+        name: 'Personal Absence',
         parent_type: 1,
         amount: 2,
         color: '#9C27B0',
@@ -860,25 +860,25 @@ const leaveTypes = [
     },
     {
         id: 5,
-        name: 'Maternity Leave',
+        name: 'Maternity Absence',
         parent_type: 1,
         color: '#E91E63'
     },
     {
         id: 6,
-        name: 'Paternity Leave',
+        name: 'Paternity Absence',
         parent_type: 1,
         color: '#3F51B5'
     },
     {
         id: 11,
-        name: 'Unpaid Leave',
+        name: 'Unpaid Absence',
         multiple: true,
         color: '#777777'
     },
     {
         id: 100,
-        name: 'Compensatory Leave',
+        name: 'Compensatory Absence',
         color: '#2196F3'
     }
 ];
@@ -974,7 +974,7 @@ const seedStructure = [
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
     { model: LeaveType, tableName: 'leave_types', data: leaveTypes, itemsName: 'leave types' },
-    { model: Leave, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
+    { model: Absence, tableName: 'leaves', data: leaves, itemsName: 'leaves' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },
     { model: Post, tableName: 'posts', data: posts, itemsName: 'posts' },
 ];

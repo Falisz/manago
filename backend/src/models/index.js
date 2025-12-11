@@ -14,7 +14,7 @@ import Holiday from './Holiday.js';
 import HolidayWorking from './HolidayWorking.js';
 import JobPost from './JobPost.js';
 import JobLocation from './JobLocation.js';
-import Leave from './Leave.js';
+import Absence from './Absence.js';
 import LeaveType from './LeaveType.js';
 import Post from './Post.js';
 import Permission from './Permission.js';
@@ -175,21 +175,21 @@ Shift.belongsTo(Schedule, { foreignKey: 'schedule', targetKey: 'id' });
 LeaveType.hasMany(LeaveType, { foreignKey: 'parent_type', sourceKey: 'id', as: 'SubType' });
 LeaveType.belongsTo(LeaveType, { foreignKey: 'parent_type', targetKey: 'id', as: 'ParentType' });
 //
-// LeaveType <-> Leave
-LeaveType.hasMany(Leave, { foreignKey: 'type', sourceKey: 'id' });
-Leave.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
+// LeaveType <-> Absence
+LeaveType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
+Absence.belongsTo(LeaveType, { foreignKey: 'type', targetKey: 'id' });
 //
-// User <-> Leave (user)
-User.hasMany(Leave, { foreignKey: 'user', sourceKey: 'id' });
-Leave.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+// User <-> Absence (user)
+User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id' });
+Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 //
-// User <-> Leave (approver)
-User.hasMany(Leave, { foreignKey: 'approver', sourceKey: 'id', as: 'LeavesApproved' });
-Leave.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
+// User <-> Absence (approver)
+User.hasMany(Absence, { foreignKey: 'approver', sourceKey: 'id', as: 'LeavesApproved' });
+Absence.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
 //
-// RequestStatus <-> Leave
-RequestStatus.hasMany(Leave, { foreignKey: 'status', sourceKey: 'id' });
-Leave.belongsTo(RequestStatus, { foreignKey: 'status', targetKey: 'id' });
+// RequestStatus <-> Absence
+RequestStatus.hasMany(Absence, { foreignKey: 'status', sourceKey: 'id' });
+Absence.belongsTo(RequestStatus, { foreignKey: 'status', targetKey: 'id' });
 //
 // User <-> HolidayWorking (user)
 User.hasMany(HolidayWorking, { foreignKey: 'user', sourceKey: 'id', as: 'HolidayWorkingsRequested' });
@@ -229,7 +229,7 @@ Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id'
 
 export {
     AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser, Channel,
-    Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, Leave, LeaveType, Post,
+    Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, Absence, LeaveType, Post,
     Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser,
     TimeRecord, User, UserManager, UserPermission, UserRole, WeekendWorking
 }
