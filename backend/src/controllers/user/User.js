@@ -12,8 +12,9 @@ import {
 } from '../index.js';
 import {User, UserManager, Role, UserRole, TeamUser} from '#models';
 import sequelize from '#utils/database.js';
-import randomId from '#utils/randomId.js';
+import isNumber from '#utils/isNumber.js';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
+import randomId from '#utils/randomId.js';
 
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.
@@ -38,6 +39,12 @@ export async function getUser({id, scope, scope_id, group, roles=true, managers=
 
     const exclude = ['password', 'removed'];
 
+    if (id != null)
+        id = parseInt(id);
+
+    if (scope_id != null)
+        scope_id = parseInt(scope_id);
+
     if (!include_ppi)
         exclude.push('login', 'email', 'address', 'city', 'postal_code', 'phone', 'country');
 
@@ -48,7 +55,9 @@ export async function getUser({id, scope, scope_id, group, roles=true, managers=
         if (!user)
             return null;
 
-        if (!raw) user.toJSON();
+        if (!raw)
+            user = user.toJSON();
+
         delete user['UserRoles'];
 
         if (roles)
@@ -81,8 +90,9 @@ export async function getUser({id, scope, scope_id, group, roles=true, managers=
     }
 
     // Logic if the ID is provided - fetch a specific User
-    if ((id && Number.isInteger(id)) || (scope === 'user' && Number.isInteger(scope_id))) {
-        if (scope_id)
+    if (isNumber(id) || (scope === 'user' && isNumber(scope_id))) {
+
+        if (id == null && scope_id)
             id = scope_id;
 
         const user = await User.findOne({
@@ -144,9 +154,7 @@ export async function getUser({id, scope, scope_id, group, roles=true, managers=
     if (!users?.length)
         return [];
 
-    return await Promise.all(users.map(await extendUser));
-
-
+    return await Promise.all(users.map(async user => await extendUser(user)));
 }
 
 /**

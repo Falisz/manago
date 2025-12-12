@@ -7,7 +7,8 @@
 export function validateEnv() {
     const requiredEnvVars = [
         'PORT',
-        'DB_DIALECT',
+        'JWT_ACCESS_SECRET',
+        'JWT_REFRESH_SECRET',
         'DB_HOST',
         'DB_PORT',
         'DB_NAME',

@@ -183,9 +183,6 @@ Disposition.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' })
 DispositionPreset.hasMany(Disposition, { foreignKey: 'preset', sourceKey: 'id' });
 Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id' });
 
-AbsenceType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
-Absence.belongsTo(AbsenceType, { foreignKey: 'type', targetKey: 'id' });
-
 User.hasMany(Contract, { foreignKey: 'user', sourceKey: 'id' });
 Contract.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 

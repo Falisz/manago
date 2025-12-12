@@ -8,7 +8,7 @@ dotenv.config();
  * @type {Sequelize}
  */
 export const sequelize = new Sequelize({
-    dialect: process.env.DB_TYPE || 'postgres',
+    dialect: 'postgres',
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
     username: process.env.DB_USERNAME || 'appagent',
