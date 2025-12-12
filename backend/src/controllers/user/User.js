@@ -44,11 +44,11 @@ export async function getUser({id, scope, scope_id, group, roles=true, managers=
     if (!include_configs)
         exclude.push('locale', 'theme_mode', 'manager_view_enabled', 'manager_nav_collapsed');
 
-    async function extendUser(user) {
+    async function extendUser(user, raw=false) {
         if (!user)
             return null;
 
-        user.toJSON();
+        if (!raw) user.toJSON();
         delete user['UserRoles'];
 
         if (roles)
@@ -91,7 +91,7 @@ export async function getUser({id, scope, scope_id, group, roles=true, managers=
             raw: true
         });
 
-        return await extendUser(user);
+        return await extendUser(user, true);
     }
 
     // Logic if no ID provided but there is a Scope specified
