@@ -78,7 +78,8 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
 
         if (leave.amount && leave.transferable) {
             if (leave.amount) {
-                const limitYear = new Date(user.joined).getFullYear() || new Date().getFullYear();
+                const limitYear = user.joined ? new Date(user.joined).getFullYear() : new Date().getFullYear();
+
                 for (let yr = year - 1; yr >= limitYear; yr--) {
                     const {availableBalance: remainingBalance} = await getAbsenceBalance({
                         userId: user.id,

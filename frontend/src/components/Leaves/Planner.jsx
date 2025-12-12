@@ -242,7 +242,7 @@ function LeavesPlanner( {modal} ) {
 
     const handleSubmit = useCallback(async () => {
         newLeave.days = selectedDates.size;
-        return async () => await saveLeave({data: newLeave})
+        return await saveLeave({data: newLeave});
     }, [saveLeave, newLeave, selectedDates]);
 
     const leaveItems = useMemo(() => {
