@@ -1,9 +1,25 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
-- Full Frontend implementation for Holiday and Weekend Working agreements, Absences, Contracts, Contract Types, Job Posts and Job Locations.
-- Work Planner Dashboard widgets for your and your team schedules. And pending  approvals. Also, additional dashboard widget for "your oncoming leaves".
-- Shift notes - adding them in shift edit
+- WorkPlanner Dashboard UI:
+  - Your Schedule widget with 7 next days starting today. If the one of the days is weekend or holiday, it lets open a pop-up with Holiday/Weekend request form.
+  - Your Team Schedule widget with 7 next days starting today and Team selector.
+  - Schedule Draft index - as is.
+  - Pending Approvals - includes all pending approvals but only displays 5 items and if more then it says "+ N more..." which is link to the Approvals page.
+- Schedule View:
+  - Clicking on Day header with weekend or holiday on it opens a pop-up with Holiday/Weekend request form.
+- Leaves page UI:
+  - Your Leaves widget - left vertical half, list of your leaves.
+  - Your Leave Balance widget - right top quarter summary for Leave Balances for the balance selectable from the top. Button to request a Weekend/Holiday working.
+  - Your Reportees Leaves - right bottom list of your reportees absences, searchable by user, leave type and dates and status.
+- Approval Page - full page dedicated for approvals - leaves, shifts, weekend and holiday workings.
+- Settings Page
+  - Holiday listing with add button.
+  - Job Location widget with list and sub-module enablement button, also a button adding item button.
+  - Job Post and Leave Types same as other widgets.
+- Shift notes - added in shift edit, if they are present, shift item in schedule view should have small info icon in the corner.
+- Frontend implementation for Contracts, Contract Types
+
 ### TimeSheets (till 21-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
