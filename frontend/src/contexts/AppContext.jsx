@@ -284,10 +284,9 @@ export const AppProvider = ({ children }) => {
         }
     }, [refreshPages, setLoading, setUser]);
 
-    const toggleTheme = useCallback(async(userId, theme_mode) => {
-        if (!userId) return null;
+    const toggleTheme = useCallback(async(theme_mode) => {
         try {
-            const result = await axios.put(`/user-theme/${userId}`, { theme_mode });
+            const result = await axios.post(`/user-theme`, { theme_mode });
             setUser(prev => ({...prev, theme_mode: result.data?.theme_mode }));
         } catch (err) {
             console.error('Theme switching error: ', err);

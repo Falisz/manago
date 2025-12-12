@@ -30,7 +30,7 @@ const UserSubMenu = () => {
                 className='sub-menu-link'
                 to='#'
                 onClick={() => {
-                    toggleTheme(user?.id, new_theme_mode);
+                    toggleTheme(new_theme_mode);
                 }}
             >
                 Switch theme

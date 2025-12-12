@@ -421,10 +421,9 @@ const updateUserThemeHandler = async (req, res) => {
         if (!req.body || typeof req.body.theme_mode !== 'string')
             return res.status(400).json({ message: 'Invalid or missing theme_mode value.' });
 
-        const { userId } = req.params;
         const { theme_mode } = req.body;
-
-        const { success, message } = await updateUser(userId, { theme_mode });
+        
+        const { success, message } = await updateUser(req.user, { theme_mode });
 
         if (!success)
             return res.status(400).json({ success, message });
@@ -444,7 +443,6 @@ router.get('/', apiEndpointHandler)
 router.post('/auth', loginHandler);
 router.get('/auth', authHandler);
 router.get('/logout', logoutHandler);
-
 router.get('/config', fetchConfigHandler);
 router.get('/config-options', fetchConfigOptionsHandler);
 router.put('/config', updateConfigHandler);
@@ -453,6 +451,6 @@ router.put('/modules/:id', updateModuleHandler);
 router.get('/pages', fetchPagesHandler);
 router.post('/manager-view', toggleManagerViewHandler);
 router.post('/toggle-nav', toggleManagerNavHandler);
-router.put('/user-theme/:userId', updateUserThemeHandler);
+router.post('/user-theme', updateUserThemeHandler);
 
 export default router;
