@@ -5,16 +5,17 @@ import {
     createJobLocation,
     updateJobLocation,
     deleteJobLocation
-} from '../controllers/workPlanner.js';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from './checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
+} from '#controllers';
+import checkResourceIdHandler from '#middleware/checkResourceId.js';
+import checkAccess from '#utils/checkAccess.js';
+import deleteResource from '#utils/deleteResource.js';
 
 // API Handlers
 
 /**
  * Fetch multiple Job Locations or one by its ID.
  * @param {express.Request} req
+ * @param {number} req.user
  * @param {string|null} req.params.id - optional Job Location ID
  * @param {string} req.query.include_shifts - if "true", includes related shifts
  * @param {express.Response} res

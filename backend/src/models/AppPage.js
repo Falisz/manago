@@ -1,6 +1,6 @@
 // BACKEND/models/AppPages.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import sequelize from '#utils/database.js';
 
 export const AppPage = sequelize.define('AppPages', {
     view: {

@@ -1,6 +1,6 @@
 // BACKEND/models/AbsenceType.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import sequelize from '#utils/database.js';
 
 export const AbsenceType = sequelize.define('AbsenceType', {
     name: {

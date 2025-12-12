@@ -9,10 +9,10 @@ import {
     getUserRoles,
     updateUserRoles,
     updateUserManagers
-} from '../controllers/users.js';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from './checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
+} from '#controllers';
+import checkResourceIdHandler from '#middleware/checkResourceId.js';
+import checkAccess from '#utils/checkAccess.js';
+import deleteResource from '#utils/deleteResource.js';
 
 // API Handlers
 /**

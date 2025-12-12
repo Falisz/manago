@@ -1,6 +1,6 @@
 // BACKEND/utils/securityLogs.js
 import {now} from 'sequelize/lib/utils';
-import AppSecurityLog from '../models/AppSecurityLog.js';
+import {AppSecurityLog} from '#models';
 
 /**
  * Logs a security-related event to the database.

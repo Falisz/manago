@@ -10,6 +10,8 @@ import Branch from './Branch.js';
 import BranchRole from './BranchRole.js';
 import BranchUser from './BranchUser.js';
 import Channel from './Channel.js';
+import Contract from "./Contract.js";
+import ContractType from "./ContractType.js";
 import Disposition from './Disposition.js';
 import DispositionPreset from './DispositionPreset.js';
 import Holiday from './Holiday.js';
@@ -30,14 +32,12 @@ import Team from './Team.js';
 import TeamRole from './TeamRole.js';
 import TeamUser from './TeamUser.js';
 import TimeRecord from './TimeRecord.js';
+import TimeRecordStatus from "./TimeRecordStatus.js";
 import User from './User.js';
 import UserManager from './UserManager.js';
 import UserPermission from './UserPermission.js';
 import UserRole from './UserRole.js';
 import WeekendWorking from './WeekendWorking.js';
-import Contract from "./Contract.js";
-import ContractType from "./ContractType.js";
-import TimeRecordStatus from "./TimeRecordStatus.js";
 
 AppModule.hasMany(AppConfig, { foreignKey: 'module', sourceKey: 'id', as: 'AuditLogs' });
 AppConfig.belongsTo(AppModule, { foreignKey: 'module', targetKey: 'id', as: 'User' });
@@ -206,7 +206,7 @@ TimeRecord.belongsTo(TimeRecordStatus, { foreignKey: 'status', targetKey: 'id' }
 
 export {
     Absence, AbsenceBalance, AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser,
-    Channel, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation, AbsenceType, Post,
-    Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser,
-    TimeRecord, User, UserManager, UserPermission, UserRole, WeekendWorking
+    Channel, Contract, ContractType, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation,
+    AbsenceType, Post, Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team,
+    TeamRole, TeamUser, TimeRecord, TimeRecordStatus, User, UserManager, UserPermission, UserRole, WeekendWorking
 }

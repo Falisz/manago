@@ -3,12 +3,15 @@ import {
     getUserPermissions,
     getRolePermissions,
     getUserRoles,
-    getUserManagers
-} from '../controllers/users.js';
-import { getTeamUsers } from '../controllers/teams.js';
-import { getProject, getProjectUsers } from '../controllers/projects.js';
-import { getBranch, getBranchUsers } from '../controllers/branches.js';
-import { getSchedule, getShift } from '../controllers/workPlanner.js';
+    getUserManagers,
+    getTeamUsers,
+    getProject,
+    getProjectUsers,
+    getBranch,
+    getBranchUsers,
+    getSchedule,
+    getShift
+} from '#controllers';
 
 async function getManagedUsers(manager) {
     const reportees = (await getUserManagers({manager, include_all_users: true})).map(u => u.id);
@@ -171,9 +174,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
                     forbiddenIds2
                 };
             }
-
     return { hasFullAccess: false, hasAccess: false };
-    
 }
 
 export default checkAccess;

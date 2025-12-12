@@ -1,29 +1,26 @@
 // BACKEND/api/app.js
 import express from 'express';
-import checkAccess from '../utils/checkAccess.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import {
     getModules,
     setModule,
     getPages,
     getConfig,
     getConfigOptions,
-    setConfig
-} from '../controllers/app.js';
-import {
+    setConfig,
     authUser,
     getUser,
-    updateUser,
-    hasManagerView,
-} from '../controllers/users.js';
+    updateUser
+} from '#controllers';
+import checkAccess from '#utils/checkAccess.js';
 import {
     generateAccessToken,
     generateRefreshToken,
     verifyAccessToken,
     verifyRefreshToken
-} from '../utils/jwt.js';
-import { securityLog } from '../utils/securityLogs.js';
-import { fileURLToPath } from 'url';
-import path from 'path';
+} from '#utils/jwt.js';
+import { securityLog } from '#utils/securityLogs.js';
 
 const HALF_HOUR = 30 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -325,7 +322,8 @@ const fetchPagesHandler = async (req, res) => {
         if (!userId)
             return res.json([]);
 
-        const managerView = await hasManagerView(userId);
+        const user = await getUser({id: userId, include_configs: true});
+        const managerView = user?.manager_view_enabled ?? false;
 
         res.json(await getPages(managerView ? 1 : 0));
     } catch (err) {
@@ -414,6 +412,7 @@ const toggleManagerNavHandler = async (req, res) => {
 /**
  * Update user theme.
  * @param {express.Request} req
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const updateUserThemeHandler = async (req, res) => {

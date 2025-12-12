@@ -1,7 +1,7 @@
 // BACKEND/api/checkJwt.js
-import checkAccess from '../utils/checkAccess.js';
-import { verifyAccessToken } from '../utils/jwt.js';
-import { securityLog } from '../utils/securityLogs.js';
+import checkAccess from '#utils/checkAccess.js';
+import { verifyAccessToken } from '#utils/jwt.js';
+import { securityLog } from '#utils/securityLogs.js';
 
 /**
  * Middleware to check if a User is authenticated.

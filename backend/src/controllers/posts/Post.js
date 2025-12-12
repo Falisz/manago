@@ -1,14 +1,13 @@
-//BACKEND/controller/pages.js
-import {Post, Channel, User} from '../models/index.js';
-import randomId from '../utils/randomId.js';
+//BACKEND/controller/posts/Post.js
+import {Post, Channel, User} from '#models';
+import randomId from '#utils/randomId.js';
 
-/** 
+/**
  * Retrieves one Post by its ID or all Posts if an ID is not provided.
  * @param {number|null} id - Post ID (optional)
  * @returns {Promise<Object|Object[]|null>} Single Post object, array of Posts, or null if not found
-**/
+ **/
 export async function getPost({id} = {}) {
-
     /**
      * Cleans up a Post object by merging associations and removing redundant fields.
      * @param {Object} post - Raw Post data from Sequelize query
@@ -39,7 +38,7 @@ export async function getPost({id} = {}) {
         const posts = await Post.findAll({ include, order: [['createdAt', 'DESC']] });
         return posts.map(post => (postCleanUp(post)));
     }
-    
+
     // Logic if ID is provided - fetch a specific Post
     let post = await Post.findOne({ where: { id }, include });
 

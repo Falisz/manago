@@ -1,9 +1,9 @@
 // BACKEND/models/BranchUser.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import Branch from './Branch.js';
 import BranchRole from './BranchRole.js';
 import User from './User.js';
+import sequelize from '#utils/database.js';
 
 export const BranchUser = sequelize.define('BranchUser', {
     branch: {

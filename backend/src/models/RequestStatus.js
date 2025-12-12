@@ -1,6 +1,6 @@
 // BACKEND/models/RequestStatus.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import sequelize from '#utils/database.js';
 
 export const RequestStatus = sequelize.define('RequestStatus', {
     name: {

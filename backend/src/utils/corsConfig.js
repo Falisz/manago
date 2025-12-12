@@ -1,5 +1,4 @@
 // BACKEND/utils/corsConfig.js
-
 /**
  * Returns CORS configuration options
  * @returns {Object} CORS configuration

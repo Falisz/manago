@@ -1,14 +1,14 @@
 // BACKEND/api/leaveTypes.js
 import express from 'express';
 import {
-    getLeaveType,
-    createLeaveType,
-    updateLeaveType,
-    deleteLeaveType
-} from '../controllers/workPlanner.js';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from './checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
+    getAbsenceType,
+    createAbsenceType,
+    updateAbsenceType,
+    deleteAbsenceType
+} from '#controllers';
+import checkResourceIdHandler from '#middleware/checkResourceId.js';
+import checkAccess from '#utils/checkAccess.js';
+import deleteResource from '#utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -30,7 +30,7 @@ const fetchHandler = async (req, res) => {
             query.id = id;
         }
 
-        const job_posts = await getLeaveType(query);
+        const job_posts = await getAbsenceType(query);
 
         if (id && !job_posts)
             return res.status(404).json({ message: 'Request Status not found.' });
@@ -59,12 +59,12 @@ const createHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { success, message, id } = await createLeaveType(data);
+        const { success, message, id } = await createAbsenceType(data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getLeaveType({id});
+        const holiday = await getAbsenceType({id});
 
         res.status(201).json({ message, holiday });
 
@@ -91,12 +91,12 @@ const updateHandler = async (req, res) => {
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});
 
-        const { success, message } = await updateLeaveType(parseInt(id), data);
+        const { success, message } = await updateAbsenceType(parseInt(id), data);
 
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getLeaveType({id});
+        const holiday = await getAbsenceType({id});
 
         res.json({ message, holiday });
 
@@ -112,7 +112,7 @@ const updateHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const deleteHandler = async (req, res) =>
-    deleteResource(req, res, 'Absence Type', deleteLeaveType);
+    deleteResource(req, res, 'Absence Type', deleteAbsenceType);
 
 // Router definitions
 export const router = express.Router();

@@ -1,10 +1,10 @@
 // BACKEND/models/Shift.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import User from './User.js';
 import JobPost from './JobPost.js';
 import JobLocation from './JobLocation.js';
 import Schedule from './Schedule.js';
+import sequelize from '#utils/database.js';
 
 export const Shift = sequelize.define('Shift', {
     user: {

@@ -1,9 +1,7 @@
 // BACKEND/api/requestStatuses.js
 import express from 'express';
-import {
-    getRequestStatus,
-} from '../controllers/workPlanner.js';
-import checkAccess from '../utils/checkAccess.js';
+import { getRequestStatus} from '#controllers';
+import checkAccess from '#utils/checkAccess.js';
 
 // API Handlers
 /**

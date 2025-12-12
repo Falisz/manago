@@ -10,6 +10,16 @@
     "seed-data": "node src/utils/seedData.js",
     "reseed-data": "node src/utils/seedData.js force"
   },
+  "imports": {
+    "#api": "./src/api/index.js",
+    "#api/*": "./src/api/*.js",
+    "#controllers": "./src/controllers/index.js",
+    "#controllers/*": "./src/controllers/*.js",
+    "#middleware/*": "./src/middleware/*.js",
+    "#models": "./src/models/index.js",
+    "#models/*": "./src/models/*.js",
+    "#utils/*": "./src/utils/*.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1,8 +1,8 @@
 // BACKEND/models/Post.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import Channel from './Channel.js';
 import User from './User.js';
+import sequelize from '#utils/database.js';
 
 export const Post = sequelize.define('Post', {
     channel: {

@@ -1,11 +1,11 @@
 // BACKEND/utils/seed-data.js
 import bcrypt from 'bcrypt';
-import sequelize from '../utils/database.js';
+import sequelize from '#utils/database.js';
 import {
     AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, AbsenceType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
     UserPermission, UserRole
-} from '../models/index.js';
+} from '#models';
 
 // Data to seed
 const appModules = [

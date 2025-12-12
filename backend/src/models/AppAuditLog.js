@@ -1,7 +1,7 @@
 // BACKEND/models/AppAuditLog.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import User from './User.js';
+import sequelize from '#utils/database.js';
 
 export const AppAuditLog = sequelize.define('AuditLog', {
     user: {

@@ -1,8 +1,8 @@
 // BACKEND/models/Contract.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import User from './User.js';
 import ContractType from './ContractType.js';
+import sequelize from '#utils/database.js';
 
 export const Contract = sequelize.define('Contract', {
     user: {

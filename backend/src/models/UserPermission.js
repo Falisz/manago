@@ -1,8 +1,8 @@
 // BACKEND/models/UserPermission.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import User from './User.js';
 import Permission from './Permission.js';
+import sequelize from '#utils/database.js';
 
 export const UserPermission = sequelize.define('UserPermission', {
     user: {

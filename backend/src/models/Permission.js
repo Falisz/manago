@@ -1,6 +1,6 @@
 // BACKEND/models/Permission.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import sequelize from '#utils/database.js';
 
 export const Permission = sequelize.define('Permission', {
     name: {

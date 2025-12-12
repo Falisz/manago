@@ -1,8 +1,8 @@
 // BACKEND/models/RolePermission.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import Role from './Role.js';
 import Permission from './Permission.js';
+import sequelize from '#utils/database.js';
 
 export const RolePermission = sequelize.define('RolePermission', {
     role: {

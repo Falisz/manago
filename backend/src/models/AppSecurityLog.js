@@ -1,6 +1,7 @@
-import sequelize from '../utils/database.js';
+// BACKEND/models/AppSecurityLog.js
 import {DataTypes} from 'sequelize';
 import {User} from './User.js';
+import sequelize from '#utils/database.js';
 
 export const AppSecurityLog = sequelize.define('AppSecurityLog', {
     user: {

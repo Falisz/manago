@@ -1,6 +1,6 @@
 // BACKEND/models/TeamRole.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
+import sequelize from '#utils/database.js';
 
 export const TeamRole = sequelize.define('TeamRole', {
     name: {

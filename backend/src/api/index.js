@@ -7,7 +7,7 @@ import userRoutes from './users.js';
 import roleRoutes from './roles.js';
 import teamRoutes from './teams.js';
 import projectRoutes from './projects.js';
-import brancheRoutes from './branches.js'
+import branchRoutes from './branches.js'
 import scheduleRoutes from './schedules.js';
 import jobPostRoutes from './jobPosts.js';
 import jobLocationRoutes from './jobLocations.js';
@@ -19,7 +19,7 @@ import holidayWorkingRoutes from './holidayWorkings.js';
 import weekendWorkingRoutes from "./weekendWorkings.js";
 import requestStatusRoutes from './requestStatuses.js';
 import postRoutes from './posts.js';
-import checkJwtHandler from './checkJwt.js';
+import checkJwtHandler from '#middleware/checkJwt.js';
 
 const router = express.Router();
 
@@ -43,7 +43,6 @@ router.use((req, res, next) => {
     return checkJwtHandler(req, res, next);
 });
 
-
 // Base routes (authentication, app info, etc.)
 router.use('/', appRoutes);
 
@@ -52,7 +51,7 @@ router.use('/users', userRoutes);
 router.use('/roles', roleRoutes);
 router.use('/teams', teamRoutes);
 router.use('/projects', projectRoutes);
-router.use('/branches', brancheRoutes);
+router.use('/branches', branchRoutes);
 router.use('/contracts', contractRoutes);
 router.use('/contract-types', contractTypeRoutes);
 router.use('/schedules', scheduleRoutes);

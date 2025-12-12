@@ -3,15 +3,15 @@ import express from 'express';
 import {
     getAbsence,
     getAbsenceBalance,
-    getLeaveType,
+    getUser,
+    getAbsenceType,
     createAbsence,
     updateAbsence,
     deleteAbsence
-} from '../controllers/workPlanner.js';
-import {getUser} from "../controllers/users.js";
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from './checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
+} from '#controllers';
+import checkResourceIdHandler from '#middleware/checkResourceId.js';
+import checkAccess from '#utils/checkAccess.js';
+import deleteResource from '#utils/deleteResource.js';
 
 // API Handlers
 /**
@@ -238,7 +238,7 @@ const deleteHandler = async (req, res) =>
 const fetchBalanceHandler = async (req, res) => {
     const result = {};
     try {
-        const leaveTypes = await getLeaveType();
+        const leaveTypes = await getAbsenceType();
         const userId = req.query.user || req.user;
         const year = req.query.year || new Date().getFullYear();
         for (const leaveType of leaveTypes) {

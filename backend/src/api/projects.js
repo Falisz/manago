@@ -7,9 +7,9 @@ import {
     deleteProject,
     updateProjectUsers,
     getProjectUsers
-} from '../controllers/projects.js';
-import checkResourceIdHandler from './checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
+} from '#controllers';
+import checkResourceIdHandler from '#middleware/checkResourceId.js';
+import deleteResource from '#utils/deleteResource.js';
 
 // API Handlers
 /**

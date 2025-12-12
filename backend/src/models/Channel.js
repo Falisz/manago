@@ -1,10 +1,10 @@
 // BACKEND/models/Channel.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import Branch from './Branch.js';
 import Project from './Project.js';
 import Team from './Team.js';
 import Role from './Role.js';
+import sequelize from '#utils/database.js';
 
 export const Channel = sequelize.define('Channel', {
     name: {

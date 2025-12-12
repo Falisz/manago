@@ -1,8 +1,8 @@
 // BACKEND/models/Team.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import Branch from './Branch.js';
 import Project from './Project.js';
+import sequelize from '#utils/database.js';
 
 export const Team = sequelize.define('Team', {
     name: DataTypes.STRING,

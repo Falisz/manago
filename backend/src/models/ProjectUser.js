@@ -1,8 +1,8 @@
 // BACKEND/models/ProjectUser.js
-import sequelize from "../utils/database.js";
-import {DataTypes} from "sequelize";
+import {DataTypes} from 'sequelize';
 import User from './User.js';
 import Project from './Project.js';
+import sequelize from '#utils/database.js';
 
 export const ProjectUser = sequelize.define('ProjectUser', {
     project: {

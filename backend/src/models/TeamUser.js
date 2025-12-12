@@ -1,9 +1,9 @@
 // BACKEND/models/TeamUser.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import Team from './Team.js';
 import TeamRole from './TeamRole.js';
 import User from './User.js';
+import sequelize from '#utils/database.js';
 
 export const TeamUser = sequelize.define('TeamUser', {
     team: {

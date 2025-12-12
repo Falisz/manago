@@ -3,14 +3,14 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import sequelize from './utils/database.js';
-import seedData from './utils/seedData.js';
-import apiRouter from './api/index.js';
-import { requestLoggerHandler, errorLoggerHandler } from './utils/logger.js';
-import { waitForKeypress } from './utils/keypress.js';
-import { validateEnv } from './utils/validateEnv.js';
-import { getCorsConfig } from './utils/corsConfig.js';
-import { INFO, ERROR, WARN } from './utils/consoleColors.js';
+import apiRouter from '#api';
+import sequelize from '#utils/database.js';
+import seedData from '#utils/seedData.js';
+import { requestLoggerHandler, errorLoggerHandler } from '#utils/logger.js';
+import { waitForKeypress } from '#utils/keypress.js';
+import { validateEnv } from '#utils/validateEnv.js';
+import { getCorsConfig } from '#utils/corsConfig.js';
+import { INFO, ERROR, WARN } from '#utils/consoleColors.js';
 
 // Environment variables and validation.
 dotenv.config();

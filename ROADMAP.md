@@ -1,9 +1,8 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 14-12-25)
-- Contract, Contract Type and Job Locations API.
-- Full frontend implementation for Holiday and Weekend Working agreements, Absences, Contracts, Contract Types, Job Posts and Job Locations.
-- Dashboard widgets for your and your team schedules. And pending leave approvals. Also, additional dashboard widget for "your oncoming leaves".
+- Full Frontend implementation for Holiday and Weekend Working agreements, Absences, Contracts, Contract Types, Job Posts and Job Locations.
+- Work Planner Dashboard widgets for your and your team schedules. And pending  approvals. Also, additional dashboard widget for "your oncoming leaves".
 - Shift notes - adding them in shift edit
 ### TimeSheets (till 21-12-25)
 - Recorded efforts and labor - to help bill the projects.

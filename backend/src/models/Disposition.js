@@ -1,7 +1,7 @@
 // BACKEND/models/Disposition.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import DispositionPreset from './DispositionPreset.js';
+import sequelize from '#utils/database.js';
 
 export const Disposition = sequelize.define('Disposition', {
     user: {

@@ -4,12 +4,13 @@ import {
     getHolidayWorking,
     createHolidayWorking,
     updateHolidayWorking,
-    deleteHolidayWorking, getWeekendWorking,
-} from '../controllers/workPlanner.js';
-import checkAccess from '../utils/checkAccess.js';
-import checkResourceIdHandler from './checkResourceId.js';
-import deleteResource from '../utils/deleteResource.js';
-import {getUser} from "../controllers/users.js";
+    deleteHolidayWorking,
+    getWeekendWorking,
+    getUser
+} from '#controllers';
+import checkResourceIdHandler from '#middleware/checkResourceId.js';
+import checkAccess from '#utils/checkAccess.js';
+import deleteResource from '#utils/deleteResource.js';
 
 // API Handlers
 /**

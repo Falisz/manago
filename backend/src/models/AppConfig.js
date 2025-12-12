@@ -1,7 +1,7 @@
 // BACKEND/models/AppConfig.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import AppModule from './AppModule.js';
+import sequelize from '#utils/database.js';
 
 export const AppConfig = sequelize.define('AppConfig', {
     configName: {

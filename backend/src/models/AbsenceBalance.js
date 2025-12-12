@@ -1,8 +1,8 @@
 // BACKEND/models/AbsenceBalance.js
-import sequelize from '../utils/database.js';
 import {DataTypes} from 'sequelize';
 import AbsenceType from './AbsenceType.js';
-import User from "./User.js";
+import User from './User.js';
+import sequelize from '#utils/database.js';
 
 export const AbsenceBalance = sequelize.define('AbsenceBalance', {
     user: {
