@@ -18,10 +18,10 @@ import randomId from '#utils/randomId.js';
 export async function getAbsence({id, user, approver, date, start_date, end_date} = {}) {
 
     const include = [
-        { model: User, attributes: ['id', 'first_name', 'last_name'] },
+        { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'User' },
         { model: User, attributes: ['id', 'first_name', 'last_name'], as: 'Approver' },
         { model: RequestStatus, attributes: ['id', 'name']},
-        { model: AbsenceType, attributes: ['name', 'color'] }
+        { model: AbsenceType, attributes: ['name', 'abbreviation', 'multiple', 'color'] }
     ];
 
     const flattenAbsence = (leave) => {

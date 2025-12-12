@@ -16,16 +16,17 @@ const LeaveItem = ({ leave }) => {
     if (!leave)
         return null;
 
-    const { id, days, type, color, status } = leave;
+    const { id, days, type, status } = leave;
 
     return (
         <div
             className={'user-schedule-leave-item app-clickable'}
-            style={{background: color+'90', opacity: status !== 1 ? 1 : .75}}
+            style={{background: type.color+'90', opacity: status.id !== 1 ? 1 : .75}}
             onClick={() => openDialog({content: 'leaveDetails', contentId: id, closeButton: false})}
+            title={`${type.name || 'Leave'} | ${status.name}`}
         >
-            <span>{days || 1}-day{days > 1 ? 's' : ''} Leave {status === 1 ? '(pending approval)' : ''}</span>
-            <span className={'subtitle'}>{type}</span>
+            <span>{days || 1}-day{days > 1 ? 's' : ''} Leave {status.id === 1 ? '(pending approval)' : ''}</span>
+            <span className={'subtitle'}>{type.abbreviation || type.name || 'Leave'}</span>
         </div>
     );
 }
@@ -310,6 +311,7 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         
     const dates = generateDateList(schedule.start_date, schedule.end_date);
 
+
     return <div className={'app-schedule-content app-scroll'}>
         <table className={'app-schedule-table' + (editable ? ' editable' : '')}>
             <thead>
@@ -363,7 +365,8 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                         const dateStr = formatDate(date);
 
                         const leave = user.leaves?.find((l) =>
-                            date >= new Date(l.start_date) && date <= new Date(l.end_date) && [1, 2, 4].includes(l.status));
+                            ((date >= new Date(l.start_date) && date <= new Date(l.end_date)) || l.start_date === dateStr)
+                                && [1, 2, 4].includes(l.status?.id));
 
                         const isLeaveStart = leave ? sameDay(date, new Date(leave.start_date)) : false;
 

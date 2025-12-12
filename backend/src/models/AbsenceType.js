@@ -7,6 +7,7 @@ export const AbsenceType = sequelize.define('AbsenceType', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    abbreviation: DataTypes.STRING,
     parent_type: {
         type: DataTypes.INTEGER,
         references: { model: 'absence_types', key: 'id' }

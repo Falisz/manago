@@ -830,7 +830,7 @@ const absenceTypes = [
     {
         id: 1,
         name: 'Annual Leave',
-        shortname: 'AL',
+        abbreviation: 'AL',
         amount: 26,
         multiple: true,
         scaled: true,
@@ -840,7 +840,7 @@ const absenceTypes = [
     {
         id: 2,
         name: 'Sick Leave',
-        shortname: 'SL',
+        abbreviation: 'SL',
         multiple: true,
         ref_required: true,
         color: '#71d162',
@@ -848,7 +848,7 @@ const absenceTypes = [
     {
         id: 3,
         name: 'Leave on Demand',
-        shortname: 'LoD',
+        abbreviation: 'LoD',
         parent_type: 1,
         amount: 4,
         color: '#F44336'
@@ -856,7 +856,7 @@ const absenceTypes = [
     {
         id: 4,
         name: 'Personal Leave',
-        shortname: 'PL',
+        abbreviation: 'PL',
         parent_type: 1,
         amount: 2,
         color: '#9C27B0',
@@ -865,35 +865,35 @@ const absenceTypes = [
     {
         id: 5,
         name: 'Maternity Leave',
-        shortname: 'ML',
+        abbreviation: 'ML',
         parent_type: 1,
         color: '#E91E63'
     },
     {
         id: 6,
         name: 'Paternity Leave',
-        shortname: 'PL',
+        abbreviation: 'PL',
         parent_type: 1,
         color: '#3F51B5'
     },
     {
         id: 7,
         name: 'Unpaid Leave',
-        shortname: 'UL',
+        abbreviation: 'UL',
         multiple: true,
         color: '#777777'
     },
     {
         id: 8,
         name: 'Blood Donation Leave',
-        shortname: 'UL',
+        abbreviation: 'UL',
         multiple: true,
         color: '#048a1a'
     },
     {
         id: 100,
         name: 'Compensatory Off',
-        shortname: 'C-OFF',
+        abbreviation: 'C-OFF',
         color: '#2196F3'
     }
 ];
@@ -932,8 +932,8 @@ const absences = [
         user_note: 'Need a day off for personal reasons',
         approver_note: null
     },
-    { id: 101, type: 100, start_date: '2025-12-14', status: 2, user: 100007, approver: 100004 },
-    { id: 201, type: 100, start_date: '2025-12-14', status: 2, user: 100008, approver: 100004 }
+    { id: 101, type: 100, start_date: '2025-12-16', status: 2, user: 100007, approver: 100004 },
+    { id: 201, type: 100, start_date: '2025-12-15', status: 2, user: 100008, approver: 100004 }
 ];
 
 const channels = [
