@@ -5,7 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import sequelize from './utils/database.js';
 import seedData from './utils/seedData.js';
-import apiRouter from './api/router.js';
+import apiRouter from './api/index.js';
 import { requestLoggerHandler, errorLoggerHandler } from './utils/logger.js';
 import { waitForKeypress } from './utils/keypress.js';
 import { validateEnv } from './utils/validateEnv.js';

@@ -1008,7 +1008,7 @@ export async function deleteContract(id) {
  * @param {boolean} contracts - optional - Should Contracts be added to the output ContractType
  * @returns {Promise<Object|Object[]|null>} ContractType, array of ContractTypes, or null
  */
-export async function getContractType({id, contracts=false} = {}) {
+export async function getContractType({id} = {}) {
 
     if (!id || isNaN(id)) {
         const types = await ContractType.findAll({
@@ -1018,12 +1018,6 @@ export async function getContractType({id, contracts=false} = {}) {
 
         if (!types?.length)
             return [];
-
-        if (contracts)
-            return await Promise.all(types.map(async type => {
-                type.contracts = await getContract({type: type.id});
-                return type;
-            }));
 
         return types;
     }
@@ -1035,9 +1029,6 @@ export async function getContractType({id, contracts=false} = {}) {
 
     if (!type)
         return null;
-
-    if (contracts)
-        type.contracts = await getContract({type: id});
 
     return type;
 }
