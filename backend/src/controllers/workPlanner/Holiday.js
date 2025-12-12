@@ -1,7 +1,7 @@
 // BACKEND/controller/workPlanner/holidays.js
 import {Op} from 'sequelize';
 import {Holiday, HolidayWorking} from '#models';
-import sequelize from '#utils/database';
+import sequelize from '#utils/database.js';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
 

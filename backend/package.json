@@ -12,13 +12,13 @@
   },
   "imports": {
     "#api": "./src/api/index.js",
-    "#api/*": "./src/api/*.js",
+    "#api/*": "./src/api/*",
     "#controllers": "./src/controllers/index.js",
-    "#controllers/*": "./src/controllers/*.js",
-    "#middleware/*": "./src/middleware/*.js",
+    "#controllers/*": "./src/controllers/*",
+    "#middleware/*": "./src/middleware/*",
     "#models": "./src/models/index.js",
-    "#models/*": "./src/models/*.js",
-    "#utils/*": "./src/utils/*.js"
+    "#models/*": "./src/models/*",
+    "#utils/*": "./src/utils/*"
   },
   "keywords": [],
   "author": "",

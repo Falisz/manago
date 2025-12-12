@@ -31,7 +31,7 @@ import {getRequestStatus} from './workPlanner/RequestStatus.js';
 import {getShift, createShift, updateShift, deleteShift} from './workPlanner/Shift.js';
 import {getWeekendWorking, createWeekendWorking, updateWeekendWorking, deleteWeekendWorking}
     from "./workPlanner/WeekendWorking.js";
-import {getSchedule, createSchedule, updateSchedule, deleteSchedule} from "#controllers/workPlanner/Schedule";
+import {getSchedule, createSchedule, updateSchedule, deleteSchedule} from "#controllers/workPlanner/Schedule.js";
 
 export {
     getConfig, setConfig, getConfigOptions, getModules, setModule, getPages,

@@ -147,12 +147,15 @@ AbsenceType.belongsTo(AbsenceType, { foreignKey: 'parent_type', targetKey: 'id',
 AbsenceType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
 Absence.belongsTo(AbsenceType, { foreignKey: 'type', targetKey: 'id' });
 
-User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id' });
-Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id', as: 'Absences' });
+Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+
 User.hasMany(Absence, { foreignKey: 'approver', sourceKey: 'id', as: 'LeavesApproved' });
 Absence.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
+
 RequestStatus.hasMany(Absence, { foreignKey: 'status', sourceKey: 'id' });
 Absence.belongsTo(RequestStatus, { foreignKey: 'status', targetKey: 'id' });
+
 User.hasMany(HolidayWorking, { foreignKey: 'user', sourceKey: 'id', as: 'HolidayWorkingsRequested' });
 HolidayWorking.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'HolidayWorkingUser' });
 
@@ -180,9 +183,6 @@ Disposition.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' })
 DispositionPreset.hasMany(Disposition, { foreignKey: 'preset', sourceKey: 'id' });
 Disposition.belongsTo(DispositionPreset, { foreignKey: 'preset', targetKey: 'id' });
 
-User.hasMany(Absence, { foreignKey: 'user', sourceKey: 'id', as: 'User' });
-Absence.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
-
 AbsenceType.hasMany(Absence, { foreignKey: 'type', sourceKey: 'id' });
 Absence.belongsTo(AbsenceType, { foreignKey: 'type', targetKey: 'id' });
 
@@ -195,7 +195,7 @@ Contract.belongsTo(ContractType, { foreignKey: 'type', targetKey: 'id' });
 User.hasMany(TimeRecord, { foreignKey: 'user', sourceKey: 'id', as: 'TimeRecords' });
 TimeRecord.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
 
-User.hasMany(TimeRecord, { foreignKey: 'approver', sourceKey: 'id', as: 'TimeRecords' });
+User.hasMany(TimeRecord, { foreignKey: 'approver', sourceKey: 'id', as: 'ApprovedTimeRecords' });
 TimeRecord.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
 
 Project.hasMany(TimeRecord, { foreignKey: 'project', sourceKey: 'id' });

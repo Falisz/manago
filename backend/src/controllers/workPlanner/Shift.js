@@ -1,8 +1,8 @@
 // BACKEND/controller/workPlanner/Shift.js
+import {Op} from 'sequelize';
 import {JobLocation, JobPost, Schedule, Shift, User} from '#models';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
-import {Op} from "sequelize";
 
 // where fields start_time and end_time should have $gte and $lte operators respectively i.e.:
 // { start_time: { $gte: '2023-10-01T00:00:00Z' }, end_time: { $lte: '2023-10-31T23:59:59Z' }, job_post: 2, schedule: 5, user: 10 }

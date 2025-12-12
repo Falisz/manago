@@ -3,7 +3,7 @@ import {Schedule, Shift} from '#models';
 import {getAbsence, getShift, getUser} from "#controllers";
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
-import sequelize from '#utils/database';
+import sequelize from '#utils/database.js';
 
 /**
  * Retrieves one Working Schedule by its ID or all Schedules if an ID is not provided.

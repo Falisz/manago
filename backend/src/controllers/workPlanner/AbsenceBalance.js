@@ -1,6 +1,5 @@
 // BACKEND/controller/workPlanner/AbsenceBalance.js
 import {Op} from 'sequelize';
-import {updateAbsenceBalance} from '#controllers';
 import {
     Absence,
     AbsenceBalance,

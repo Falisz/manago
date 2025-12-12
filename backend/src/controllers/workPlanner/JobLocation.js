@@ -3,7 +3,7 @@ import {Op} from 'sequelize';
 import {JobLocation, Shift} from '#models';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
-import sequelize from "#utils/database";
+import sequelize from '#utils/database.js';
 
 /**
  * Retrieves one Job Location by its ID or all Job Locations if an ID is not provided.
