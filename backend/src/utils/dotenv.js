@@ -1,10 +1,12 @@
-// BACKEND/utils/validateEnv.js
+// BACKEND/utils/dotenv.js
+import dotenv from 'dotenv';
+dotenv.config({ quiet: true });
 
 /**
  * Validates that all required environment variables are present.
  * @throws {Error} If any required environment variables are missing
  */
-export function validateEnv() {
+function validateDotenv() {
     const requiredEnvVars = [
         'PORT',
         'JWT_ACCESS_SECRET',
@@ -20,3 +22,4 @@ export function validateEnv() {
         throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
 }
+validateDotenv();

@@ -1,7 +1,5 @@
 // BACKEND/utils/jwt.js
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'your-very-long-random-access-secret';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-even-longer-refresh-secret';

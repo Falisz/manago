@@ -1,6 +1,6 @@
 // BACKEND/api/checkJwt.js
 import checkAccess from '#utils/checkAccess.js';
-import { verifyAccessToken } from '#utils/jwt.js';
+import {generateAccessToken, verifyAccessToken, verifyRefreshToken} from '#utils/jwt.js';
 import { securityLog } from '#utils/securityLogs.js';
 
 /**
@@ -16,16 +16,37 @@ import { securityLog } from '#utils/securityLogs.js';
  */
 const checkJwtHandler = async (req, res, next) => {
     try {
-        const token = req.cookies?.access_token;
+        let userId;
 
-        if (!token)
-            return res.status(401).json({ message: 'Access denied. No token provided.' });
+        const access_token = req.cookies?.access_token;
 
-        const payload = verifyAccessToken(token);
-        const userId = payload.userId;
+        if (access_token) {
+            const payload = verifyAccessToken(access_token);
+            userId = payload.userId;
+            if (!userId)
+                return res.status(401).json({message: 'No User ID found in the Token provided.'});
 
-        if (!userId)
-            return res.status(401).json({ message: 'Access denied. No User ID found in the Token provided.' });
+        } else {
+            const refreshToken = req.cookies?.refresh_token;
+
+            if (!refreshToken)
+                return res.status(401).json({message: 'No User Tokens found.'});
+
+            const { userId } = verifyRefreshToken(refreshToken);
+
+            if (!userId)
+                return res.status(401).json({message: 'No User ID found in the Token provided!'});
+
+            const newAccessToken = generateAccessToken({ userId });
+
+            res.cookie('access_token', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 30 * 60 * 1000
+            });
+            await securityLog(userId, req.ip, 'Token Refresh', 'Success');
+        }
 
         req.user = userId;
         req.include_ppi = await checkAccess(userId, 'access', 'user-ppi');
