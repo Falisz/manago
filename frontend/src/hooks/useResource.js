@@ -170,7 +170,6 @@ const resourceConfigs = {
             if (id) {
                 url = `/leaves/${id}`;
             } else {
-                //eslint-disable-next-line
                 if (user)
                     queryParams.user = user;
                 else {

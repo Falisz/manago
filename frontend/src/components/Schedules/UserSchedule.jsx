@@ -414,7 +414,9 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                                     <LeaveItem
                                         key={leave.id}
                                         leave={leave}
-                                    /> : shifts.length > 0 ? shifts.map((shift, index) =>
+                                    /> : shifts.length > 0 ? shifts
+                                        .sort((a, b) => a.start_time.localeCompare(b.start_time))
+                                        .map((shift, index) =>
                                         <ShiftItem
                                             key={index}
                                             shift={shift}

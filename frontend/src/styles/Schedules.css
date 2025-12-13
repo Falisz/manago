@@ -60,6 +60,58 @@
     font-size: 2rem;
 }
 
+/* Schedule Day */
+.schedule-day {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 10px;
+    border-radius: var(--big-border-radius);
+}
+.schedule-day:hover {
+    background: var(--seethrough-background-2);
+}
+.schedule-day .day-tag {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-weight: 300;
+    font-size: 1.25rem;
+    margin: 0;
+    flex: 0 0 45%;
+}
+.schedule-day.weekend .day-tag {
+    color: var(--color);
+}
+.schedule-day.holiday .day-tag {
+    color: firebrick;
+}
+.schedule-day .day-content {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.schedule-day .schedule-item {
+    padding: 3px 5px;
+    border-radius: var(--def-border-radius);
+    cursor: pointer;
+}
+.schedule-day.empty  .schedule-item {
+    background-color: var(--text-color-3);
+    color: var(--background-color-3);
+    font-style: italic;
+    cursor: default;
+}
+.schedule-day.weekend.empty  .schedule-item {
+    background-color: var(--color);
+    color: var(--text-color-3);
+    font-style: normal;
+}
+.schedule-day.holiday  .schedule-item {
+    background-color: firebrick;
+}
+
 /* Schedules/Index.jsx */
 .schedule-draft-item {
     padding: 15px 10px;

@@ -31,21 +31,10 @@ export function formatDate (date) {
     return `${year}-${month}-${day}`;
 }
 
-export function formatTime (date) {
-    return new Date(date).toLocaleTimeString(
-        'pl-PL',
-        { hour: '2-digit', minute: '2-digit', hour12: false,}
-    );
-}
-
 export function sameDay (date1, date2) {
     return (
         date1.getUTCFullYear() === date2.getUTCFullYear() &&
         date1.getUTCMonth() === date2.getUTCMonth() &&
         date1.getUTCDate() === date2.getUTCDate()
     );
-}
-
-export function toUTCDate (s) {
-    return new Date(`${s}T00:00:00`);
 }
