@@ -5,17 +5,19 @@ import {Team, TeamUser} from '#models';
 import sequelize from '#utils/database.js';
 import randomId from '#utils/randomId.js';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
+import isNumber from "#utils/isNumber.js";
 
 /**
  * Retrieves one Team by its ID or all Team if ID is not provided.
- * @param {number} id - optional - Team ID to fetch a specific user
+ * @param {number} id - optional - Team ID to fetch a specific Team
  * @param {boolean} all - optional - Should all Teams be returned - regardless of top-parent structure.
+ * @param {number} user - optional - User ID to fetch Teams assigned to the User
  * @param {number|null} parent_team - optional - ID of the parent Team.
  * @param {boolean} get_subteams - optional - Should be Subteams fetched for the found Teams?
  * @param {boolean} get_members - optional - Should be members fetched for the found Teams?
  * @returns {Promise<Object|null>} Single Team or null
  */
-export async function getTeam({id, all=false, parent_team=null,
+export async function getTeam({id, all=false, user=null, parent_team=null,
                                   get_subteams=true, get_members=true} = {}) {
 
     async function expandTeam(team) {
@@ -38,36 +40,33 @@ export async function getTeam({id, all=false, parent_team=null,
         return team;
     }
 
-    // Logic if no ID is provided - fetch all Teams
-    if (!id || isNaN(id)) {
-        const teams = await Team.findAll({
-            where: all ? {} : { parent_team},
-            order: [['id', 'ASC']],
-            raw: true
-        });
-
-        if (!teams || teams.length === 0)
-            return [];
-
-        return await Promise.all(teams.map(team => expandTeam(team) ));
-
+    // Logic if the ID is provided - fetch a specific Team
+    if (isNumber(id)) {
+        const result = await Team.findByPk(id, {raw: true});
+        if (result.parent_team)
+            result.parent= await getTeam({id: result.parent_team,  get_subteams: false, get_members: false});
+        return expandTeam(result);
     }
 
-    // Logic if the ID is provided - fetch a specific Team
-    const team = await Team.findOne({ where: { id }, raw: true });
+    // Logic if no ID is provided - fetch all Teams
+    const where = {};
+    const include = [];
 
-    if (!team)
-        return null;
+    if (!all || !parent_team)
+        where.parent_team = parent_team;
 
-    if (team.parent_team)
-        team.parent= await getTeam({
-            id: team.parent_team,
-            get_subteams: false,
-            get_members: false
-        });
+    if (user)
+        include.push({model: TeamUser, where: {user: user}, required: true});
 
-    return await expandTeam(team);
+    const teams = await Team.findAll({ where, include, raw: true });
+
+    if (!teams || teams.length === 0)
+        return [];
+
+    return await Promise.all(teams.map(team => expandTeam(team) ));
 }
+
+export default getTeam
 
 /**
  * Creates a new Team.

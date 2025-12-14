@@ -30,7 +30,8 @@ const fetchHandler = async (req, res) => {
     try {
         const teams = await getTeam({
             id,
-            all: req.query.all === 'true'
+            all: req.query.all === 'true',
+            user: req.query.user,
         });
         
         if (req.params.id && !teams)
