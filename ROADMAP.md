@@ -1,11 +1,9 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### Work Planner and Users (till 14-12-25)
+### Work Planner and Users (till 21-12-25)
+- Fix User Refresh Token being not found.
 - WorkPlanner Dashboard UI:
-  - Your Schedule widget with 7 next days starting today. If the one of the days is weekend or holiday, it lets open a pop-up with Holiday/Weekend request form.
-  - Your Team Schedule widget with 7 next days starting today and Team selector.
-  - Schedule Draft index - as is.
-  - Pending Approvals - includes all pending approvals but only displays 5 items and if more then it says "+ N more..." which is link to the Approvals page.
+  - Pending Approvals - vertical list that includes all kinds of pending approvals but only displays 5 items and if more then it says "+ N more..." which is link to the Approvals page.
 - Schedule View:
   - Clicking on Day header with weekend or holiday on it opens a pop-up with Holiday/Weekend request form.
 - Leaves page UI:
@@ -20,7 +18,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Shift notes - added in shift edit, if they are present, shift item in schedule view should have small info icon in the corner.
 - Frontend implementation for Contracts, Contract Types
 
-### TimeSheets (till 21-12-25)
+### TimeSheets (till 28-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
 - Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
@@ -28,7 +26,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Payroll planning.
 - Timesheet approval and rejection.
 - Option for both employees and managers to autofill the timesheet based on published schedule.
-### Projects (till 31-12-25)
+### Projects (till 28-12-25)
 - Project Roles - different from company-wide user roles.
 - Access to different resources.
 ### Permissions (till 31-01-25)
