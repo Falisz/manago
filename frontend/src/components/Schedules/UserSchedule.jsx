@@ -115,7 +115,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
 };
 
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
-    const { openModal, setUnsavedChanges } = useNav();
+    const { openDialog, setUnsavedChanges } = useNav();
 
     const MENU_ID = 'schedule_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });
@@ -355,11 +355,13 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                         <span
                             className={'app-clickable'}
                             style={{fontWeight: 'bold'}}
-                            onClick={() =>  openModal({content: 'userDetails', contentId: user.id}) }
+                            onClick={() => openDialog({content: 'userDetails', contentId: user.id, closeButton: false})}
                         >
                             {user.first_name} {user.last_name}
                         </span>
-                        {user.team && <><br/><small>{user.team.name}: {user.role.name}</small></>}
+                        {user.team && <><br/><small className={'app-clickable'} onClick={
+                            () => openDialog({content: 'teamDetails', contentId: user.team.id, closeButton: false})
+                        }>{user.team.name}: {user.role.name}</small></>}
                     </td>
                     {dates?.map((date, dateIndex) => {
                         const dateStr = formatDate(date);

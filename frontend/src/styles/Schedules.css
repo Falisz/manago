@@ -1,8 +1,8 @@
 /* Schedules/Dashboard.jsx */
 .schedules-dashboard {
     display: grid;
-    grid-template-rows: 2fr 1fr;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 3fr 2fr;
+    grid-template-columns: 4fr 5fr 4fr;
     grid-template-areas:
         "a b c"
         "d d c";

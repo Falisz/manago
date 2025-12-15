@@ -4,8 +4,12 @@ import SchedulesIndex from './Index';
 import '../../styles/Schedules.css';
 import {formatDate, generateDateList} from "../../utils/dates";
 import useApp from "../../contexts/AppContext";
-import {useHolidays, useLeaves, useShifts} from "../../hooks/useResource";
+import {useHolidays, useLeaves, useShifts, useTeams} from "../../hooks/useResource";
 import useNav from "../../contexts/NavContext";
+import ComboBox from "../ComboBox";
+import useSchedules from "../../hooks/useSchedules";
+import Loader from "../Loader";
+import UserSchedule from "./UserSchedule";
 
 const YourSchedulePreview = () => {
 
@@ -99,7 +103,73 @@ const YourSchedulePreview = () => {
             })}
         </div>
     );
-}
+};
+
+const YourTeamSchedule = () => {
+    const { user, refreshTriggers } = useApp();
+    const { teams, fetchTeams } = useTeams();
+    const { schedule, loading, setLoading, getSchedule } = useSchedules();
+    const isMounted = useRef(false);
+
+    useEffect(() => {
+        fetchTeams({ all: true, user: user.id, members: false, subteams: false }).then();
+    }, [fetchTeams, user.id]);
+
+    useEffect(() => {
+        if (!isMounted.current) return;
+        const refresh = refreshTriggers?.shifts || refreshTriggers?.leaves || false;
+        if (refresh) delete refreshTriggers.shifts;
+        if (refresh) delete refreshTriggers.leaves;
+        if (schedule && refresh) getSchedule(schedule).then();
+    }, [isMounted, refreshTriggers, getSchedule, schedule]);
+
+    useEffect(() => {
+        if (isMounted.current || !teams)
+            return;
+
+        isMounted.current = true;
+
+        setLoading(true);
+
+        const DAY_IN_MS = 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        const start_date = formatDate(new Date(now));
+        const end_date = formatDate(new Date(now + 2 * DAY_IN_MS));
+
+        getSchedule({
+            name: 'Current Schedule',
+            start_date,
+            end_date,
+            user_scope: 'team',
+            user_scope_id: (teams.length && teams[0].id) || null
+        }).then();
+
+    }, [teams, user.id, setLoading, fetchTeams, getSchedule]);
+
+    const title = useMemo(() => {
+        const value = teams?.length > 1 ? 'Your' : teams?.find(t => t.id === schedule?.user_scope_id)?.name || 'Your'
+        return `${value} Team Schedule`
+    }, [teams, schedule]);
+
+    return (
+        <>
+            <div style={{display: 'flex', alignItems: 'center'}}>
+                <h1>{title}</h1>
+                {teams?.length > 1 ? <ComboBox
+                    placeholder={`Pick a Team`}
+                    name={'user_scope_id'}
+                    style={{marginLeft: 'auto'}}
+                    searchable={false}
+                    value={schedule?.user_scope_id || null}
+                    options={teams.map((team) => ({id: team.id, name: team.name}))}
+                    onChange={async (e) => await getSchedule({...schedule, user_scope_id: e.target.value})}
+                /> : null}
+            </div>
+            { teams && teams.length === 0 ? <p>No Teams to display.</p> :
+                loading ? <Loader/> : schedule && <UserSchedule schedule={schedule}/>}
+        </>
+    );
+};
 
 const SchedulesDashboard = () => {
     return (
@@ -108,8 +178,7 @@ const SchedulesDashboard = () => {
                 <YourSchedulePreview/>
             </div>
             <div className={'schedules-dashboard-widget your-team-schedule'}>
-                <h1>Your Team</h1>
-                <p>Here you can view brief schedule glance of dropdown chosen Team that you are part - next 3 days inc today.</p>
+                <YourTeamSchedule/>
             </div>
             <div className={'schedules-dashboard-widget schedule-drafts'}>
                 <SchedulesIndex />

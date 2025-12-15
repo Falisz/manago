@@ -123,8 +123,41 @@ const resourceConfigs = {
     },
     team: {
         ...defaultParams('teams'),
-        fetchParams: { id: null, all: false, loading: true, reload: false, map: false },
-        deleteParams: { id: null, cascade: false },
+        fetchParams: { id: null, all: false, user: null, parent: null, subteams: true, members: true, loading: true,
+            reload: false, map: false },
+        buildUrl: (params = {}) => {
+
+            const { id, all, user, parent, subteams, members } = params;
+
+            let url = '/teams';
+
+            if (id) {
+                url = `/teams/${id}`;
+            } else {
+                const queryParams = {};
+
+                if (all != null)
+                    queryParams.all = all;
+
+                if (user != null)
+                    queryParams.user = user;
+
+                if (parent != null)
+                    queryParams.parent = parent;
+
+                if (subteams != null)
+                    queryParams.subteams = subteams;
+
+                if (members != null)
+                    queryParams.members = members;
+
+                if(Object.keys(queryParams).length)
+                    url = '/teams?' + new URLSearchParams(queryParams).toString();
+            }
+
+            return url;
+        },
+        deleteParams: { id: null, cascade: false }
     },
     user: {
         ...defaultParams('users'),
@@ -244,6 +277,7 @@ const useResource = (resource) => {
         try {
             setLoading(showLoading);
             const url = config.buildUrl(params);
+            console.log(params, url);
 
             if (!url)
                 return null;

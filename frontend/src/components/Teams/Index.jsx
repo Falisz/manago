@@ -155,7 +155,7 @@ const TeamsIndex = () => {
             label: 'Assign Members', 
             selectionMode: true,
             onClick: (selectedTeams) => openModal({
-                content: 'teamUserBulkAssignment', 
+                content: 'teamUserAssignment',
                 style: {overflow: 'unset'},
                 type: 'dialog', 
                 data: teams.filter(team => selectedTeams.has(team.id))
