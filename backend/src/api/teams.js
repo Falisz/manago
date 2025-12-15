@@ -20,7 +20,7 @@ import deleteResource from '#utils/deleteResource.js';
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
-    const { id } = req.params;
+    const id = parseInt(req.params?.id);
 
     const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
 
@@ -28,11 +28,29 @@ const fetchHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        const teams = await getTeam({
-            id,
-            all: req.query.all === 'true',
-            user: req.query.user,
-        });
+        const query = {};
+        if (id) {
+            query.id = id;
+        } else {
+
+            if (req.query.all != null)
+                query.all = !['false', 'no', '0', 'n'].includes(req.query.all.toLowerCase());
+
+            if (req.query.user != null)
+                query.user = parseInt(req.query.user);
+
+            if (req.query.parent != null)
+                query.parent_team = parseInt(req.query.parent_team);
+
+            if (req.query.subteams != null)
+                query.get_subteams = !['false', 'no', '0', 'n'].includes(req.query.subteams.toLowerCase());
+
+            if (req.query.members != null)
+                query.get_members = !['false', 'no', '0', 'n'].includes(req.query.members.toLowerCase());
+
+        }
+
+        const teams = await getTeam(query);
         
         if (req.params.id && !teams)
             return res.status(404).json({ message: 'Team not found.' });
