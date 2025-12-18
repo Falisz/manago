@@ -51,7 +51,7 @@ const fetchHandler = async (req, res) => {
             query.user = parseInt(req.query.user);
 
         if (req.query.managed)
-            query.user = getUser({scope: 'manager', scope_id: parseInt(req.query.managed)})
+            query.user = (await getUser({scope: 'manager', scope_id: parseInt(req.query.managed)})).map(u => u.id);
 
         if (req.query.date)
             query.date = req.query.date;
