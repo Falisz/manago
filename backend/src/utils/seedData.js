@@ -220,6 +220,12 @@ const appPages = [
                             "component": "LeavesIndex"
                         },
                         {
+                            "path": "approvals",
+                            "title": "Approvals",
+                            "icon": "",
+                            "component": "ApprovalsIndex"
+                        },
+                        {
                             "path": "settings",
                             "title": "Settings",
                             "icon": "",
@@ -581,6 +587,7 @@ const teams = [
     {id: 7, code_name: '02-LV', name: 'Las Vegas', parent_team: 2},
     {id: 8, code_name: '03-AT', name: 'Atlanta', parent_team: 3},
     {id: 9, code_name: '03-PH', name: 'Philadelphia', parent_team: 3},
+    {id: 10, code_name: 'MGR', name: 'Managers' },
 ];
 
 const teamRoles = [
@@ -590,6 +597,12 @@ const teamRoles = [
 ];
 
 const teamUsers = [
+    {team: 10, user: 100001, role: 3},
+    {team: 10, user: 100002, role: 1},
+    {team: 10, user: 100003, role: 1},
+    {team: 10, user: 100004, role: 1},
+    {team: 10, user: 100005, role: 1},
+    {team: 10, user: 100006, role: 1},
     // Parent team managers (role 2)
     {team: 1, user: 100004, role: 3},
     {team: 2, user: 100005, role: 3},
