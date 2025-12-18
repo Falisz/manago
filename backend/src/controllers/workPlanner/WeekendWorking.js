@@ -4,8 +4,26 @@ import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
 
 export async function getWeekendWorking({id, user, date} = {}) {
-    if (id && !isNaN(id))
-        return await WeekendWorking.findByPk(id, { raw: true});
+    const include = [
+        { model: User, as: 'WeekendWorkingUser', attributes: ['id', 'first_name', 'last_name'] },
+        { model: RequestStatus, attributes: ['id', 'name']}
+    ];
+
+    const flatten = (record) => {
+        if (!record)
+            return null;
+        const result = record.toJSON();
+        result.user = record['WeekendWorkingUser']?.toJSON();
+        result.status = record['RequestStatus']?.toJSON();
+        delete result['WeekendWorkingUser'];
+        delete result['RequestStatus'];
+        return result;
+    };
+
+    if (id && !isNaN(id)) {
+        const record = await WeekendWorking.findByPk(id, {include});
+        return flatten(record);
+    }
 
     const where = {};
 
@@ -15,12 +33,9 @@ export async function getWeekendWorking({id, user, date} = {}) {
     if (date)
         where.date = date;
 
-    const workings = await WeekendWorking.findAll({ where, raw: true });
+    const result = await WeekendWorking.findAll({ where, include });
+    return result.map(record => flatten(record));
 
-    if (!workings?.length)
-        return [];
-
-    return workings;
 }
 
 export async function createWeekendWorking(data) {

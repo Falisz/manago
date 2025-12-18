@@ -4,8 +4,29 @@ import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
 
 export async function getHolidayWorking({id, user, holiday} = {}) {
-    if (id && !isNaN(id))
-        return await HolidayWorking.findByPk(id, {raw: true});
+    const include = [
+        { model: User, as: 'HolidayWorkingUser', attributes: ['id', 'first_name', 'last_name']},
+        { model: Holiday, attributes: ['id', 'date', 'name'] },
+        { model: RequestStatus, attributes: ['id', 'name']}
+    ];
+
+    const flatten = (record) => {
+        if (!record)
+            return null;
+        const result = record.toJSON();
+        result.user = record['HolidayWorkingUser']?.toJSON();
+        result.holiday = record['Holiday']?.toJSON();
+        result.status = record['RequestStatus']?.toJSON();
+        delete result['HolidayWorkingUser'];
+        delete result['Holiday'];
+        delete result['RequestStatus'];
+        return result;
+    };
+
+    if (id && !isNaN(id)) {
+        const record = await HolidayWorking.findByPk(id, {include});
+        return flatten(record);
+    }
 
     const where = {};
 
@@ -15,12 +36,8 @@ export async function getHolidayWorking({id, user, holiday} = {}) {
     if (holiday)
         where.holiday = holiday;
 
-    const workings = await HolidayWorking.findAll({ where, raw: true });
-
-    if (!workings?.length)
-        return [];
-
-    return workings;
+    const result = await HolidayWorking.findAll({ where, include });
+    return result.map(record => flatten(record));
 }
 
 export async function createHolidayWorking(data) {
