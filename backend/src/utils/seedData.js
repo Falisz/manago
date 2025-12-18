@@ -4,7 +4,7 @@ import sequelize from '#utils/database.js';
 import {
     AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, AbsenceType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
-    UserPermission, UserRole
+    UserPermission, UserRole, HolidayWorking, WeekendWorking
 } from '#models';
 
 // Data to seed
@@ -936,6 +936,18 @@ const absences = [
     { id: 201, type: 100, start_date: '2025-12-15', status: 2, user: 100008, approver: 100004 }
 ];
 
+const holidayWorkings = [
+    { holiday: 12, user: 100002, status: 1 },
+    { holiday: 13, user: 100002, status: 1 },
+    { holiday: 13, user: 100003, status: 1 },
+    { holiday: 14, user: 100003, status: 1 }
+];
+
+const weekendWorkings = [
+    { date: '2025-12-20', user: 100002, status: 1 },
+    { date: '2025-12-21', user: 100003, status: 1 },
+];
+
 const channels = [
     { id:1, name: 'General Discussion' },
     { id:2, name: 'Announcements' },
@@ -988,6 +1000,8 @@ const seedStructure = [
     { model: Shift, tableName: 'shifts', data: shifts, itemsName: 'shifts' },
     { model: Holiday, tableName: 'holidays', data: holidays, itemsName: 'holidays' },
     { model: RequestStatus, tableName: 'request_statuses', data: requestStatuses, itemsName: 'request statuses' },
+    { model: HolidayWorking, tableName: 'holiday_workings', data: holidayWorkings, itemsName: 'holiday working agreements' },
+    { model: WeekendWorking, tableName: 'weekend_workings', data: weekendWorkings, itemsName: 'weekend working agreements' },
     { model: AbsenceType, tableName: 'absence_types', data: absenceTypes, itemsName: 'absence types' },
     { model: Absence, tableName: 'absences', data: absences, itemsName: 'absences' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },
