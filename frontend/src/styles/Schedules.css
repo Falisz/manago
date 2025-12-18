@@ -10,11 +10,13 @@
     padding: 10px;
     flex-wrap: wrap;
     height: calc(100% - 20px);
+    width: calc(100% - 20px);
     overflow: hidden;
 }
 .app.fluent .schedules-dashboard {
     padding: 0;
     height: 100%;
+    width: 100%;
     gap: 10px;
 }
 .schedules-dashboard-widget {
@@ -30,7 +32,7 @@
     background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
 }
-.schedules-dashboard .your-schedules {
+.schedules-dashboard .your-schedule {
     grid-area: a;
 }
 .schedules-dashboard .your-team-schedule {
@@ -191,4 +193,61 @@
 }
 .app-schedule-content {
     overflow: auto;
+}
+
+.your-schedule-preview {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.approvals-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(10vw, 1fr));
+    gap: 10px;
+    overflow: auto hidden;
+    height: 100%;
+}
+.approval-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 15px;
+    background: var(--background-gradient);
+    border-radius: var(--def-border-radius);
+}
+.app.fluent .approval-item-item {
+    border-radius: var(--big-border-radius);
+    box-shadow: var(--weak-shade);
+    background: var(--seethrough-background-2);
+}
+.approval-item h2 {
+    margin: 0 0 auto 0;
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+.approval-item p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.more-approvals {
+    display: flex;
+    padding: 15px;
+    background: var(--background-color-3);
+    border-radius: var(--def-border-radius);
+    font-size: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: ease-in-out 0.3s;
+}
+.app.fluent .more-approvals {
+    border-radius: var(--big-border-radius);
+    box-shadow: var(--weak-shade);
+    background: var(--seethrough-background-2);
+}
+.more-approvals:hover {
+    opacity: 1;
 }

@@ -232,18 +232,15 @@ const resourceConfigs = {
                 return res?.data || null;
             }
         }
-    },
-    jobPost: {
-        ...defaultParams('job-posts'),
-        fetchParams: { id: null, include_shifts: false, loading: true, reload: false, map: false },
     }
 };
 
 /**
  * @param resource {string} - The singular name of the resource written with camelCase, used for other names.
+ * @param debug {boolean} - The bool flag to enable debug output.
  * @returns {Object} - An object containing states and callback to manage the resource data.
  */
-const useResource = (resource) => {
+const useResource = (resource, debug = false) => {
     if (!resource || typeof resource !== 'string')
         throw new Error('useResource requires a string resource parameter');
 
@@ -277,7 +274,7 @@ const useResource = (resource) => {
         try {
             setLoading(showLoading);
             const url = config.buildUrl(params);
-            console.log(params, url);
+            debug && console.log(params, url);
 
             if (!url)
                 return null;
@@ -313,7 +310,7 @@ const useResource = (resource) => {
         setData(result);
         setLoading(false);
         return result;
-    }, [name, config, resourceCache, showPopUp]);
+    }, [name, config, resourceCache, showPopUp, debug]);
 
     /**
      * Save data for a resource by ID.
@@ -529,17 +526,19 @@ const useResource = (resource) => {
     };
 };
 
-export const useUsers = () => useResource('user');
-export const useRoles = () => useResource('role');
-export const useTeams = () => useResource('team');
-export const useProjects = () => useResource('project');
-export const useBranches = () => useResource('branch');
-export const usePermissions = () => useResource('permission');
-export const useScheduleDrafts = () => useResource('schedule');
-export const useShifts = () => useResource('shift');
-export const useLeaves = () => useResource('leave');
-export const useLeaveTypes = () => useResource('leaveType');
-export const useJobPosts = () => useResource('jobPost');
-export const useJobLocations = () => useResource('jobLocation');
-export const useHolidays = () => useResource('holiday');
-export const useRequestStatuses = () => useResource('requestStatus');
+export const useUsers = ({debug}={}) => useResource('user', debug);
+export const useRoles = ({debug}={}) => useResource('role', debug);
+export const useTeams = ({debug}={}) => useResource('team', debug);
+export const useProjects = ({debug}={}) => useResource('project', debug);
+export const useBranches = ({debug}={}) => useResource('branch', debug);
+export const usePermissions = ({debug}={}) => useResource('permission', debug);
+export const useScheduleDrafts = ({debug}={}) => useResource('schedule', debug);
+export const useShifts = ({debug}={}) => useResource('shift', debug);
+export const useLeaves = ({debug}={}) => useResource('leave', debug);
+export const useLeaveTypes = ({debug}={}) => useResource('leaveType', debug);
+export const useHolidayWorkings = ({debug}={}) => useResource('holidayWorking', debug);
+export const useWeekendWorkings = ({debug}={}) => useResource('weekendWorking', debug);
+export const useJobPosts = ({debug}={}) => useResource('jobPost', debug);
+export const useJobLocations = ({debug}={}) => useResource('jobLocation', debug);
+export const useHolidays = ({debug}={}) => useResource('holiday', debug);
+export const useRequestStatuses = ({debug}={}) => useResource('requestStatus', debug);

@@ -4,12 +4,20 @@ import SchedulesIndex from './Index';
 import '../../styles/Schedules.css';
 import {formatDate, generateDateList} from "../../utils/dates";
 import useApp from "../../contexts/AppContext";
-import {useHolidays, useLeaves, useShifts, useTeams} from "../../hooks/useResource";
+import {
+    useHolidays,
+    useHolidayWorkings,
+    useLeaves,
+    useShifts,
+    useTeams,
+    useWeekendWorkings
+} from "../../hooks/useResource";
 import useNav from "../../contexts/NavContext";
 import ComboBox from "../ComboBox";
 import useSchedules from "../../hooks/useSchedules";
 import Loader from "../Loader";
 import UserSchedule from "./UserSchedule";
+import {useNavigate} from "react-router-dom";
 
 const YourSchedulePreview = () => {
 
@@ -38,70 +46,73 @@ const YourSchedulePreview = () => {
     }, [fetchHolidays, fetchShifts, fetchLeaves, user.id, today, next7Days]);
 
     return (
-        <div className={'your-schedule-preview your-schedule app-scroll app-overflow-y'}>
+        <>
             <h1>Your Schedule</h1>
             {loading && <p>Loading...</p>}
-            {!loading && range.map((date, index) => {
+            {!loading && <div className={'your-schedule-preview app-scroll app-overflow-y'}>
+                {range.map((date, index) => {
 
-                const strDate = formatDate(date);
-                const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const dayOfWeek = weekdayNames[date.getDay()];
-                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                const holiday = holidays?.find(holiday => holiday.date === strDate);
-                const todayShifts = shifts?.filter(shift => shift.date === strDate)
-                    .sort((a, b) => a.start_time.localeCompare(b.start_time));
-                const leave = leaves?.find(leave => leave.start_date === strDate ||
-                    (new Date(leave.end_date) >= date && new Date(leave.start_date) <= date));
+                    const strDate = formatDate(date);
+                    const weekdayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                    const dayOfWeek = weekdayNames[date.getDay()];
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                    const holiday = holidays?.find(holiday => holiday.date === strDate);
+                    const todayShifts = shifts?.filter(shift => shift.date === strDate)
+                        .sort((a, b) => a.start_time.localeCompare(b.start_time));
+                    const leave = leaves?.find(leave => leave.start_date === strDate ||
+                        (new Date(leave.end_date) >= date && new Date(leave.start_date) <= date));
 
-                const empty = !holiday && !todayShifts?.length && !leave;
+                    const empty = !holiday && !todayShifts?.length && !leave;
 
-                return (
-                    <div
-                        key={index}
-                        className={'schedule-day'
-                            + (isWeekend ? ' weekend' : '')
-                            + (holiday ? ' holiday' : '')
-                            + (empty ? ' empty' : '')
-                        }
-                    >
-                        <span className={'day-tag'}>{formatDate(date)} | {dayOfWeek}</span>
-                        <div className={'day-content'}>
-                            {holiday && <span
-                                className={'schedule-item'}
-                                onClick={() => openDialog(
-                                    {content: 'holidayDetails', contentId: holiday.id, closeButton: false}
-                                )}
-                            >
-                                {holiday.name}
-                            </span>}
-                            {leave && <span
-                                className={'schedule-item'}
-                                style={{background: leave.type?.color || '#000000'}}
-                                onClick={() => openDialog(
-                                    {content: 'leaveDetails', contentId: leave.id, closeButton: false}
-                                )}
-                            >
-                                {leave.type?.name}
-                            </span>}
-                            {todayShifts?.map((shift, index) =>
-                                <span
-                                    key={index}
+                    return (
+                        <div
+                            key={index}
+                            className={'schedule-day'
+                                + (isWeekend ? ' weekend' : '')
+                                + (holiday ? ' holiday' : '')
+                                + (empty ? ' empty' : '')
+                            }
+                        >
+                            <span className={'day-tag'}>{formatDate(date)} | {dayOfWeek}</span>
+                            <div className={'day-content'}>
+                                {holiday && <span
                                     className={'schedule-item'}
-                                    style={{background: shift.job_post?.color || '#000000'}}
                                     onClick={() => openDialog(
-                                        {content: 'shiftDetails', contentId: shift.id, closeButton: false}
+                                        {content: 'holidayDetails', contentId: holiday.id, closeButton: false}
                                     )}
                                 >
+                                {holiday.name}
+                            </span>}
+                                {leave && <span
+                                    className={'schedule-item'}
+                                    style={{background: leave.type?.color || '#000000'}}
+                                    onClick={() => openDialog(
+                                        {content: 'leaveDetails', contentId: leave.id, closeButton: false}
+                                    )}
+                                >
+                                {leave.type?.name}
+                            </span>}
+                                {todayShifts?.map((shift, index) =>
+                                        <span
+                                            key={index}
+                                            className={'schedule-item'}
+                                            style={{background: shift.job_post?.color || '#000000'}}
+                                            onClick={() => openDialog(
+                                                {content: 'shiftDetails', contentId: shift.id, closeButton: false}
+                                            )}
+                                        >
                                     {shift.job_post?.name || 'Shift'}&nbsp;
-                                    ({shift.start_time.slice(0,5)} - {shift.end_time.slice(0,5)})
+                                            ({shift.start_time.slice(0, 5)} - {shift.end_time.slice(0, 5)})
                                 </span>
-                            )}
-                            {empty && <span className={'schedule-item'}>{isWeekend ? 'Weekend' : 'Nothing planned'}</span>}
+                                )}
+                                {empty && <span
+                                    className={'schedule-item'}>{isWeekend ? 'Weekend' : 'Nothing planned'}</span>}
+                            </div>
                         </div>
-                    </div>
-                );
-            })}
-        </div>
+                    );
+                })}
+            </div>}
+        </>
     );
 };
 
@@ -171,6 +182,131 @@ const YourTeamSchedule = () => {
     );
 };
 
+const ApprovalItem = ({approval}) => {
+
+    const { openDialog } = useNav();
+
+    if (!approval)
+        return null;
+
+    const { id, type, name, type_color, date, end_date, user, status } = approval;
+
+    const handleClick = () => {
+        if (type === 'absence')
+            openDialog({content: 'leaveDetails', contentId: id, closeButton: false});
+        else if (type === 'holidayWorking')
+            openDialog({content: 'holidayWorkingDetails', contentId: id, closeButton: false});
+        else if (type === 'weekendWorking')
+            openDialog({content: 'weekendDetails', contentId: id, closeButton: false});
+    };
+
+    const color = type === 'absence' ? type_color : type === 'holidayWorking' ? 'firebrick' : 'var(--color)';
+
+    return (
+        <div className={'approval-item app-clickable'} onClick={handleClick}>
+            <h2 style={{color}}>{name}</h2>
+            <p>{user.first_name} {user.last_name}</p>
+            <p>{date}{end_date && ` - ${end_date}`}</p>
+            <p><i>{status?.name || 'Unknown status'}</i></p>
+        </div>
+    );
+};
+
+const PendingApprovals = () => {
+    const { user, refreshTriggers } = useApp();
+    const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
+    const { holidayWorkings, loading: holidayWorkingLoading, fetchHolidayWorkings } = useHolidayWorkings();
+    const { weekendWorkings, loading: weekendWorkingLoading, fetchWeekendWorkings } = useWeekendWorkings();
+    const loading = useMemo(() => leavesLoading || holidayWorkingLoading || weekendWorkingLoading,
+        [leavesLoading, holidayWorkingLoading, weekendWorkingLoading]);
+    const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (!user.id) return;
+
+        const refreshLeave = refreshTriggers?.leaves || refreshTriggers?.aleave || false;
+        if (refreshLeave) { delete refreshTriggers.leaves; delete refreshTriggers.aleave; }
+        if (refreshLeave || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();
+
+        const refreshHW = refreshTriggers?.holidayWorking || false;
+        if (refreshHW) delete refreshTriggers.holidayWorking;
+        if (refreshHW || !weekendWorkings) fetchHolidayWorkings({ managed: user.id }).then();
+
+        const refreshWW = refreshTriggers?.weekendWorking || false;
+        if (refreshWW) delete refreshTriggers.weekendWorking;
+        if (refreshWW || !holidayWorkings) fetchWeekendWorkings({ managed: user.id }).then();
+
+    }, [user.id, refreshTriggers, leaves, fetchLeaves, weekendWorkings, fetchWeekendWorkings, holidayWorkings,
+        fetchHolidayWorkings]);
+
+    const pendingApprovals = useMemo(() => {
+        if (!leaves || !weekendWorkings || !holidayWorkings)
+            return [];
+
+        const getDay = (str) => {
+            const date = new Date(str);
+            const day = date.getDay();
+            return day === 0 ? 'Sunday' : 'Saturday';
+        };
+
+        return [
+            ...leaves.filter(l=> [1, 4].includes(l.status.id)).map(l => ({
+                id: l.id,
+                type: 'absence',
+                type_color: l.type?.color,
+                name: l.type?.name || 'Leave',
+                status: l.status,
+                user: l.user,
+                date: l.start_date,
+                end_date: l.end_date
+            })),
+            ...weekendWorkings.filter(l=> [1, 4].includes(l.status.id)).map(ww => ({
+                id: ww.id,
+                type: 'weekendWorking',
+                name: getDay(ww.date) + ' Working',
+                status: ww.status,
+                user: ww.user,
+                date: ww.date,
+            })),
+            ...holidayWorkings.filter(l=> [1, 4].includes(l.status.id)).map(hw => ({
+                hw: hw.id,
+                type: 'holidayWorking',
+                name: (hw.holiday?.name || 'Holiday') + ' Working',
+                status: hw.status,
+                user: hw.user,
+                date: hw.holiday?.date,
+            }))
+        ];
+    }, [leaves, weekendWorkings, holidayWorkings]);
+
+    console.log();
+    return (
+        <>
+            <h1>Pending Approvals</h1>
+            {loading && <Loader/>}
+            {!loading && !pendingApprovals?.length && <span>No pending approvals.</span>}
+            {!loading && pendingApprovals &&
+                <div className={'approvals-list app-scroll app-overflow-x'}>
+                    {pendingApprovals.slice(0,4).map((approval, key) =>
+                        <ApprovalItem key={key} approval={approval}/>
+                    )}
+                    {pendingApprovals.slice(4).length > 0 ?
+                        pendingApprovals.slice(4).length === 1 ?
+                            <ApprovalItem key={4} approval={pendingApprovals[4]}/> :
+                            <div
+                                className={'more-approvals app-clickable'}
+                                onClick={() => navigate('/schedules/approvals')}
+                            >
+                                +{pendingApprovals.slice(4).length} more
+                            </div> :
+                        null
+                    }
+                </div>
+            }
+        </>
+    );
+};
+
 const SchedulesDashboard = () => {
     return (
         <div className={'schedules-dashboard app-scroll'}>
@@ -184,8 +320,7 @@ const SchedulesDashboard = () => {
                 <SchedulesIndex />
             </div>
             <div className={'schedules-dashboard-widget pending-approvals'}>
-                <h1>Pending Approvals</h1>
-                <p>Oncoming Leaves/Holiday Working to approve or reject...</p>
+                <PendingApprovals />
             </div>
         </div>
     );
