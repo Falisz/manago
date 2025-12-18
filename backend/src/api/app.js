@@ -32,8 +32,7 @@ const ACCESS_TOKEN_OPTIONS = {
 };
 const REFRESH_TOKEN_OPTIONS = {
     ...ACCESS_TOKEN_OPTIONS,
-    sameSite: 'strict',
-    path: '/refresh'
+    sameSite: 'strict'
 };
 
 // API Handlers
