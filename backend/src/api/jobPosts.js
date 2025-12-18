@@ -21,7 +21,6 @@ import deleteResource from '#utils/deleteResource.js';
  */
 const fetchHandler = async (req, res) => {
     const { id } = req.params;
-    let query = {};
 
     try {
         if (id) {
@@ -30,16 +29,13 @@ const fetchHandler = async (req, res) => {
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
 
-            query.id = id;
-        } else {
-            if (req.query.include_shifts)
-                query.user = parseInt(req.query.include_shifts);
+            const result = await getJobPost({ id: parseInt(id) });
+
+            if (!result)
+                return res.status(404).json({ message: 'Job Post not found.' });
         }
 
-        const job_posts = await getJobPost(query);
-
-        if (id && !job_posts)
-            return res.status(404).json({ message: 'Job Post not found.' });
+        const job_posts = await getJobPost();
 
         res.json(job_posts);
 
