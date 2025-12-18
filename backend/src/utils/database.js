@@ -1,5 +1,7 @@
 // BACKEND/utils/database.js
 import Sequelize from 'sequelize';
+import dotenv from 'dotenv';
+dotenv.config({ quiet: true });
 
 /**
  * Sequelize instance for database connection
