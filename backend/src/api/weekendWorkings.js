@@ -70,12 +70,17 @@ const fetchHandler = async (req, res) => {
  * POST /api/weekend-workings
  */
 const createHandler = async (req, res) => {
-    const { hasAccess } = await checkAccess(req.user, 'create', 'weekend-working');
-    if (!hasAccess)
-        return res.status(403).json({ message: 'Not permitted.' });
 
     try {
         const data = req.body;
+        if (!data)
+            return res.status(400).json({ message: 'No data provided.' });
+
+        const { hasAccess } = await checkAccess(req.user, data.status === 1 ? 'request' : 'create', 'weekend-working');
+        if (!hasAccess)
+            return res.status(403).json({ message: 'Not permitted.' });
+
+        data.user = req.user;
 
         const { success, message, id } = await createWeekendWorking(data);
         if (!success)

@@ -23,6 +23,11 @@ export const WeekendWorking = sequelize.define('WeekendWorking', {
         type: DataTypes.INTEGER,
         references: { model: User, key: 'id' }
     },
+    date_created: DataTypes.DATE,
+    date_requested: DataTypes.DATE,
+    date_approved: DataTypes.DATE,
+    date_rejected: DataTypes.DATE,
+    date_cancelled: DataTypes.DATE,
     user_note: DataTypes.TEXT,
     approver_note: DataTypes.TEXT
 }, {

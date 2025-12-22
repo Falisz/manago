@@ -23,6 +23,7 @@ export const Absence = sequelize.define('Absence', {
     date_requested: DataTypes.DATE,
     date_approved: DataTypes.DATE,
     date_rejected: DataTypes.DATE,
+    date_to_be_cancelled: DataTypes.DATE,
     date_cancelled: DataTypes.DATE,
     status: {
         type: DataTypes.INTEGER,

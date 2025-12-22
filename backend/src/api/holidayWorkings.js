@@ -77,17 +77,18 @@ const fetchHandler = async (req, res) => {
  * @param {express.Response} res
  */
 const createHandler = async (req, res) => {
-
-    const { hasAccess } = await checkAccess(req.user, 'create', 'holiday-working');
-
-    if (!hasAccess)
-        return res.status(403).json({message: 'Not permitted.'});
-
     try {
         const data = req.body;
+        if (!data)
+            return res.status(400).json({ message: 'No data provided.' });
+
+        const { hasAccess } = await checkAccess(req.user, data.status === 1 ? 'request' : 'create', 'holiday-working');
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
+
+        data.user = req.user;
 
         const { success, message, id } = await createHolidayWorking(data);
-
         if (!success)
             return res.status(400).json({ message });
 
@@ -112,6 +113,13 @@ const updateHandler = async (req, res) => {
 
     try {
         const data = req.body;
+        if (!data)
+            return res.status(400).json({ message: 'No data provided.' });
+
+        const { status } = data;
+
+        if ([2, 3, 5].includes(status))
+            data.approver = req.user;
 
         const { hasAccess } = await checkAccess(req.user, 'update', 'holiday-working', id);
 
