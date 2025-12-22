@@ -351,7 +351,7 @@ const ScheduleView = () => {
         }
 
         return (
-            <div className={'app-schedule seethrough'}>
+            <section className={'schedule-view'}>
                 <Helmet>
                     <title>Schedule Preview | MANAGO</title>
                 </Helmet>
@@ -370,7 +370,7 @@ const ScheduleView = () => {
                         linkLabel={'Return'}
                     />)
                 }
-            </div>
+            </section>
         );
     }
 
@@ -381,7 +381,7 @@ const ScheduleView = () => {
     if (['monthly', 'jobs'].includes(schedule?.view))
         scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
 
-    return <div className={'app-schedule seethrough'}>
+    return <section className={'schedule-view'}>
         <Helmet>
             <title>Current Schedule | MANAGO</title>
         </Helmet>
@@ -401,7 +401,7 @@ const ScheduleView = () => {
                 <JobPostSchedule schedule={schedule}/> :
             <InWorks icon={'error'} title={'Cannot view Schedule'} description={'Invalid view type provided'} />
         }
-    </div>
+    </section>
 };
 
 export default ScheduleView;

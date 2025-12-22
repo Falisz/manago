@@ -2,7 +2,7 @@
 import React, {useCallback, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import {useLeaves} from '../../hooks/useResource';
+import {useLeaves, useLeaveTypes} from '../../hooks/useResource';
 import Button from '../Button';
 import Loader from '../Loader';
 import Table from '../Table';
@@ -58,6 +58,55 @@ const LeaveItem = ({leave}) => {
     );
 };
 
+const YourBalance = () => {
+
+    const { fetchLeaveBalance } = useLeaves();
+    const { leaveTypes, fetchLeaveTypes } = useLeaveTypes();
+    const [ leaveBalance, setLeaveBalance ] = React.useState({});
+
+    React.useEffect(() => {
+        fetchLeaveTypes().then();
+        fetchLeaveBalance().then(res => setLeaveBalance(res));
+    }, [fetchLeaveTypes, fetchLeaveBalance, setLeaveBalance]);
+
+    const yourBalance = useMemo(() => {
+        return leaveTypes?.map( leave => ({...leave, ...leaveBalance[leave.id]}) );
+    }, [leaveTypes, leaveBalance]);
+
+    const fields = useMemo(() => ({
+        0: {
+            name: 'name',
+            label: 'Leave Type'
+        },
+        1: {
+            name: 'totalBalance',
+            label: 'Total Balance',
+            placeholder: '-'
+        },
+        2: {
+            name: 'usedBalance',
+            label: 'Used Balance'
+        },
+        3: {
+            name: 'availableBalance',
+            label: 'Available Balance',
+            placeholder: '-'
+        }
+    }), [])
+
+    return (
+        <>
+            <h1>Your Leave Balance</h1>
+            <Table
+                data={yourBalance}
+                fields={fields}
+                compact
+                transparent
+            />
+        </>
+    );
+};
+
 const YourLeaves = () => {
     const { user, refreshTriggers } = useApp();
     const { openDialog } = useNav();
@@ -70,35 +119,35 @@ const YourLeaves = () => {
     }, [fetchLeaves, leaves, refreshTriggers, user.id]);
 
     return (
-        <div className={'your-leaves-section  seethrough'}>
-            <div className={'your-leaves-section-header'}>
+        <>
+            <div className={'header'}>
                 <h1>Your Leaves</h1>
-                <div className={'header-buttons'}>
-                    <Button
-                        label={'New Leave'}
-                        onClick={() => openDialog({content: 'leaveNew', style:{ width: 'calc(100% - 200px)'}})}
-                    />
-                </div>
+                <Button
+                    label={'New Leave'}
+                    onClick={() => openDialog({content: 'leaveNew', style:{ width: 'calc(100% - 200px)'}})}
+                />
             </div>
             <div className={'leaves-container app-scroll'}>
                 {loading && <Loader/>}
-                {!loading && leaves?.map(leave =>
+                {!loading && leaves
+                    ?.slice()
+                    .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
+                    .map(leave =>
                     <LeaveItem key={leave.id} leave={leave}/>)}
             </div>
-        </div>
+        </>
     );
 };
 
-const OthersLeaves = ({requests}) => {
+const ReporteeLeaves = ({requests}) => {
     const { user, refreshTriggers } = useApp();
     const { openDialog, openPopUp, closeTopModal } = useNav();
     const { leaves, loading, fetchLeaves, saveLeave } = useLeaves();
 
     React.useEffect(() => {
         if (!user.id) return;
-        const refresh = refreshTriggers?.leaves || refreshTriggers?.aleave || false;
+        const refresh = refreshTriggers?.leaves || false;
         if (refresh) delete refreshTriggers.leaves;
-        if (refresh) delete refreshTriggers.aleave;
         if (refresh || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();
     }, [fetchLeaves, leaves, refreshTriggers, user.id]);
 
@@ -164,31 +213,35 @@ const OthersLeaves = ({requests}) => {
     }), [requests, handleApproval, openDialog]);
 
     return (
-        <Table
-            header={requests ?
-                {title: 'Leave Requests'} :
-                {title: 'Users Leaves', itemName: 'Leave', newItemModal: 'userLeaveNew'}
-            }
-            className={requests ? 'leave-requests-table' : 'leave-reportees-table'}
-            data={leaves?.filter(leave =>
-                requests ? [1, 4].includes(leave.status.id) : [2, 3, 5].includes(leave.status.id))}
-            fields={fields}
-            dataPlaceholder={'No leave requests found.'}
-            loading={loading}
-        />
+        <>
+            <h1>Your Reportees' Leaves</h1>
+            <Table
+                className={requests ? 'leave-requests-table' : 'leave-reportees-table'}
+                data={leaves}
+                fields={fields}
+                dataPlaceholder={'No leave requests found.'}
+                loading={loading}
+                compact
+                transparent
+            />
+        </>
     );
 
 };
-const LeaveRequests = () => <OthersLeaves requests />;
-const ReporteesLeaves = () => <OthersLeaves/>
 
 const LeavesIndex = () => {
     return (
-        <div className={'leaves-page'}>
-            <YourLeaves/>
-            <LeaveRequests/>
-            <ReporteesLeaves/>
-        </div>
+        <>
+            <section className={'your-leaves'}>
+                <YourLeaves/>
+            </section>
+            <section className={'your-leave-balance'}>
+                <YourBalance/>
+            </section>
+            <section className={'reportee-leaves'}>
+                <ReporteeLeaves/>
+            </section>
+        </>
     );
 };
 

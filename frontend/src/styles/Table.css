@@ -71,7 +71,7 @@
 .app-table-header-cell-label {
     font-size: 1.4rem;
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: 400;
     font-family: var(--font-family-condensed), sans-serif;
 }
 .app-table-header .app-table-header-cell-actions {

@@ -223,7 +223,7 @@ const TableField = ({field, data, selectionMode}) => {
             content = value ?? 0;
             break;
         default:
-            content = value ?? '';
+            content = value ?? field.placeholder ?? '';
     }
 
     return (
@@ -348,7 +348,7 @@ const TableMenu = ({id, contextMenuActions, selectionMode, handleSelect, selecte
  */
 const Table = ({
                    className,
-                   style,
+                   style = {}, compact, transparent, wide,
                    data,
                    fields,
                    subRowFields,
@@ -360,7 +360,7 @@ const Table = ({
                    selectableRows = false,
                    contextMenuActions,
                    loading = false,
-                   dataPlaceholder = null,
+                   dataPlaceholder = null
                }) => {
 
     const [filters, setFilters] = useState({});
@@ -536,7 +536,22 @@ const Table = ({
     }
 
     const selectionMode = selectedItems?.size > 0;
-    
+
+    if (compact) {
+        style.padding = 0;
+        style.height = '100%';
+    }
+
+    if (transparent) {
+        style.background = 'none';
+        style.border = 'none';
+        style.boxShadow = 'none';
+    }
+
+    if (wide) {
+        style.width = '100%';
+    }
+
     return (
         <div
             className={`app-table seethrough app-overflow-hidden${selectionMode ? ' selection-mode' : ''}`+

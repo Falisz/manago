@@ -115,6 +115,11 @@ const ManagerView = () => {
 
     const pageTitle = currentSubPage?.title || currentMainPage?.title || null;
 
+    const mainClass = currentMainPage?.path !== '/' ? currentMainPage?.path : 'home';
+    const subClass = mainClass !== 'home' ? currentSubPage?.path ? currentSubPage?.path : 'index' : '';
+
+    const pageClass = `${mainClass}${subClass ? ' ' + subClass : ''}`
+
     return (
         <>
             <Helmet>
@@ -130,7 +135,7 @@ const ManagerView = () => {
                 currentMainPage={currentMainPage}
                 location={location}
             />
-            <main className={`app-content ${currentMainPage?.path}`}>
+            <main className={pageClass}>
                 <Outlet />
             </main>
         </>

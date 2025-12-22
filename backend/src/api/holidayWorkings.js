@@ -5,7 +5,6 @@ import {
     createHolidayWorking,
     updateHolidayWorking,
     deleteHolidayWorking,
-    getWeekendWorking,
     getUser
 } from '#controllers';
 import checkResourceIdHandler from '#middleware/checkResourceId.js';
@@ -33,7 +32,7 @@ const fetchHandler = async (req, res) => {
 
     try {
         if (id) {
-            const result = await getWeekendWorking({ id: parseInt(id) });
+            const result = await getHolidayWorking({ id: parseInt(id) });
 
             if (!result)
                 return res.status(404).json({ message: 'Holiday Working Agreement not found.' });
@@ -117,7 +116,6 @@ const updateHandler = async (req, res) => {
             return res.status(400).json({ message: 'No data provided.' });
 
         const { status } = data;
-
         if ([2, 3, 5].includes(status))
             data.approver = req.user;
 

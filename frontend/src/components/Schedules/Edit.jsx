@@ -266,6 +266,7 @@ const ScheduleEdit = () => {
         getSchedule({start_date, end_date, user_scope, user_scope_id }).then();
 
         if (paramMissing) {
+            setLoading(false);
             setMode('new');
             openEditForm();
         } else {

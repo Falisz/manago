@@ -16,6 +16,7 @@ import InWorks from '../components/InWorks';
 import PopUps from '../components/PopUps';
 import WorkPlannerSettings from '../components/WorkPlannerSettings';
 import setupAxiosInterceptor from "../utils/interceptors";
+import ApprovalsIndex from "../components/Approvals/Index";
 
 setupAxiosInterceptor();
 
@@ -31,7 +32,8 @@ const COMPONENT_MAP = {
     LeavesIndex,
     WorkPlannerSettings,
     PostsIndex,
-    AppSettings
+    AppSettings,
+    ApprovalsIndex
 };
 
 const mapPagesToComponents = (pages) => {
@@ -77,7 +79,8 @@ export const AppProvider = ({ children }) => {
         aleave: null,
         leaves: null,
         teams: null,
-        holidays: null
+        holidays: null,
+        holidayWorkings: null
     });
 
     // State and Ref setters
@@ -330,7 +333,7 @@ export const AppProvider = ({ children }) => {
         } catch (err) {
             showPopUp({ type: 'error', content: err.response?.data?.message || 'Logout failed.' });
         }
-    }, [setUser]);
+    }, [setUser, showPopUp]);
 
     useEffect(() => {
         checkConnection().then();

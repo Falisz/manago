@@ -8,7 +8,7 @@ import Button from '../Button';
 import Loader from '../Loader';
 import '../../styles/Schedules.css';
 
-const SchedulesIndex = () => {
+const SchedulesIndex = ({header}) => {
     const { refreshTriggers, refreshData } = useApp();
     const { openModal, closeTopModal } = useNav();
     const { schedules, fetchSchedules, deleteSchedule, loading  } = useScheduleDrafts();
@@ -51,14 +51,14 @@ const SchedulesIndex = () => {
     }, [refreshTriggers.schedules, schedules, fetchSchedules]);
 
     return <>
-        <div className={'header'}>
+        {header && <div className={'header'}>
             <h1>Schedule Drafts</h1>
             <Button
                 icon={'add'}
                 label={'Plan new Schedule'}
                 onClick={() => editSchedule()}
             />
-        </div>
+        </div>}
         <div className={'content app-scroll'}>
             { loading ? <Loader/> :
                 schedules && schedules.length > 0 && schedules.map((schedule, idx) =>

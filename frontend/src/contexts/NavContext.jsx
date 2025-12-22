@@ -15,7 +15,8 @@ import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {UserAssignment} from '../components/Users/Edit';
-import SpecialDay from '../components/Schedules/SpecialDay';
+import DateDetails from '../components/Schedules/DateDetails';
+import {HolidayWorking, WeekendWorking} from "../components/Schedules/SpecialWorkingDetails";
 
 const ANIMATION_DURATION = 300;
 
@@ -111,13 +112,31 @@ const MODALS = {
     },
     holidayDetails: {
         urlParam: 'holiday',
-        component: (modal) => <SpecialDay holidayId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <DateDetails holidayId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    dateDetails: {
+        urlParam: 'date',
+        component: (modal) => <DateDetails date={modal.contentId} modal={modal.id} />,
         type: 'dialog',
         closeButton: false
     },
     weekendDetails: {
         urlParam: 'weekend',
-        component: (modal) => <SpecialDay date={modal.contentId} modal={modal.id} />,
+        component: (modal) => <DateDetails date={modal.contentId} modal={modal.id} />,
+        type: 'dialog',
+        closeButton: false
+    },
+    holidayWorking: {
+        urlParam: 'holidayWorking',
+        component: (modal) => <HolidayWorking id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    weekendWorking: {
+        urlParam: 'weekendWorking',
+        component: (modal) => <WeekendWorking id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },

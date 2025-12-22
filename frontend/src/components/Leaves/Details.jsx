@@ -2,16 +2,13 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import {useLeaves, useRequestStatuses} from '../../hooks/useResource';
+import {useLeaves} from '../../hooks/useResource';
 import Details from '../Details';
 
 const LeaveDetails = ({ id, modal }) => {
     const { refreshData, refreshTriggers, user } = useApp();
     const { openPopUp, openDialog } = useNav();
     const { leave, loading, fetchLeave, saveLeave, deleteLeave } = useLeaves();
-    const { fetchRequestStatuses } = useRequestStatuses();
-
-    useEffect(() => { fetchRequestStatuses(); }, [fetchRequestStatuses]);
 
     useEffect(() => {
         const reload = refreshTriggers?.aleave?.data === parseInt(id);

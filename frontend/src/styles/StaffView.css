@@ -145,7 +145,7 @@
 /*************/
 /*APP CONTENT*/
 /*************/
-.app.staff .app-content {
+.app.staff main {
     display: flex;
     position: relative;
     flex: 1;
@@ -156,7 +156,7 @@
     overflow-y: auto;
     overflow-x: hidden;
 }
-.app.staff.fluent .app-content {
+.app.staff.fluent main {
     padding: 0;
 }
 

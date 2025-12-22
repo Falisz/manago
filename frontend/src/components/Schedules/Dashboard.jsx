@@ -19,7 +19,7 @@ import Loader from "../Loader";
 import UserSchedule from "./UserSchedule";
 import {useNavigate} from "react-router-dom";
 
-const YourSchedulePreview = () => {
+const YourSchedulePreview = ({header}) => {
 
     const { user } = useApp();
     const { openDialog } = useNav();
@@ -47,7 +47,7 @@ const YourSchedulePreview = () => {
 
     return (
         <>
-            <h1>Your Schedule</h1>
+            {header && <h1>Your Schedule</h1>}
             {loading && <p>Loading...</p>}
             {!loading && <div className={'your-schedule-preview app-scroll app-overflow-y'}>
                 {range.map((date, index) => {
@@ -120,7 +120,7 @@ const YourSchedulePreview = () => {
     );
 };
 
-const YourTeamSchedule = () => {
+const YourTeamSchedule = ({header}) => {
     const { user, refreshTriggers } = useApp();
     const { teams, fetchTeams } = useTeams();
     const { schedule, loading, setLoading, getSchedule } = useSchedules();
@@ -168,8 +168,8 @@ const YourTeamSchedule = () => {
 
     return (
         <>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <h1>{title}</h1>
+            <div className={'header'}>
+                {header && <h1>{title}</h1>}
                 {teams?.length > 1 ? <ComboBox
                     placeholder={`Pick a Team`}
                     name={'user_scope_id'}
@@ -193,15 +193,15 @@ const ApprovalItem = ({approval}) => {
     if (!approval)
         return null;
 
-    const { id, type, name, type_color, date, end_date, user, status, holiday } = approval;
+    const { id, type, name, type_color, date, end_date, user, status } = approval;
 
     const handleClick = () => {
         if (type === 'absence')
             openDialog({content: 'leaveDetails', contentId: id, closeButton: false});
         else if (type === 'holidayWorking')
-            openDialog({content: 'holidayWorkingDetails', contentId: holiday, closeButton: false});
+            openDialog({content: 'holidayWorking', contentId: id, closeButton: false});
         else if (type === 'weekendWorking')
-            openDialog({content: 'weekendDetails', contentId: date, closeButton: false});
+            openDialog({content: 'weekendWorking', contentId: id, closeButton: false});
     };
 
     const color = type === 'absence' ? type_color : type === 'holidayWorking' ? 'firebrick' : 'var(--color)';
@@ -216,7 +216,7 @@ const ApprovalItem = ({approval}) => {
     );
 };
 
-const PendingApprovals = () => {
+const PendingApprovals = ({header}) => {
     const { user, refreshTriggers } = useApp();
     const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
     const { holidayWorkings, loading: holidayWorkingLoading, fetchHolidayWorkings } = useHolidayWorkings();
@@ -273,11 +273,10 @@ const PendingApprovals = () => {
                 date: ww.date,
             })),
             ...holidayWorkings.filter(l=> [1, 4].includes(l.status.id)).map(hw => ({
-                hw: hw.id,
+                id: hw.id,
                 type: 'holidayWorking',
                 name: (hw.holiday?.name || 'Holiday') + ' Working',
                 status: hw.status,
-                holiday: hw.holiday?.id,
                 user: hw.user,
                 date: hw.holiday?.date,
             }))
@@ -287,7 +286,7 @@ const PendingApprovals = () => {
     console.log();
     return (
         <>
-            <h1>Pending Approvals</h1>
+            {header && <h1>Pending Approvals</h1>}
             {loading && <Loader/>}
             {!loading && !pendingApprovals?.length && <span>No pending approvals.</span>}
             {!loading && pendingApprovals &&
@@ -314,20 +313,20 @@ const PendingApprovals = () => {
 
 const SchedulesDashboard = () => {
     return (
-        <div className={'schedules-dashboard app-scroll'}>
-            <div className={'schedules-dashboard-widget your-schedule'}>
-                <YourSchedulePreview/>
-            </div>
-            <div className={'schedules-dashboard-widget your-team-schedule'}>
-                <YourTeamSchedule/>
-            </div>
-            <div className={'schedules-dashboard-widget schedule-drafts'}>
-                <SchedulesIndex />
-            </div>
-            <div className={'schedules-dashboard-widget pending-approvals'}>
-                <PendingApprovals />
-            </div>
-        </div>
+        <>
+            <section className={'your-schedule'}>
+                <YourSchedulePreview header/>
+            </section>
+            <section className={'your-team-schedule'}>
+                <YourTeamSchedule header/>
+            </section>
+            <section className={'schedule-drafts'}>
+                <SchedulesIndex header/>
+            </section>
+            <section className={'pending-approvals'}>
+                <PendingApprovals header/>
+            </section>
+        </>
     );
 };
 
