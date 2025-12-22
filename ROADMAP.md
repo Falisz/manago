@@ -1,10 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### Work Planner and Users (till 21-12-25) 
-- Special days detail view and working request and Schedule View
-  - Clicking on Day header with weekend or holiday on it opens a pop-up with Holiday/Weekend request form. It respectably opens, "weekend" and "holiday" details modal that shows whether you are working on this day - option to request working on this day.
-  - If more permissions owned option to list people who also work on that day.
-- Schedule View proper handling of invalid IDs for /view/ and /edit/ - now they accept strings like and other wrong IDs.
+### Work Planner and Users (till 21-12-25)
 - Leaves page UI:
   - Your Leaves widget - left vertical half, list of your leaves.
   - Your Leave Balance widget - right top quarter summary for Leave Balances for the balance selectable from the top. Button to request a Weekend/Holiday working.

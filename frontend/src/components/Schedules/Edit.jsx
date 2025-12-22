@@ -12,6 +12,7 @@ import Loader from '../Loader';
 import UserSchedule from './UserSchedule';
 import '../../styles/Schedules.css';
 import Modal from "../Modal";
+import NotFound from "../NotFound";
 
 export const ScheduleEditForm = ({ schedule, setSchedule, handleSave, isNew, isEmpty }) => {
     const { appState } = useApp();
@@ -184,6 +185,8 @@ const ScheduleEdit = () => {
     const { scheduleId } = useParams();
     const {
         schedule,
+        loading,
+        setLoading,
         setSchedule,
         updateUserShift,
         getSchedule,
@@ -249,6 +252,8 @@ const ScheduleEdit = () => {
             return;
         }
 
+        setLoading(true);
+
         const from = params.get('from');
         const start_date = from && !isNaN(Date.parse(from)) ? from : null;
         const to = params.get('to');
@@ -267,37 +272,45 @@ const ScheduleEdit = () => {
             setMode('current');
         }
 
-    }, [isMounted, appCache, params, scheduleId, getSchedule, openEditForm, fetchJobPosts]);
+    }, [isMounted, appCache, setLoading, params, scheduleId, getSchedule, openEditForm, fetchJobPosts]);
 
     return (
         <div className={'app-schedule seethrough'}>
-            <ScheduleHeader
-                schedule={schedule}
-                mode={mode}
-                discardChanges={discardChanges}
-                openEditForm={openEditForm}
-                handleSave={handleSave}
-                publishSchedule={() => publishSchedule(schedule, isNew)}
-            />
-            {schedule ? <UserSchedule
-                schedule={schedule}
-                updateUserShift={updateUserShift}
-                editable={true}
-                jobPosts={jobPosts}
-            /> : <Loader/>}
-            <Modal
-                type={'dialog'}
-                onClose={closeEditForm}
-                isVisible={showModal}
-            >
-                <ScheduleEditForm
+            { loading && <Loader/> }
+            { !loading && (schedule ? <>
+                <ScheduleHeader
                     schedule={schedule}
-                    setSchedule={setSchedule}
+                    mode={mode}
+                    discardChanges={discardChanges}
+                    openEditForm={openEditForm}
                     handleSave={handleSave}
-                    isNew={isNew}
-                    isEmpty={isEmpty}
+                    publishSchedule={() => publishSchedule(schedule, isNew)}
                 />
-            </Modal>
+                <UserSchedule
+                    schedule={schedule}
+                    updateUserShift={updateUserShift}
+                    editable={true}
+                    jobPosts={jobPosts}
+                />
+                <Modal
+                    type={'dialog'}
+                    onClose={closeEditForm}
+                    isVisible={showModal}
+                >
+                    <ScheduleEditForm
+                        schedule={schedule}
+                        setSchedule={setSchedule}
+                        handleSave={handleSave}
+                        isNew={isNew}
+                        isEmpty={isEmpty}
+                    />
+                </Modal>
+            </> : <NotFound
+                title={'Schedule not Found'}
+                description={' '}
+                linkPath={'/schedules'}
+                linkLabel={'Return'}
+            />)}
         </div>
     );
 }

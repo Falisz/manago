@@ -14,6 +14,7 @@ import MonthlySchedule from './MonthlySchedule';
 import UserSchedule from './UserSchedule';
 import {formatDate} from '../../utils/dates';
 import '../../styles/Schedules.css';
+import NotFound from "../NotFound";
 
 const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
 
@@ -129,9 +130,12 @@ const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
 
     const { publishSchedule } = useSchedules();
 
+    if (!schedule)
+        return null;
+
     return (
         <div className={'app-schedule-header'}>
-            <h1>Draft Preview: {schedule?.name}</h1>
+            <h1>Draft Preview: {schedule.name}</h1>
             <div
                 className={'form-content'}
                 style={{
@@ -147,7 +151,7 @@ const DraftViewHeader = ({schedule, editSchedule, userScope, scopeName}) => {
                 <div className={'form-group'}>
                     <label>Date Range</label>
                     <span style={{padding: '8px', whiteSpace: 'nowrap'}}>
-                        {schedule?.start_date} - {schedule?.end_date}
+                        {schedule.start_date} - {schedule.end_date}
                     </span>
                 </div>
             </div>
@@ -238,8 +242,7 @@ const ScheduleView = () => {
             navigate('/schedules/edit/' + scheduleId);
 
         else
-            navigate('/schedules/edit?current=true' +
-                `&from=${schedule.start_date}&to=${schedule.end_date}` +
+            navigate(`/schedules/edit?from=${schedule.start_date}&to=${schedule.end_date}` +
                 `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`);
 
     }, [scheduleId, schedule, navigate]);
@@ -358,7 +361,15 @@ const ScheduleView = () => {
                     userScope={userScope}
                     scopeName={scopeName()}
                 />
-                { schedule ? <UserSchedule schedule={schedule}/> : <Loader/> }
+                { loading && <Loader/> }
+                { !loading && (schedule ? <UserSchedule schedule={schedule}/> :
+                    <NotFound
+                        title={'Schedule not Found'}
+                        description={' '}
+                        linkPath={'/schedules'}
+                        linkLabel={'Return'}
+                    />)
+                }
             </div>
         );
     }

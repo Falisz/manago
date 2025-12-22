@@ -31,15 +31,31 @@ const fetchHandler = async (req, res) => {
         return res.status(403).json({message: 'Not permitted.'});
 
     try {
-        const schedules = await getSchedule({
-            id: id != null ? parseInt(id) : undefined,
-            author: req.query.author != null ? parseInt(req.query.author) : undefined,
-            start_date: req.query.start_date ? new Date(req.query.start_date) : undefined,
-            end_date: req.query.end_date ? new Date(req.query.end_date+'T23:59') : undefined
-        });
+        if (id) {
+            if (isNaN(id))
+                return res.status(404).json({ message: 'Invalid ID.' });
 
-        if (id && !schedules)
-            return res.status(404).json({ message: 'Schedule not found.' });
+            const schedule = await getSchedule({id});
+
+            if (!schedule)
+                return res.status(404).json({ message: 'Schedule not found.' });
+
+            return res.json(schedule);
+        }
+
+        const { author, start_date, end_date } = req.query;
+        const query = {};
+
+        if (author)
+            query.author = parseInt(author);
+
+        if (start_date)
+            query.start_date = new Date(start_date);
+
+        if (end_date)
+            query.end_date = new Date(end_date);
+
+        const schedules = await getSchedule(query);
 
         res.json(schedules);
 

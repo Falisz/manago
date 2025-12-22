@@ -8,7 +8,7 @@ import {useUsers, useLeaves, useShifts, useScheduleDrafts} from './useResource';
 
 const useSchedules = () => {
     const { showPopUp } = useApp();
-    const { openPopUp, setUnsavedChanges, closeTopModal } = useNav();
+    const { openPopUp, setUnsavedChanges } = useNav();
     const { fetchUsers } = useUsers();
     const { fetchLeaves } = useLeaves();
     const { fetchShifts } = useShifts();
@@ -151,8 +151,10 @@ const useSchedules = () => {
         if (id) {
             setLoading(loading);
             const schedule = await fetchSchedule({id});
-            schedule.view = view;
-            schedule.users = mapUsers(schedule.shifts, schedule.users);
+            if (schedule) {
+                schedule.view = view;
+                schedule.users = mapUsers(schedule.shifts, schedule.users);
+            }
             setSchedule(schedule);
             loading && setLoading(false);
             return schedule;
@@ -301,21 +303,19 @@ const useSchedules = () => {
             content: 'confirm',
             message,
             onConfirm: () => {
-                saveSchedule({ schedule, publish: true}).then();
                 setUnsavedChanges(false);
-                closeTopModal();
-                navigate(viewPath);
+                saveSchedule({ schedule, publish: true}).then();
+                setTimeout(() => navigate(viewPath), 500);
             },
             confirmLabel: showWarning ? 'Publish without overwriting' : isNew ? 'Re-publish' : 'Publish',
             onConfirm2: showWarning ? () => {
-                saveSchedule({ schedule, publish: true, overwrite: true}).then();
                 setUnsavedChanges(false);
-                closeTopModal();
-                navigate(viewPath);
+                saveSchedule({ schedule, publish: true, overwrite: true}).then();
+                setTimeout(() => navigate(viewPath), 500);
             } : null,
             confirmLabel2: showWarning ? 'Publish overwriting current Schedule' : null,
         });
-    }, [saveSchedule, fetchShifts, openPopUp, setUnsavedChanges, closeTopModal, navigate]);
+    }, [saveSchedule, fetchShifts, openPopUp, setUnsavedChanges, navigate]);
 
     const discardSchedule = useCallback( async (id) => id && deleteSchedule({id}), [deleteSchedule]);
 

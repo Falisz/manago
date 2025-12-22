@@ -301,15 +301,24 @@ const useResource = (resource, debug = false) => {
                 result = new Map(result.map(item => [item.id, item]));
             }
 
+            setData(result);
+            setLoading(false);
+            return result;
+
         } catch (err) {
             console.error(`fetch${name[id ? 2 : 3]} error:`, err);
-            const message = `Error occurred while fetching the ${name[id ? 2 : 3]} data.`;
-            showPopUp({ type: 'error', content: message });
-        }
 
-        setData(result);
-        setLoading(false);
-        return result;
+            const { response } = err;
+            let message = `Error occurred while fetching the ${name[id ? 2 : 3]} data.`;
+            if (response?.data?.message)
+                message += ' ' + response.data.message;
+
+            showPopUp({ type: 'error', content: message });
+
+            setData(null);
+            setLoading(false);
+            return null;
+        }
     }, [name, config, resourceCache, showPopUp, debug]);
 
     /**
