@@ -7,6 +7,7 @@ import ComboBox from '../ComboBox';
 import {generateDateList, formatDate, sameDay} from '../../utils/dates';
 import '../../styles/UserSchedule.css';
 import InWorks from "../InWorks";
+import {useHolidays} from "../../hooks/useResource";
 
 
 const LeaveItem = ({ leave }) => {
@@ -116,6 +117,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
 
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
     const { openDialog, setUnsavedChanges } = useNav();
+    const { holidays, fetchHolidays } = useHolidays();
 
     const MENU_ID = 'schedule_context_menu';
     const { show } = useContextMenu({ id: MENU_ID, });
@@ -292,16 +294,10 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
         updateUserShift({ shift, action: 'delete' });
     };
 
-    const holidays = [
-        {
-            date: new Date('2025-10-31'),
-            name: 'Holiday #2'
-        },
-        {
-            date: new Date('2025-10-16'),
-            name: 'Holiday #1'
-        }
-    ]
+    React.useEffect(() => {
+        fetchHolidays().then();
+    }, [fetchHolidays]);
+
     if (!schedule.start_date || !schedule.end_date)
         return <InWorks
             icon={'calendar_clock'}
@@ -325,18 +321,27 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                     const shortDay = dayNames[dayIdx];
                     const formattedDate = formatDate(date);
 
-                    const isDate = holidays.find(holiday => sameDay(holiday.date, date));
+                    const isHoliday = holidays?.find(holiday => sameDay(new Date(holiday.date), date));
+                    const isWeekend = dayIdx === 0 || dayIdx === 6;
+
+                    const onClick = () => {
+                        if (isHoliday)
+                            openDialog({content: 'holidayDetails', contentId: isHoliday.id, closeButton: false});
+                        else if (isWeekend)
+                            openDialog({content: 'weekendDetails', contentId: formattedDate, closeButton: false});
+                    }
 
                     return (
                         <th
                             key={formattedDate}
                             data-date={formattedDate}
-                            className={'day-header' + (dayIdx === 0 || dayIdx === 6 ? ' weekend' :
-                                isDate ? ' holiday' : '')}
+                            className={'day-header' + (isWeekend ? ' app-clickable weekend' :
+                                isHoliday ? ' app-clickable holiday' : '')}
+                            onClick={onClick}
                         >
                             <div className='date'>{formattedDate}</div>
-                            <div className='short-day' title={dayIdx === 0 || dayIdx === 6 ? 'Weekend' :
-                                isDate ? isDate.name : ''}>{shortDay}</div>
+                            <div className='short-day' title={isWeekend ? 'Weekend' :
+                                isHoliday ? isHoliday.name : ''}>{shortDay}</div>
                         </th>
                     );
                 })}

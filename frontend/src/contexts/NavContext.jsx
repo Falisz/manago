@@ -15,6 +15,7 @@ import TeamDetails from '../components/Teams/Details';
 import TeamEdit, {TeamAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {UserAssignment} from '../components/Users/Edit';
+import SpecialDay from '../components/Schedules/SpecialDay';
 
 const ANIMATION_DURATION = 300;
 
@@ -105,6 +106,18 @@ const MODALS = {
     leaveDetails: {
         urlParam: 'leave',
         component: (modal) => <LeaveDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    holidayDetails: {
+        urlParam: 'holiday',
+        component: (modal) => <SpecialDay holidayId={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    weekendDetails: {
+        urlParam: 'weekend',
+        component: (modal) => <SpecialDay date={modal.contentId} modal={modal.id} />,
         type: 'dialog',
         closeButton: false
     },

@@ -20,7 +20,6 @@ const ConfirmPrompt = ({
     };
 
     const confirm2Action = () => {
-        closeTopModal();
         setTimeout(() => {onConfirm2()}, 350);
     };
 

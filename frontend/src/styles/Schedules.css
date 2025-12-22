@@ -109,6 +109,7 @@
     background-color: var(--color);
     color: var(--text-color-3);
     font-style: normal;
+    cursor: pointer;
 }
 .schedule-day.holiday  .schedule-item {
     background-color: firebrick;

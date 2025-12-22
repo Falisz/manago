@@ -106,7 +106,11 @@ const YourSchedulePreview = () => {
                                 </span>
                                 )}
                                 {empty && <span
-                                    className={'schedule-item'}>{isWeekend ? 'Weekend' : 'Nothing planned'}</span>}
+                                    className={'schedule-item'}
+                                    onClick={isWeekend ? () => openDialog(
+                                        {content: 'weekendDetails', contentId: formatDate(date), closeButton: false}
+                                    ) : null}
+                                >{isWeekend ? 'Weekend' : 'Nothing planned'}</span>}
                             </div>
                         </div>
                     );
@@ -189,15 +193,15 @@ const ApprovalItem = ({approval}) => {
     if (!approval)
         return null;
 
-    const { id, type, name, type_color, date, end_date, user, status } = approval;
+    const { id, type, name, type_color, date, end_date, user, status, holiday } = approval;
 
     const handleClick = () => {
         if (type === 'absence')
             openDialog({content: 'leaveDetails', contentId: id, closeButton: false});
         else if (type === 'holidayWorking')
-            openDialog({content: 'holidayWorkingDetails', contentId: id, closeButton: false});
+            openDialog({content: 'holidayWorkingDetails', contentId: holiday, closeButton: false});
         else if (type === 'weekendWorking')
-            openDialog({content: 'weekendDetails', contentId: id, closeButton: false});
+            openDialog({content: 'weekendDetails', contentId: date, closeButton: false});
     };
 
     const color = type === 'absence' ? type_color : type === 'holidayWorking' ? 'firebrick' : 'var(--color)';
@@ -273,6 +277,7 @@ const PendingApprovals = () => {
                 type: 'holidayWorking',
                 name: (hw.holiday?.name || 'Holiday') + ' Working',
                 status: hw.status,
+                holiday: hw.holiday?.id,
                 user: hw.user,
                 date: hw.holiday?.date,
             }))

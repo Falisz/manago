@@ -331,6 +331,9 @@ const useResource = (resource, debug = false) => {
             else
                 res = await axios.put(config.buildUrl({id}), data);
 
+            if (debug)
+                console.log(id, data, res);
+
             if (!res)
                 return null;
 
@@ -373,7 +376,7 @@ const useResource = (resource, debug = false) => {
 
             return null;
         }
-    }, [showPopUp, openModal, refreshData, name, config, resourceCache]);
+    }, [showPopUp, openModal, refreshData, name, config, resourceCache, debug]);
 
     /**
      * Save assignment data for a resource by ID.
