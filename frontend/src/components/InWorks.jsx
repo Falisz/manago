@@ -3,11 +3,27 @@ import {Link, useLocation} from 'react-router-dom';
 import useNav from '../contexts/NavContext';
 import Icon from './Icon';
 
-export const InWorks = ({ title, icon, description = null, modal, hideReturnLink = false }) => {
+export const InWorks = ({
+                            className,
+                            style = {},
+                            transparent,
+                            title,
+                            icon,
+                            description = null,
+                            modal,
+                            hideReturnLink = false
+}) => {
     const location = useLocation();
     const { closeTopModal } = useNav();
+
+    if (transparent) {
+        style.background = 'none';
+        style.border = 'none';
+        style.boxShadow = 'none';
+    }
+
     return (
-        <div className='app-notice app-in-works'>
+        <div className={`app-notice app-in-works${className ? ` ${className}` : ''}`} style={style}>
             <Icon className={'main-icon'} i={icon ? icon : 'manufacturing'} s={true} />
             <h3>{title}</h3>
             { description ?

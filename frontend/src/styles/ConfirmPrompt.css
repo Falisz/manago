@@ -3,6 +3,15 @@
     flex-direction: column;
     gap: 10px;
 }
+.confirm-prompt textarea {
+    outline: none;
+    border: none;
+    border-radius: var(--def-border-radius);
+    padding: 5px;
+}
+.fluent .confirm-prompt textarea {
+    border-radius: var(--big-border-radius);
+}
 .confirm-prompt-buttons {
     display: flex;
     flex-direction: row-reverse;

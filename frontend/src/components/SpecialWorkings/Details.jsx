@@ -35,16 +35,16 @@ const SpecialWorkingDetails = ({id, holiday, weekend, modal}) => {
         const message = discard ?
             `Are you sure you want to delete this ${holiday ? 'Holiday' : 'Weekend'} Working Agreement? This action cannot be undone.` :
             `Are you sure you want to request for cancellation of this ${holiday ? 'Holiday' : 'Weekend'} Working Agreement?`;
-        const onConfirm = async () => {
+        const onConfirm = async (note) => {
             if (holiday) {
                 if (discard) await deleteHolidayWorking({id});
-                else await saveHolidayWorking({id, data: {status: 4}});
+                else await saveHolidayWorking({id, data: {status: 4, user_note: note}});
             } else {
                 if (discard) await deleteWeekendWorking({id});
-                else await saveWeekendWorking({id, data: {status: 4}});
+                else await saveWeekendWorking({id, data: {status: 4, user_note: note}});
             }
         }
-        openPopUp({content: 'confirm', message, onConfirm});
+        openPopUp({content: 'confirm', input: !discard, message, onConfirm});
     }, [id, holiday, agreement, saveHolidayWorking, deleteHolidayWorking, saveWeekendWorking, deleteWeekendWorking,
         openPopUp]);
 
@@ -55,9 +55,10 @@ const SpecialWorkingDetails = ({id, holiday, weekend, modal}) => {
         openPopUp({
             content: 'confirm',
             message: `Are you sure you want to ${action} this Leave request?`,
-            onConfirm: async () => {
-                if (holiday) await saveHolidayWorking({id, data: {status}});
-                else await saveWeekendWorking({id, data: {status}});
+            input: true,
+            onConfirm: async (note) => {
+                if (holiday) await saveHolidayWorking({id, data: {status, approver_note: note}});
+                else await saveWeekendWorking({id, data: {status, approver_note: note}});
             }
         });
     }, [holiday, openPopUp, saveHolidayWorking, saveWeekendWorking]);
@@ -126,20 +127,6 @@ const SpecialWorkingDetails = ({id, holiday, weekend, modal}) => {
 
     const sections = useMemo(() => ({
         0: {
-            fields: {
-                0: {
-                    label: 'User',
-                    dataType: 'item',
-                    dataField: 'user',
-                    item: {
-                        idField: 'id',
-                        dataField: ['first_name', 'last_name'],
-                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
-                    }
-                }
-            }
-        },
-        1: {
             style: {
                 flexDirection: 'row',
                 flexWrap: 'wrap',
@@ -149,7 +136,10 @@ const SpecialWorkingDetails = ({id, holiday, weekend, modal}) => {
                 0: {
                     label: 'Holiday',
                     dataType: 'item',
-                    dataField: 'holiday'
+                    dataField: 'holiday',
+                    item: {
+                        onClick: (id) => openDialog({content: 'holidayDetails', contentId: id, closeButton: false})
+                    }
                 },
             } : {
                 0: {
@@ -158,12 +148,57 @@ const SpecialWorkingDetails = ({id, holiday, weekend, modal}) => {
                 },
             }
         },
+        1: {
+            fields: {
+                style: {
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    gap: '15px'
+                },
+                0: {
+                    label: 'User',
+                    dataType: 'item',
+                    dataField: 'user',
+                    item: {
+                        idField: 'id',
+                        dataField: ['first_name', 'last_name'],
+                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
+                    }
+                },
+                1: {
+                    label: 'Note',
+                    dataField: 'user_note',
+                    hideEmpty: true
+                }
+            }
+        },
         2: {
+            style: {
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: '15px'
+            },
             fields: {
                 0: {
                     label: 'Status',
                     dataField: 'status',
                     dataType: 'item'
+                },
+                1: {
+                    label: 'Approver',
+                    dataField: 'approver',
+                    dataType: 'item',
+                    item: {
+                        idField: 'id',
+                        dataField: ['first_name', 'last_name'],
+                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
+                    },
+                    hideEmpty: true
+                },
+                2: {
+                    label: 'Approver Note',
+                    dataField: 'approver_note',
+                    hideEmpty: true
                 }
             }
         }

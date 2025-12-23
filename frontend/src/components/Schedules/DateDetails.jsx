@@ -180,21 +180,21 @@ const DateDetails = ({holidayId, date, modal}) => {
 
         if (action === 'request') {
             message = `Are you sure you want to request for working day on ${holiday ? holiday.date : date}?`;
-            onConfirm = async () => {
+            onConfirm = async (note) => {
                 if (holiday)
-                    await saveHolidayWorking({data: {holiday: holiday.id, status: 1}});
+                    await saveHolidayWorking({data: {holiday: holiday.id, status: 1, user_note: note}});
                 else if (date)
-                    await saveWeekendWorking({data: {date: date, status: 1}});
+                    await saveWeekendWorking({data: {date: date, status: 1, user_note: note}});
             }
         }
 
         if (action === 'cancel') {
             message = `Are you sure you want to request for working day cancellation on ${holiday ? holiday.date : date}?`;
-            onConfirm = async () => {
+            onConfirm = async (note) => {
                 if (holiday)
-                    await saveHolidayWorking({id: agreement.id, data: {status: 4}});
+                    await saveHolidayWorking({id: agreement.id, data: {status: 4}, user_note: note});
                 else if (date)
-                    await saveWeekendWorking({id: agreement.id, data: {status: 4}});
+                    await saveWeekendWorking({id: agreement.id, data: {status: 4}, user_note: note});
             };
         }
 
@@ -209,7 +209,7 @@ const DateDetails = ({holidayId, date, modal}) => {
 
         }
 
-        openPopUp({content: 'confirm', message, onConfirm});
+        openPopUp({content: 'confirm', input: action !== 'discard', message, onConfirm});
 
     }, [agreement, saveHolidayWorking, saveWeekendWorking, deleteHolidayWorking, deleteWeekendWorking,
         openPopUp, date, holiday]);
@@ -270,7 +270,7 @@ const DateDetails = ({holidayId, date, modal}) => {
         >
             <div className={'details-header'}>
                 <div className={'details-title'}>
-                    {dayName[new Date(date).getDay()] + (holiday?.name ? ` | ${holiday.name}` : '')}
+                    {dayName[new Date(dateRef.current).getDay()] + (holiday?.name ? ` | ${holiday.name}` : '')}
                 </div>
                 <div className={'header-buttons'}>
                     {(isWeekend.current || isHoliday.current) && !agreement &&
@@ -300,12 +300,7 @@ const DateDetails = ({holidayId, date, modal}) => {
                     <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>
                 </div>
             </div>
-            <div
-                key={'subtitle'}
-                className={'details-subtitle'}
-            >
-                {holiday ? holiday.date : date}
-            </div>
+            <div className={'details-subtitle'}>{dateRef.current}</div>
             {loading && <Loader/>}
             {!loading && (holidayWorkings || weekendWorkings) &&
                 <div className={'details-content app-scroll'}>

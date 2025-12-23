@@ -16,21 +16,22 @@ import {
  * @param userId
  * @param typeId
  * @param year
+ * @param recursiveBlock
  * @returns {Promise<{totalBalance: *, usedBalance: *, availableBalance: *, collectedDates: *, compensatedDates: *, availableDates: *}|{}>}
  */
-export async function getAbsenceBalance({userId, typeId, year = new Date().getFullYear()} = {}) {
-    if (!userId || !typeId)
+export async function getAbsenceBalance({userId, typeId, year, recursiveBlock = false} = {}) {
+    if (!userId || !typeId || !year)
         return {};
 
     const balance = await AbsenceBalance.findOne({ where: { user: userId, type: typeId, year }, raw: true });
 
     if (!balance)
-        return await updateAbsenceBalance({userId, typeId, year});
+        return await updateAbsenceBalance({userId, typeId, year, recursiveBlock});
 
     return balance;
 }
 
-export async function updateAbsenceBalance({userId, typeId, year = new Date().getFullYear()} = {}) {
+export async function updateAbsenceBalance({userId, typeId, year, recursiveBlock} = {}) {
     if (!userId || !typeId)
         return {};
     const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
@@ -76,7 +77,7 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
                 totalBalance = Math.min(totalBalance, parentBalance);
         }
 
-        if (leave.amount && leave.transferable) {
+        if (!recursiveBlock && leave.amount && leave.transferable) {
             if (leave.amount) {
                 const limitYear = user.joined ? new Date(user.joined).getFullYear() : new Date().getFullYear();
 
@@ -84,7 +85,8 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
                     const {availableBalance: remainingBalance} = await getAbsenceBalance({
                         userId: user.id,
                         typeId: leave.id,
-                        year: yr
+                        year: yr,
+                        recursiveBlock: true
                     });
                     if (remainingBalance != null)
                         totalBalance += remainingBalance;
@@ -155,6 +157,15 @@ export async function updateAbsenceBalance({userId, typeId, year = new Date().ge
         availableDates = collectedDates?.filter(d => !compensatedDates.includes(d)) || [];
         availableBalance = Math.max(0, totalBalance - usedBalance);
     }
+
+    const balance = await AbsenceBalance.findOne({where: { user: userId, type: typeId, year }});
+    if (balance)
+        await balance.update({totalBalance, usedBalance, availableBalance, collectedDates, compensatedDates, availableDates});
+    else
+        await AbsenceBalance.create({
+            user: userId, type: typeId, year: year,
+            totalBalance, usedBalance, availableBalance, collectedDates, compensatedDates, availableDates
+        });
 
     return {totalBalance, usedBalance, availableBalance, collectedDates, compensatedDates, availableDates};
 }

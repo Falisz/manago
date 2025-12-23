@@ -7,6 +7,8 @@ import Button from '../Button';
 import Loader from '../Loader';
 import Table from '../Table';
 import '../../styles/Leaves.css';
+import InWorks from "../InWorks";
+import ComboBox from "../ComboBox";
 
 const LeaveItem = ({leave}) => {
 
@@ -60,9 +62,11 @@ const LeaveItem = ({leave}) => {
 
 const YourBalance = () => {
 
+    const { user } = useApp();
     const { fetchLeaveBalance } = useLeaves();
     const { leaveTypes, fetchLeaveTypes } = useLeaveTypes();
     const [ leaveBalance, setLeaveBalance ] = React.useState({});
+    const [ year, setYear ] = React.useState(new Date().getFullYear());
 
     React.useEffect(() => {
         fetchLeaveTypes().then();
@@ -94,9 +98,31 @@ const YourBalance = () => {
         }
     }), [])
 
+    const years = useMemo(() => {
+        const firstYear = user.joined ? new Date(user.joined).getFullYear() : new Date().getFullYear();
+        const currentYear = new Date().getFullYear();
+        const result = [];
+        for (let i = firstYear; i <= currentYear; i++) result.push({id: i, name: i.toString()});
+        return result;
+    }, [user])
+
     return (
         <>
-            <h1>Your Leave Balance</h1>
+            <div className={'header'}>
+                <h1>Your Leave Balance</h1>
+                <ComboBox
+                    placeholder={`Pick a Team`}
+                    name={'year'}
+                    style={{marginLeft: 'auto'}}
+                    searchable={false}
+                    value={year}
+                    options={years}
+                    onChange={async (e) => {
+                        setYear(e.target.value);
+                        setLeaveBalance(await fetchLeaveBalance({year: e.target.value}));
+                    }}
+                />
+            </div>
             <Table
                 data={yourBalance}
                 fields={fields}
@@ -134,6 +160,7 @@ const YourLeaves = () => {
                     .sort((a, b) => new Date(a.start_date) - new Date(b.start_date))
                     .map(leave =>
                     <LeaveItem key={leave.id} leave={leave}/>)}
+                {!loading && !leaves?.length && <InWorks icon={'deceased'} description={'No Leaves to display.'} transparent hideReturnLink/>}
             </div>
         </>
     );

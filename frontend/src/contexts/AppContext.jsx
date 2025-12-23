@@ -76,11 +76,12 @@ export const AppProvider = ({ children }) => {
     });
     const [refreshTriggers, setRefreshTriggers] = useState({
         users: null,
-        aleave: null,
-        leaves: null,
         teams: null,
+        shifts: null,
+        leaves: null,
         holidays: null,
-        holidayWorkings: null
+        holidayWorkings: null,
+        weekendWorkings: null
     });
 
     // State and Ref setters

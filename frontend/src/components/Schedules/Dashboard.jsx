@@ -228,15 +228,15 @@ const PendingApprovals = ({header}) => {
     React.useEffect(() => {
         if (!user.id) return;
 
-        const refreshLeave = refreshTriggers?.leaves || refreshTriggers?.aleave || false;
-        if (refreshLeave) { delete refreshTriggers.leaves; delete refreshTriggers.aleave; }
+        const refreshLeave = refreshTriggers?.leaves || false;
+        if (refreshLeave) { delete refreshTriggers.leaves; }
         if (refreshLeave || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();
 
-        const refreshHW = refreshTriggers?.holidayWorking || false;
+        const refreshHW = refreshTriggers?.holidayWorkings || false;
         if (refreshHW) delete refreshTriggers.holidayWorking;
         if (refreshHW || !weekendWorkings) fetchHolidayWorkings({ managed: user.id }).then();
 
-        const refreshWW = refreshTriggers?.weekendWorking || false;
+        const refreshWW = refreshTriggers?.weekendWorkings || false;
         if (refreshWW) delete refreshTriggers.weekendWorking;
         if (refreshWW || !holidayWorkings) fetchWeekendWorkings({ managed: user.id }).then();
 
@@ -283,7 +283,6 @@ const PendingApprovals = ({header}) => {
         ];
     }, [leaves, weekendWorkings, holidayWorkings]);
 
-    console.log();
     return (
         <>
             {header && <h1>Pending Approvals</h1>}

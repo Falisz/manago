@@ -1,17 +1,16 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### Work Planner and Users (till 21-12-25)
-- Leaves page UI:
-  - Your Leaves widget - left vertical half, list of your leaves.
-  - Your Leave Balance widget - right top quarter summary for Leave Balances for the balance selectable from the top. Button to request a Weekend/Holiday working.
-  - Your Reportees Leaves - right bottom list of your reportees absences, searchable by user, leave type and dates and status.
-- Approval Page - full page dedicated for approvals - leaves, shifts, weekend and holiday workings.
+### Work Planner and Users (till 23-12-25)
+- Notes, mandatory fields, restrictions to the Absence Planner forms - limits, etc.
+- Shift notes - added in shift edit, if they are present, shift item in schedule view should have small info icon in the corner.
 - Settings Page
   - Holiday listing with add button.
   - Job Location widget with list and sub-module enablement button, also a button adding item button.
   - Job Post and Leave Types same as other widgets.
-- Shift notes - added in shift edit, if they are present, shift item in schedule view should have small info icon in the corner.
-- Frontend implementation for Contracts, Contract Types
+- Frontend implementation for Contracts, Contract Types and Joined Date while creating the User.
+### Projects (till 24-12-25)
+- Project Roles - different from company-wide user roles.
+- Access to different resources.
 ### TimeSheets (till 28-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
@@ -20,10 +19,7 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - Payroll planning.
 - Timesheet approval and rejection.
 - Option for both employees and managers to autofill the timesheet based on published schedule.
-### Projects (till 28-12-25)
-- Project Roles - different from company-wide user roles.
-- Access to different resources.
-### Permissions (till 31-01-25)
+### Permissions and Staff View (till 31-01-25)
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
 - Implement Roles and/or Permission based restrictions over the UI.
 ### Branches and Regions (till 31-01-25)

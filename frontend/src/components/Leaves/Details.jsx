@@ -20,10 +20,9 @@ const LeaveDetails = ({ id, modal }) => {
         openPopUp({
             content: 'confirm',
             message: 'Are you sure you want to request for this Leave?',
-            onConfirm: async () => {
-                const success = await saveLeave({id, data: {status: 1}});
-                if (!success) return;
-                refreshData('aleave', id);
+            input: true,
+            onConfirm: async (note) => {
+                await saveLeave({id, data: {status: 1, user_note: note}});
             }
         });
     }, [openPopUp, saveLeave, id, refreshData]);
@@ -38,10 +37,11 @@ const LeaveDetails = ({ id, modal }) => {
         openPopUp({
             content: 'confirm',
             message,
-            onConfirm: async () => {
+            input: true,
+            onConfirm: async (note) => {
                 const success = discard ?
                     await deleteLeave({id}) :
-                    await saveLeave({id, data: {status: 4}});
+                    await saveLeave({id, data: {status: 4, user_note: note}});
                 if (!success) return;
                 refreshData('aleave', id);
             },
@@ -52,8 +52,9 @@ const LeaveDetails = ({ id, modal }) => {
         openPopUp({
             content: 'confirm',
             message: `Are you sure you want to ${action} this Leave request?`,
-            onConfirm: async () => {
-                const success = await saveLeave({id, data: {status}});
+            input: true,
+            onConfirm: async (note) => {
+                const success = await saveLeave({id, data: {status, approver_note: note}});
                 if (!success) return;
                 refreshData('aleave', id);
             }
@@ -119,23 +120,9 @@ const LeaveDetails = ({ id, modal }) => {
     }), [user.id, leave, buttons]);
 
     const sections = useMemo(() => ({
-        0: user.id !== parseInt(leave?.user?.id) ? {
-            fields: {
-                0: {
-                    label: 'User',
-                    dataType: 'item',
-                    dataField: 'user',
-                    item: {
-                        idField: 'id',
-                        dataField: ['first_name', 'last_name'],
-                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
-                    }
-                }
-            }
-        } : null,
-        1: {
-            style: { 
-                flexDirection: 'row', 
+        0: {
+            style: {
+                flexDirection: 'row',
                 flexWrap: 'wrap',
                 gap: '15px'
             },
@@ -151,12 +138,57 @@ const LeaveDetails = ({ id, modal }) => {
                 }
             }
         },
+        1: user.id !== parseInt(leave?.user?.id) ? {
+            style: {
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: '15px'
+            },
+            fields: {
+                0: {
+                    label: 'User',
+                    dataType: 'item',
+                    dataField: 'user',
+                    item: {
+                        idField: 'id',
+                        dataField: ['first_name', 'last_name'],
+                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
+                    }
+                },
+                1: {
+                    label: 'Note',
+                    dataField: 'user_note',
+                    hideEmpty: true
+                }
+            }
+        } : null,
         2: {
+            style: {
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: '15px'
+            },
             fields: {
                 0: {
                     label: 'Status',
                     dataField: 'status',
                     dataType: 'item'
+                },
+                1: {
+                    label: 'Approver',
+                    dataField: 'approver',
+                    dataType: 'item',
+                    item: {
+                        idField: 'id',
+                        dataField: ['first_name', 'last_name'],
+                        onClick: (id) => openDialog({content: 'userDetails', contentId: id, closeButton: false})
+                    },
+                    hideEmpty: true
+                },
+                2: {
+                    label: 'Approver Note',
+                    dataField: 'approver_note',
+                    hideEmpty: true
                 }
             }
         }

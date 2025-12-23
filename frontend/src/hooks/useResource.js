@@ -227,8 +227,17 @@ const resourceConfigs = {
             return url;
         },
         otherMethods: {
-            fetchLeaveBalance: async ({user} = {}) => {
-                const res = await axios.get(`/leaves/balance${user ? '?user=' + user : ''}`)
+            fetchLeaveBalance: async ({user, year} = {}) => {
+                let url = '/leaves/balance';
+                if (user || year)
+                    url += '?';
+                if (user)
+                    url += `user=${user}`;
+                if (user && year)
+                    url += '?';
+                if (year)
+                    url += `year=${year}`;
+                const res = await axios.get(url);
                 return res?.data || null;
             }
         }
@@ -367,10 +376,7 @@ const useResource = (resource, debug = false) => {
                 });
 
             refreshData(name[1], true);
-            if (!isNew && !batchMode) {
-                refreshData(name[0], parseInt(id));
-                resourceCache[id] = result[name[0]];
-            }
+            resourceCache[id] = result[name[0]];
 
             return result[name[0]];
         } catch (err) {

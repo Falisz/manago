@@ -7,9 +7,11 @@ import '../../styles/LeavesPlanner.css';
 import {useLeaves, useLeaveTypes, useHolidays} from "../../hooks/useResource";
 import useApp from "../../contexts/AppContext";
 import EditForm from "../EditForm";
+import useNav from "../../contexts/NavContext";
 
 function LeavesPlanner( {modal} ) {
     const { user, refreshTriggers } = useApp();
+    const { setDiscardWarning } = useNav();
     const { leaves, fetchLeaves, saveLeave, fetchLeaveBalance } = useLeaves();
     const { holidays, fetchHolidays } = useHolidays();
     const { leaveTypes, fetchLeaveTypes } = useLeaveTypes();
@@ -238,7 +240,9 @@ function LeavesPlanner( {modal} ) {
                 setSelectedDates(new Set([...dates]));
             }
         }
-    }, [newLeave, leaveTypes, handleSelection, excludedDates]);
+
+        modal && setDiscardWarning(modal, true);
+    }, [newLeave, leaveTypes, handleSelection, excludedDates, modal, setDiscardWarning]);
 
     const handleSubmit = useCallback(async () => {
         newLeave.days = selectedDates.size;

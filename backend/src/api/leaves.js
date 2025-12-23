@@ -239,8 +239,8 @@ const fetchBalanceHandler = async (req, res) => {
     const result = {};
     try {
         const leaveTypes = await getAbsenceType();
-        const userId = req.query.user || req.user;
-        const year = req.query.year || new Date().getFullYear();
+        const userId = parseInt(req.query.user) || req.user;
+        const year = parseInt(req.query.year) || new Date().getFullYear();
         for (const leaveType of leaveTypes) {
             const typeId = leaveType?.id;
             if (typeId) result[typeId] = await getAbsenceBalance({userId, typeId, year});

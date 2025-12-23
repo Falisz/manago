@@ -103,6 +103,12 @@ const updateHandler = async (req, res) => {
 
     try {
         const data = req.body;
+        if (!data)
+            return res.status(400).json({ message: 'No data provided.' });
+
+        const { status } = data;
+        if ([2, 3, 5].includes(status))
+            data.approver = req.user;
 
         const { hasAccess } = await checkAccess(req.user, 'update', 'weekend-working', id);
         if (!hasAccess)

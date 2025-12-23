@@ -16,7 +16,7 @@ import TeamEdit, {TeamAssignment} from '../components/Teams/Edit';
 import UserDetails from '../components/Users/Details';
 import UserEdit, {UserAssignment} from '../components/Users/Edit';
 import DateDetails from '../components/Schedules/DateDetails';
-import {HolidayWorking, WeekendWorking} from "../components/Schedules/SpecialWorkingDetails";
+import {HolidayWorking, WeekendWorking} from "../components/SpecialWorkings/Details";
 
 const ANIMATION_DURATION = 300;
 
@@ -148,6 +148,7 @@ const MODALS = {
     confirm: {
         component: (modal) => <ConfirmPrompt
                                     message={modal.message}
+                                    input={modal.input}
                                     onConfirm={modal.onConfirm}
                                     onConfirm2={modal.onConfirm2}
                                     confirmLabel={modal.confirmLabel}

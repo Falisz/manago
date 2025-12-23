@@ -374,7 +374,7 @@ const rolePermissions = [
 
 const defaultPassword = await bcrypt.hash('@$^P4sSw0rD!#%', 10);
 const users = [
-    {id: 137500, first_name: 'Staff', last_name: 'Joe', login: 'staff', 
+    {id: 137500, first_name: 'Staff', last_name: 'Joe', login: 'staff',
         email: 'staff.joe@com.com', password: defaultPassword, active: true,
         manager_view_enabled: false, manager_nav_collapsed: false},
     {id: 353621, first_name: 'Manager', last_name: 'Smith', login: 'manager', 
@@ -386,10 +386,10 @@ const users = [
     {id: 475776, first_name: 'Test', last_name: '2', login: 'test2', 
         email: 'test2@com.com', password: defaultPassword, active: false,
         manager_view_enabled: false, manager_nav_collapsed: false},
-    {id: 864434, first_name: 'Test', last_name: '3', login: 'test3', 
+    {id: 864434, first_name: 'Test', last_name: '3', login: 'test3', joined: '2024-10-10',
         email: 'test3@com.com', password: defaultPassword, active: true,
         manager_view_enabled: false, manager_nav_collapsed: false},
-    {id: 100001, first_name: 'John', last_name: 'Doe', login: 'ceo',
+    {id: 100001, first_name: 'John', last_name: 'Doe', login: 'ceo', joined: '2019-10-10',
         email: 'ceo@com.com', password: defaultPassword, active: true,
         manager_view_enabled: true, manager_nav_collapsed: false},
     {id: 100002, first_name: 'Alice', last_name: 'Smith', login: 'mid1',

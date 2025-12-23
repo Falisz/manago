@@ -11,6 +11,9 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+body * {
+    -webkit-tap-highlight-color: transparent;
+}
 body a {
     text-decoration: none;
 }
@@ -138,8 +141,8 @@ button .material-symbols-rounded {
 
     color: var(--text-color);
     background: var(--background-color);
-    height: 100vh;
-    width: 100vw;
+    height: 100dvh;
+    width: 100dvw;
     display: grid;
     overflow: hidden;
     transition: 0.3s;
@@ -192,8 +195,8 @@ button .material-symbols-rounded {
     background-size: cover;
     gap: 10px;
     padding: 10px;
-    width: calc(100vw - 20px);
-    height: calc(100vh - 20px);
+    width: calc(100dvw - 20px);
+    height: calc(100dvh - 20px);
 }
 .app a {
     color: var(--link-color);
