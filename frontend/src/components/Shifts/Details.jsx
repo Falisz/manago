@@ -6,12 +6,12 @@ import {useShifts} from '../../hooks/useResource';
 import Details from '../Details';
 
 const ShiftDetails = ({ id, modal }) => {
-    const { shift, loading, fetchShift, deleteShift } = useShifts();
+    const { shift, loading, fetchShift, deleteShift } = useShifts({debug: true});
     const { refreshData, refreshTriggers } = useApp();
     const { openModal, openDialog, closeModal, closeTopModal } = useNav();
 
     useEffect(() => {
-        const reload = refreshTriggers?.shift?.data === parseInt(id);
+        const reload = refreshTriggers?.shift?.data === parseInt(id) || !shift;
         if (reload) delete refreshTriggers.shift;
         if (id && (!shift || reload)) fetchShift({id, reload}).then();
     }, [fetchShift, shift, id, refreshTriggers.shift]);
@@ -135,6 +135,12 @@ const ShiftDetails = ({ id, modal }) => {
                             background: shift?.job_location ? shift.job_location.color : null 
                         } 
                     }
+                },
+                2: {
+                    label: 'Note',
+                    dataType: 'string',
+                    dataField: 'note',
+                    hideEmpty: true
                 }
             }
         },

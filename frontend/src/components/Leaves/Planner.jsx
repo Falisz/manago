@@ -1,5 +1,5 @@
 // FRONTEND/components/Leaves/Planner.jsx
-import React, {useCallback, useMemo} from 'react';
+import React from 'react';
 import MonthGrid from "../MonthGrid";
 import Button from "../Button";
 import {generateDateList, formatDate} from "../../utils/dates";
@@ -27,10 +27,17 @@ function LeavesPlanner( {modal} ) {
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     });
     const [selectedDates, setSelectedDates] = React.useState(new Set());
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const [year, monthStr] = selectedMonth.split('-');
+    const currentYear = React.useRef(parseInt(year));
+    const month = parseInt(monthStr, 10);
+    const currentMonth = `${year}-${month}`;
+    const nextYear = month + 1 > 12 ? parseInt(year) + 1 : year;
+    const nextMonth = String(month + 1 > 12 ? 1 : month + 1).padStart(2, '0');
 
     React.useEffect(() => {
         fetchLeaveTypes().then();
-        fetchLeaveBalance().then(res => setLeaveBalance(res));
+        fetchLeaveBalance({year: new Date().getFullYear()}).then(res => setLeaveBalance(res));
         fetchHolidays().then();
     }, [fetchLeaveTypes, fetchLeaveBalance, fetchHolidays, setLeaveBalance]);
 
@@ -40,34 +47,38 @@ function LeavesPlanner( {modal} ) {
         if (refresh || !leaves) fetchLeaves({ user: user.id });
     }, [fetchLeaves, leaves, refreshTriggers, user.id]);
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    const [year, monthStr] = selectedMonth.split('-');
-    const month = parseInt(monthStr, 10);
-    const currentMonth = `${year}-${month}`;
-
-    const excludedDates = useMemo(() => {
+    const holidayDates = React.useMemo(() => {
         const dates = new Set();
-
         holidays?.forEach(holiday => dates.add(holiday?.date));
+        return dates;
+    }, [holidays]);
+
+    const currentLeavesDates = React.useMemo(() => {
+        const dates = new Set();
 
         leaves?.forEach(leave => {
             if (leave.status.id === 3 || leave.status.id === 5)
                 return;
-
             const { start_date, end_date } = leave;
             if (start_date && !end_date)
                 dates.add(start_date);
             else if (start_date && end_date)
-                generateDateList(start_date, end_date).map(formatDate).forEach(date => dates.add(date));
+                generateDateList(start_date, end_date).forEach(date => dates.add(formatDate(date)));
         });
 
         return dates;
 
-    }, [holidays, leaves]);
+    }, [leaves]);
 
     const handleSelection = React.useCallback((date) => {
-        if (!newLeave.type || leaveBalance[newLeave.type]?.availableBalance === 0 || excludedDates.has(date))
+
+        if (date === null) {
+            setNewLeave({...newLeave, start_date: null, end_date: null});
+            setSelectedDates(new Set([]));
+        }
+
+        if (!newLeave.type || leaveBalance[newLeave.type]?.availableBalance === 0 || currentLeavesDates.has(date) ||
+            (!newLeave.include_holidays && holidayDates.has(date)))
             return;
 
         if (!leaveTypes?.find(leave => leave.id === newLeave.type)?.multiple) {
@@ -78,6 +89,11 @@ function LeavesPlanner( {modal} ) {
             } else {
                 setNewLeave({...newLeave, start_date: date});
                 setSelectedDates(new Set([date]));
+                const newYear = new Date(date).getFullYear()
+                if (currentYear.current !== newYear) {
+                    currentYear.current = newYear;
+                    fetchLeaveBalance({year: newYear}).then(res => setLeaveBalance(res));
+                }
             }
             return;
         }
@@ -88,6 +104,11 @@ function LeavesPlanner( {modal} ) {
         if (!start_date && !end_date) {
             setNewLeave({...newLeave, start_date: date});
             dates = [date];
+            const newYear = new Date(date).getFullYear()
+            if (currentYear.current !== newYear) {
+                currentYear.current = newYear;
+                fetchLeaveBalance({year: newYear}).then(res => setLeaveBalance(res));
+            }
         } else if (start_date && !end_date) {
             if (new Date(start_date) < new Date(date)) {
                 setNewLeave({...newLeave, end_date: date});
@@ -104,16 +125,21 @@ function LeavesPlanner( {modal} ) {
                 setNewLeave({...newLeave, start_date: end_date, end_date: date});
                 dates = generateDateList(end_date, date, !newLeave.include_weekends).map(formatDate);
             }
+        } else if (start_date === end_date) {
+            setNewLeave({...newLeave, start_date: null, end_date: null});
+            dates = [];
         } else if (start_date && end_date) {
             setNewLeave({...newLeave, start_date: date, end_date: null});
             dates = [date];
         }
 
-        dates = dates.filter(date => !excludedDates.has(date));
+        dates = dates.filter(date => !currentLeavesDates.has(date));
+        if (!newLeave.include_holidays)
+            dates = dates.filter(date => !holidayDates.has(date));
 
         setSelectedDates(new Set([...dates]));
 
-    },[newLeave, leaveTypes, leaveBalance, excludedDates]);
+    },[newLeave, leaveTypes, leaveBalance, currentLeavesDates, holidayDates, fetchLeaveBalance]);
 
     const changeMonth = React.useCallback((val=0) => {
 
@@ -123,10 +149,7 @@ function LeavesPlanner( {modal} ) {
         setSelectedMonth(`${newYear}-${newMonth}`)
     }, [month, year]);
 
-    const nextYear = month + 1 > 12 ? parseInt(year) + 1 : year;
-    const nextMonth = String(month + 1 > 12 ? 1 : month + 1).padStart(2, '0');
-
-    const getBalance = useCallback((type) => {
+    const getBalance = React.useCallback((type) => {
         if (!type || !leaveBalance[type])
             return null;
 
@@ -141,7 +164,7 @@ function LeavesPlanner( {modal} ) {
         </span>
     }, [ leaveBalance ])
 
-    const sections = useMemo(() => ({
+    const sections = React.useMemo(() => ({
         0: {
             fields: {
                 type: {
@@ -165,14 +188,15 @@ function LeavesPlanner( {modal} ) {
                     type: 'date',
                     label: leaveTypes?.find(leave => leave.id === newLeave.type)?.multiple ? 'Start Date' : 'Date',
                     required: true,
+                    min: `${new Date(newLeave.start_date).getFullYear()}-01-01`,
                     max: newLeave.end_date,
                     disabled: !newLeave.type || leaveBalance[newLeave.type]?.availableBalance === 0
                 },
                 end_date: leaveTypes?.find(leave => leave.id === newLeave.type)?.multiple && {
                     type: 'date',
                     label: 'End Date',
-                    required: true,
                     min: newLeave.start_date,
+                    max: `${new Date(newLeave.start_date).getFullYear()}-12-31`,
                     disabled: !newLeave.start_date
                 },
                 days: {
@@ -196,17 +220,26 @@ function LeavesPlanner( {modal} ) {
                     inputLabel: 'Should Weekends be included?',
                     style: {alignItems: 'flex-start'}
                 },
-                status: {
+                include_holidays: {
                     type: 'checkbox',
-                    label: 'request',
-                    inputLabel: 'Request for Leave',
+                    label: 'Include Holidays',
+                    inputLabel: 'Should Holidays be included?',
                     style: {alignItems: 'flex-start'}
+                }
+            }
+        },
+        3: {
+            fields: {
+                user_note: {
+                    type: 'textarea',
+                    label: 'Note',
+                    placeholder: 'Optional note'
                 }
             }
         }
     }), [newLeave, leaveTypes, leaveBalance, selectedDates, getBalance]);
 
-    const handleChange = useCallback((target) => {
+    const handleChange = React.useCallback((target) => {
         const {name, value, checked} = target;
 
         if (name === 'type') {
@@ -225,31 +258,58 @@ function LeavesPlanner( {modal} ) {
                 else if (name === 'end_date')
                     dates = generateDateList(start_date, value, !newLeave.include_weekends).map(formatDate);
 
-                dates = dates.filter(date => !excludedDates.has(date));
+                dates = dates.filter(date => !currentLeavesDates.has(date));
+                if (!newLeave.include_holidays)
+                    dates = dates.filter(date => !holidayDates.has(date));
 
                 setSelectedDates(new Set([...dates]));
             } else {
-                if (!excludedDates.has(value))
+                if (!currentLeavesDates.has(value)) {
+                    if (!newLeave.include_holidays && holidayDates.has(value))
+                        return;
                     setSelectedDates(new Set([value]));
+                }
             }
+
+            if (name === 'start_date') {
+                const newYear = new Date(value).getFullYear()
+                if (currentYear.current !== newYear) {
+                    currentYear.current = newYear;
+                    fetchLeaveBalance({year: newYear}).then(res => setLeaveBalance(res));
+                }
+            }
+
         } else if (name === 'include_weekends') {
             const {start_date, end_date} = newLeave;
             if (start_date && end_date) {
                 let dates = generateDateList(start_date, end_date, !checked).map(formatDate);
-                dates = dates.filter(date => !excludedDates.has(date));
+                dates = dates.filter(date => !currentLeavesDates.has(date));
+                if (!newLeave.include_holidays)
+                    dates = dates.filter(date => !holidayDates.has(date));
+                setSelectedDates(new Set([...dates]));
+            }
+        } else if (name === 'include_holidays') {
+            const {start_date, end_date} = newLeave;
+            if (start_date && end_date) {
+                let dates = generateDateList(start_date, end_date, !newLeave.include_weekends).map(formatDate);
+                dates = dates.filter(date => !currentLeavesDates.has(date));
+                if (!checked)
+                    dates = dates.filter(date => !holidayDates.has(date));
                 setSelectedDates(new Set([...dates]));
             }
         }
 
         modal && setDiscardWarning(modal, true);
-    }, [newLeave, leaveTypes, handleSelection, excludedDates, modal, setDiscardWarning]);
+    }, [newLeave, leaveTypes, handleSelection, currentLeavesDates, holidayDates, modal, setDiscardWarning,
+        fetchLeaveBalance]);
 
-    const handleSubmit = useCallback(async () => {
+    const handleSubmit = React.useCallback(async (action) => {
         newLeave.days = selectedDates.size;
-        return await saveLeave({data: newLeave});
+        const status = action === 'request' ? 1 : 0;
+        return await saveLeave({data: {...newLeave, status}});
     }, [saveLeave, newLeave, selectedDates]);
 
-    const leaveItems = useMemo(() => {
+    const leaveItems = React.useMemo(() => {
         const dates = {};
         leaves?.filter(leave => ![3,5].includes(leave.status.id)).forEach(leave => {
             leave.item_type='leave';
@@ -267,45 +327,72 @@ function LeavesPlanner( {modal} ) {
         return dates;
     }, [leaves, holidays]);
 
+    const disableSubmit = React.useMemo(() => {
+        return (!newLeave.type || !newLeave.start_date
+            || selectedDates.size > leaveBalance[newLeave.type]?.availableBalance);
+    }, [newLeave, selectedDates, leaveBalance]);
+
     return (
         <div className={'leave-planner'}>
             <div className={'leave-planner-header'}>
-                <h1>New Leave</h1>
+                <h1>New Absence</h1>
             </div>
             <div className={'leave-planner-content'}>
-                <Button
-                    className={'leave-planner-preview-nav'}
-                    icon={'arrow_back'}
-                    onClick={() => changeMonth(-1)}
-                />
-                <div>
-                    <h2>{`${months[month-1]} ${year}`}</h2>
-                    <MonthGrid
-                        date={currentMonth}
-                        selectedDates={selectedDates}
-                        setSelectedDate={handleSelection}
-                        items={leaveItems}
+                <div className={'leave-planner-date-picker'}>
+                    <div className={'leave-planner-date-picker-notice'}>
+                    </div>
+                    <Button
+                        className={'leave-planner-preview-nav back'}
+                        icon={'arrow_back'}
+                        onClick={() => changeMonth(-1)}
                     />
-                </div>
-                <div>
-                    <h2>{`${months[nextMonth-1]} ${nextYear}`}</h2>
-                    <MonthGrid
-                        date={`${nextYear}-${nextMonth}`}
-                        selectedDates={selectedDates}
-                        setSelectedDate={handleSelection}
-                        items={leaveItems}
+                    <div className={'leave-planner-date-month current'}>
+                        <h2>{`${months[month-1]} ${year}`}</h2>
+                        <MonthGrid
+                            date={currentMonth}
+                            selectedDates={selectedDates}
+                            setSelectedDate={handleSelection}
+                            items={leaveItems}
+                            disabled={!newLeave.type || (newLeave.start_date && parseInt(year) !== new Date(newLeave.start_date).getFullYear())}
+                        />
+                    </div>
+                    <div className={'leave-planner-date-month next'}>
+                        <h2>{`${months[nextMonth-1]} ${nextYear}`}</h2>
+                        <MonthGrid
+                            date={`${nextYear}-${nextMonth}`}
+                            selectedDates={selectedDates}
+                            setSelectedDate={handleSelection}
+                            items={leaveItems}
+                            disabled={!newLeave.type || (newLeave.start_date && parseInt(nextYear) !== new Date(newLeave.start_date).getFullYear())}
+                        />
+                    </div>
+                    <Button
+                        className={'leave-planner-preview-nav forward'}
+                        icon={'arrow_forward'}
+                        onClick={() => changeMonth(1)}
                     />
+                    <div className={'leave-planner-preview-footer'}>
+                        {!newLeave.type && <div className={'leave-planner-preview-notice'}>
+                            Pick an Absence Type to select dates.
+                            </div>
+                        }
+                        {selectedDates.size > 0 && <Button
+                                className={'leave-planner-preview-clear'}
+                                label={'Clear date selection'}
+                                onClick={() => handleSelection(null)}
+                            />
+                        }
+                    </div>
+
                 </div>
-                <Button
-                    className={'leave-planner-preview-nav'}
-                    icon={'arrow_forward'}
-                    onClick={() => changeMonth(1)}
-                />
                 <EditForm
                     className={'leave-planner-form'}
                     sections={sections}
-                    onSubmit={handleSubmit}
-                    submitLabel={newLeave.status ? 'Request' : 'Save as Planned' }
+                    disableSubmit={disableSubmit}
+                    onSubmit={() => handleSubmit('request')}
+                    submitLabel={ 'Make a Request' }
+                    onSubmit2={leaveTypes?.find(leave => leave.id === newLeave.type)?.plannable && (() => handleSubmit('plan'))}
+                    submitLabel2={'Save as Planned'}
                     onChange={handleChange}
                     modal={modal}
                     source={newLeave}

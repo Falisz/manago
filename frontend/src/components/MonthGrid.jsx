@@ -3,7 +3,7 @@ import React from 'react';
 import '../styles/MonthGrid.css';
 import useNav from "../contexts/NavContext";
 
-function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1 }) {
+function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1, disabled }) {
     // Parse the date string (e.g., "December 05, 2025")
 
     const { openDialog } = useNav();
@@ -24,7 +24,7 @@ function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1 }
     const rows = Math.ceil((offset + daysInMonth) / 7);
 
     return (
-        <table className={'month-grid'}>
+        <table className={`month-grid${disabled ? ' disabled' : ''}`}>
             <thead>
                 <tr>
                     {headerDays.map((day) => (
@@ -71,7 +71,7 @@ function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1 }
                         const selected = selectedDates?.has(dateStr);
                         const item = items?.[dateStr];
 
-                        let numberTitle, color, onClick = () => setSelectedDate(dateStr);
+                        let numberTitle, color, onClick = () => !disabled && setSelectedDate(dateStr);
                         if (item?.item_type === 'leave') {
                             numberTitle = item.type?.name + ' | ' + item.status?.name;
                             color = item.type?.color;
@@ -99,7 +99,7 @@ function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1 }
                             >
                                 <div
                                     className={'day-number'}
-                                    style={{background: color, cursor: 'pointer'}}
+                                    style={{background: color}}
                                     title={numberTitle}
                                     onClick={onClick}
                                 >

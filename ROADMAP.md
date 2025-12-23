@@ -1,8 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### Work Planner and Users (till 23-12-25)
-- Notes, mandatory fields, restrictions to the Absence Planner forms - limits, etc.
-- Shift notes - added in shift edit, if they are present, shift item in schedule view should have small info icon in the corner.
 - Settings Page
   - Holiday listing with add button.
   - Job Location widget with list and sub-module enablement button, also a button adding item button.

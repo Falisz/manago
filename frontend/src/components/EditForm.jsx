@@ -248,6 +248,10 @@ const EditForm = ({
     submitLabel,
     submitStyle,
     hideSubmit,
+    disableSubmit,
+    onSubmit2,
+    submitLabel2,
+    submitStyle2,
     onCancel,
     cancelLabel,
     cancelStyle,
@@ -384,6 +388,9 @@ const EditForm = ({
     };
 
     const handleSubmit = async (e) => {
+        if (disableSubmit)
+            return;
+
         e.preventDefault();
 
         if (validate) {
@@ -459,10 +466,16 @@ const EditForm = ({
                 />)}
                 <div className='form-section form-buttons'>
                     {!hideSubmit && <Button
-                        className={'save-button'}
+                        className={`save-button${disableSubmit ? ' disabled' : ''}`}
                         style={submitStyle}
                         type={'submit'}
                         label={submitLabel || 'Save changes'}
+                        icon={'save'}
+                    />}
+                    {onSubmit2 && <Button
+                        style={submitStyle2}
+                        onClick={onSubmit2}
+                        label={submitLabel2 || 'Save changes'}
                         icon={'save'}
                     />}
                     {!hideCancel && <Button

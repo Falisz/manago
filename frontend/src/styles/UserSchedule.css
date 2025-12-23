@@ -159,7 +159,13 @@
 .app.fluent .user-schedule-leave-item .subtitle {
     font-size: 0.7rem;
 }
-
+.user-schedule-shift-item .shift-note {
+    position: absolute;
+    top: 5px;
+    right: 2px;
+    font-size: 0.9rem;
+    cursor: help;
+}
 .user-schedule-shift-item .time-range {
     font-size: 1rem;
     line-height: 1rem;

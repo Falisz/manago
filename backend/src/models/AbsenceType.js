@@ -12,8 +12,9 @@ export const AbsenceType = sequelize.define('AbsenceType', {
         type: DataTypes.INTEGER,
         references: { model: 'absence_types', key: 'id' }
     },
-    amount: DataTypes.INTEGER,           // number of days of the leave in one year
     multiple: DataTypes.BOOLEAN,         // flag if more than one day of the leave can be applied on the request
+    plannable: DataTypes.BOOLEAN,        // flag if it can be saved as Planned or can be only requested
+    amount: DataTypes.INTEGER,           // number of days of the leave in one year
     scaled: DataTypes.BOOLEAN,           // flag if the number should be scaled to the number of months worked in one year
     transferable: DataTypes.BOOLEAN,     // flag if the remaining amount can be transferred to the next year
     ref_required: DataTypes.BOOLEAN,     // flag if the referral number is required

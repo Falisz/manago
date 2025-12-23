@@ -16,12 +16,55 @@
     font-family: var(--font-family-condensed), sans-serif;
 }
 .leave-planner-content {
-    display: flex;
+    display: grid;
+    grid-template-columns: 4fr 3fr;
+    align-items: normal;
     gap: 20px;
+}
+.leave-planner-date-picker {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr auto;
+    grid-template-rows: 1fr auto;
+    grid-template-areas: "a b c d" "e e e e";
     align-items: start;
+    justify-items: center;
+    gap: 20px;
+}
+.leave-planner-date-picker-notice {
+}
+.leave-planner-preview-nav.back {
+    grid-area: a;
+}
+.leave-planner-date-month.current {
+    grid-area: b;
+}
+.leave-planner-date-month.next {
+    grid-area: c;
+}
+.leave-planner-preview-nav.forward {
+    grid-area: d;
+}
+.leave-planner-preview-footer {
+    grid-area: e;
 }
 .leave-planner-preview-nav {
     margin-top: 50px;
+}
+.leave-planner-date-month {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.leave-planner-date-month h2 {
+    font-family: var(--font-family-condensed), sans-serif;
+    font-weight: 400;
+    margin: 0;
+}
+.leave-planner-date-month .month-grid {
+    width: 100%;
+}
+.leave-planner-preview-notice {
+    font-style: italic;
 }
 .leave-planner-form {
     flex-grow: 1;

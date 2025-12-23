@@ -847,6 +847,7 @@ const absenceTypes = [
         amount: 26,
         multiple: true,
         scaled: true,
+        plannable: true,
         transferable: true,
         color: '#FF9800'
     },
@@ -872,6 +873,7 @@ const absenceTypes = [
         abbreviation: 'PL',
         parent_type: 1,
         amount: 2,
+        plannable: true,
         color: '#9C27B0',
         multiple: true
     },
@@ -880,6 +882,7 @@ const absenceTypes = [
         name: 'Maternity Leave',
         abbreviation: 'ML',
         parent_type: 1,
+        plannable: true,
         color: '#E91E63'
     },
     {
@@ -887,6 +890,7 @@ const absenceTypes = [
         name: 'Paternity Leave',
         abbreviation: 'PL',
         parent_type: 1,
+        plannable: true,
         color: '#3F51B5'
     },
     {
@@ -894,6 +898,7 @@ const absenceTypes = [
         name: 'Unpaid Leave',
         abbreviation: 'UL',
         multiple: true,
+        plannable: true,
         color: '#777777'
     },
     {
@@ -901,12 +906,14 @@ const absenceTypes = [
         name: 'Blood Donation Leave',
         abbreviation: 'UL',
         multiple: true,
+        plannable: true,
         color: '#048a1a'
     },
     {
         id: 100,
         name: 'Compensatory Off',
         abbreviation: 'C-OFF',
+        plannable: true,
         color: '#2196F3'
     }
 ];

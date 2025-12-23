@@ -65,6 +65,8 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
     const subTitle = (shift.job_post ? shift.job_post.name : '') + (shift.job_post && shift.job_location ? ' | ' : '') +
         (shift.job_location ? shift.job_location.name : '');
 
+    const note = shift.note;
+
     return <div
         className={'user-schedule-shift-item' + (shift.selected ? ' selected' : '') + (!editMode ? ' app-clickable' : '')}
         style={{background, position: 'relative'}}
@@ -76,6 +78,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
             (e) => onClick(e, shift) :
             () => openDialog({content: 'shiftDetails', contentId: shift.id, closeButton: false})}
         >
+        {note && <Icon i={'info'} s title={note} className={'shift-note'}/>}
         <span className={'time-range'}>{editMode ?
             <><input
                 value={shift.start_time.slice(0, 5)}
