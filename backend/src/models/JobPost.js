@@ -8,6 +8,8 @@ export const JobPost = sequelize.define('JobPost', {
         allowNull: false,
         unique: true
     },
+    abbreviation: DataTypes.STRING,
+    description: DataTypes.TEXT,
     color: DataTypes.STRING(7)
 }, {
     tableName: 'job_posts',

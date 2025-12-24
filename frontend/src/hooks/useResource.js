@@ -376,6 +376,7 @@ const useResource = (resource, debug = false) => {
                 });
 
             refreshData(name[1], true);
+            if (id) refreshData(name[0], id);
             resourceCache[id] = result[name[0]];
 
             return result[name[0]];

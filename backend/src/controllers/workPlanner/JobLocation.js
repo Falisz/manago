@@ -71,16 +71,8 @@ export async function updateJobLocation(id, data) {
         return { success: false, message: 'Job Location not found.' };
 
     // Check name uniqueness if it's being changed
-    if (data.name) {
-        const existing = await JobLocation.findOne({
-            where: {
-                name: data.name,
-                id: { [Op.ne]: id } // not equal to current record
-            }
-        });
-        if (existing)
-            return { success: false, message: 'Another Job Location with this name already exists.' };
-    }
+    if (data.name && await JobLocation.findOne({ where: { name: data.name, id: { [Op.ne]: id } } }))
+        return { success: false, message: 'Another Job Location with this name already exists.' };
 
     await location.update(data);
 
@@ -100,23 +92,16 @@ export async function deleteJobLocation(id) {
     const transaction = await sequelize.transaction();
 
     try {
-        // First: clear references in shifts (set job_location = NULL)
-        await Shift.update(
-            { job_location: null },
-            { where: { job_location: id }, transaction }
-        );
+        await Shift.update({ job_location: null }, { where: { job_location: id }, transaction });
 
-        // Then: delete the location(s)
-        const deletedCount = await JobLocation.destroy({
-            where: { id },
-            transaction
-        });
+        const deletedCount = await JobLocation.destroy({ where: { id }, transaction });
 
         if (!deletedCount) {
             await transaction.rollback();
             return {
                 success: false,
-                message: `No Job Locations found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${Array.isArray(id) ? id.join(', ') : id}`
+                message: `No Job Locations found to delete for provided ID
+                    ${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${Array.isArray(id) ? id.join(', ') : id}`
             };
         }
 

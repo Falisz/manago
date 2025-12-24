@@ -56,6 +56,30 @@ const appConfigs = [
         options: ['cloudy', 'blue-galaxy', 'violet-haze', 'raspberry-peach', 'blur-1', 'blur-2', 'blur-3', 'blur-4']
     },
     {
+        configName: 'holidays',
+        selectedOption: true,
+        module: 4,
+        options: [false, true]
+    },
+    {
+        configName: 'leaves',
+        selectedOption: true,
+        module: 4,
+        options: [false, true]
+    },
+    {
+        configName: 'jobPosts',
+        selectedOption: false,
+        module: 4,
+        options: [false, true]
+    },
+    {
+        configName: 'jobLocations',
+        selectedOption: true,
+        module: 4,
+        options: [false, true]
+    },
+    {
         configName: 'dispositions',
         selectedOption: false,
         module: 4,
@@ -754,19 +778,22 @@ const jobLocations = [
     { id: 4, name: 'Field', color: '#F44336' }
 ];
 
+const startDate = '2025-12-24';
+
 const shifts = [
     // Team 1 (Parent team) and its subteams (Los Angeles, Washington)
     // Users in Los Angeles (team 4): 100007 (leader), 100013-100017
     // Users in Washington (team 5): 100008 (leader), 100018-100022
     // Manager (team 1): 100004
-    // Dec 1-14, 2025, standard 8-hour shifts (9:00-17:00)
+    // standard 8-hour shifts (9:00-17:00)
     // Assigning shifts to Los Angeles team members
     ...Array.from({ length: 14 }, (_, i) => {
-        const date = new Date(2025, 11, i + 1); // Dec 1-14, 2025
-        const formattedDate = `2025-12-${String(i + 1).padStart(2, '0')}`;
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + i);
         if (date.getDay() === 0 || date.getDay() === 6) {
             return [];
         }
+        const formattedDate = date.toISOString().split('T')[0];
         return [
             { user: 100007, date: formattedDate,  start_time: `09:00:00`,
                 end_time: `17:00:00`, job_location: 1 },

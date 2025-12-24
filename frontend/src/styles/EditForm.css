@@ -74,6 +74,17 @@
     width: calc(100% - 20px);
     min-width: max(170px, 33%);
 }
+.form-content .form-input.color {
+    padding: 0;
+    height: calc(0.9rem + 20px);
+    cursor: pointer;
+}
+.form-content .form-input[type="color"]::-webkit-color-swatch {
+    border: none;
+}
+.form-content .form-input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
 
 .form-content .form-input::-webkit-calendar-picker-indicator {
     filter: invert(0.8);

@@ -1,19 +1,19 @@
-// FRONTEND/components/LeaveTypes/Edit.js
+// FRONTEND/components/JobLocations/Edit.js
 import React from 'react';
-import {useLeaveTypes} from '../../hooks/useResource';
+import {useJobLocations} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-const LeaveTypeEdit = ({ id, modal }) => {
-    const { leaveType, loading, setLoading, fetchLeaveType, saveLeaveType } = useLeaveTypes();
+const JobLocationEdit = ({ id, modal }) => {
+    const { jobLocation, loading, setLoading, fetchJobLocation, saveJobLocation } = useJobLocations();
 
     React.useEffect(() => {
         if (id)
-            fetchLeaveType({id}).then();
+            fetchJobLocation({id}).then();
         else
             setLoading(false);
 
-    }, [id, setLoading, fetchLeaveType]);
+    }, [id, setLoading, fetchJobLocation]);
 
     const sections = React.useMemo(() => ({
         0: {
@@ -31,29 +31,25 @@ const LeaveTypeEdit = ({ id, modal }) => {
                 color: {
                     type: 'color',
                     label: 'Color'
-                },
-                plannable: {
-                    type: 'checkbox',
-                    label: 'Plannable?'
-                },
+                }
             }
         }
     }), []);
 
     const presetData = React.useMemo(() => {
-        return leaveType ? leaveType : {};
-    }, [leaveType]);
+        return jobLocation ? jobLocation : {};
+    }, [jobLocation]);
 
     if (loading)
         return <Loader />;
 
     return <EditForm
-        header={id && leaveType ? `Editing ${leaveType.name} (Absence Type)` : 'Creating new Absence Type'}
+        header={id && jobLocation ? `Editing Job Location` : 'Creating new Job Location'}
         sections={sections}
-        onSubmit={async (data) => await saveLeaveType({id, data}) }
+        onSubmit={async (data) => await saveJobLocation({id, data}) }
         modal={modal}
         presetData={presetData}
     />;
 };
 
-export default LeaveTypeEdit;
+export default JobLocationEdit;

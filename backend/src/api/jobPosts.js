@@ -33,6 +33,8 @@ const fetchHandler = async (req, res) => {
 
             if (!result)
                 return res.status(404).json({ message: 'Job Post not found.' });
+
+            return res.json(result);
         }
 
         const job_posts = await getJobPost();

@@ -1,19 +1,19 @@
-// FRONTEND/components/LeaveTypes/Edit.js
+// FRONTEND/components/JobPosts/Edit.js
 import React from 'react';
-import {useLeaveTypes} from '../../hooks/useResource';
+import {useJobPosts} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 
-const LeaveTypeEdit = ({ id, modal }) => {
-    const { leaveType, loading, setLoading, fetchLeaveType, saveLeaveType } = useLeaveTypes();
+const JobPostEdit = ({ id, modal }) => {
+    const { jobPost, loading, setLoading, fetchJobPost, saveJobPost } = useJobPosts();
 
     React.useEffect(() => {
         if (id)
-            fetchLeaveType({id}).then();
+            fetchJobPost({id}).then();
         else
             setLoading(false);
 
-    }, [id, setLoading, fetchLeaveType]);
+    }, [id, setLoading, fetchJobPost]);
 
     const sections = React.useMemo(() => ({
         0: {
@@ -31,29 +31,25 @@ const LeaveTypeEdit = ({ id, modal }) => {
                 color: {
                     type: 'color',
                     label: 'Color'
-                },
-                plannable: {
-                    type: 'checkbox',
-                    label: 'Plannable?'
-                },
+                }
             }
         }
     }), []);
 
     const presetData = React.useMemo(() => {
-        return leaveType ? leaveType : {};
-    }, [leaveType]);
+        return jobPost ? jobPost : {};
+    }, [jobPost]);
 
     if (loading)
         return <Loader />;
 
     return <EditForm
-        header={id && leaveType ? `Editing ${leaveType.name} (Absence Type)` : 'Creating new Absence Type'}
+        header={id && jobPost ? `Editing ${jobPost.name}` : 'Creating new Job Post'}
         sections={sections}
-        onSubmit={async (data) => await saveLeaveType({id, data}) }
+        onSubmit={async (data) => await saveJobPost({id, data}) }
         modal={modal}
         presetData={presetData}
     />;
 };
 
-export default LeaveTypeEdit;
+export default JobPostEdit;

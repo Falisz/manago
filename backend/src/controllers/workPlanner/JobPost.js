@@ -3,6 +3,7 @@ import {JobPost, Shift} from '#models';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
 import sequelize from '#utils/database.js';
+import {Op} from "sequelize";
 
 /**
  * Retrieves one Job Post by its ID or all Job Posts if an ID is not provided.
@@ -66,7 +67,7 @@ export async function updateJobPost(id, data) {
     if (!jobPost)
         return { success: false, message: 'Job Post not found.' };
 
-    if (data.name && await JobPost.findOne({ where: { name: data.name } }))
+    if (data.name && await JobPost.findOne({ where: { name: data.name, id: { [Op.not]: id } } }))
         return { success: false, message: 'There already is a Job Post with provided name. Use different one.' };
 
     await jobPost.update(data);
@@ -87,22 +88,22 @@ export async function deleteJobPost({id, delete_shifts=false} = {}) {
     const transaction = await sequelize.transaction();
 
     try {
+
+        if (delete_shifts)
+            await Shift.destroy({ where: { job_post: id }, transaction });
+        else
+            await Shift.update({ job_post: null }, { where: { job_post: id }, transaction });
+
         const deletedCount = await JobPost.destroy({ where: { id }, transaction });
 
         if (!deletedCount) {
             await transaction.rollback();
             return {
                 success: false,
-                message: `No Job Posts found to delete for provided ID${Array.isArray(id) && id.length > 1 ? 's' : ''}:
-                 ${Array.isArray(id) ? id.join(', ') : id}`
+                message: `No Job Posts found to delete for provided ID
+                    ${Array.isArray(id) && id.length > 1 ? 's' : ''}: ${Array.isArray(id) ? id.join(', ') : id}`
             };
         }
-
-        if (delete_shifts)
-            await Shift.destroy({ where: { job_post: id }, transaction });
-
-        else
-            await Shift.update({ job_post: null }, { where: { job_post: id } });
 
         await transaction.commit();
 

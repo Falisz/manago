@@ -155,14 +155,17 @@ const SectionField = ({ field, data }) => {
 
     if (dataType === 'boolean') {
         const val = data[dataField];
+
+        const { trueIcon = 'check', falseIcon = 'close', trueValue = 'Yes', falseValue = 'No' } = field;
+
         if (val != null)
             isEmpty = false;
 
         content = <div className={'data-group linear'}>
             {val ?
-                field.trueIcon && <Icon className={'true'} i={field.trueIcon} /> :
-                field.falseIcon && <Icon className={'false'} i={field.falseIcon} /> }
-            {val ? field.trueValue : field.falseValue}
+                trueIcon && <Icon className={'true'} i={trueIcon} /> :
+                falseIcon && <Icon className={'false'} i={falseIcon} /> }
+            {val ? trueValue : falseValue}
         </div>;
 
     } else if (dataType === 'item') {

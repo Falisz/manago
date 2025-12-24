@@ -9,7 +9,18 @@ export async function getConfig() {
     const configs = await AppConfig.findAll();
     const configObject = {};
     for (const config of configs) {
-        configObject[config.configName] = config.selectedOption;
+        if (config.selectedOption === 'true')
+            config.selectedOption = true;
+
+        if (config.selectedOption === 'false')
+            config.selectedOption = false;
+
+        if (config.module === 4) {
+            if (!configObject['workPlanner']) configObject['workPlanner'] = {};
+            configObject['workPlanner'][config.configName] = config.selectedOption;
+        }
+        else
+            configObject[config.configName] = config.selectedOption;
     }
     return configObject;
 }

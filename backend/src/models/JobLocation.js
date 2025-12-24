@@ -8,6 +8,7 @@ export const JobLocation = sequelize.define('JobLocation', {
         allowNull: false,
         unique: true
     },
+    abbreviation: DataTypes.STRING,
     description: DataTypes.TEXT,
     color: DataTypes.STRING(7)
 }, {

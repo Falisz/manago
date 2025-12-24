@@ -7,7 +7,7 @@ import Details from "../Details";
 
 const HolidayDetails = ({ id, modal }) => {
     const { refreshTriggers, refreshData } = useApp();
-    const { openPopUp, openDialog, closeTopModal } = useNav();
+    const { openPopUp, openModal, closeTopModal } = useNav();
     const { holiday, loading, fetchHoliday, deleteHoliday } = useHolidays();
 
     React.useEffect(() => {
@@ -46,7 +46,7 @@ const HolidayDetails = ({ id, modal }) => {
                 className: 'edit',
                 icon: 'edit',
                 label: 'Edit',
-                onClick: () => openDialog({content: 'holidayEdit', contentId: id})
+                onClick: () => openModal({content: 'holidayEdit', contentId: id})
             },
             delete: {
                 className: 'delete',
@@ -55,7 +55,7 @@ const HolidayDetails = ({ id, modal }) => {
                 onClick: handleDelete
             }
         }
-    }), [openDialog, id, handleDelete]);
+    }), [openModal, id, handleDelete]);
 
     const sections = React.useMemo(() => ({
         0: {

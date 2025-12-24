@@ -21,6 +21,10 @@ import HolidayDetails from "../components/Holidays/Details";
 import HolidayEdit from "../components/Holidays/Edit";
 import LeaveTypeDetails from "../components/LeaveTypes/Details";
 import LeaveTypeEdit from "../components/LeaveTypes/Edit";
+import JobPostDetails from "../components/JobPosts/Details";
+import JobPostEdit from "../components/JobPosts/Edit";
+import JobLocationDetails from "../components/JobLocation/Details";
+import JobLocationEdit from "../components/JobLocation/Edit";
 
 const ANIMATION_DURATION = 300;
 
@@ -86,20 +90,26 @@ const MODALS = {
     subteamNew: {
         component: (modal) => <TeamEdit parentId={modal.parentId} modal={modal.id}/>
     },
-    shiftNew: {
-        urlParam: 'new',
-        urlParamValue: 'shift',
-        component: (modal) => <ShiftEdit modal={modal.id}/>
-    },
     shiftDetails: {
         urlParam: 'shift',
         component: (modal) => <ShiftDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },
+    shiftNew: {
+        urlParam: 'new',
+        urlParamValue: 'shift',
+        component: (modal) => <ShiftEdit modal={modal.id}/>
+    },
     shiftEdit: {
         urlParam: 'editShift',
         component: (modal) => <ShiftEdit shiftId={modal.contentId} modal={modal.id}/>
+    },
+    leaveDetails: {
+        urlParam: 'leave',
+        component: (modal) => <LeaveDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
     },
     leaveNew: {
         urlParam: 'new',
@@ -108,13 +118,7 @@ const MODALS = {
         type: 'dialog',
         style: {width: 'calc(100% - 200px)'}
     },
-    leaveDetails: {
-        urlParam: 'leave',
-        component: (modal) => <LeaveDetails id={modal.contentId} modal={modal.id}/>,
-        type: 'dialog',
-        closeButton: false
-    },
-    holiday: {
+    holidayDetails: {
         urlParam: 'holiday',
         component: (modal) => <HolidayDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
@@ -123,15 +127,11 @@ const MODALS = {
     holidayNew: {
         urlParam: 'new',
         urlParamValue: 'holiday',
-        component: (modal) => <HolidayEdit modal={modal.id}/>,
-        type: 'dialog',
-        closeButton: false
+        component: (modal) => <HolidayEdit modal={modal.id}/>
     },
     holidayEdit: {
         urlParam: 'editHoliday',
-        component: (modal) => <HolidayEdit id={modal.contentId} modal={modal.id}/>,
-        type: 'dialog',
-        closeButton: false
+        component: (modal) => <HolidayEdit id={modal.contentId} modal={modal.id}/>
     },
     leaveTypeDetails: {
         urlParam: 'leaveType',
@@ -142,15 +142,41 @@ const MODALS = {
     leaveTypeNew: {
         urlParam: 'new',
         urlParamValue: 'leaveType',
-        component: (modal) => <LeaveTypeEdit modal={modal.id}/>,
-        type: 'dialog',
-        closeButton: false
+        component: (modal) => <LeaveTypeEdit modal={modal.id}/>
     },
     leaveTypeEdit: {
         urlParam: 'editLeaveType',
-        component: (modal) => <LeaveTypeEdit id={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <LeaveTypeEdit id={modal.contentId} modal={modal.id}/>
+    },
+    jobPostDetails: {
+        urlParam: 'jobPost',
+        component: (modal) => <JobPostDetails id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
+    },
+    jobPostNew: {
+        urlParam: 'new',
+        urlParamValue: 'jobPost',
+        component: (modal) => <JobPostEdit modal={modal.id}/>
+    },
+    jobPostEdit: {
+        urlParam: 'editJobPost',
+        component: (modal) => <JobPostEdit id={modal.contentId} modal={modal.id}/>
+    },
+    jobLocationDetails: {
+        urlParam: 'jobLocation',
+        component: (modal) => <JobLocationDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    jobLocationNew: {
+        urlParam: 'new',
+        urlParamValue: 'jobLocation',
+        component: (modal) => <JobLocationEdit modal={modal.id}/>
+    },
+    jobLocationEdit: {
+        urlParam: 'editJobLocation',
+        component: (modal) => <JobLocationEdit id={modal.contentId} modal={modal.id}/>
     },
     dateDetails: {
         urlParam: 'date',

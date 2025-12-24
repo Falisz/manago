@@ -13,15 +13,20 @@
     cursor: pointer;
     transition: 0.3s ease-in-out;
 }
-.app-button:hover {
+.app-button.disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+}
+
+.app-button:not(.disabled):hover {
     background: var(--highlight-color);
 }
 .app-button.discard,
 .app-button.cancel {
     background: orangered;
 }
-.app-button.discard:hover,
-.app-button.cancel:hover {
+.app-button.discard:not(.disabled):hover,
+.app-button.cancel:not(.disabled):hover {
     background: #ff7040;
 }
 .app-button .icon {
@@ -44,8 +49,8 @@
     background: var(--seethrough-background);
     color: orangered;
 }
-.app.fluent .app-button.discard:hover,
-.app.fluent .app-button.cancel:hover {
+.app.fluent .app-button.discard:not(.disabled):hover,
+.app.fluent .app-button.cancel:not(.disabled):hover {
     color: #ff7040;
 }
 .app-button.no-bg,
@@ -53,16 +58,4 @@
     background: none;
     box-shadow: none;
     color: var(--text-color);
-}
-
-.app-button.disabled {
-    opacity: 0.75;
-    cursor: not-allowed;
-}
-.app-button.disabled:hover {
-    color: inherit;
-}
-.app.fluent .app-button.disabled:hover {
-    color: inherit;
-    background: var(--seethrough-background);
 }

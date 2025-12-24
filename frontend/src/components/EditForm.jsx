@@ -63,7 +63,7 @@ const Field = ({name, field, formData, source, errors, handleChange}) => {
 
     if (type === 'color')
         content = <input
-            className={getInputClassName('form-input', name)}
+            className={getInputClassName('form-input color', name)}
             type={'color'}
             name={name}
             value={source?.[name] || formData?.[name] || ''}

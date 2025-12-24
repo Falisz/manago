@@ -1,14 +1,10 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### Work Planner and Users (till 23-12-25)
-- Settings Page
-  - Holiday listing with add button.
-  - Job Location widget with list and sub-module enablement button, also a button adding item button.
-  - Job Post and Leave Types same as other widgets.
-- Frontend implementation for Contracts, Contract Types and Joined Date while creating the User.
-### Projects (till 24-12-25)
+### By 25-12-25
+- Implement settings of WorkPlanner to various components and views.
+- Project Frontend implementation
 - Project Roles - different from company-wide user roles.
-- Access to different resources.
+- Frontend implementation for Contracts, Contract Types and Joined Date while creating the User.
 ### TimeSheets (till 28-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)

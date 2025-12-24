@@ -196,8 +196,8 @@ export const AppProvider = ({ children }) => {
 
     // App's Callbacks
 
-    const refreshConfig = useCallback(async (hasRetried = false) => {
-        setLoading(true);
+    const refreshConfig = useCallback(async (hasRetried = false, loading = true) => {
+        loading && setLoading(true);
         try {
             const config = await getConfig();
             setAppState(prev => {
@@ -213,13 +213,13 @@ export const AppProvider = ({ children }) => {
                 console.error('Refreshing app config error', error);
             }
         }
-        setLoading(false);
+        loading && setLoading(false);
     }, [getConfig, setLoading]);
 
-    const saveConfig = useCallback(async (config) => {
+    const saveConfig = useCallback(async (config, loading) => {
         try {
             await axios.put('/config', config);
-            await refreshConfig();
+            await refreshConfig(false, loading);
             return true;
         } catch (err) {
             console.error('Error saving config:', err);

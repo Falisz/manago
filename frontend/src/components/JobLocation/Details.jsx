@@ -1,39 +1,39 @@
-// FRONTEND/components/LeaveType/Details.js
+// FRONTEND/components/JobLocation/Details.js
 import React from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
-import {useLeaveTypes} from '../../hooks/useResource';
+import {useJobLocations} from '../../hooks/useResource';
 import Details from "../Details";
 
-const LeaveTypeDetails = ({ id, modal }) => {
+const JobLocationDetails = ({ id, modal }) => {
     const { refreshTriggers, refreshData } = useApp();
     const { openPopUp, openModal, closeTopModal } = useNav();
-    const { leaveType, loading, fetchLeaveType, deleteLeaveType } = useLeaveTypes();
+    const { jobLocation, loading, fetchJobLocation, deleteJobLocation } = useJobLocations();
 
     React.useEffect(() => {
-        const reload = refreshTriggers.leaveTypes;
-        if (reload) delete refreshTriggers.leaveTypes;
-        if (id && (!leaveType || reload)) fetchLeaveType({id, reload}).then();
-    }, [fetchLeaveType, leaveType, id, refreshTriggers.leaveTypes]);
+        const reload = refreshTriggers.jobLocation;
+        if (reload) delete refreshTriggers.jobLocation;
+        if (id && (!jobLocation || reload)) fetchJobLocation({id, reload}).then();
+    }, [fetchJobLocation, jobLocation, id, refreshTriggers.jobLocation]);
 
     const handleDelete = React.useCallback(() => {
-        let message = 'Are you sure you want to delete this Leave Type? If there are any Leaves of this type' +
-            ' they will be left typeless. This action cannot be undone.';
+        let message = 'Are you sure you want to delete this Job Location? If there are any shifts using of this job post' +
+            ' they will be left without a job post. This action cannot be undone.';
 
         openPopUp({
             content: 'confirm',
             message: message,
             onConfirm: async () => {
-                const success = await deleteLeaveType({id});
+                const success = await deleteJobLocation({id});
                 if (!success) return;
-                refreshData('holidays', true);
+                refreshData('jobLocations', true);
                 closeTopModal();
             },
         });
-    }, [id, openPopUp, deleteLeaveType, refreshData, closeTopModal]);
+    }, [id, openPopUp, deleteJobLocation, refreshData, closeTopModal]);
 
     const header = React.useMemo(() => ({
-        style: { borderColor: leaveType?.color },
+        style: { borderColor: jobLocation?.color },
         title: {
             dataField: 'name',
         },
@@ -47,7 +47,7 @@ const LeaveTypeDetails = ({ id, modal }) => {
                 className: 'edit',
                 icon: 'edit',
                 label: 'Edit',
-                onClick: () => openModal({content: 'leaveTypeEdit', contentId: id})
+                onClick: () => openModal({content: 'jobLocationEdit', contentId: id})
             },
             delete: {
                 className: 'delete',
@@ -56,32 +56,27 @@ const LeaveTypeDetails = ({ id, modal }) => {
                 onClick: handleDelete
             }
         }
-    }), [leaveType, openModal, id, handleDelete]);
+    }), [jobLocation, openModal, id, handleDelete]);
 
     const sections = React.useMemo(() => ({
         0: {
             style: { flexDirection: 'row', gap: '20px' },
             fields: {
                 0: {
-                    label: 'Name',
-                    dataField: 'name'
+                    label: 'Abbreviated Name',
+                    dataField: 'abbreviation',
+                    hideEmpty: true
                 },
                 1: {
-                    label: 'Abbreviated Name',
-                    dataField: 'abbreviation'
-                },
-                2: {
                     label: 'Color',
                     dataField: 'color',
                     format: (value) =>
                         <span style={{padding: '2px 5px', background: value, borderRadius: '10px'}}>{value}</span>
                 },
-                3: {
-                    label: 'Can be Planned',
-                    dataType: 'boolean',
-                    dataField: 'plannable',
-                    trueValue: 'This type of Absence can be planned.',
-                    falseValue: 'This type of Absence cannot be planned.'
+                2: {
+                    label: 'Description',
+                    dataField: 'description',
+                    hideEmpty: true
                 }
             }
         }
@@ -90,11 +85,11 @@ const LeaveTypeDetails = ({ id, modal }) => {
     return <Details
         header={header}
         sections={sections}
-        data={leaveType}
+        data={jobLocation}
         modal={modal}
         loading={loading}
-        placeholder={'Holiday not found!'}
+        placeholder={'Job Location not found!'}
     />;
 };
 
-export default LeaveTypeDetails;
+export default JobLocationDetails;

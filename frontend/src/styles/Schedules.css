@@ -278,6 +278,19 @@ main.schedules.leaves .reportee-leaves {
             "a b c"
             "a d e";
 }
+main.schedules.settings section.disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+main.schedules.settings section.disabled * {
+    cursor: not-allowed;
+}
+main.schedules.settings section.disabled .app-table-body {
+    overflow: hidden;
+}
+main.schedules.settings section.disabled .app-table-row:hover {
+    background: none;
+}
 main.schedules.settings .general-settings {
     grid-area: a;
 }
