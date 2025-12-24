@@ -1,4 +1,4 @@
-// FRONTEND/components/Roles/Leaves.js
+// FRONTEND/components/Leaves/Details.js
 import React, {useCallback, useEffect, useMemo} from 'react';
 import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
@@ -11,10 +11,10 @@ const LeaveDetails = ({ id, modal }) => {
     const { leave, loading, fetchLeave, saveLeave, deleteLeave } = useLeaves();
 
     useEffect(() => {
-        const reload = refreshTriggers?.aleave?.data === parseInt(id);
-        if (reload) delete refreshTriggers.aleave;
+        const reload = refreshTriggers?.leaves;
+        if (reload) delete refreshTriggers.leaves;
         if (id && (!leave || reload)) fetchLeave({id, reload}).then();
-    }, [fetchLeave, leave, id, refreshTriggers.aleave]);
+    }, [fetchLeave, leave, id, refreshTriggers.leaves]);
 
     const handleRequest = useCallback(() => {
         openPopUp({
@@ -25,7 +25,7 @@ const LeaveDetails = ({ id, modal }) => {
                 await saveLeave({id, data: {status: 1, user_note: note}});
             }
         });
-    }, [openPopUp, saveLeave, id, refreshData]);
+    }, [openPopUp, saveLeave, id]);
 
     const handleCancel = useCallback(() => {
 
@@ -110,7 +110,7 @@ const LeaveDetails = ({ id, modal }) => {
 
     const header = useMemo(() => ({
         style: { borderBottom: '2px solid ' + (leave?.type?.color || 'var(--text-color-3)') },
-        title: (user.id === leave?.user?.id ? 'Your ' : '') + leave?.type?.name || 'Leave',
+        title: (user.id === leave?.user?.id ? 'Your ' : '') + (leave?.type?.name ?? 'Leave'),
         subtitle: {
             hash: true,
             dataField: 'id',
@@ -118,6 +118,8 @@ const LeaveDetails = ({ id, modal }) => {
         },
         buttons
     }), [user.id, leave, buttons]);
+
+    console.log(leave);
 
     const sections = useMemo(() => ({
         0: {

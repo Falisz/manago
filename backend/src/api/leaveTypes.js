@@ -86,7 +86,7 @@ const updateHandler = async (req, res) => {
     try {
         const data = req.body;
 
-        const { hasAccess } = await checkAccess(req.user, 'update', 'holiday', id);
+        const { hasAccess } = await checkAccess(req.user, 'update', 'leave-type', id);
 
         if (!hasAccess)
             return res.status(403).json({message: 'Not permitted.'});
@@ -96,9 +96,9 @@ const updateHandler = async (req, res) => {
         if (!success)
             return res.status(400).json({ message });
 
-        const holiday = await getAbsenceType({id});
+        const leaveType = await getAbsenceType({id});
 
-        res.json({ message, holiday });
+        res.json({ message, leaveType });
 
     } catch (err) {
         console.error(`Error updating Holiday (ID: ${id}):`, err, 'Provided data: ', req.body);

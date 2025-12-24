@@ -20,7 +20,16 @@ export async function getHoliday({id, date, from, to, working} = {}) {
         const holiday = await Holiday.findByPk(id);
 
         if (holiday && working)
-            holiday.working = await HolidayWorking.findOne({where: {holiday: id, user: working}, raw: true});
+            holiday.working = await HolidayWorking.findOne({where: {holiday: holiday.id, user: working}, raw: true});
+
+        return holiday;
+    }
+
+    if (date) {
+        const holiday = await Holiday.findOne({where: {date}});
+
+        if (holiday && working)
+            holiday.working = await HolidayWorking.findOne({where: {holiday: holiday.id, user: working}, raw: true});
 
         return holiday;
     }
@@ -126,6 +135,12 @@ export async function deleteHoliday(id) {
     const transaction = await sequelize.transaction();
 
     try {
+
+        const deletedHolidayWorkings = await HolidayWorking.destroy({ where: { holiday: id }, transaction});
+        const subString = deletedHolidayWorkings ?
+            ` and ${deletedHolidayWorkings} Special Working Agreement${deletedHolidayWorkings > 1 ? 's' : ''}` :
+            '';
+
         const deletedHolidays = await Holiday.destroy({ where: { id }, transaction });
 
         if (!deletedHolidays) {
@@ -141,7 +156,7 @@ export async function deleteHoliday(id) {
 
         return {
             success: true,
-            message: `${deletedHolidays} Holiday${deletedHolidays > 1 ? 's' : ''} deleted successfully.`,
+            message: `${deletedHolidays} Holiday${deletedHolidays > 1 ? 's' : ''}${subString} deleted successfully.`,
             deletedCount: deletedHolidays
         };
 

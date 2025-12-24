@@ -269,9 +269,27 @@ main.schedules.leaves .reportee-leaves {
     grid-template-columns: repeat(2, 1fr);
 }
 
-.app.fluent .approvals-index .page-section {
-    border-radius: var(--big-border-radius);
-    box-shadow: var(--weak-shade);
-    background: var(--seethrough-background);
+/* Settings */
+.app.manager main.schedules.settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+            "a b c"
+            "a d e";
 }
-
+main.schedules.settings .general-settings {
+    grid-area: a;
+}
+main.schedules.settings .holidays {
+    grid-area: b;
+}
+main.schedules.settings .leave-types {
+    grid-area: c;
+}
+main.schedules.settings .job-posts {
+    grid-area: d;
+}
+main.schedules.settings .job-locations {
+    grid-area: e;
+}

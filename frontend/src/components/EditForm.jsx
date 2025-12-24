@@ -61,6 +61,18 @@ const Field = ({name, field, formData, source, errors, handleChange}) => {
             disabled={field.disabled}
         />;
 
+    if (type === 'color')
+        content = <input
+            className={getInputClassName('form-input', name)}
+            type={'color'}
+            name={name}
+            value={source?.[name] || formData?.[name] || ''}
+            onChange={(e) => {handleChange(e); field.onChange && field.onChange(e, formData);}}
+            placeholder={`${field.placeholder || field.label}`}
+            required={field.required}
+            disabled={field.disabled}
+        />;
+
     if (type === 'date')
         content = <input
             className={getInputClassName('form-input', name)}

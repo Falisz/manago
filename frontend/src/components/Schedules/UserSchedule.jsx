@@ -22,12 +22,12 @@ const LeaveItem = ({ leave }) => {
     return (
         <div
             className={'user-schedule-leave-item app-clickable'}
-            style={{background: type.color+'90', opacity: status.id !== 1 ? 1 : .75}}
+            style={{background: (type?.color ?? '#555555')+'90', opacity: status.id !== 1 ? 1 : .75}}
             onClick={() => openDialog({content: 'leaveDetails', contentId: id, closeButton: false})}
-            title={`${type.name || 'Leave'} | ${status.name}`}
+            title={`${type?.name || 'Leave'} | ${status.name}`}
         >
             <span>{days || 1}-day{days > 1 ? 's' : ''} Leave {status.id === 1 ? '(pending approval)' : ''}</span>
-            <span className={'subtitle'}>{type.abbreviation || type.name || 'Leave'}</span>
+            <span className={'subtitle'}>{type?.abbreviation || type?.name || 'Leave'}</span>
         </div>
     );
 }
@@ -328,10 +328,8 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                     const isWeekend = dayIdx === 0 || dayIdx === 6;
 
                     const onClick = () => {
-                        if (isHoliday)
-                            openDialog({content: 'holidayDetails', contentId: isHoliday.id, closeButton: false});
-                        else if (isWeekend)
-                            openDialog({content: 'weekendDetails', contentId: formattedDate, closeButton: false});
+                        if (isHoliday || isWeekend)
+                            openDialog({content: 'dateDetails', contentId: formattedDate, closeButton: false});
                     }
 
                     return (

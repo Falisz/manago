@@ -2,6 +2,7 @@
 import {Absence, AbsenceType} from '#models';
 import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 import randomId from '#utils/randomId.js';
+import {Op} from "sequelize";
 /**
  * Retrieves one Absence Type by its ID or all Absence Types if an ID is not provided.
  * @param {number|null} id - optional - Absence Type ID to fetch a specific Absence Type
@@ -62,7 +63,7 @@ export async function updateAbsenceType(id, data) {
     if (!leaveType)
         return { success: false, message: 'AbsenceType not found.' };
 
-    if (data.name && await AbsenceType.findOne({ where: { name: data.name } }))
+    if (data.name && await AbsenceType.findOne({ where: { name: data.name, id: { [Op.ne]: id }} }))
         return { success: false, message: 'Name provided is currently used by other Absence Type.' };
 
     if (data.parent_type && !(await AbsenceType.findOne({ where: { id: data.parent_type}})))
@@ -85,13 +86,7 @@ export async function deleteAbsenceType(id) {
     if (!isNumberOrNumberArray(id))
         return { success: false, message: 'Invalid Absence Type ID(s) provided.' };
 
-    const block = await Absence.findAll({ where: { status: id }, raw: true });
-    if (block?.length)
-        return {
-            success: false,
-            message: `Leave Type cannot be deleted.` +
-                `There are ${block.length} Leave${block.length !== 1 ? 's' : ''} using this Leave Type.`
-        };
+    await Absence.update({ type: null }, { where: { type: id }});
 
     const deleted = await AbsenceType.destroy({ where: { id } });
 

@@ -8,7 +8,6 @@ import sequelize from '#utils/database.js';
 export const Absence = sequelize.define('Absence', {
     type: {
         type: DataTypes.INTEGER,
-        allowNull: false,
         references: { model: AbsenceType, key: 'id' }
     },
     start_date: {

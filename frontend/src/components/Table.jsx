@@ -245,6 +245,7 @@ const TableRow = ({
                       descriptionField,
                       displayContextMenu,
                       isSubRow = false,
+                      handleClick,
                       handleSelect,
                       selectedItems,
                       hasContextMenu,
@@ -254,14 +255,21 @@ const TableRow = ({
 
     const selectionMode = selectedItems?.size > 0;
 
+    const onClick = (e) => {
+        if (handleClick)
+            handleClick(e, data);
+        else if (handleSelect)
+            handleSelect(e, data.id);
+    };
+
     const rowContent = (
         <>
             <div
                 className={`app-table-row${selectedItems?.has(data.id) ? 
                     ' selected' : ''}${isSubRow ? 
                     ' sub-row' : ''}${descriptionField ? 
-                    ' with-desc' : ''}`}
-                onClick={(e) => handleSelect(e, data.id)}
+                    ' with-desc' : ''}${handleClick ? ' app-clickable' : ''}`}
+                onClick={onClick}
                 onContextMenu={(e) => hasContextMenu && displayContextMenu(e, data)}
             >
                 {isSubRow && <Icon className={'app-table-sub-row-icon'} i={'subdirectory_arrow_right'} />}
@@ -357,6 +365,7 @@ const Table = ({
                    columnHeaders = true,
                    filterable = false,
                    sortable = false,
+                   handleRowClick,
                    selectableRows = false,
                    contextMenuActions,
                    loading = false,
@@ -588,6 +597,7 @@ const Table = ({
                             key={index}
                             data={data}
                             fields={fields}
+                            handleClick={handleRowClick}
                             handleSelect={(e, id) => handleSelect(e, id, data.id)}
                             selectedItems={selectedItems}
                             subRowField={subRowFields}

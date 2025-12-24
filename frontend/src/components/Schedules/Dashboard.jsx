@@ -78,7 +78,7 @@ const YourSchedulePreview = ({header}) => {
                                 {holiday && <span
                                     className={'schedule-item'}
                                     onClick={() => openDialog(
-                                        {content: 'holidayDetails', contentId: holiday.id, closeButton: false}
+                                        {content: 'dateDetails', contentId: holiday.date, closeButton: false}
                                     )}
                                 >
                                 {holiday.name}
@@ -108,7 +108,7 @@ const YourSchedulePreview = ({header}) => {
                                 {empty && <span
                                     className={'schedule-item'}
                                     onClick={isWeekend ? () => openDialog(
-                                        {content: 'weekendDetails', contentId: formatDate(date), closeButton: false}
+                                        {content: 'dateDetails', contentId: formatDate(date), closeButton: false}
                                     ) : null}
                                 >{isWeekend ? 'Weekend' : 'Nothing planned'}</span>}
                             </div>

@@ -108,11 +108,10 @@ const UsersWorkingAgreement = ({agreements, holiday, date}) => {
     />;
 }
 
-const DateDetails = ({holidayId, date, modal}) => {
+const DateDetails = ({date, modal}) => {
     const {user, refreshTriggers} = useApp();
     const {closeModal, openPopUp, openDialog} = useNav();
     const {holiday, fetchHoliday} = useHolidays();
-    const {fetchHolidays} = useHolidays();
     const {holidayWorkings, loading: hwLoading, fetchHolidayWorkings, saveHolidayWorking, deleteHolidayWorking}
         = useHolidayWorkings();
     const {weekendWorkings, loading: wwLoading, fetchWeekendWorkings,saveWeekendWorking, deleteWeekendWorking}
@@ -120,8 +119,6 @@ const DateDetails = ({holidayId, date, modal}) => {
     const loading = useMemo(() => hwLoading || wwLoading, [hwLoading, wwLoading]);
     const isMounted = useRef(false);
     const isWeekend = useRef(false);
-    const isHoliday = useRef(false);
-    const dateRef = useRef(date);
 
     React.useEffect(() => {
         const refresh = refreshTriggers['holidayWorkings'] || refreshTriggers['weekendWorkings'];
@@ -131,44 +128,30 @@ const DateDetails = ({holidayId, date, modal}) => {
         if (refresh) delete refreshTriggers['holidayWorkings'];
         if (refresh) delete refreshTriggers['weekendWorkings'];
 
+        isWeekend.current = [0,6].includes(new Date(date).getDay());
+        if (isWeekend.current)
+            fetchWeekendWorkings({date}).then();
 
-        if (holidayId) {
-            fetchHoliday({id: holidayId}).then(res => {
-                dateRef.current = res?.date;
-                isHoliday.current = res;
-            });
-            fetchHolidayWorkings({holiday: holidayId}).then();
-        } else if (dateRef.current) {
+        fetchHoliday({date}).then();
 
-            isWeekend.current = [0,6].includes(new Date(dateRef.current).getDay());
-
-            if (!isWeekend.current)
-                fetchHolidays().then(res => {
-                    const foundHoliday = res.find(holiday => holiday.date === dateRef.current);
-                    if (foundHoliday) {
-                        fetchHoliday({id: foundHoliday.id}).then(res => {
-                            dateRef.current = res?.date;
-                            isHoliday.current = res;
-                        });
-                        fetchHolidayWorkings({holiday: foundHoliday.id}).then();
-                    }
-                });
-
-            if (isWeekend.current)
-                fetchWeekendWorkings({date: dateRef.current}).then();
-        }
         isMounted.current = true;
-    }, [holidayId, fetchHolidayWorkings, refreshTriggers, fetchHoliday, fetchHolidays, holiday, fetchWeekendWorkings]);
+    }, [date, fetchHoliday, refreshTriggers, holiday, fetchWeekendWorkings]);
+
+    React.useEffect(() => {
+        if (holiday)
+            fetchHolidayWorkings({holiday: holiday.id}).then();
+
+    }, [holiday, fetchHolidayWorkings])
 
     const agreement = useMemo(() => {
-        if (isHoliday.current)
-            return holidayWorkings.find(hw => hw.user.id === user.id);
+        if (holiday)
+            return holidayWorkings?.find(hw => hw.user.id === user.id);
 
         if (isWeekend.current)
-            return weekendWorkings.find(ww => ww.user.id === user.id);
+            return weekendWorkings?.find(ww => ww.user.id === user.id);
 
         return null;
-    }, [holidayWorkings, weekendWorkings, user.id]);
+    }, [holiday, holidayWorkings, weekendWorkings, user.id]);
 
     const handleWorkingAgreement = useCallback((action) => {
 
@@ -215,11 +198,11 @@ const DateDetails = ({holidayId, date, modal}) => {
         openPopUp, date, holiday]);
 
     const status = useMemo(() => {
-        if ((isWeekend.current || isHoliday.current) && (!agreement || [1,3,5].includes(agreement?.status?.id)))
+        if ((isWeekend.current || holiday) && (!agreement || [1,3,5].includes(agreement?.status?.id)))
             return 'You have a day off on this day. 😀';
 
         return 'You are scheduled to work on this day.'
-    }, [agreement]);
+    }, [agreement, holiday]);
 
     const agreementStatus = useMemo(() => {
         if (!agreement)
@@ -255,14 +238,10 @@ const DateDetails = ({holidayId, date, modal}) => {
         ${date ? ` ${prefix} ${date}` : ''}`;
     }, [agreement]);
 
-
-    const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-    if (!dateRef.current && !holiday)
+    if (!date)
         return null;
 
-    if (!dateRef.current)
-        dateRef.current = holiday?.date;
+    const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
     return (
         <div
@@ -270,10 +249,10 @@ const DateDetails = ({holidayId, date, modal}) => {
         >
             <div className={'details-header'}>
                 <div className={'details-title'}>
-                    {dayName[new Date(dateRef.current).getDay()] + (holiday?.name ? ` | ${holiday.name}` : '')}
+                    {dayName[new Date(date).getDay()] + (holiday?.name ? ` | ${holiday.name}` : '')}
                 </div>
                 <div className={'header-buttons'}>
-                    {(isWeekend.current || isHoliday.current) && !agreement &&
+                    {(isWeekend.current || holiday) && !agreement &&
                         <Button
                             transparent={true}
                             icon={'upload'}
@@ -281,7 +260,7 @@ const DateDetails = ({holidayId, date, modal}) => {
                             onClick={() => handleWorkingAgreement('request')}
                         />
                     }
-                    {(isWeekend.current || isHoliday.current) && agreement?.status?.id === 1 &&
+                    {(isWeekend.current || holiday) && agreement?.status?.id === 1 &&
                         <Button
                             transparent={true}
                             icon={'delete'}
@@ -289,7 +268,7 @@ const DateDetails = ({holidayId, date, modal}) => {
                             onClick={() => handleWorkingAgreement('discard')}
                         />
                     }
-                    {(isWeekend.current || isHoliday.current) && agreement?.status?.id === 2 &&
+                    {(isWeekend.current || holiday) && agreement?.status?.id === 2 &&
                         <Button
                             transparent={true}
                             icon={'cancel'}
@@ -300,7 +279,7 @@ const DateDetails = ({holidayId, date, modal}) => {
                     <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>
                 </div>
             </div>
-            <div className={'details-subtitle'}>{dateRef.current}</div>
+            <div className={'details-subtitle'}>{date}</div>
             {loading && <Loader/>}
             {!loading && (holidayWorkings || weekendWorkings) &&
                 <div className={'details-content app-scroll'}>

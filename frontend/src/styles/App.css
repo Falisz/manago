@@ -17,14 +17,6 @@ body * {
 body a {
     text-decoration: none;
 }
-.material-icons,
-.material-symbols-rounded {
-    cursor: default;
-}
-button .material-icons,
-button .material-symbols-rounded {
-    cursor: pointer;
-}
 .app {
     /*  APP'S PALETTE */
     --black: #0c0e12;
@@ -235,6 +227,8 @@ button .material-symbols-rounded {
 .app-notice .main-icon {
     font-size: 100px;
     margin-bottom: 20px;
+    cursor: default;
+    user-select: none;
 }
 
 .app-notice h3 {

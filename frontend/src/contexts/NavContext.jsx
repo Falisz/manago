@@ -17,6 +17,10 @@ import UserDetails from '../components/Users/Details';
 import UserEdit, {UserAssignment} from '../components/Users/Edit';
 import DateDetails from '../components/Schedules/DateDetails';
 import {HolidayWorking, WeekendWorking} from "../components/SpecialWorkings/Details";
+import HolidayDetails from "../components/Holidays/Details";
+import HolidayEdit from "../components/Holidays/Edit";
+import LeaveTypeDetails from "../components/LeaveTypes/Details";
+import LeaveTypeEdit from "../components/LeaveTypes/Edit";
 
 const ANIMATION_DURATION = 300;
 
@@ -110,21 +114,47 @@ const MODALS = {
         type: 'dialog',
         closeButton: false
     },
-    holidayDetails: {
+    holiday: {
         urlParam: 'holiday',
-        component: (modal) => <DateDetails holidayId={modal.contentId} modal={modal.id}/>,
+        component: (modal) => <HolidayDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    holidayNew: {
+        urlParam: 'new',
+        urlParamValue: 'holiday',
+        component: (modal) => <HolidayEdit modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    holidayEdit: {
+        urlParam: 'editHoliday',
+        component: (modal) => <HolidayEdit id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    leaveTypeDetails: {
+        urlParam: 'leaveType',
+        component: (modal) => <LeaveTypeDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    leaveTypeNew: {
+        urlParam: 'new',
+        urlParamValue: 'leaveType',
+        component: (modal) => <LeaveTypeEdit modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    leaveTypeEdit: {
+        urlParam: 'editLeaveType',
+        component: (modal) => <LeaveTypeEdit id={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },
     dateDetails: {
         urlParam: 'date',
-        component: (modal) => <DateDetails date={modal.contentId} modal={modal.id} />,
-        type: 'dialog',
-        closeButton: false
-    },
-    weekendDetails: {
-        urlParam: 'weekend',
-        component: (modal) => <DateDetails date={modal.contentId} modal={modal.id} />,
+        component: (modal) => <DateDetails date={modal.contentId} modal={modal.id}/>,
         type: 'dialog',
         closeButton: false
     },

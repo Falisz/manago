@@ -14,7 +14,7 @@ import RolesIndex from '../components/Roles/Index';
 import TeamsIndex from '../components/Teams/Index';
 import InWorks from '../components/InWorks';
 import PopUps from '../components/PopUps';
-import WorkPlannerSettings from '../components/WorkPlannerSettings';
+import WorkPlannerSettings from '../components/Schedules/Settings';
 import setupAxiosInterceptor from "../utils/interceptors";
 import ApprovalsIndex from "../components/Approvals/Index";
 
@@ -81,7 +81,10 @@ export const AppProvider = ({ children }) => {
         leaves: null,
         holidays: null,
         holidayWorkings: null,
-        weekendWorkings: null
+        weekendWorkings: null,
+        leaveTypes: null,
+        jobPosts: null,
+        jobLocations: null
     });
 
     // State and Ref setters
