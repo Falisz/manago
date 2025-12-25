@@ -8,6 +8,7 @@ import {generateDateList, formatDate, sameDay} from '../../utils/dates';
 import '../../styles/UserSchedule.css';
 import InWorks from "../InWorks";
 import {useHolidays} from "../../hooks/useResource";
+import useApp from "../../contexts/AppContext";
 
 
 const LeaveItem = ({ leave }) => {
@@ -35,6 +36,7 @@ const LeaveItem = ({ leave }) => {
 const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onClick,
                        selectShift, updateShift, jobPosts }) => {
 
+    const { appState } = useApp();
     const { openDialog } = useNav();
 
     if (!shift)
@@ -59,11 +61,28 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
         updateShift({ shift: {...shift, ...newData}});
     }
 
-    const background = shift.job_post ? shift.job_post.color+'90' : shift.job_location ? shift.job_location.color+'90' :
-        'var(--seethrough-background)';
+    const background =
+        appState.workPlanner.jobPosts && shift.job_post ?
+            shift.job_post.color+'90' :
+            appState.workPlanner.jobLocations && shift.job_location ?
+                shift.job_location.color+'90' :
+                'var(--seethrough-background)';
 
-    const subTitle = (shift.job_post ? shift.job_post.name : '') + (shift.job_post && shift.job_location ? ' | ' : '') +
-        (shift.job_location ? shift.job_location.name : '');
+    const SubTitle = () => {
+
+        let result = '';
+
+        if (appState.workPlanner.jobPosts && shift.job_post) {
+            result += shift.job_post.abbreviation ?? shift.job_post.name ?? '';
+            if (appState.workPlanner.jobLocations && shift.job_location)
+                result += ` (${shift.job_location.abbreviation ?? shift.job_location.name})`;
+        } else if (appState.workPlanner.jobLocations && shift.job_location) {
+            result += shift.job_location.abbreviation ?? shift.job_location.name ?? '';
+        }
+
+        return <span>{result}</span>;
+
+    };
 
     const note = shift.note;
 
@@ -104,7 +123,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
                 style={{padding: 0, background: 'none'}}
                 selectedStyle={{padding: 0, background: 'none'}}
                 selectedTextStyle={{padding: 0, color: 'white', fontSize: '.8rem', fontWeight: '600'}}
-            /> : subTitle
+            /> : <SubTitle/>
         }
         </span>}
         {editMode &&
@@ -119,6 +138,7 @@ const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onC
 };
 
 const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => {
+    const { appState } = useApp();
     const { openDialog, setUnsavedChanges } = useNav();
     const { holidays, fetchHolidays } = useHolidays();
 
@@ -298,8 +318,8 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
     };
 
     React.useEffect(() => {
-        fetchHolidays().then();
-    }, [fetchHolidays]);
+        if (appState.workPlanner.holidays) fetchHolidays().then();
+    }, [appState.workPlanner, fetchHolidays]);
 
     if (!schedule.start_date || !schedule.end_date)
         return <InWorks
@@ -369,37 +389,14 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                             () => openDialog({content: 'teamDetails', contentId: user.team.id, closeButton: false})
                         }>{user.team.name}: {user.role.name}</small></>}
                     </td>
-                    {dates?.map((date, dateIndex) => {
+                    {dates?.map((date) => {
                         const dateStr = formatDate(date);
 
                         const leave = user.leaves?.find((l) =>
                             ((date >= new Date(l.start_date) && date <= new Date(l.end_date)) || l.start_date === dateStr)
                                 && [1, 2, 4].includes(l.status?.id));
 
-                        const isLeaveStart = leave ? sameDay(date, new Date(leave.start_date)) : false;
-
-                        if (leave && !isLeaveStart)
-                            return null;
-
                         const shifts = user.shifts?.get(dateStr) || [];
-
-                        let totalDays;
-
-                        let colSpan = 1;
-
-                        if (isLeaveStart) {
-                            const dayDiff = (a, b) =>
-                                Math.round((b.setHours(0,0,0,0) - a.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
-
-                            const startDate = new Date(leave.start_date);
-                            const endDate = new Date(leave.end_date);
-
-                            totalDays = dayDiff(startDate, endDate) + 1;
-
-                            const remainingColumns = dates.length - dateIndex;
-
-                            colSpan = Math.max(1, Math.min(totalDays, remainingColumns));
-                        }
 
                         const key = `${user.id}-${dateStr}`;
 
@@ -411,14 +408,13 @@ const UserSchedule = ({schedule, updateUserShift, jobPosts, editable=false}) => 
                                 className={(selected ? 'selected' : '')}
                                 data-user={user.id}
                                 data-date={dateStr}
-                                colSpan={colSpan}
                                 onClick={handleCellSelection}
                                 onDoubleClick={(e) =>
                                     handleShiftAdd({user: e.target['dataset'].user, date: e.target['dataset'].date})}
                                 onDragOver={editable ? handleCellDragOver(user.id, dateStr) : null}
                                 onDrop={editable ? handleCellDrop(user.id, dateStr) : null}
                             >
-                                {isLeaveStart ?
+                                {leave ?
                                     <LeaveItem
                                         key={leave.id}
                                         leave={leave}

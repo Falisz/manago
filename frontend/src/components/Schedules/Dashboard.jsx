@@ -21,7 +21,7 @@ import {useNavigate} from "react-router-dom";
 
 const YourSchedulePreview = ({header}) => {
 
-    const { user } = useApp();
+    const { user, appState } = useApp();
     const { openDialog } = useNav();
     const { holidays, loading: holidaysLoading, fetchHolidays } = useHolidays();
     const { shifts, loading: shiftsLoading, fetchShifts } = useShifts();
@@ -39,11 +39,13 @@ const YourSchedulePreview = ({header}) => {
         isMounted.current = true;
         const start_date = formatDate(today);
         const end_date = formatDate(next7Days);
-        fetchHolidays().then();
+        if (appState.workPlanner.holidays)
+            fetchHolidays().then();
         fetchShifts({user: user.id, start_date, end_date}).then();
-        fetchLeaves({user: user.id, start_date, end_date}).then();
+        if (appState.workPlanner.leaves)
+            fetchLeaves({user: user.id, start_date, end_date}).then();
 
-    }, [fetchHolidays, fetchShifts, fetchLeaves, user.id, today, next7Days]);
+    }, [appState.workPlanner, fetchHolidays, fetchShifts, fetchLeaves, user.id, today, next7Days]);
 
     return (
         <>
@@ -217,7 +219,7 @@ const ApprovalItem = ({approval}) => {
 };
 
 const PendingApprovals = ({header}) => {
-    const { user, refreshTriggers } = useApp();
+    const { user, appState, refreshTriggers } = useApp();
     const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
     const { holidayWorkings, loading: holidayWorkingLoading, fetchHolidayWorkings } = useHolidayWorkings();
     const { weekendWorkings, loading: weekendWorkingLoading, fetchWeekendWorkings } = useWeekendWorkings();
@@ -228,23 +230,27 @@ const PendingApprovals = ({header}) => {
     React.useEffect(() => {
         if (!user.id) return;
 
-        const refreshLeave = refreshTriggers?.leaves || false;
-        if (refreshLeave) { delete refreshTriggers.leaves; }
-        if (refreshLeave || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();
+        if (appState.workPlanner.leaves) {
+            const refresh = refreshTriggers?.leaves || false;
+            if (refresh) { delete refreshTriggers.leaves; }
+            if (refresh || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id }).then();
+        }
 
-        const refreshHW = refreshTriggers?.holidayWorkings || false;
-        if (refreshHW) delete refreshTriggers.holidayWorking;
-        if (refreshHW || !weekendWorkings) fetchHolidayWorkings({ managed: user.id }).then();
+        if (appState.workPlanner.holidays) {
+            const refresh = refreshTriggers?.holidayWorkings || false;
+            if (refresh) delete refreshTriggers.holidayWorking;
+            if (refresh || !holidayWorkings) fetchHolidayWorkings({ managed: user.id }).then();
+        }
 
-        const refreshWW = refreshTriggers?.weekendWorkings || false;
-        if (refreshWW) delete refreshTriggers.weekendWorking;
-        if (refreshWW || !holidayWorkings) fetchWeekendWorkings({ managed: user.id }).then();
+        const refresh = refreshTriggers?.weekendWorkings || false;
+        if (refresh) delete refreshTriggers.weekendWorking;
+        if (refresh || !weekendWorkings) fetchWeekendWorkings({ managed: user.id }).then();
 
     }, [user.id, refreshTriggers, leaves, fetchLeaves, weekendWorkings, fetchWeekendWorkings, holidayWorkings,
-        fetchHolidayWorkings]);
+        fetchHolidayWorkings, appState.workPlanner]);
 
     const pendingApprovals = useMemo(() => {
-        if (!leaves || !weekendWorkings || !holidayWorkings)
+        if (!leaves && !weekendWorkings && !holidayWorkings)
             return [];
 
         const getDay = (str) => {
@@ -254,7 +260,7 @@ const PendingApprovals = ({header}) => {
         };
 
         return [
-            ...leaves.filter(l=> [1, 4].includes(l.status.id)).map(l => ({
+            ...(leaves ?? []).filter(l=> [1, 4].includes(l.status.id)).map(l => ({
                 id: l.id,
                 type: 'absence',
                 type_color: l.type?.color,
@@ -264,7 +270,7 @@ const PendingApprovals = ({header}) => {
                 date: l.start_date,
                 end_date: l.end_date
             })),
-            ...weekendWorkings.filter(l=> [1, 4].includes(l.status.id)).map(ww => ({
+            ...(weekendWorkings ?? []).filter(l=> [1, 4].includes(l.status.id)).map(ww => ({
                 id: ww.id,
                 type: 'weekendWorking',
                 name: getDay(ww.date) + ' Working',
@@ -272,7 +278,7 @@ const PendingApprovals = ({header}) => {
                 user: ww.user,
                 date: ww.date,
             })),
-            ...holidayWorkings.filter(l=> [1, 4].includes(l.status.id)).map(hw => ({
+            ...(holidayWorkings ?? []).filter(l=> [1, 4].includes(l.status.id)).map(hw => ({
                 id: hw.id,
                 type: 'holidayWorking',
                 name: (hw.holiday?.name || 'Holiday') + ' Working',

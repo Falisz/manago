@@ -193,14 +193,16 @@ export async function updateShift(id, data) {
             return { success: false, message: 'Start time must be before end time.' };
     }
 
-    // === Optional: job_post ===
     if (data.job_post !== undefined) {
-        if (data.job_post !== null) {
-            const jobPost = await JobPost.findByPk(data.job_post.id || data.job_post);
-            if (!jobPost)
-                return { success: false, message: 'Job Post not found.' };
-        }
-        updates.job_post = data.job_post?.id || data.job_post || null;
+        if (data.job_post !== null && (await JobPost.findByPk(data.job_post)))
+            return { success: false, message: 'Job Post not found.' };
+        updates.job_post = data.job_post || null;
+    }
+
+    if (data.job_location !== undefined) {
+        if (data.job_location !== null && !(await JobPost.findByPk(data.job_location)))
+            return { success: false, message: 'Job Location not found.' };
+        updates.job_location = data.job_location || null;
     }
 
     // === Optional: schedule ===

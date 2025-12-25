@@ -290,7 +290,7 @@ const SectionField = ({ field, data }) => {
 const Section = ({section, data}) => {
     const { style, className, header, fields, hideEmpty } = section;
 
-    const isEmpty = Object.values(fields).every(field => data[field.dataField] == null ||
+    const isEmpty = Object.values(fields).filter(field => field != null).every(field => data[field.dataField] == null ||
         (Array.isArray(data[field.dataField]) && data[field.dataField].length === 0));
 
     if (hideEmpty && isEmpty)

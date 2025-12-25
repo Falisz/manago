@@ -1,6 +1,6 @@
 // BACKEND/controllers/app/AppPage.js
 import {AppPage} from '#models';
-import {getModules} from '#controllers';
+import {getConfig, getModules} from '#controllers';
 
 /**
  * Retrieves pages for a user based on their manager view configuration.
@@ -17,15 +17,17 @@ export async function getPages(view = 0) {
 
     let pages = appPage.pages;
     const modules = await getModules();
+    const config = await getConfig();
     const moduleStatus = new Map(modules.map(module => [module.id, module.enabled]));
 
     pages = pages.filter(page => {
-        if (!moduleStatus.get(page.module)) {
+        if (!moduleStatus.get(page.module))
             return false;
-        }
+
         if (page.subpages && page.subpages.length > 0) {
             page.subpages = page.subpages.filter(subpage =>
                 moduleStatus.get(subpage.module !== undefined ? subpage.module : page.module)
+                && (subpage.path === 'leaves' ? config.workPlanner.leaves : true)
             );
         }
 

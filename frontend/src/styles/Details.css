@@ -37,7 +37,7 @@
 }
 .details-header .app-button {
     color: var(--text-color-3);
-    background: none;
+    background: none !important;
     border: none;
     outline: none;
     cursor: pointer;

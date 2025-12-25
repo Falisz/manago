@@ -8,7 +8,7 @@ import Button from "../Button";
 import useNav from "../../contexts/NavContext";
 
 const GeneralSettings = () => {
-    const { appState, saveConfig } = useApp();
+    const { appState, saveConfig, refreshPages } = useApp();
     const { openDialog } = useNav();
 
     const handleToggleConfirm = useCallback((config, value) => {
@@ -17,9 +17,13 @@ const GeneralSettings = () => {
             message: `Are you sure you want to ${!value ? 'enable' : 'disable'} this sub-module?` +
                 (value ? ' All the data related to it will not be ' +
                     'accessible within the app until its reactivation.' : ''),
-            onConfirm: () => saveConfig({[config]: !value}, false).then()
+            onConfirm: () => {
+                saveConfig({[config]: !value}, false).then(_res => {
+                    if (config === 'leaves') refreshPages().then();
+                })
+            }
         });
-    }, [openDialog, saveConfig]);
+    }, [openDialog, saveConfig, refreshPages]);
 
     const data = React.useMemo(() => {
         return Object.entries(appState.workPlanner)

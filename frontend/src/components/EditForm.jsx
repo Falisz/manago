@@ -229,6 +229,9 @@ const Field = ({name, field, formData, source, errors, handleChange}) => {
 
 const Section = ({section, formData, source, errors, handleChange}) => {
 
+    if (!section)
+        return null;
+
     const { className, style, header, fields } = section;
 
     return (
@@ -283,7 +286,9 @@ const EditForm = ({
     const initialSource = useRef(null);
 
     const fields = useMemo(() =>
-            Object.values(sections).reduce((acc, section) => ({...acc, ...section.fields}), {}),
+            Object.values(sections)
+                .filter(section => section != null)
+                .reduce((acc, section) => ({...acc, ...section.fields}), {}),
     [sections]);
 
     useEffect(() => {

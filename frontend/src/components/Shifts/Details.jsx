@@ -6,8 +6,8 @@ import {useShifts} from '../../hooks/useResource';
 import Details from '../Details';
 
 const ShiftDetails = ({ id, modal }) => {
-    const { shift, loading, fetchShift, deleteShift } = useShifts({debug: true});
-    const { refreshData, refreshTriggers } = useApp();
+    const { shift, loading, fetchShift, deleteShift } = useShifts();
+    const { appState, refreshTriggers } = useApp();
     const { openModal, openDialog, closeModal, closeTopModal } = useNav();
 
     useEffect(() => {
@@ -28,11 +28,10 @@ const ShiftDetails = ({ id, modal }) => {
             onConfirm: async () => {
                 const success = await deleteShift({id});
                 if (!success) return;
-                refreshData('roles', true);
                 closeTopModal();
             },
         });
-    }, [id, openModal, deleteShift, refreshData, closeTopModal]);
+    }, [id, openModal, deleteShift, closeTopModal]);
 
     const header = useMemo(() => ({
         title: 'Shift Details',
@@ -106,7 +105,7 @@ const ShiftDetails = ({ id, modal }) => {
                 gap: '15px'
             },
             fields: {
-                0: {
+                0: appState.workPlanner.jobPosts ? {
                     label: 'Job Post',
                     dataType: 'item',
                     dataField: 'job_post',
@@ -120,8 +119,8 @@ const ShiftDetails = ({ id, modal }) => {
                             background: shift?.job_post ? shift.job_post.color : null 
                         } 
                     }
-                },
-                1: {
+                } : null,
+                1: appState.workPlanner.jobLocations ? {
                     label: 'Location',
                     dataType: 'item',
                     dataField: 'job_location',
@@ -135,7 +134,7 @@ const ShiftDetails = ({ id, modal }) => {
                             background: shift?.job_location ? shift.job_location.color : null 
                         } 
                     }
-                },
+                } : null,
                 2: {
                     label: 'Note',
                     dataType: 'string',
@@ -162,7 +161,7 @@ const ShiftDetails = ({ id, modal }) => {
                 }
             }
         }
-    }), [shift, openDialog]);
+    }), [shift, openDialog, appState.workPlanner]);
 
     return <Details
         header={header}

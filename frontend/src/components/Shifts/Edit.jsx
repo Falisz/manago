@@ -3,8 +3,10 @@ import React, { useMemo } from 'react';
 import {useUsers, useShifts, useJobPosts, useJobLocations} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
+import useApp from "../../contexts/AppContext";
 
 const ShiftEdit = ({ shiftId, modal }) => {
+    const { appState } = useApp();
     const { shift, loading, setLoading, fetchShift, saveShift } = useShifts();
     const { users, fetchUsers } = useUsers();
     const { jobPosts, fetchJobPosts } = useJobPosts();
@@ -17,10 +19,12 @@ const ShiftEdit = ({ shiftId, modal }) => {
             setLoading(false);
 
         fetchUsers().then();
-        fetchJobPosts().then();
-        fetchJobLocations().then();
+        if (appState.workPlanner.jobPosts)
+            fetchJobPosts().then();
+        if (appState.workPlanner.jobLocations)
+            fetchJobLocations().then();
 
-    }, [shiftId, setLoading, fetchShift, fetchUsers, fetchJobPosts, fetchJobLocations]);
+    }, [appState.workPlanner, shiftId, setLoading, fetchShift, fetchUsers, fetchJobPosts, fetchJobLocations]);
 
     const fieldOptions = useMemo( () => ({
         users: (users?.length && users.map(user => ({id: user.id, name: `${user.first_name} ${user.last_name}`})))
@@ -68,20 +72,20 @@ const ShiftEdit = ({ shiftId, modal }) => {
                 },
             }
         },
-        2: {
+        2: (appState.workPlanner.jobPosts || appState.workPlanner.jobLocations) ? {
             fields: {
-                job_post: {
+                job_post: appState.workPlanner.jobPosts ? {
                     type: 'dropdown',
                     label: 'Job Post',
                     options: fieldOptions.job_posts
-                },
-                job_location: {
+                } : null,
+                job_location: appState.workPlanner.jobLocations ? {
                     type: 'dropdown',
                     label: 'Job Location',
                     options: fieldOptions.job_locations
-                }
+                } : null
             }
-        },
+        } : null,
         3: {
             fields: {
                 note: {
@@ -91,7 +95,7 @@ const ShiftEdit = ({ shiftId, modal }) => {
                 }
             }
         }
-    }), [fieldOptions]);
+    }), [fieldOptions, appState.workPlanner]);
 
     const presetData = useMemo(() => (shift ? {
         ...shift, 

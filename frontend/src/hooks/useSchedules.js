@@ -7,7 +7,7 @@ import useNav from '../contexts/NavContext';
 import {useUsers, useLeaves, useShifts, useScheduleDrafts} from './useResource';
 
 const useSchedules = () => {
-    const { showPopUp } = useApp();
+    const { appState, showPopUp } = useApp();
     const { openPopUp, setUnsavedChanges } = useNav();
     const { fetchUsers } = useUsers();
     const { fetchLeaves } = useLeaves();
@@ -174,7 +174,7 @@ const useSchedules = () => {
             return null;
         }
 
-        let users, shifts, leaves;
+        let users, shifts, leaves = [];
 
         if (['you', 'user'].includes(user_scope))
             users = await fetchUsers({id: user_scope_id});
@@ -195,12 +195,13 @@ const useSchedules = () => {
             schedule_id: null
         }) || [];
 
-        leaves = await fetchLeaves({
-            start_date,
-            end_date,
-            user_scope,
-            user_scope_id,
-        }) || [];
+        if (appState.workPlanner.leaves)
+            leaves = await fetchLeaves({
+                start_date,
+                end_date,
+                user_scope,
+                user_scope_id,
+            }) || [];
 
         if (view === 'users')
             users = mapUsers(shifts, users, leaves);
@@ -224,7 +225,7 @@ const useSchedules = () => {
         loading && setLoading(false);
         return schedule;
 
-    }, [fetchUsers, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers]);
+    }, [appState.workPlanner, fetchUsers, fetchShifts, fetchLeaves, fetchSchedule, setSchedule, mapDates, mapUsers]);
 
     const saveSchedule = useCallback( async ({schedule, publish, overwrite} = {}) => {
         if (!schedule)

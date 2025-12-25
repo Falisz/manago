@@ -1,7 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
 ### By 25-12-25
-- Implement settings of WorkPlanner to various components and views.
 - Project Frontend implementation
 - Project Roles - different from company-wide user roles.
 - Frontend implementation for Contracts, Contract Types and Joined Date while creating the User.

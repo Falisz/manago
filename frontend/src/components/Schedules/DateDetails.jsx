@@ -109,7 +109,7 @@ const UsersWorkingAgreement = ({agreements, holiday, date}) => {
 }
 
 const DateDetails = ({date, modal}) => {
-    const {user, refreshTriggers} = useApp();
+    const {appState, user, refreshTriggers} = useApp();
     const {closeModal, openPopUp, openDialog} = useNav();
     const {holiday, fetchHoliday} = useHolidays();
     const {holidayWorkings, loading: hwLoading, fetchHolidayWorkings, saveHolidayWorking, deleteHolidayWorking}
@@ -132,10 +132,11 @@ const DateDetails = ({date, modal}) => {
         if (isWeekend.current)
             fetchWeekendWorkings({date}).then();
 
-        fetchHoliday({date}).then();
+        if (appState.workPlanner.holidays)
+            fetchHoliday({date}).then();
 
         isMounted.current = true;
-    }, [date, fetchHoliday, refreshTriggers, holiday, fetchWeekendWorkings]);
+    }, [appState.workPlanner.holidays, date, fetchHoliday, refreshTriggers, holiday, fetchWeekendWorkings]);
 
     React.useEffect(() => {
         if (holiday)
@@ -162,7 +163,7 @@ const DateDetails = ({date, modal}) => {
         let onConfirm;
 
         if (action === 'request') {
-            message = `Are you sure you want to request for working day on ${holiday ? holiday.date : date}?`;
+            message = `Are you sure you want to request for working day on ${date}?`;
             onConfirm = async (note) => {
                 if (holiday)
                     await saveHolidayWorking({data: {holiday: holiday.id, status: 1, user_note: note}});
@@ -172,7 +173,7 @@ const DateDetails = ({date, modal}) => {
         }
 
         if (action === 'cancel') {
-            message = `Are you sure you want to request for working day cancellation on ${holiday ? holiday.date : date}?`;
+            message = `Are you sure you want to request for working day cancellation on ${date}?`;
             onConfirm = async (note) => {
                 if (holiday)
                     await saveHolidayWorking({id: agreement.id, data: {status: 4}, user_note: note});
@@ -182,7 +183,7 @@ const DateDetails = ({date, modal}) => {
         }
 
         if (action === 'discard') {
-            message = `Are you sure you want to discard the request for working day on ${holiday ? holiday.date : date}?`;
+            message = `Are you sure you want to discard the request for working day on ${date}?`;
             onConfirm = async () => {
                 if (holiday)
                     await deleteHolidayWorking({id: agreement.id});

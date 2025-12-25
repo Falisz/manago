@@ -65,11 +65,11 @@ const LeaveDetails = ({ id, modal }) => {
 
         const yours = leave?.user?.id === user.id;
         const managed = user?.managed_users?.find(user => leave?.user?.id === user.id) || user.permissions.includes('*');
-        const planned = leave?.status.id === 0
-        const requested = leave?.status.id === 1;
-        const approved = leave?.status.id === 2;
-        const rejected = leave?.status.id === 3;
-        const cancelRequested = leave?.status.id === 4;
+        const planned = leave?.status?.id === 0
+        const requested = leave?.status?.id === 1;
+        const approved = leave?.status?.id === 2;
+        const rejected = leave?.status?.id === 3;
+        const cancelRequested = leave?.status?.id === 4;
 
         return {
             request: yours && planned && {
@@ -118,8 +118,6 @@ const LeaveDetails = ({ id, modal }) => {
         },
         buttons
     }), [user.id, leave, buttons]);
-
-    console.log(leave);
 
     const sections = useMemo(() => ({
         0: {
