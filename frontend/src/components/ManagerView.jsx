@@ -49,11 +49,7 @@ const MainNav = () => {
                         }`}
                     >
                         {page.icon && <Icon className='app-nav-page-link-icon' i={page.icon} clickable={true}/>}
-                        <span className='app-nav-page-link-label'>
-                        {   (page.title.toLowerCase() === 'employees' && appState.modules?.some(m => m.title === 'Teams' && m.enabled))
-                            ? 'Employees & Teams'
-                            : page.title}
-                        </span>
+                        <span className='app-nav-page-link-label'>{page.title}</span>
                     </Link>
                 ))}
             <Icon
@@ -109,14 +105,23 @@ const ManagerView = () => {
         location.pathname.startsWith(`/${page.path}`)
     ) || (location.pathname === '/' ? pages?.[0] : null);
 
-    const currentSubPage = currentMainPage?.subpages?.find((subpage) =>
-        location.pathname.startsWith(`/${currentMainPage.path}/${subpage.path}`)        
+    const currentSubPage = (location.pathname === '/' || location.pathname === ('/' + currentMainPage.path)) ?
+        { title: 'index' } :
+        currentMainPage?.subpages?.find((subpage) =>
+            location.pathname === `/${currentMainPage.path}/${subpage.path}` ||
+            location.pathname.startsWith(`/${currentMainPage.path}/${subpage.path}/`)
     );
 
     const pageTitle = currentSubPage?.title || currentMainPage?.title || null;
 
     const mainClass = currentMainPage?.path !== '/' ? currentMainPage?.path : 'home';
-    const subClass = mainClass !== 'home' ? currentSubPage?.path ? currentSubPage?.path : 'index' : '';
+    const subClass = mainClass !== 'home' ?
+        currentSubPage ?
+            currentSubPage?.path ?
+                currentSubPage?.path :
+                'index' :
+            'not-found' :
+        '';
 
     const pageClass = `${mainClass}${subClass ? ' ' + subClass : ''}`
 
