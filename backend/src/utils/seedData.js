@@ -4,7 +4,7 @@ import sequelize from '#utils/database.js';
 import {
     AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, AbsenceType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
-    UserPermission, UserRole, HolidayWorking, WeekendWorking
+    UserPermission, UserRole, HolidayWorking, WeekendWorking, Project, ProjectRole, ProjectUser
 } from '#models';
 
 // Data to seed
@@ -17,7 +17,7 @@ const appModules = [
     {id: 2, title: 'Projects', icon: 'fact_check', enabled: true,
         description: "It can be used for project-related management allowing major logical divisions within the company."},
     {id: 3, title: 'Branches', icon: 'graph_3', enabled: true,
-        description: "Similarly to the projects, but it allows for major physical divisions for the company."},
+        description: "Similarly to the projects, but it allows for major physical divisions for the company. It also enables Region groupings."},
     {id: 4, title: 'Time Management', icon: 'calendar_month', enabled: true,
         description: "This is powerful tool for schedule planning, timesheets, job posts, payroll, leaves and time offs."},
     {id: 5, title: 'Tasks', icon: 'task_alt', enabled: false,
@@ -144,171 +144,187 @@ const appPages = [
                 "component": "ManagerDashboard",
                 "subpages": []
             },
-                {
-                    "path": "employees",
-                    "title": "Employees",
-                    "module": 0,
-                    "icon": "people",
-                    "component": "EmployeesIndex",
-                    "subpages": [
-                        {
-                            "path": "managers",
-                            "title": "Managers",
-                            "icon": "",
-                            "component": "ManagersIndex"
-                        },
-                        {
-                            "path": "all-users",
-                            "title": "All Users",
-                            "icon": "",
-                            "component": "UsersIndex"
-                        },
-                        {
-                            "path": "teams",
-                            "title": "Teams",
-                            "module": 1,
-                            "icon": "groups",
-                            "component": "TeamsIndex"
-                        },
-                        {
-                            "path": "roles",
-                            "title": "Roles",
-                            "icon": "",
-                            "component": "RolesIndex"
-                        }
-                    ]
-                },
-                {
-                    "path": "projects",
-                    "title": "Projects",
-                    "module": 2,
-                    "icon": "fact_check",
-                    "component": "ProjectIndex",
-                    "subpages": []
-                },
-                {
-                    "path": "branches",
-                    "title": "Branches",
-                    "module": 3,
-                    "icon": "hub",
-                    "component": "BranchIndex",
-                    "subpages": []
-                },
-                {
-                    "path": "schedules",
-                    "title": "Work Planner",
-                    "module": 4,
-                    "icon": "edit_calendar",
-                    "component": "ScheduleDashboard",
-                    "subpages": [
-                        {
-                            "path": "view",
-                            "title": "Schedule",
-                            "icon": "",
-                            "component": "ScheduleView",
-                            "subpages": [
-                                {
-                                    "path": ":scheduleId",
-                                    "title": "Viewing Schedule",
-                                    "component": "ScheduleView",
-                                    "hidden": true
-                                }
-                            ]
-                        },
-                        {
-                            "path": "new",
-                            "title": "Schedule Editor",
-                            "icon": "",
-                            "component": "ScheduleEdit",
-                            "hidden": true
-                        },
-                        {
-                            "path": "edit",
-                            "title": "Schedule Editor",
-                            "icon": "",
-                            "component": "ScheduleEdit",
-                            "hidden": true,
-                            "subpages": [
-                                {
-                                    "path": ":scheduleId",
-                                    "title": "Editing Schedule",
-                                    "component": "ScheduleEdit",
-                                    "hidden": true
-                                }
-                            ]
-                        },
-                        {
-                            "path": "leaves",
-                            "title": "Leaves",
-                            "icon": "",
-                            "component": "LeavesIndex"
-                        },
-                        {
-                            "path": "approvals",
-                            "title": "Approvals",
-                            "icon": "",
-                            "component": "ApprovalsIndex"
-                        },
-                        {
-                            "path": "settings",
-                            "title": "Settings",
-                            "icon": "",
-                            "component": "WorkPlannerSettings"
-                        }
-                    ]
-                },
-                {
-                    "path": "timesheets",
-                    "title": "timesheets",
-                    "module": 4,
-                    "icon": "calendar_month",
-                    "component": "TimesheetIndex"
-                },
-                {
-                    "path": "Tasks",
-                    "title": "Tasks",
-                    "module": 5,
-                    "icon": "task",
-                    "component": "TasksDashboard"
-                },
-                {
-                    "path": "Trainings",
-                    "title": "Trainings",
-                    "module": 6,
-                    "icon": "school",
-                    "component": "TrainingsDashboard"
-                },
-                {
-                    "path": "posts",
-                    "title": "Posts",
-                    "module": 7,
-                    "icon": "forum",
-                    "component": "PostsIndex",
-                    "subpages": [
-                        {
-                            "path": "archive",
-                            "title": "Posts Archive",
-                            "icon": "",
-                            "component": "PostsArchive",
-                            "subpages": []
-                        }
-                    ]
-                },
-                {
-                    "path": "Blogs",
-                    "title": "Blogs",
-                    "module": 8,
-                    "icon": "feed",
-                    "component": "Blogs"
-                },
-                {
-                    "path": "app-settings",
-                    "title": "App Settings",
-                    "module": 0,
-                    "icon": "settings",
-                    "component": "AppSettings"
-                }
-            ]
+            {
+                "path": "employees",
+                "title": "Employees",
+                "module": 0,
+                "icon": "people",
+                "component": "EmployeesIndex",
+                "subpages": [
+                    {
+                        "path": "managers",
+                        "title": "Managers",
+                        "icon": "",
+                        "component": "ManagersIndex"
+                    },
+                    {
+                        "path": "all-users",
+                        "title": "All Users",
+                        "icon": "",
+                        "component": "UsersIndex"
+                    },
+                    {
+                        "path": "roles",
+                        "title": "Roles",
+                        "icon": "",
+                        "component": "RolesIndex"
+                    }
+                ]
+            },
+            {
+                "path": "org",
+                "title": "Organization",
+                "module": 0,
+                "icon": "account_tree",
+                "component": "OrganizationDashboard",
+                "subpages": [
+                    {
+                        "path": "teams",
+                        "title": "Teams",
+                        "module": 1,
+                        "icon": "groups",
+                        "component": "TeamsIndex"
+                    },
+                    {
+                        "path": "projects",
+                        "title": "Projects",
+                        "module": 2,
+                        "icon": "fact_check",
+                        "component": "ProjectIndex",
+                    },
+                    {
+                        "path": "branches",
+                        "title": "Branches",
+                        "module": 3,
+                        "icon": "hub",
+                        "component": "BranchIndex",
+                        "subpages": []
+                    },
+                    {
+                        "path": "regions",
+                        "title": "Regions",
+                        "module": 3,
+                        "icon": "globe",
+                        "component": "RegionIndex",
+                        "subpages": []
+                    },
+                ]
+            },
+            {
+                "path": "schedules",
+                "title": "Work Planner",
+                "module": 4,
+                "icon": "edit_calendar",
+                "component": "ScheduleDashboard",
+                "subpages": [
+                    {
+                        "path": "view",
+                        "title": "Schedule",
+                        "icon": "",
+                        "component": "ScheduleView",
+                        "subpages": [
+                            {
+                                "path": ":scheduleId",
+                                "title": "Viewing Schedule",
+                                "component": "ScheduleView",
+                                "hidden": true
+                            }
+                        ]
+                    },
+                    {
+                        "path": "new",
+                        "title": "Schedule Editor",
+                        "icon": "",
+                        "component": "ScheduleEdit",
+                        "hidden": true
+                    },
+                    {
+                        "path": "edit",
+                        "title": "Schedule Editor",
+                        "icon": "",
+                        "component": "ScheduleEdit",
+                        "hidden": true,
+                        "subpages": [
+                            {
+                                "path": ":scheduleId",
+                                "title": "Editing Schedule",
+                                "component": "ScheduleEdit",
+                                "hidden": true
+                            }
+                        ]
+                    },
+                    {
+                        "path": "leaves",
+                        "title": "Leaves",
+                        "icon": "",
+                        "component": "LeavesIndex"
+                    },
+                    {
+                        "path": "approvals",
+                        "title": "Approvals",
+                        "icon": "",
+                        "component": "ApprovalsIndex"
+                    },
+                    {
+                        "path": "settings",
+                        "title": "Settings",
+                        "icon": "",
+                        "component": "WorkPlannerSettings"
+                    }
+                ]
+            },
+            {
+                "path": "timesheets",
+                "title": "timesheets",
+                "module": 4,
+                "icon": "calendar_month",
+                "component": "TimesheetIndex"
+            },
+            {
+                "path": "Tasks",
+                "title": "Tasks",
+                "module": 5,
+                "icon": "task",
+                "component": "TasksDashboard"
+            },
+            {
+                "path": "Trainings",
+                "title": "Trainings",
+                "module": 6,
+                "icon": "school",
+                "component": "TrainingsDashboard"
+            },
+            {
+                "path": "posts",
+                "title": "Posts",
+                "module": 7,
+                "icon": "forum",
+                "component": "PostsIndex",
+                "subpages": [
+                    {
+                        "path": "archive",
+                        "title": "Posts Archive",
+                        "icon": "",
+                        "component": "PostsArchive",
+                        "subpages": []
+                    }
+                ]
+            },
+            {
+                "path": "Blogs",
+                "title": "Blogs",
+                "module": 8,
+                "icon": "feed",
+                "component": "Blogs"
+            },
+            {
+                "path": "app-settings",
+                "title": "App Settings",
+                "module": 0,
+                "icon": "settings",
+                "component": "AppSettings"
+            }
+        ]
     }
 ];
 
@@ -730,6 +746,65 @@ const userManagers = [
     {user: 100042, manager: 100006},
 ];
 
+const projectRoles = [
+    { id: 1, name: 'Project Owner' },
+    { id: 2, name: 'Project Manager' },
+    { id: 3, name: 'Developer' },
+    { id: 4, name: 'Designer' },
+    { id: 5, name: 'Tester' },
+    { id: 6, name: 'Stakeholder' }
+];
+
+const projects = [
+    {
+        id: 1,
+        name: 'Project Alpha',
+        description: 'A core development project focused on building the main application features.',
+        startDate: new Date('2025-01-01'),
+        endDate: new Date('2025-12-31'),
+        data: { budget: 100000, status: 'Active' }
+    },
+    {
+        id: 2,
+        name: 'Project Beta',
+        description: 'An expansion project for integrating new modules and enhancements.',
+        startDate: new Date('2025-06-01'),
+        endDate: new Date('2026-06-01'),
+        data: { budget: 75000, status: 'Planning' }
+    },
+    {
+        id: 3,
+        name: 'Project Gamma',
+        description: 'A research and development project exploring new technologies.',
+        startDate: new Date('2025-03-15'),
+        endDate: null,
+        data: { budget: 50000, status: 'Ongoing' }
+    }
+];
+
+const projectUsers = [
+    // Project Alpha assignments
+    { project: 1, user: 100001, role: 1 }, // Owner as Project Owner
+    { project: 1, user: 100002, role: 2 }, // Admin as Project Manager
+    { project: 1, user: 100013, role: 3 }, // Employee One as Developer
+    { project: 1, user: 100014, role: 3 }, // Employee Two as Developer
+    { project: 1, user: 100015, role: 4 }, // Employee Three as Designer
+    { project: 1, user: 100004, role: 6 }, // Manager1 as Stakeholder
+
+    // Project Beta assignments
+    { project: 2, user: 100001, role: 1 }, // Owner as Project Owner
+    { project: 2, user: 100003, role: 2 }, // Manager2 as Project Manager
+    { project: 2, user: 100007, role: 3 }, // Employee Four as Developer
+    { project: 2, user: 100008, role: 5 }, // Employee Five as Tester
+    { project: 2, user: 100004, role: 6 }, // Manager1 as Stakeholder
+
+    // Project Gamma assignments
+    { project: 3, user: 100001, role: 1 }, // Owner as Project Owner
+    { project: 3, user: 100002, role: 2 }, // Admin as Project Manager
+    { project: 3, user: 100010, role: 3 }, // Employee Six as Developer
+    { project: 3, user: 100004, role: 6 }  // Manager1 as Stakeholder
+];
+
 const schedules = [
     {
         id: 1,
@@ -1041,6 +1116,9 @@ const seedStructure = [
     { model: TeamRole, tableName: 'team_roles', data: teamRoles, itemsName: 'team roles' },
     { model: TeamUser, tableName: 'team_users', data: teamUsers, itemsName: 'team user assignments' },
     { model: UserManager, tableName: 'user_managers', data: userManagers, itemsName: 'user manager assignments' },
+    { model: ProjectRole, tableName: 'project_roles', data: projectRoles, itemsName: 'project roles' },
+    { model: Project, tableName: 'projects', data: projects, itemsName: 'projects' },
+    { model: ProjectUser, tableName: 'project_users', data: projectUsers, itemsName: 'project user assignments' },
     { model: Schedule, tableName: 'schedules', data: schedules, itemsName: 'schedules' },
     { model: JobPost, tableName: 'job_posts', data: jobPosts, itemsName: 'job posts' },
     { model: JobLocation, tableName: 'job_locations', data: jobLocations, itemsName: 'job locations' },

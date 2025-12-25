@@ -179,6 +179,7 @@ const UsersIndexPage = ({content='users'}) => {
             selectableRows={true}
             loading={loading}
             dataPlaceholder={'No Users found.'}
+            columnHeaders
         />
     );
 

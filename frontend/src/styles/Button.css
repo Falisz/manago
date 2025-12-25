@@ -40,7 +40,7 @@
     box-shadow: var(--weak-shade);
     color: var(--text-color);
 }
-.app.fluent .app-button:hover {
+.app.fluent .app-button:not(.disabled):hover {
     background: var(--seethrough-background-2);
     color: var(--button-color);
 }

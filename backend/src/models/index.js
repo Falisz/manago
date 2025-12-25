@@ -22,6 +22,7 @@ import AbsenceType from './AbsenceType.js';
 import Post from './Post.js';
 import Permission from './Permission.js';
 import Project from './Project.js';
+import ProjectRole from './ProjectRole.js';
 import ProjectUser from './ProjectUser.js';
 import RequestStatus from './RequestStatus.js';
 import Role from './Role.js';
@@ -78,14 +79,14 @@ Post.belongsTo(User, { foreignKey: 'author', targetKey: 'id', as: 'Author' });
 Channel.hasMany(Post, { foreignKey: 'channel', sourceKey: 'id' });
 Post.belongsTo(Channel, { foreignKey: 'channel', targetKey: 'id' });
 
-User.hasMany(Project, { foreignKey: 'manager', sourceKey: 'id', as: 'ManagedProjects' });
-Project.belongsTo(User, { foreignKey: 'manager', targetKey: 'id', as: 'Manager' });
-
 Project.hasMany(ProjectUser, { foreignKey: 'project', sourceKey: 'id' });
 ProjectUser.belongsTo(Project, { foreignKey: 'project', targetKey: 'id' });
 
 User.hasMany(ProjectUser, { foreignKey: 'user', sourceKey: 'id' });
 ProjectUser.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
+
+ProjectRole.hasMany(ProjectUser, { foreignKey: 'role', sourceKey: 'id' });
+ProjectUser.belongsTo(ProjectRole, { foreignKey: 'role', targetKey: 'id' });
 
 Team.hasMany(Team, { foreignKey: 'parent_team', as: 'ChildTeams' });
 Team.belongsTo(Team, { foreignKey: 'parent_team', as: 'ParentTeam' });
@@ -204,6 +205,7 @@ TimeRecord.belongsTo(TimeRecordStatus, { foreignKey: 'status', targetKey: 'id' }
 export {
     Absence, AbsenceBalance, AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser,
     Channel, Contract, ContractType, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation,
-    AbsenceType, Post, Permission, Project, ProjectUser, RequestStatus, Role, RolePermission, Schedule, Shift, Team,
-    TeamRole, TeamUser, TimeRecord, TimeRecordStatus, User, UserManager, UserPermission, UserRole, WeekendWorking
+    AbsenceType, Post, Permission, Project, ProjectRole, ProjectUser, RequestStatus, Role, RolePermission, Schedule,
+    Shift, Team, TeamRole, TeamUser, TimeRecord, TimeRecordStatus, User, UserManager, UserPermission, UserRole,
+    WeekendWorking
 }

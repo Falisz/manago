@@ -175,7 +175,7 @@ const TeamsIndex = () => {
             header={header}
             fields={fields}
             subRowFields={'subteams'}
-            columnHeaders={true}
+            columnHeaders
             sortable={true}
             filterable={true}
             contextMenuActions={contextMenuActions}

@@ -53,7 +53,7 @@ const RolesIndex = () => {
 
     return (
         <Table
-            style={{minWidth: '250px', maxWidth: 'max(40%, 500px)'}}
+            style={{minWidth: '250px', maxWidth: 'max(40%, 500px)', margin: '0 auto'}}
             data={roles}
             header={header}
             fields={fields}

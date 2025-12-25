@@ -25,6 +25,8 @@ import JobPostDetails from "../components/JobPosts/Details";
 import JobPostEdit from "../components/JobPosts/Edit";
 import JobLocationDetails from "../components/JobLocation/Details";
 import JobLocationEdit from "../components/JobLocation/Edit";
+import ProjectDetails from "../components/Projects/Details";
+import ProjectEdit from "../components/Projects/Edit";
 
 const ANIMATION_DURATION = 300;
 
@@ -89,6 +91,21 @@ const MODALS = {
     },
     subteamNew: {
         component: (modal) => <TeamEdit parentId={modal.parentId} modal={modal.id}/>
+    },
+    projectNew: {
+        urlParam: 'new',
+        urlParamValue: 'project',
+        component: (modal) => <ProjectEdit modal={modal.id}/>
+    },
+    projectDetails: {
+        urlParam: 'project',
+        component: (modal) => <ProjectDetails id={modal.contentId} modal={modal.id}/>,
+        type: 'dialog',
+        closeButton: false
+    },
+    projectEdit: {
+        urlParam: 'editProject',
+        component: (modal) => <ProjectEdit id={modal.contentId} modal={modal.id}/>
     },
     shiftDetails: {
         urlParam: 'shift',
@@ -368,7 +385,8 @@ export const NavProvider = ({ children }) => {
         });
     }, []);
 
-    const renderModalContent = (modal) => MODALS[modal.content]?.component(modal) || MODALS.default.component(modal);
+    const renderModalContent = (modal) =>
+        MODALS[modal.content]?.component ? MODALS[modal.content]?.component(modal) : MODALS.default.component(modal);
 
     const parseUrlParams = useCallback(() => {
         Object.entries(MODALS).forEach(([key, config]) => {

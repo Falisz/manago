@@ -362,7 +362,7 @@ const Table = ({
                    subRowFields,
                    descriptionFields,
                    header,
-                   columnHeaders = true,
+                   columnHeaders,
                    filterable = false,
                    sortable = false,
                    handleRowClick,

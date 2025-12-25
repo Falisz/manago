@@ -1,21 +1,34 @@
 // BACKEND/controller/organization/ProjectUser.js
-import {Project, ProjectUser, User} from "#models";
+import {Project, ProjectRole, ProjectUser, User} from "#models";
 import sequelize from "#utils/database.js";
 
 /**
  * Retrieves members of a Project.
- * @param {number} projectId - Project ID
- * @param {boolean} include_details - Optional - Should user and project details be included
+ * @param {number} project - Project ID
+ * @param {number} user - User ID
+ * @param {number || null} [role] - Optional - Role filter (0: member, 1: leader, 2: manager)
  * @returns {Promise<Array|null>} Array of user objects
  */
-export async function getProjectUsers(projectId, include_details = false) {
-    if (!projectId) {
-        return [];
-    }
+export async function getProjectUsers({project, user, role} ={}) {
+
+    let projectIds;
+
+    if (project)
+        projectIds = [project];
+    else if (user)
+        projectIds = (await ProjectUser.findAll({where: {project, role}})).map(pu => pu['team']);
+    else return [];
+
+    projectIds = [...new Set(projectIds)];
+
+    const where = { project: projectIds };
+
+    if (role)
+        where.role = role;
 
     const projectUsers = await ProjectUser.findAll({
-        where: { project: projectId },
-        include: include_details ? [
+        where,
+        include: [
             {
                 model: Project,
                 attributes: ['id', 'name'],
@@ -23,22 +36,49 @@ export async function getProjectUsers(projectId, include_details = false) {
             {
                 model: User,
                 attributes: ['id', 'first_name', 'last_name']
+            },
+            {
+                model: ProjectRole,
+                attributes: ['id', 'name']
             }
-        ] : []
+        ]
     });
 
-    if (!include_details) {
-        return projectUsers.map(pu => ({
-            id: pu.user
-        }));
-    }
+    if (projectUsers.length === 0)
+        return [];
 
-    return projectUsers.map(projectUser => ({
-        id: projectUser['User'].id,
-        first_name: projectUser['User'].first_name,
-        last_name: projectUser['User'].last_name,
-        project: { id: projectUser['Project'].id, name: projectUser['Project'].name }
-    }));
+    if (project) {
+        let members = projectUsers.map(pU => ({
+            id: pU['User'].id,
+            first_name: pU['User'].first_name,
+            last_name: pU['User'].last_name,
+            role: { id: pU['ProjectRole'].id, name: pU['ProjectRole'].name },
+            project: { id: pU['Project'].id, name: pU['Project'].name },
+        }));
+
+        const seenUsers = new Set();
+        const filteredMembers = [];
+
+        for (const member of members) {
+            const userId = member.id;
+
+            if (!seenUsers.has(userId)) {
+                seenUsers.add(userId);
+                filteredMembers.push(member);
+            }
+        }
+
+        return filteredMembers;
+
+    } else if (user) {
+        return projectUsers.map(pU => ({
+            id: pU['project'],
+            name: pU['Project']['name'],
+            role: pU['ProjectRole']['name'],
+        }));
+
+    } else
+        return [];
 }
 
 /**

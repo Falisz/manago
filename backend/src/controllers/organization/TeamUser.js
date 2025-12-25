@@ -84,7 +84,7 @@ export async function getTeamUsers({team, user, role, include_subteams = false, 
         include: [
             {
                 model: Team,
-                attributes: ['id', 'name'],
+                attributes: ['id', 'name']
             },
             {
                 model: User,
@@ -92,9 +92,9 @@ export async function getTeamUsers({team, user, role, include_subteams = false, 
             },
             {
                 model: TeamRole,
-                attributes: ['id', 'name'],
+                attributes: ['id', 'name']
             }
-        ],
+        ]
     });
 
     if (teamUsers.length === 0)

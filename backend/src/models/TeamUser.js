@@ -18,8 +18,7 @@ export const TeamUser = sequelize.define('TeamUser', {
     },
     role: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: TeamRole, key: 'id' },
+        references: { model: TeamRole, key: 'id' }
     }
 }, {
     tableName: 'team_users',

@@ -81,6 +81,7 @@ const Approvals = ({approvals, loading, pending}) => {
             fields={fields}
             dataPlaceholder={`No ${pending ? 'Pending' : 'Processed'} Approvals found.`}
             loading={loading}
+            columnHeaders
             compact transparent
         />
     );

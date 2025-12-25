@@ -1,8 +1,7 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### By 25-12-25
-- Project Frontend implementation
-- Project Roles - different from company-wide user roles.
+### By 25-12-26
+- Project Backend implementation - members assignment
 - Frontend implementation for Contracts, Contract Types and Joined Date while creating the User.
 ### TimeSheets (till 28-12-25)
 - Recorded efforts and labor - to help bill the projects.

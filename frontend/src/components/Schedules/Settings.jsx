@@ -57,6 +57,8 @@ const GeneralSettings = () => {
         <Table
             data={data}
             fields={fields}
+            transparent
+            compact
         />
     );
 };

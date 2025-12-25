@@ -17,7 +17,7 @@ const TeamDetails = ({ id, modal }) => {
     }, [fetchTeam, team, id, refreshTriggers.team]);
 
     const handleDelete = useCallback(() => {
-        let message = `Are you sure you want to delete this role? This action cannot be undone.`
+        let message = `Are you sure you want to delete this Team? This action cannot be undone.`
 
         const membersCount = team.members.length+team.managers.length+team.leaders.length;
         const subteamsCount = team.sub_teams.length;
