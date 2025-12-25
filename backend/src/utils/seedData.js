@@ -760,23 +760,23 @@ const projects = [
         id: 1,
         name: 'Project Alpha',
         description: 'A core development project focused on building the main application features.',
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-12-31'),
+        start_date: new Date('2025-01-01'),
+        end_date: new Date('2025-12-31'),
         data: { budget: 100000, status: 'Active' }
     },
     {
         id: 2,
         name: 'Project Beta',
         description: 'An expansion project for integrating new modules and enhancements.',
-        startDate: new Date('2025-06-01'),
-        endDate: new Date('2026-06-01'),
+        start_date: new Date('2025-06-01'),
+        end_date: new Date('2026-06-01'),
         data: { budget: 75000, status: 'Planning' }
     },
     {
         id: 3,
         name: 'Project Gamma',
         description: 'A research and development project exploring new technologies.',
-        startDate: new Date('2025-03-15'),
+        start_date: new Date('2025-03-15'),
         endDate: null,
         data: { budget: 50000, status: 'Ongoing' }
     }

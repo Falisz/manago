@@ -26,7 +26,7 @@ const fetchHandler = async (req, res) => {
             get_members: req.query.get_members !== 'false'
         });
 
-        if (req.params.id && !projects)
+        if (id && !projects)
             return res.status(404).json({ message: 'Project not found.' });
 
         res.json(projects);
@@ -71,12 +71,14 @@ const createHandler = async (req, res) => {
 
         const project = await getProject({ id });
 
-        const { member_ids } = req.body;
+        const { owners, managers, developers, designers, testers, stakeholders } = req.body;
 
-        if (member_ids && member_ids.length > 0) {
-            const projectMembers = member_ids.filter(id => id !== null);
-            await updateProjectUsers([id], projectMembers, 'add');
-        }
+        if (owners != null) await updateProjectUsers([id], owners.filter(id => id !== null), 1);
+        if (managers != null) await updateProjectUsers([id], managers.filter(id => id !== null), 2);
+        if (developers != null) await updateProjectUsers([id], developers.filter(id => id !== null), 3);
+        if (designers != null) await updateProjectUsers([id], designers.filter(id => id !== null), 4);
+        if (testers != null) await updateProjectUsers([id], testers.filter(id => id !== null), 5);
+        if (stakeholders != null) await updateProjectUsers([id], stakeholders.filter(id => id !== null), 6);
 
         res.status(201).json({ message, project });
     } catch (err) {
@@ -94,11 +96,11 @@ const updateHandler = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const { name, manager, description, startDate, endDate, data, members } = req.body;
+        const { name, description, startDate, endDate, data,
+            owners, managers, developers, designers, testers, stakeholders } = req.body;
 
         const { success, message } = await updateProject(parseInt(id), {
             name,
-            manager,
             description,
             startDate,
             endDate,
@@ -110,8 +112,12 @@ const updateHandler = async (req, res) => {
 
         const project = await getProject({ id });
 
-        if (members != null)
-            await updateProjectUsers([id], members.filter(id => id !== null), 'set');
+        if (owners != null) await updateProjectUsers([id], owners.filter(id => id !== null), 1, 'set');
+        if (managers != null) await updateProjectUsers([id], managers.filter(id => id !== null), 2, 'set');
+        if (developers != null) await updateProjectUsers([id], developers.filter(id => id !== null), 3, 'set');
+        if (designers != null) await updateProjectUsers([id], designers.filter(id => id !== null), 4, 'set');
+        if (testers != null) await updateProjectUsers([id], testers.filter(id => id !== null), 5, 'set');
+        if (stakeholders != null) await updateProjectUsers([id], stakeholders.filter(id => id !== null), 6, 'set');
 
         res.json({ success, project });
     } catch (err) {

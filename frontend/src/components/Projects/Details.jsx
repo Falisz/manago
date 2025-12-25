@@ -4,6 +4,7 @@ import useApp from '../../contexts/AppContext';
 import useNav from '../../contexts/NavContext';
 import {useProjects} from '../../hooks/useResource';
 import Details from '../Details';
+import {formatDate} from "../../utils/dates";
 
 const ProjectDetails = ({ id, modal }) => {
     const { project, loading, fetchProject, deleteProject } = useProjects();
@@ -86,11 +87,13 @@ const ProjectDetails = ({ id, modal }) => {
                 },
                 1: {
                     label: 'Start Date',
-                    dataField: 'start_date'
+                    dataField: 'start_date',
+                    format: (data) => formatDate(new Date(data))
                 },
                 2: {
                     label: 'End Date',
                     dataField: 'end_date',
+                    format: (data) => formatDate(new Date(data)),
                     hideEmpty: true
                 }
             }
@@ -99,7 +102,6 @@ const ProjectDetails = ({ id, modal }) => {
             header: 'Members',
             fields: {
                 0: {
-                    type: 'data-group',
                     label: 'Project Owners',
                     dataType: 'list',
                     dataField: 'owners',
@@ -107,7 +109,6 @@ const ProjectDetails = ({ id, modal }) => {
                     items: userStructure
                 },
                 1: {
-                    type: 'data-group',
                     label: 'Project Managers',
                     dataType: 'list',
                     dataField: 'managers',
@@ -115,11 +116,31 @@ const ProjectDetails = ({ id, modal }) => {
                     items: userStructure
                 },
                 2: {
-                    type: 'data-group',
-                    label: 'Project Members',
+                    label: 'Developers',
                     dataType: 'list',
-                    dataField: 'members',
-                    placeholder: 'No Members assigned.',
+                    dataField: 'developers',
+                    hideEmpty: true,
+                    items: userStructure
+                },
+                3: {
+                    label: 'Designers',
+                    dataType: 'list',
+                    dataField: 'designers',
+                    hideEmpty: true,
+                    items: userStructure
+                },
+                4: {
+                    label: 'Testers',
+                    dataType: 'list',
+                    dataField: 'testers',
+                    hideEmpty: true,
+                    items: userStructure
+                },
+                5: {
+                    label: 'Stakeholders',
+                    dataType: 'list',
+                    dataField: 'stakeholders',
+                    hideEmpty: true,
                     items: userStructure
                 }
             }

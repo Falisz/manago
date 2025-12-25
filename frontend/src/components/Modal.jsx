@@ -3,7 +3,7 @@ import React, {useEffect, useRef} from 'react';
 import Button from './Button';
 import '../styles/Modal.css';
 
-const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton = true, zIndex = 1000, style={} }) => {
+const Modal = ({ children, type='pane', isVisible = false, onClose, closeButton, zIndex = 1000, style={} }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {

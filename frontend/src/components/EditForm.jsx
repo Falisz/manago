@@ -8,23 +8,28 @@ import Icon from "./Icon";
 import MultiComboBox from './MultiComboBox';
 import '../styles/EditForm.css';
 
-const Header = ({header, data}) => {
-    if (!header)
-        return null;
+const Header = ({header, data, modal}) => {
 
-    if (typeof header === 'string')
-        return <h1 className={'form-header'}>{header}</h1>;
+    const { closeModal } = useNav();
 
-    if (typeof header === 'function')
-        return <h1 className={'form-header'}>{header(data)}</h1>;
+    if (!header) return null;
 
-    if (typeof header === 'object') {
-        const {className, style, title} = header;
+    let className, style, title;
 
-        return (
-            <h1 className={'form-header' + (className ? ` ${className}` : '')} style={style}>{title}</h1>
-        );
-    }
+    if (typeof header === 'string') title = header;
+    if (typeof header === 'function') title = header(data);
+    if (typeof header === 'object') ({className, style, title} = header);
+
+    return (
+        <div className={'form-header' + (className ? ` ${className}` : '')} style={style}>
+            <h1>{title}</h1>
+            {modal &&
+                <div className={'header-buttons'}>
+                    <Button transparent={true} icon={'close'} label={'Close'} onClick={() => closeModal(modal)}/>
+                </div>
+            }
+        </div>
+    );
 };
 
 const Field = ({name, field, formData, source, errors, handleChange}) => {
@@ -467,12 +472,13 @@ const EditForm = ({
     };
 
     return (
-        <div
-            className={'form-page' + (className ? ' ' + className : '')}
+        <form
+            className={'form' + (className ? ' ' + className : '')}
             style={style}
+            onSubmit={handleSubmit}
         >
-            <Header header={header} data={formData}/>
-            <form className={'form-content app-scroll'} onSubmit={handleSubmit}>
+            <Header header={header} data={formData} modal={modal}/>
+            <section className={'form-content app-scroll'}>
                 {Object.values(sections).map((section, key) => <Section
                     key={key}
                     section={section}
@@ -481,31 +487,31 @@ const EditForm = ({
                     errors={errors}
                     handleChange={handleChange}
                 />)}
-                <div className='form-section form-buttons'>
-                    {!hideSubmit && <Button
-                        className={`save-button${disableSubmit ? ' disabled' : ''}`}
-                        style={submitStyle}
-                        type={'submit'}
-                        label={submitLabel || 'Save changes'}
-                        icon={'save'}
-                    />}
-                    {onSubmit2 && <Button
-                        style={submitStyle2}
-                        onClick={onSubmit2}
-                        label={submitLabel2 || 'Save changes'}
-                        icon={'save'}
-                    />}
-                    {!hideCancel && <Button
-                        className={'discard-button'}
-                        style={cancelStyle}
-                        type={'button'}
-                        label={cancelLabel || 'Discard'}
-                        icon={'close'}
-                        onClick={handleCancel}
-                    />}
-                </div>
-            </form>
-        </div>
+            </section>
+            <div className='form-buttons'>
+                {!hideSubmit && <Button
+                    className={`save-button${disableSubmit ? ' disabled' : ''}`}
+                    style={submitStyle}
+                    type={'submit'}
+                    label={submitLabel || 'Save changes'}
+                    icon={'save'}
+                />}
+                {onSubmit2 && <Button
+                    style={submitStyle2}
+                    onClick={onSubmit2}
+                    label={submitLabel2 || 'Save changes'}
+                    icon={'save'}
+                />}
+                {!hideCancel && <Button
+                    className={'discard-button'}
+                    style={cancelStyle}
+                    type={'button'}
+                    label={cancelLabel || 'Discard'}
+                    icon={'close'}
+                    onClick={handleCancel}
+                />}
+            </div>
+        </form>
     );
 };
 

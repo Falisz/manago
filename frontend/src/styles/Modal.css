@@ -30,7 +30,7 @@
     right: 0;
     background: var(--background-gradient);
     padding: 25px;
-    width: max(25%, 300px);
+    width: max(33%, 300px);
     height: calc(100% - 50px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     outline: none;

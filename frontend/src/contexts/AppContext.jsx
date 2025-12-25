@@ -18,6 +18,7 @@ import WorkPlannerSettings from '../components/Schedules/Settings';
 import setupAxiosInterceptor from "../utils/interceptors";
 import ApprovalsIndex from "../components/Approvals/Index";
 import ProjectIndex from "../components/Projects/Index";
+import OrganizationDashboard from "../components/Organization";
 
 setupAxiosInterceptor();
 
@@ -35,7 +36,8 @@ const COMPONENT_MAP = {
     PostsIndex,
     AppSettings,
     ApprovalsIndex,
-    ProjectIndex
+    ProjectIndex,
+    OrganizationDashboard
 };
 
 const mapPagesToComponents = (pages) => {

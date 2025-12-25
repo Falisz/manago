@@ -275,26 +275,26 @@
     padding: 8px 10px;
     margin: 0;
 }
-.app.manager main .page-title {
+.app.manager main > .page-title {
     font-size: 2rem;
     margin: 10px;
     font-weight: 300;
     font-family: var(--font-family-condensed), sans-serif;
 }
-.app.manager section {
+.app.manager main > section {
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 20px;
     overflow: hidden;
 }
-.app.manager section .header {
+.app.manager main > section .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
-.app.manager section h1 {
+.app.manager main > section h1 {
     margin: 0;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
@@ -305,6 +305,14 @@
     background: var(--seethrough-background);
     border-radius: var(--big-border-radius);
     box-shadow: var(--weak-shade);
+}
+
+main.org.index {
+    display: flex;
+    flex-direction: row;
+}
+main.org.index section {
+    flex: 1;
 }
 
 /*************/

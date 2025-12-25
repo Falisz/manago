@@ -4,7 +4,7 @@ import useApp from '../../contexts/AppContext';
 import {useProjects} from '../../hooks/useResource';
 import Table from '../Table';
 
-const ProjectIndex = () => {
+const ProjectIndex = ({compact, transparent}) => {
     const { refreshTriggers } = useApp();
     const { projects, loading, fetchProjects } = useProjects();
 
@@ -60,6 +60,8 @@ const ProjectIndex = () => {
             selectableRows={true}
             loading={loading}
             dataPlaceholder={'No Projects found.'}
+            compact={compact}
+            transparent={transparent}
         />
     );
 };

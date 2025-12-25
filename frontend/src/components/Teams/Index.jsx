@@ -5,7 +5,7 @@ import useNav from '../../contexts/NavContext';
 import {useTeams} from '../../hooks/useResource';
 import Table from '../Table';
 
-const TeamsIndex = () => {
+const TeamsIndex = ({compact, transparent}) => {
     const { refreshTriggers, refreshData } = useApp();
     const { openModal, openPopUp, closeTopModal } = useNav();
     const { teams, loading, fetchTeams, deleteTeams, deleteTeam } = useTeams();
@@ -182,6 +182,8 @@ const TeamsIndex = () => {
             selectableRows={true}
             loading={loading}
             dataPlaceholder={'No Teams found.'}
+            compact={compact}
+            transparent={transparent}
         />
     );
 };

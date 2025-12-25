@@ -116,13 +116,13 @@ const createHandler = async (req, res) => {
 
         const { members, leaders, managers } = req.body;
 
-        if (managers && managers.length > 0)
+        if (managers != null)
             await updateTeamUsers([id], managers.filter(id => id !== null), 3, 'set');
 
-        if (leaders && leaders.length > 0)
+        if (leaders != null)
             await updateTeamUsers([id], leaders.filter(id => id !== null), 2, 'set');
 ``
-        if (members && members.length > 0)
+        if (members != null)
             await updateTeamUsers([id], members.filter(id => id !== null), 1, 'set');
 
         res.status(201).json({ message, team });

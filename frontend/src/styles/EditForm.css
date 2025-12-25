@@ -1,21 +1,67 @@
-.form-page {
+.form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
+    height: 100%;
 }
 .form-header {
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+    align-items: baseline;
     width: 100%;
+    border-bottom: 1px solid var(--text-color-3);
+    padding-bottom: 5px;
+}
+.form-header h1 {
+    font-size: 2em;
     margin: 0;
-    font-size: 2rem;
+    font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
-    font-family: var(--font-family-condensed), sans-serif;
+}
+.form-header .header-buttons {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
 }
 .form-content {
     display: flex;
     flex-direction: column;
     gap: 10px;
     height: 100%;
+    padding: 0;
+    overflow: auto;
 }
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    flex-direction: row-reverse;
+    align-items: center;
+    width: 100%;
+    border-top: 1px solid var(--text-color-3);
+    padding-top: 5px;
+}
+
+.form-header .app-button,
+.form-buttons .app-button {
+    color: var(--text-color-3);
+    background: none !important;
+    border: none;
+    outline: none;
+    transition: .3s ease-in-out;
+    width: fit-content;
+    padding: 5px;
+}
+.form-header .app-button .icon,
+.form-buttons .app-button .icon {
+    font-size: 1.5rem;
+}
+.form-header .app-button:not(.disabled):hover,
+.form-buttons .app-button:not(.disabled):hover {
+    color: var(--link-color);
+}
+
+
 .form-section {
     display: flex;
     flex-direction: row;

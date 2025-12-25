@@ -6,15 +6,17 @@ import Loader from '../Loader';
 
 const ProjectEdit = ({ id, modal }) => {
     const { project, loading, setLoading, fetchProject, saveProject } = useProjects();
+    const { users, fetchUsers } = useUsers();
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
 
     React.useEffect(() => {
+        fetchUsers().then();
         fetchManagers({group: 'managers'}).then();
         if (id)
             fetchProject({id}).then();
         else
             setLoading(false);
-    }, [id, setLoading, fetchProject, fetchManagers]);
+    }, [id, setLoading, fetchProject, fetchUsers, fetchManagers]);
 
     const sections = React.useMemo(() => ({
         0: {
@@ -31,6 +33,7 @@ const ProjectEdit = ({ id, modal }) => {
             }
         },
         1: {
+            style: { flexDirection: 'column', flexWrap: 'nowrap' },
             fields: {
                 owners: {
                     type: 'multi-dropdown',
@@ -39,12 +42,8 @@ const ProjectEdit = ({ id, modal }) => {
                     label: 'Project Owners',
                     itemSource: managers,
                     itemNameField: ['first_name', 'last_name'],
-                    itemExcludedIds: { formData: ['owners', 'managers', 'members'] }
-                }
-            }
-        },
-        2: {
-            fields: {
+                    itemExcludedIds: { formData: ['owners', 'managers', 'developers', 'designers', 'testers', 'stakeholders'] }
+                },
                 managers: {
                     type: 'multi-dropdown',
                     array: true,
@@ -52,11 +51,47 @@ const ProjectEdit = ({ id, modal }) => {
                     label: 'Project Managers',
                     itemSource: managers,
                     itemNameField: ['first_name', 'last_name'],
-                    itemExcludedIds: { formData: ['leaders', 'members'] }
+                    itemExcludedIds: { formData: ['owners', 'managers', 'developers', 'designers', 'testers', 'stakeholders'] }
+                },
+                developers: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    projectCompliance: true,
+                    label: 'Developers',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['owners', 'managers', 'developers', 'designers', 'testers', 'stakeholders'] }
+                },
+                designers: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    projectCompliance: true,
+                    label: 'Designers',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['owners', 'managers', 'developers', 'designers', 'testers', 'stakeholders'] }
+                },
+                testers: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    projectCompliance: true,
+                    label: 'Testers',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['owners', 'managers', 'developers', 'designers', 'testers', 'stakeholders'] }
+                },
+                stakeholders: {
+                    type: 'multi-dropdown',
+                    array: true,
+                    projectCompliance: true,
+                    label: 'Stakeholders',
+                    itemSource: users,
+                    itemNameField: ['first_name', 'last_name'],
+                    itemExcludedIds: { formData: ['owners', 'managers', 'developers', 'designers', 'testers', 'stakeholders'] }
                 }
             }
         }
-    }), [managers]);
+    }), [managers, users]);
 
     const presetData = useMemo(() => project ? project : {}, [project]);
 

@@ -16,9 +16,12 @@ import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 export async function getProject({ id, manager, get_members = true } = {}) {
     async function expandProject(project) {
         if (get_members) {
-            project.members = await getProjectUsers({project: project.id});
             project.owners = await getProjectUsers({project: project.id, role: 1});
             project.managers = await getProjectUsers({project: project.id, role: 2});
+            project.developers = await getProjectUsers({project: project.id, role: 3});
+            project.designers = await getProjectUsers({project: project.id, role: 4});
+            project.testers = await getProjectUsers({project: project.id, role: 5});
+            project.stakeholders = await getProjectUsers({project: project.id, role: 6});
         }
         return project;
     }

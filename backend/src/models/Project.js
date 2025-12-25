@@ -8,11 +8,11 @@ export const Project = sequelize.define('Project', {
         allowNull: false
     },
     description: DataTypes.TEXT,
-    startDate: {
+    start_date: {
         type: DataTypes.DATE,
         allowNull: false
     },
-    endDate: DataTypes.DATE,
+    end_date: DataTypes.DATE,
     data: DataTypes.JSON
 }, {
     tableName: 'projects',

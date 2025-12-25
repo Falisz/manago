@@ -1,6 +1,7 @@
 // BACKEND/controller/organization/ProjectUser.js
 import {Project, ProjectRole, ProjectUser, User} from "#models";
 import sequelize from "#utils/database.js";
+import {Op} from "sequelize";
 
 /**
  * Retrieves members of a Project.
@@ -85,10 +86,11 @@ export async function getProjectUsers({project, user, role} ={}) {
  * Updates Project Members assigned to a Project based on mode.
  * @param {Array<number>} projectIds - Array of Project IDs
  * @param {Array<number>} userIds - Array of User IDs to be assigned/removed
+ * @param roleId
  * @param {string} mode - Update mode ('add', 'set', 'del')
  * @returns {Promise<{success: boolean, message: string}>}
  */
-export async function updateProjectUsers(projectIds, userIds, mode = 'add') {
+export async function updateProjectUsers(projectIds, userIds, roleId=1, mode = 'add') {
     if (!Array.isArray(projectIds) || !Array.isArray(userIds)) {
         return { success: false, message: 'Invalid Project or User IDs provided.', status: 400 };
     }
@@ -132,14 +134,15 @@ export async function updateProjectUsers(projectIds, userIds, mode = 'add') {
             };
         } else if (mode === 'set') {
             await ProjectUser.destroy({
-                where: { project: projectIds },
+                where: { [Op.or]: [{project: projectIds, role: roleId}, {project: projectIds, user: userIds}] },
                 transaction
             });
 
             for (const projectId of projectIds) {
                 const newAssignments = userIds.map(userId => ({
                     project: projectId,
-                    user: userId
+                    user: userId,
+                    role: roleId
                 }));
 
                 await ProjectUser.bulkCreate(newAssignments, { transaction });
