@@ -103,7 +103,7 @@ const YourBalance = () => {
         const currentYear = new Date().getFullYear();
         const result = [];
         for (let i = firstYear; i <= currentYear; i++) result.push({id: i, name: i.toString()});
-        return result;
+        return result.sort((a, b) => b.id - a.id);
     }, [user])
 
     return (

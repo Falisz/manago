@@ -78,6 +78,33 @@ const UserDetails = ({ id, modal }) => {
             }
         },
         1: {
+            header: 'User Status',
+            fields: {
+                0: {
+                    dataField: 'joined',
+                    label: 'Joined Date'
+                },
+                2: {
+                    label: 'Status',
+                    dataType: 'boolean',
+                    dataField: 'active',
+                    trueValue: 'User\'s account is active.',
+                    trueIcon: 'check',
+                    falseValue: 'User\'s account is not active.',
+                    falseIcon: 'close',
+                },
+                3: {
+                    linear: true,
+                    dataType: 'boolean',
+                    dataField: 'manager_view_access',
+                    trueValue: 'User has access to the Manager Portal.',
+                    trueIcon: 'check',
+                    falseValue: 'User doesn\'t have access to the Manager Portal.',
+                    falseIcon: 'close',
+                }
+            }
+        },
+        2: {
             header: {
                 text: 'Roles',
                 button: {
@@ -94,29 +121,6 @@ const UserDetails = ({ id, modal }) => {
                         dataField: 'name',
                         onClick: (id) => openDialog({ content: 'roleDetails', contentId: id, closeButton: false })
                     }
-                }
-            }
-        },
-        2: {
-            header: 'Status',
-            fields: {
-                0: {
-                    linear: true,
-                    dataType: 'boolean',
-                    dataField: 'active',
-                    trueValue: 'User\'s account is active.',
-                    trueIcon: 'check',
-                    falseValue: 'User\'s account is not active.',
-                    falseIcon: 'close',
-                },
-                1: {
-                    linear: true,
-                    dataType: 'boolean',
-                    dataField: 'manager_view_access',
-                    trueValue: 'User has access to the Manager Portal.',
-                    trueIcon: 'check',
-                    falseValue: 'User doesn\'t have access to the Manager Portal.',
-                    falseIcon: 'close',
                 }
             }
         },
@@ -162,6 +166,8 @@ const UserDetails = ({ id, modal }) => {
             hideEmpty: true
         }
     }), [user, openDialog]);
+
+    console.log(user);
 
     return <Details
         header={header}

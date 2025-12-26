@@ -3,6 +3,7 @@ import React, {useEffect, useCallback, useMemo} from 'react';
 import {useUsers, useRoles} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
+import {formatDate} from "../../utils/dates";
 
 export const UserAssignment = ({user, resource, modal}) => {
     const {users: managers, loading: managersLoading, fetchUsers: fetchManagers, saveUserAssignment} = useUsers();
@@ -194,7 +195,7 @@ export const UserAssignment = ({user, resource, modal}) => {
     />;
 }
 
-const UserEdit = ({userId, preset, modal}) => {
+const UserEdit = ({id, preset, modal}) => {
     const {user, loading, setLoading, fetchUser, saveUser} = useUsers();
     const {users: managers, fetchUsers} = useUsers();
     const {roles, fetchRoles} = useRoles();
@@ -203,12 +204,12 @@ const UserEdit = ({userId, preset, modal}) => {
         fetchRoles().then();
         fetchUsers({group: 'managers'}).then();
 
-        if (userId)
-            fetchUser({id: userId}).then();
+        if (id)
+            fetchUser({id}).then();
         else
             setLoading(false);
 
-    }, [userId, setLoading, fetchUser, fetchRoles, fetchUsers]);
+    }, [id, setLoading, fetchUser, fetchRoles, fetchUsers]);
 
     const sections = useMemo(() => ({
         0: {
@@ -240,6 +241,19 @@ const UserEdit = ({userId, preset, modal}) => {
         },
         2: {
             fields: {
+                joined: {
+                    type: 'date',
+                    label: 'Join date',
+                    required: true
+                },
+                notice_start: id ? {
+                    type: 'date',
+                    label: 'Notice start date',
+                } : null
+            }
+        },
+        3: {
+            fields: {
                 active: {
                     type: 'checkbox',
                     label: 'Active',
@@ -254,7 +268,8 @@ const UserEdit = ({userId, preset, modal}) => {
                 }
             }
         },
-        3: {
+        4: {
+            style: { flexDirection: 'row' },
             fields: {
                 roles: {
                     type: 'multi-dropdown',
@@ -263,11 +278,7 @@ const UserEdit = ({userId, preset, modal}) => {
                     itemSource: roles,
                     itemNameField: 'name',
                     itemName: 'Role'
-                }
-            }
-        },
-        4: {
-            fields: {
+                },
                 managers: {
                     type: 'multi-dropdown',
                     label: 'Managers',
@@ -275,14 +286,14 @@ const UserEdit = ({userId, preset, modal}) => {
                     itemSource: managers,
                     itemNameField: ['first_name', 'last_name'],
                     itemName: 'Manager',
-                    itemExcludedIds: {data: [parseInt(userId)]}
+                    itemExcludedIds: {data: [parseInt(id)]}
                 }
             }
         }
-    }), [userId, roles, managers]);
+    }), [id, roles, managers]);
 
     const presetData = useMemo(() => {
-        const baseData = user ? user : {};
+        const baseData = user ? user : { joined: formatDate(new Date()) };
         return {
             ...baseData,
             ...(preset === 'manager' ? {
@@ -300,9 +311,9 @@ const UserEdit = ({userId, preset, modal}) => {
         return <Loader/>;
 
     return <EditForm 
-        header={userId ? `Editing ${user?.first_name} ${user?.last_name}` : `Creating new ${name}`}
+        header={id ? `Editing ${user?.first_name} ${user?.last_name}` : `Creating new ${name}`}
         sections={sections}
-        onSubmit={async (data) => await saveUser({id: userId, data})}
+        onSubmit={async (data) => await saveUser({id, data})}
         modal={modal}
         presetData={presetData} 
     />;

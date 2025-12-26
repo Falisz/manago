@@ -47,7 +47,7 @@ const MODALS = {
     },
     userEdit: {
         urlParam: 'editUser',
-        component: (modal) => <UserEdit userId={modal.contentId} modal={modal.id}/>
+        component: (modal) => <UserEdit id={modal.contentId} modal={modal.id}/>
     },
     managerNew: {
         urlParam: 'new',

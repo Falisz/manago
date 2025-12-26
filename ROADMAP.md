@@ -1,8 +1,6 @@
 Following roadmap and tasks to-do as of 2025-10-02:
 # MVP
-### By 25-12-26
-- Frontend implementation for Contracts, Contract Types and Joined Date while creating the User.
-### TimeSheets (till 28-12-25)
+### TimeSheets (till 31-12-25)
 - Recorded efforts and labor - to help bill the projects.
 - Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
 - Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
@@ -21,6 +19,8 @@ Following roadmap and tasks to-do as of 2025-10-02:
 - If a LeaveType, Contract or Holiday does not have specified Region field it means that the said option is available globally.
 - Regions is a separate app-module that shares the tab with branches in the front UI.
 # MVP ENDS HERE
+### Employee Contracts
+- Frontend and Backend implementation for Contracts, Contract Types and User-Contract assignments.
 ### Work Planner
 - Jobs and Months Schedules.
 - Dispo Planner - yet separate editor.
