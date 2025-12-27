@@ -227,16 +227,20 @@ const resourceConfigs = {
             return url;
         },
         otherMethods: {
-            fetchLeaveBalance: async ({user, year} = {}) => {
+            fetchLeaveBalance: async ({user, year, refresh} = {}) => {
                 let url = '/leaves/balance';
-                if (user || year)
+                if (user || year || refresh)
                     url += '?';
                 if (user)
                     url += `user=${user}`;
                 if (user && year)
-                    url += '?';
+                    url += '&';
                 if (year)
                     url += `year=${year}`;
+                if ((user && refresh) || (year && refresh))
+                    url += '&';
+                if (refresh)
+                    url += 'refresh=true';
                 const res = await axios.get(url);
                 return res?.data || null;
             }

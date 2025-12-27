@@ -950,7 +950,7 @@ const absenceTypes = [
         multiple: true,
         scaled: true,
         plannable: true,
-        transferable: true,
+        transferable: 4,
         color: '#FF9800'
     },
     {

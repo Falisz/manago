@@ -10,30 +10,29 @@ import {
     User,
     WeekendWorking
 } from '#models';
+import isNumber from "#utils/isNumber.js";
 
-
-// TODO: Fix the calculations.
 /**
  * Retrieves Absence Balance for specified userId, absenceTypeId and year.
  * @param userId
  * @param typeId
  * @param year
- * @param recursiveBlock
+ * @param recursion
  * @returns {Promise<{totalBalance: *, usedBalance: *, availableBalance: *, collectedDates: *, compensatedDates: *, availableDates: *}|{}>}
  */
-export async function getAbsenceBalance({userId, typeId, year, recursiveBlock = false} = {}) {
+export async function getAbsenceBalance({userId, typeId, year, recursion = 0} = {}) {
     if (!userId || !typeId || !year)
         return {};
 
     const balance = await AbsenceBalance.findOne({ where: { user: userId, type: typeId, year }, raw: true });
 
-    if (!balance)
-        return await updateAbsenceBalance({userId, typeId, year, recursiveBlock});
+    if (!balance || recursion > 0)
+        return await updateAbsenceBalance({userId, typeId, year, recursion});
 
     return balance;
 }
 
-export async function updateAbsenceBalance({userId, typeId, year, recursiveBlock} = {}) {
+export async function updateAbsenceBalance({userId, typeId, year, recursion = 0} = {}) {
     if (!userId || !typeId)
         return {};
     const user = await User.findByPk(userId, { attributes: ['id', 'joined', 'notice_start'], raw: true });
@@ -79,21 +78,24 @@ export async function updateAbsenceBalance({userId, typeId, year, recursiveBlock
                 totalBalance = Math.min(totalBalance, parentBalance);
         }
 
-        if (!recursiveBlock && leave.amount && leave.transferable) {
-            if (leave.amount) {
-                const limitYear = user.joined ? new Date(user.joined).getFullYear() : new Date().getFullYear();
+        if (leave.amount && isNumber(leave.transferable) && leave.transferable >= recursion) {
 
-                for (let yr = year - 1; yr >= limitYear; yr--) {
-                    const {availableBalance: remainingBalance} = await getAbsenceBalance({
-                        userId: user.id,
-                        typeId: leave.id,
-                        year: yr,
-                        recursiveBlock: true
-                    });
-                    if (remainingBalance != null)
-                        totalBalance += remainingBalance;
-                }
+            const limitYear = user.joined ? new Date(user.joined).getFullYear() : new Date().getFullYear();
+
+            const previousYear = year - 1;
+
+            if (previousYear >= limitYear) {
+
+                const {availableBalance: remainingBalance} = await getAbsenceBalance({
+                    userId: user.id,
+                    typeId: leave.id,
+                    year: previousYear,
+                    recursion: recursion + 1
+                });
+
+                if (remainingBalance != null) totalBalance += remainingBalance;
             }
+
         }
         // Logic for Comp Offs
     } else {

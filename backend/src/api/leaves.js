@@ -7,7 +7,7 @@ import {
     getAbsenceType,
     createAbsence,
     updateAbsence,
-    deleteAbsence
+    deleteAbsence, updateAbsenceBalance
 } from '#controllers';
 import checkResourceIdHandler from '#middleware/checkResourceId.js';
 import checkAccess from '#utils/checkAccess.js';
@@ -236,14 +236,19 @@ const deleteHandler = async (req, res) =>
  * @returns {Promise<void>}
  */
 const fetchBalanceHandler = async (req, res) => {
+
     const result = {};
     try {
         const leaveTypes = await getAbsenceType();
         const userId = parseInt(req.query.user) || req.user;
         const year = parseInt(req.query.year) || new Date().getFullYear();
+        const refresh = Boolean(req.query.refresh);
         for (const leaveType of leaveTypes) {
             const typeId = leaveType?.id;
-            if (typeId) result[typeId] = await getAbsenceBalance({userId, typeId, year});
+            if (typeId) {
+                if (refresh) result[typeId] = await updateAbsenceBalance({userId, typeId, year});
+                else result[typeId] = await getAbsenceBalance({userId, typeId, year});
+            }
         }
 
         res.json(result);

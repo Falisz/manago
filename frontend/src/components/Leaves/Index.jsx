@@ -73,11 +73,16 @@ const YourBalance = () => {
         fetchLeaveBalance().then(res => setLeaveBalance(res));
     }, [fetchLeaveTypes, fetchLeaveBalance, setLeaveBalance]);
 
-    const yourBalance = useMemo(() => {
+    const refreshBalance = React.useCallback(async (year) => {
+        const newBalance = await fetchLeaveBalance({year, refresh: true});
+        if (newBalance) setLeaveBalance(newBalance);
+    }, [fetchLeaveBalance]);
+
+    const yourBalance = React.useMemo(() => {
         return leaveTypes?.map( leave => ({...leave, ...leaveBalance[leave.id]}) );
     }, [leaveTypes, leaveBalance]);
 
-    const fields = useMemo(() => ({
+    const fields = React.useMemo(() => ({
         0: {
             name: 'name',
             label: 'Leave Type'
@@ -98,7 +103,7 @@ const YourBalance = () => {
         }
     }), [])
 
-    const years = useMemo(() => {
+    const years = React.useMemo(() => {
         const firstYear = user.joined ? new Date(user.joined).getFullYear() : new Date().getFullYear();
         const currentYear = new Date().getFullYear();
         const result = [];
@@ -110,6 +115,12 @@ const YourBalance = () => {
         <>
             <div className={'header'}>
                 <h1>Your Leave Balance</h1>
+                <Button
+                    label={'Refresh'}
+                    onClick={() => {
+                        refreshBalance(year).then();
+                    }}
+                />
                 <ComboBox
                     placeholder={`Pick a Team`}
                     name={'year'}

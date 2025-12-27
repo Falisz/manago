@@ -264,12 +264,24 @@ export const AppProvider = ({ children }) => {
                     return prev;
                 return {...prev, pages};
             });
-
         } catch (error) {
             console.error('Error fetching pages:', error);
             setAppState(prev => ({ ...prev, pages: [] }));
         }
     }, [getPages]);
+
+    const refreshUser = useCallback(async () => {
+        try {
+            const user = await getUser();
+            setAppState(prev => {
+                if (prev.user === user)
+                    return prev;
+                return {...prev, user};
+            });
+        } catch (error) {
+            console.error('Error refreshing Logged On User:', error);
+        }
+    }, getUser);
 
     const toggleModule = useCallback(async (id, enabled) => {
         try {
@@ -423,6 +435,7 @@ export const AppProvider = ({ children }) => {
         showPopUp,
         killPopUp,
         loginUser,
+        refreshUser,
         logoutUser,
         getConfigOptions,
         saveConfig,

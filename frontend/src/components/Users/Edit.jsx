@@ -4,6 +4,7 @@ import {useUsers, useRoles} from '../../hooks/useResource';
 import EditForm from '../EditForm';
 import Loader from '../Loader';
 import {formatDate} from "../../utils/dates";
+import useApp from "../../contexts/AppContext";
 
 export const UserAssignment = ({user, resource, modal}) => {
     const {users: managers, loading: managersLoading, fetchUsers: fetchManagers, saveUserAssignment} = useUsers();
@@ -196,6 +197,7 @@ export const UserAssignment = ({user, resource, modal}) => {
 }
 
 const UserEdit = ({id, preset, modal}) => {
+    const { user: loggedOnUser, refreshUser } = useApp();
     const {user, loading, setLoading, fetchUser, saveUser} = useUsers();
     const {users: managers, fetchUsers} = useUsers();
     const {roles, fetchRoles} = useRoles();
@@ -313,7 +315,10 @@ const UserEdit = ({id, preset, modal}) => {
     return <EditForm 
         header={id ? `Editing ${user?.first_name} ${user?.last_name}` : `Creating new ${name}`}
         sections={sections}
-        onSubmit={async (data) => await saveUser({id, data})}
+        onSubmit={async (data) => {
+            await saveUser({id, data});
+            if (id === loggedOnUser.id) await refreshUser();
+        }}
         modal={modal}
         presetData={presetData} 
     />;
