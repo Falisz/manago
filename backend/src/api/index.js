@@ -18,6 +18,7 @@ import holidayRoutes from './holidays.js';
 import holidayWorkingRoutes from './holidayWorkings.js';
 import weekendWorkingRoutes from "./weekendWorkings.js";
 import requestStatusRoutes from './requestStatuses.js';
+import laborRoutes from './labor.js';
 import postRoutes from './posts.js';
 import checkJwtHandler from '#middleware/checkJwt.js';
 
@@ -32,14 +33,8 @@ const publicRules = [
 ];
 
 router.use((req, res, next) => {
-    const isPublic = publicRules.some(rule =>
-        rule.path === req.path &&
-        rule.methods.includes(req.method)
-    );
-
-    if (isPublic)
-        return next();
-
+    const isPublic = publicRules.some(rule => rule.path === req.path && rule.methods.includes(req.method));
+    if (isPublic) return next();
     return checkJwtHandler(req, res, next);
 });
 
@@ -64,6 +59,7 @@ router.use('/leaves', leaveRoutes);
 router.use('/holidays', holidayRoutes);
 router.use('/holiday-workings', holidayWorkingRoutes);
 router.use('/weekend-workings', weekendWorkingRoutes);
+router.use('/labors', laborRoutes);
 router.use('/posts', postRoutes);
 
 export default router;

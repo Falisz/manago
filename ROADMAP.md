@@ -1,12 +1,9 @@
-Following roadmap and tasks to-do as of 2025-10-02:
+Following roadmap and tasks to-do.
 # MVP
-### TimeSheets (till 31-12-25)
-- Recorded efforts and labor - to help bill the projects.
-- Timesheets - kinds of labor reported with date, start and end time, a comment, user and a type (regulars, on-calls, on-stand-by, overtime, etc.)
-- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids.
-- Clocking-in and out, and breaks tracking,  work reporting, tardiness reporting.
-- Payroll planning.
-- Timesheet approval and rejection.
+### TimeSheets and Labor
+- Timesheets filling interface. To record efforts and labor, helping bill the projects. Labor for each date and user filled with time and a type (regulars, on-calls, on-stand-by, overtime, etc.) To be further accepted or rejected by manager.
+- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids. Clocking-in and out, and breaks tracking, work reporting, tardiness reporting.
+- Monthly time reports for employees and projects.
 - Option for both employees and managers to autofill the timesheet based on published schedule.
 ### Permissions and Staff View (till 31-01-25)
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress

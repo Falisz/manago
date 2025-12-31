@@ -21,7 +21,7 @@ import {getAbsenceBalance, updateAbsenceBalance} from './workPlanner/AbsenceBala
 import {getAbsenceType, createAbsenceType, updateAbsenceType, deleteAbsenceType} from './workPlanner/AbsenceType.js';
 import {getDisposition, createDisposition, updateDisposition, deleteDisposition} from './workPlanner/Disposition.js';
 import {getDispositionPreset, createDispositionPreset, updateDispositionPreset, deleteDispositionPreset}
-    from "./workPlanner/DispositionPreset.js";
+    from './workPlanner/DispositionPreset.js';
 import {getHoliday, createHoliday, updateHoliday, deleteHoliday} from './workPlanner/Holiday.js';
 import {getHolidayWorking, createHolidayWorking, updateHolidayWorking, deleteHolidayWorking} from
         './workPlanner/HolidayWorking.js';
@@ -30,8 +30,10 @@ import {getJobPost, createJobPost, updateJobPost, deleteJobPost} from './workPla
 import {getRequestStatus} from './workPlanner/RequestStatus.js';
 import {getShift, createShift, updateShift, deleteShift} from './workPlanner/Shift.js';
 import {getWeekendWorking, createWeekendWorking, updateWeekendWorking, deleteWeekendWorking}
-    from "./workPlanner/WeekendWorking.js";
-import {getSchedule, createSchedule, updateSchedule, deleteSchedule} from "#controllers/workPlanner/Schedule.js";
+    from './workPlanner/WeekendWorking.js';
+import {getSchedule, createSchedule, updateSchedule, deleteSchedule} from './workPlanner/Schedule.js';
+import {getLabor, createLabor, updateLabor, deleteLabor} from './timesheets/Labor.js';
+import {getLaborStatus} from './timesheets/LaborStatus.js';
 
 export {
     getConfig, setConfig, getConfigOptions, getModules, setModule, getPages,
@@ -61,5 +63,6 @@ export {
     getRequestStatus,
     getShift, createShift, updateShift, deleteShift,
     getSchedule, createSchedule, updateSchedule, deleteSchedule,
-    getWeekendWorking, createWeekendWorking, updateWeekendWorking, deleteWeekendWorking
+    getWeekendWorking, createWeekendWorking, updateWeekendWorking, deleteWeekendWorking,
+    getLabor, createLabor, updateLabor, deleteLabor, getLaborStatus
 };

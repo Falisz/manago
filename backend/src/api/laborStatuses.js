@@ -1,11 +1,11 @@
-// BACKEND/api/requestStatuses.js
+// BACKEND/api/laborStatuses.js
 import express from 'express';
-import { getRequestStatus} from '#controllers';
+import { getLaborStatus } from '#controllers';
 import checkAccess from '#utils/checkAccess.js';
 
 // API Handlers
 /**
- * Fetch multiple Absence and/or Special Working Agreement request statuses or one status by its ID.
+ Fetch multiple Labor statuses or one status by its ID.
  * @param {express.Request} req
  * @param {string | null} req.query.include_shifts
  * @param {number} req.user
@@ -16,7 +16,7 @@ const fetchHandler = async (req, res) => {
     const query = {};
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.user, 'read', 'request-status', id);
+            const { hasAccess } = await checkAccess(req.user, 'read', 'labor-status', id);
 
             if (!hasAccess)
                 return res.status(403).json({message: 'Not permitted.'});
@@ -24,15 +24,15 @@ const fetchHandler = async (req, res) => {
             query.id = id;
         }
 
-        const job_posts = await getRequestStatus(query);
+        const job_posts = await getLaborStatus(query);
 
         if (id && !job_posts)
-            return res.status(404).json({ message: 'Request Status not found.' });
+            return res.status(404).json({ message: 'Labor Status not found.' });
 
         res.json(job_posts);
 
     } catch (err) {
-        console.error(`Error fetching Request Status${id ? ' (ID: ' + id + ')' : 'es'}:`, err);
+        console.error(`Error fetching Labor Status${id ? ' (ID: ' + id + ')' : 'es'}:`, err);
         res.status(500).json({ message: 'Server error.' });
     }
 };

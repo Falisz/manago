@@ -6,7 +6,7 @@ import {
     AbsenceType,
     Holiday,
     HolidayWorking,
-    TimeRecord,
+    Labor,
     User,
     WeekendWorking
 } from '#models';
@@ -120,7 +120,7 @@ export async function updateAbsenceBalance({userId, typeId, year, recursion = 0}
         const approvedWeekendDates = approvedWeekends.map(h => h.date);
         const approvedDates = [...approvedHolidayDates, ...approvedWeekendDates];
 
-        const approvedTimeSheets = await TimeRecord.findAll({
+        const approvedTimeSheets = await Labor.findAll({
             where: {
                 user: user.id,                             // TimeRecords for user
                 date: approvedDates,                       // On Approved Holidays

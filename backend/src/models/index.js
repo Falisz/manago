@@ -32,13 +32,14 @@ import Shift from './Shift.js';
 import Team from './Team.js';
 import TeamRole from './TeamRole.js';
 import TeamUser from './TeamUser.js';
-import TimeRecord from './TimeRecord.js';
-import TimeRecordStatus from "./TimeRecordStatus.js";
+import Labor from './Labor.js';
+import LaborStatus from "./LaborStatus.js";
 import User from './User.js';
 import UserManager from './UserManager.js';
 import UserPermission from './UserPermission.js';
 import UserRole from './UserRole.js';
 import WeekendWorking from './WeekendWorking.js';
+import LaborType from "#models/LaborType.js";
 
 AppModule.hasMany(AppConfig, { foreignKey: 'module', sourceKey: 'id', as: 'AuditLogs' });
 AppConfig.belongsTo(AppModule, { foreignKey: 'module', targetKey: 'id', as: 'User' });
@@ -190,22 +191,25 @@ Contract.belongsTo(User, { foreignKey: 'user', targetKey: 'id' });
 ContractType.hasMany(Contract, { foreignKey: 'type', sourceKey: 'id' });
 Contract.belongsTo(ContractType, { foreignKey: 'type', targetKey: 'id' });
 
-User.hasMany(TimeRecord, { foreignKey: 'user', sourceKey: 'id', as: 'TimeRecords' });
-TimeRecord.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
+User.hasMany(Labor, { foreignKey: 'user', sourceKey: 'id', as: 'TimeRecords' });
+Labor.belongsTo(User, { foreignKey: 'user', targetKey: 'id', as: 'User' });
 
-User.hasMany(TimeRecord, { foreignKey: 'approver', sourceKey: 'id', as: 'ApprovedTimeRecords' });
-TimeRecord.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
+User.hasMany(Labor, { foreignKey: 'approver', sourceKey: 'id', as: 'ApprovedTimeRecords' });
+Labor.belongsTo(User, { foreignKey: 'approver', targetKey: 'id', as: 'Approver' });
 
-Project.hasMany(TimeRecord, { foreignKey: 'project', sourceKey: 'id' });
-TimeRecord.belongsTo(Project, { foreignKey: 'project', targetKey: 'id' });
+Project.hasMany(Labor, { foreignKey: 'project', sourceKey: 'id' });
+Labor.belongsTo(Project, { foreignKey: 'project', targetKey: 'id' });
 
-TimeRecordStatus.hasMany(TimeRecord, { foreignKey: 'status', sourceKey: 'id' });
-TimeRecord.belongsTo(TimeRecordStatus, { foreignKey: 'status', targetKey: 'id' });
+LaborType.hasMany(Labor, { foreignKey: 'type', sourceKey: 'id' });
+Labor.belongsTo(LaborType, { foreignKey: 'type', targetKey: 'id' });
+
+LaborStatus.hasMany(Labor, { foreignKey: 'status', sourceKey: 'id' });
+Labor.belongsTo(LaborStatus, { foreignKey: 'status', targetKey: 'id' });
 
 export {
     Absence, AbsenceBalance, AppAuditLog, AppConfig, AppModule, AppSecurityLog, AppPage, Branch, BranchRole, BranchUser,
     Channel, Contract, ContractType, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation,
     AbsenceType, Post, Permission, Project, ProjectRole, ProjectUser, RequestStatus, Role, RolePermission, Schedule,
-    Shift, Team, TeamRole, TeamUser, TimeRecord, TimeRecordStatus, User, UserManager, UserPermission, UserRole,
+    Shift, Team, TeamRole, TeamUser, Labor, LaborStatus, LaborType, User, UserManager, UserPermission, UserRole,
     WeekendWorking
 }

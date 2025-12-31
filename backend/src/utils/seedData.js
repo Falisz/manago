@@ -4,7 +4,7 @@ import sequelize from '#utils/database.js';
 import {
     AppPage, AppModule, AppConfig, Channel, Holiday, JobPost, JobLocation, Absence, AbsenceType, Post,
     Permission, RequestStatus, Role, RolePermission, Schedule, Shift, Team, TeamRole, TeamUser, User, UserManager,
-    UserPermission, UserRole, HolidayWorking, WeekendWorking, Project, ProjectRole, ProjectUser
+    UserPermission, UserRole, HolidayWorking, WeekendWorking, Project, ProjectRole, ProjectUser, LaborStatus, LaborType
 } from '#models';
 
 // Data to seed
@@ -1070,6 +1070,20 @@ const weekendWorkings = [
     { date: '2025-12-21', user: 100003, status: 1 },
 ];
 
+const laborStatuses = [
+    { id: 1, name: 'Empty'},
+    { id: 2, name: 'Submitted'},
+    { id: 3, name: 'Approved'},
+    { id: 4, name: 'Rejected'}
+];
+
+const laborTypes = [
+    { id: 1, name: 'Regular'},
+    { id: 2, name: 'Overtime'},
+    { id: 3, name: 'On-Call'},
+    { id: 4, name: 'On-Standby'}
+]
+
 const channels = [
     { id:1, name: 'General Discussion' },
     { id:2, name: 'Announcements' },
@@ -1129,6 +1143,8 @@ const seedStructure = [
     { model: WeekendWorking, tableName: 'weekend_workings', data: weekendWorkings, itemsName: 'weekend working agreements' },
     { model: AbsenceType, tableName: 'absence_types', data: absenceTypes, itemsName: 'absence types' },
     { model: Absence, tableName: 'absences', data: absences, itemsName: 'absences' },
+    { model: LaborStatus, tableName: 'labor_statuses', data: laborStatuses, itemsName: 'labor statuses' },
+    { model: LaborType, tableName: 'labor_types', data: laborTypes, itemsName: 'labor types' },
     { model: Channel, tableName: 'channels', data: channels, itemsName: 'channels' },
     { model: Post, tableName: 'posts', data: posts, itemsName: 'posts' },
 ];
