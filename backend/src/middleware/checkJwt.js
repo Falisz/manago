@@ -32,6 +32,8 @@ const checkJwtHandler = async (req, res, next) => {
             if (!refreshToken)
                 return res.status(401).json({message: 'No User Tokens found.'});
 
+            // TODO: Add a token database check-up for validation revoking option.
+
             const { userId } = verifyRefreshToken(refreshToken);
 
             if (!userId)
