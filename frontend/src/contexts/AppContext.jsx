@@ -19,6 +19,7 @@ import setupAxiosInterceptor from "../utils/interceptors";
 import ApprovalsIndex from "../components/Approvals/Index";
 import ProjectIndex from "../components/Projects/Index";
 import OrganizationDashboard from "../components/Organization";
+import TimesheetIndex from "../components/Timesheets/Index";
 
 setupAxiosInterceptor();
 
@@ -37,7 +38,8 @@ const COMPONENT_MAP = {
     AppSettings,
     ApprovalsIndex,
     ProjectIndex,
-    OrganizationDashboard
+    OrganizationDashboard,
+    TimesheetIndex
 };
 
 const mapPagesToComponents = (pages) => {
@@ -281,7 +283,7 @@ export const AppProvider = ({ children }) => {
         } catch (error) {
             console.error('Error refreshing Logged On User:', error);
         }
-    }, getUser);
+    }, [getUser]);
 
     const toggleModule = useCallback(async (id, enabled) => {
         try {

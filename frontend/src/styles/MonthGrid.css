@@ -23,11 +23,23 @@
     text-align: center;
     vertical-align: middle;
     position: relative;
-    border-radius: var(--def-border-radius);
     transition: 0.3s ease-in-out;
 }
-.month-grid td:not(.selected):hover {
+.month-grid tr.selected td {
     background: var(--background-color-3);
+}
+.month-grid tr.selected td:first-child {
+    border-radius: var(--def-border-radius) 0 0 var(--def-border-radius);
+}
+.month-grid tr.selected td:last-child {
+    border-radius: 0 var(--def-border-radius) var(--def-border-radius) 0;
+}
+.month-grid tr:not(.selected) td.selected {
+    border-radius: var(--def-border-radius);
+}
+.month-grid tr:not(.selected) td:not(.selected):hover {
+    background: var(--background-color-3);
+    border-radius: var(--def-border-radius);
 }
 .month-grid td.other-month {
     opacity: 0.6;

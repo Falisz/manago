@@ -1,0 +1,34 @@
+.app.manager main.timesheets {
+    display: grid;
+    grid-template-columns: 2fr 4fr;
+    grid-template-rows: 1fr 5fr;
+    grid-template-areas: 'a c' 'b c';
+}
+.timesheets .clock-in {
+    grid-area: a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.app.manager main.timesheets>section.week-selector {
+    grid-area: b;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+.timesheets .timesheet {
+    grid-area: c;
+}
+
+.timesheet-table td {
+    padding: 2px;
+    text-align: center;
+}
+.timesheet-table input.hours {
+    width: 70px;
+    outline: none;
+    border: none;
+    box-sizing: border-box;
+    padding: 5px 2px;
+    text-align: center;
+}

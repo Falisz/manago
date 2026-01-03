@@ -2,8 +2,18 @@
 import React from 'react';
 import '../styles/MonthGrid.css';
 import useNav from "../contexts/NavContext";
+import {getWeekNumber} from "../utils/dates";
 
-function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1, disabled }) {
+function MonthGrid({
+                       date,
+                       selectedDates,
+                       setSelectedDate,
+                       selectedWeek,
+                       selectWeek,
+                       items,
+                       startDay = 1,
+                       disabled
+}) {
     // Parse the date string (e.g., "December 05, 2025")
 
     const { openDialog } = useNav();
@@ -35,81 +45,122 @@ function MonthGrid({ date, selectedDates, setSelectedDate, items, startDay = 1, 
                 </tr>
             </thead>
             <tbody>
-            {[...Array(rows)].map((_, rowIndex) => (
-                <tr key={rowIndex}>
-                    {[...Array(7)].map((_, colIndex) => {
-                        const cellIndex = rowIndex * 7 + colIndex;
-                        let dayNumber;
-                        let cellMonth = month;
-                        let cellYear = year;
-                        let isCurrentMonth = true
+            {[...Array(rows)].map((_, rowIndex) => {
 
-                        if (cellIndex < offset) {
-                            // Previous month
-                            dayNumber = daysInPrevMonth - offset + cellIndex + 1;
-                            cellMonth = month - 1;
-                            if (cellMonth < 0) {
-                                cellMonth = 11;
-                                cellYear -= 1;
-                            }
-                            isCurrentMonth = false;
-                        } else if (cellIndex < offset + daysInMonth) {
-                            // Current month
-                            dayNumber = cellIndex - offset + 1;
-                        } else {
-                            // Next month
-                            dayNumber = cellIndex - offset - daysInMonth + 1;
-                            cellMonth = month + 1;
-                            if (cellMonth > 11) {
-                                cellMonth = 0;
-                                cellYear += 1;
-                            }
-                            isCurrentMonth = false;
-                        }
+                const firstCellIndex = rowIndex * 7;
+                let firstDayNumber;
+                let firstCellMonth = month;
+                let firstCellYear = year;
 
-                        const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
-                        const selected = selectedDates?.has(dateStr);
-                        const item = items?.[dateStr];
+                if (firstCellIndex < offset) {
+                    firstDayNumber = daysInPrevMonth - offset + firstCellIndex + 1;
+                    firstCellMonth = month - 1;
+                    if (firstCellMonth < 0) {
+                        firstCellMonth = 11;
+                        firstCellYear -= 1;
+                    }
+                } else if (firstCellIndex < offset + daysInMonth) {
+                    firstDayNumber = firstCellIndex - offset + 1;
+                } else {
+                    firstDayNumber = firstCellIndex - offset - daysInMonth + 1;
+                    firstCellMonth = month + 1;
+                    if (firstCellMonth > 11) {
+                        firstCellMonth = 0;
+                        firstCellYear += 1;
+                    }
+                }
 
-                        let numberTitle, color, onClick = () => !disabled && setSelectedDate(dateStr);
-                        if (item?.item_type === 'leave') {
-                            numberTitle = item.type?.name + ' | ' + item.status?.name;
-                            color = item.type?.color;
-                            onClick = () => openDialog(
-                                {content: 'leaveDetails', contentId: item.id, closeButton: false}
-                            );
-                        } else if (item?.item_type === 'holiday') {
-                            const working = [2,4].includes(item?.working?.status) ? 'Working' : 'Day Off';
-                            numberTitle = item?.name + ' | ' + working;
-                            color = '#9c0510';
-                            onClick = () => openDialog(
-                                {content: 'holidayDetails', contentId: item.id, closeButton: false}
-                            );
-                        }
+                const firstDateStr = `${firstCellYear}-${String(firstCellMonth + 1).padStart(2, '0')}-${String(firstDayNumber).padStart(2, '0')}`;
+                const [ weekNo, yearNo ] = getWeekNumber(firstDateStr);
+                const weekString = `${yearNo}-W${String(weekNo).padStart(2, '0')}`
 
-                        return (
-                            <td
-                                key={colIndex}
-                                data-date={dateStr}
-                                className={
-                                    (isCurrentMonth ? 'current-month' : 'other-month') +
-                                    (item ? ' has-item' : ' empty') +
-                                    (selected ? ' selected' : '')
+                const selected = weekString === selectedWeek;
+
+                return (
+                    <tr
+                        key={rowIndex}
+                        className={selected ? 'selected' : null}
+                        week-number={weekString}
+                        style={{
+                            cursor: !disabled && selectWeek ? 'pointer' : 'default',
+                        }}
+                        onClick={() => !disabled && selectWeek ? selectWeek(weekString) : null}
+                    >
+                        {[...Array(7)].map((_, colIndex) => {
+                            const cellIndex = rowIndex * 7 + colIndex;
+                            let dayNumber;
+                            let cellMonth = month;
+                            let cellYear = year;
+                            let isCurrentMonth = true
+
+                            if (cellIndex < offset) {
+                                // Previous month
+                                dayNumber = daysInPrevMonth - offset + cellIndex + 1;
+                                cellMonth = month - 1;
+                                if (cellMonth < 0) {
+                                    cellMonth = 11;
+                                    cellYear -= 1;
                                 }
-                            >
-                                <div
-                                    className={'day-number'}
-                                    style={{background: color}}
-                                    title={numberTitle}
-                                    onClick={onClick}
+                                isCurrentMonth = false;
+                            } else if (cellIndex < offset + daysInMonth) {
+                                // Current month
+                                dayNumber = cellIndex - offset + 1;
+                            } else {
+                                // Next month
+                                dayNumber = cellIndex - offset - daysInMonth + 1;
+                                cellMonth = month + 1;
+                                if (cellMonth > 11) {
+                                    cellMonth = 0;
+                                    cellYear += 1;
+                                }
+                                isCurrentMonth = false;
+                            }
+
+                            const dateStr = `${cellYear}-${String(cellMonth + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}`;
+                            const selected = selectedDates?.has(dateStr);
+                            const item = items?.[dateStr];
+
+                            let numberTitle, color, onClick = () => !disabled &&
+                                ((setSelectedDate && setSelectedDate(dateStr)) || (selectWeek && selectWeek(dateStr)));
+                            if (item?.item_type === 'leave') {
+                                numberTitle = item.type?.name + ' | ' + item.status?.name;
+                                color = item.type?.color;
+                                onClick = () => openDialog(
+                                    {content: 'leaveDetails', contentId: item.id, closeButton: false}
+                                );
+                            } else if (item?.item_type === 'holiday') {
+                                const working = [2,4].includes(item?.working?.status) ? 'Working' : 'Day Off';
+                                numberTitle = item?.name + ' | ' + working;
+                                color = '#9c0510';
+                                onClick = () => openDialog(
+                                    {content: 'holidayDetails', contentId: item.id, closeButton: false}
+                                );
+                            }
+
+                            return (
+                                <td
+                                    key={colIndex}
+                                    data-date={dateStr}
+                                    className={
+                                        (isCurrentMonth ? 'current-month' : 'other-month') +
+                                        (item ? ' has-item' : ' empty') +
+                                        (selected ? ' selected' : '')
+                                    }
                                 >
-                                    {dayNumber}
-                                </div>
-                            </td>
-                        );
-                    })}
-                </tr>
-            ))}
+                                    <div
+                                        className={'day-number'}
+                                        style={{background: color}}
+                                        title={numberTitle}
+                                        onClick={onClick}
+                                    >
+                                        {dayNumber}
+                                    </div>
+                                </td>
+                            );
+                        })}
+                    </tr>
+                );
+            })}
             </tbody>
         </table>
     );

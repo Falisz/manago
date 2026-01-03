@@ -18,7 +18,7 @@
     cursor: not-allowed;
 }
 
-.app-button:not(.disabled):hover {
+.app-button:not(.disabled):not(.no-bg):hover {
     background: var(--highlight-color);
 }
 .app-button.discard,

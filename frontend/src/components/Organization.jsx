@@ -38,6 +38,12 @@ const OrganizationDashboard = () => {
                     </section>
                 </>
             }
+            {
+                !(teams || projects || branches) && <>
+                    Currently all organization units including: Teams, Projects, Branches and Regions are disabled.<br/>
+                    Reach out to your Admin to enable any organization-related app module if needed.
+                </>
+            }
         </>
     );
 };

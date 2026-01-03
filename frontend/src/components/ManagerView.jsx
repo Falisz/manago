@@ -79,8 +79,8 @@ const SubNav = ({currentMainPage, location}) => {
             {currentMainPage?.subpages?.map((subpage) => (
                 !subpage.hidden && <Link
                     key={subpage.path}
-                    className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
-                    to={`/${currentMainPage.path}${subpage.path ? `/${subpage.path}` : ''}`}
+                    className={`subpage-link ${location.pathname.startsWith(`/${currentMainPage?.path}${subpage.path ? `/${subpage.path}` : ''}`) ? 'selected' : ''}`}
+                    to={`/${currentMainPage?.path}${subpage.path ? `/${subpage.path}` : ''}`}
                 >
                     {subpage.title}
                 </Link>
@@ -105,11 +105,11 @@ const ManagerView = () => {
         location.pathname.startsWith(`/${page.path}`)
     ) || (location.pathname === '/' ? pages?.[0] : null);
 
-    const currentSubPage = (location.pathname === '/' || location.pathname === ('/' + currentMainPage.path)) ?
+    const currentSubPage = (location.pathname === '/' || location.pathname === ('/' + currentMainPage?.path)) ?
         { title: 'index' } :
         currentMainPage?.subpages?.find((subpage) =>
-            location.pathname === `/${currentMainPage.path}/${subpage.path}` ||
-            location.pathname.startsWith(`/${currentMainPage.path}/${subpage.path}/`)
+            location.pathname === `/${currentMainPage?.path}/${subpage.path}` ||
+            location.pathname.startsWith(`/${currentMainPage?.path}/${subpage.path}/`)
     );
 
     const pageTitle = currentSubPage?.title || currentMainPage?.title || null;

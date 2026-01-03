@@ -28,9 +28,9 @@ const PopUp = ({id, type, header, content, onClick, isVisible, noClose}) => {
     >
         {!noClose && <Button
             className={'app-popup-close'}
-            transparent={true}
             icon={'close'}
             onClick={()=>killPopUp(id)}
+            transparent
         />}
         <Icon
             i={icons[type] || icons['info']}
