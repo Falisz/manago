@@ -73,6 +73,9 @@ const TimeSheet = ({week}) => {
     // TODO: Below Dates and above Labor there should be row with scheduled shifts and absences for reference.
     // TODO: with ProjectsEnabled the table will be rendered with multiple rows for each project that have relevant stuff.
 
+    // TODO: Separate UserTimeSheets and ProjectTimeSheets modals to display and approve pending timesheets for Managers
+    //  and project managers.
+
     const startDate = React.useMemo(() => new Date(getFirstDay(week)), [week]);
     const endDate = React.useMemo(() => new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000), [startDate]);
     const dates = React.useMemo(() => generateDateList(startDate, endDate), [startDate, endDate]);
@@ -117,7 +120,7 @@ const TimeSheet = ({week}) => {
     );
 };
 
-const TimesheetIndex = () => {
+const TimesheetDashboard = () => {
     const [ month, setMonth ] = React.useState(() => {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -143,4 +146,4 @@ const TimesheetIndex = () => {
     );
 };
 
-export default TimesheetIndex;
+export default TimesheetDashboard;

@@ -25,7 +25,7 @@ export const Labor = sequelize.define('Labor', {
         references: { model: Project, key: 'id' }
     },
     type: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: { model: LaborType, key: 'id' }
     },

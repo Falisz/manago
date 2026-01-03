@@ -1,4 +1,4 @@
-.app.manager main.timesheets {
+.app.manager main.timesheets.index {
     display: grid;
     grid-template-columns: 2fr 4fr;
     grid-template-rows: 1fr 5fr;

@@ -278,7 +278,27 @@ const appPages = [
                 "title": "timesheets",
                 "module": 4,
                 "icon": "calendar_month",
-                "component": "TimesheetIndex"
+                "component": "TimesheetDashboard",
+                "subpages": [
+                    {
+                        "path": "attendance",
+                        "title": "Attendance",
+                        "icon": "",
+                        "component": "YourAttendance",
+                    },
+                    {
+                        "path": "approvals",
+                        "title": "Approvals",
+                        "icon": "",
+                        "component": "ApprovalsIndex",
+                    },
+                    {
+                        "path": "settings",
+                        "title": "Settings",
+                        "icon": "",
+                        "component": "TimesheetsSettings",
+                    }
+                ]
             },
             {
                 "path": "Tasks",
