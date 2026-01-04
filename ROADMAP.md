@@ -2,7 +2,6 @@ Following roadmap and tasks to-do.
 # MVP (till 31-01-25)
 ### TimeSheets and Labor 
 - Timesheets filling interface. To record efforts and labor, helping bill the projects. Labor for each date and user filled with time and a type (regulars, on-calls, on-stand-by, overtime, etc.) To be further accepted or rejected by manager.
-- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids. Clocking-in and out, and breaks tracking, work reporting, tardiness reporting.
 - Monthly time reports for employees and projects.
 - Option for both employees and managers to autofill the timesheet based on published schedule.
 ### Branches and Regions
@@ -36,6 +35,8 @@ Following roadmap and tasks to-do.
 - If shrinking date range in currently defined schedule draft with shifts planned, those shifts will be removed once Schedule is saved. Respective warning in UI.
 - When Publishing schedule two verifications check, first for the labor law, define in module's config and the second for existing shifts for the given users and dates in scope. Only then the option with "overwriting" to show up.
 - Performance limits in place - no larger scope than 31 days and 100 users.
+### Timesheets
+- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids. Clocking-in and out, and breaks tracking, work reporting, tardiness reporting.
 ### Tasks
 - per Users, Shift, Branches, Project, company-wide.
 - typical tasks, motivation KPI contests for branches/teams/projects/users, etc.

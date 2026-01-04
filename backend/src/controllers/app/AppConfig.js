@@ -18,6 +18,9 @@ export async function getConfig() {
         if (config.module === 4) {
             if (!configObject['workPlanner']) configObject['workPlanner'] = {};
             configObject['workPlanner'][config.configName] = config.selectedOption;
+        } else if (config.module === 5) {
+            if (!configObject['timesheets']) configObject['timesheets'] = {};
+            configObject['timesheets'][config.configName] = config.selectedOption;
         }
         else
             configObject[config.configName] = config.selectedOption;

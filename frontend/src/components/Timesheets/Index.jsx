@@ -1,16 +1,12 @@
 // FRONTEND/components/Timesheets/Index.jsx
-import React from 'react';
+import React, {useMemo} from 'react';
 import Button from "../Button";
 import MonthGrid from "../MonthGrid";
-import {days, formatDate, generateDateList, getFirstDay, getWeekNumber} from "../../utils/dates";
+import {days, months, formatDate, generateDateList, getFirstDay, getWeekNumber} from "../../utils/dates";
 import '../../styles/Timesheets.css';
 import useApp from "../../contexts/AppContext";
-
-// TODO: Timesheets settings:
-//  Enable Attendance?
-//  Enable Labor cap based on recorded attendance?
-//  Enable project timesheets?
-//  Base Timesheets solely on Schedule - this disables project and task based Labor, and Labor is pre-filled with shift data.
+import {useHolidays, useLeaves, useShifts} from "../../hooks/useResource";
+import Loader from "../Loader";
 
 const ClockIn = () => {
     return (
@@ -21,7 +17,6 @@ const ClockIn = () => {
 };
 
 const WeekSelector = ({month, setMonth, week, setWeek}) => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const [yearNo, monthNo] = month.split('-').map(Number);
 
     const changeMonth = React.useCallback((val=0) => {
@@ -59,16 +54,6 @@ const WeekSelector = ({month, setMonth, week, setWeek}) => {
 
 const TimeSheet = ({week}) => {
 
-    const { modules } = useApp().appState;
-
-    const projectsEnabled = React.useMemo(() => {
-
-        return modules.find(m => m.title?.toLowerCase() === 'projects')?.enabled || false
-
-    }, [modules]);
-
-    console.log(projectsEnabled);
-
     // TODO: Add fetching of Users Schedule, Users Special working agreements, user labors, user projects and user tasks.
     // TODO: Below Dates and above Labor there should be row with scheduled shifts and absences for reference.
     // TODO: with ProjectsEnabled the table will be rendered with multiple rows for each project that have relevant stuff.
@@ -76,11 +61,38 @@ const TimeSheet = ({week}) => {
     // TODO: Separate UserTimeSheets and ProjectTimeSheets modals to display and approve pending timesheets for Managers
     //  and project managers.
 
+    const { user, appState } = useApp();
+    const { modules } = appState;
+    const { holidays, loading: holidaysLoading, fetchHolidays } = useHolidays();
+    const { shifts, loading: shiftsLoading, fetchShifts } = useShifts();
+    const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
+    const loading = useMemo(() => holidaysLoading || shiftsLoading || leavesLoading,
+        [holidaysLoading, shiftsLoading, leavesLoading]);
+
+    const projectsEnabled = React.useMemo(() =>
+        modules.find(m => m.title?.toLowerCase() === 'projects')?.enabled || false
+    , [modules]);
+
+    const [yearNo, weekNo] = week?.split('-W').map(Number);
     const startDate = React.useMemo(() => new Date(getFirstDay(week)), [week]);
     const endDate = React.useMemo(() => new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000), [startDate]);
     const dates = React.useMemo(() => generateDateList(startDate, endDate), [startDate, endDate]);
 
-    const [yearNo, weekNo] = week?.split('-W')
+    React.useEffect(() => {
+        if (appState.workPlanner.holidays)
+            fetchHolidays().then();
+    }, [appState.workPlanner, fetchHolidays]);
+
+    React.useEffect(() => {
+        const start_date = formatDate(startDate);
+        const end_date = formatDate(endDate);
+        fetchShifts({user: user.id, start_date, end_date}).then();
+        if (appState.workPlanner.leaves)
+            fetchLeaves({user: user.id, start_date, end_date}).then();
+
+    }, [startDate, endDate, user.id, fetchShifts, fetchLeaves, appState.workPlanner ]);
+
+    console.log(projectsEnabled, holidays, shifts, leaves);
 
     return (
         <>
@@ -99,21 +111,25 @@ const TimeSheet = ({week}) => {
                                 </th>
                         ))}
                     </tr>
+                    {
+
+                    }
                 </thead>
                 <tbody>
-                    <tr key={'no-project'}>
-                        {dates.map((date, index) => (
-                            <td key={index}>
-                                <input
-                                    className={'hours'}
-                                    type={'number'}
-                                    placeholder={'Hours'}
-                                    min={0}
-                                    max={24}
-                                />
-                            </td>
-                        ))}
-                    </tr>
+                {loading ? <tr><td colSpan='7'><Loader/></td></tr> :
+                <tr key={'no-project'}>
+                    {dates.map((date, index) => (
+                        <td key={index}>
+                            <input
+                                className={'hours'}
+                                type={'number'}
+                                placeholder={'Hours'}
+                                min={0}
+                                max={24}
+                            />
+                        </td>
+                    ))}
+                </tr>}
                 </tbody>
             </table>
         </>
@@ -121,6 +137,8 @@ const TimeSheet = ({week}) => {
 };
 
 const TimesheetDashboard = () => {
+    const { timesheets: config } = useApp().appState;
+
     const [ month, setMonth ] = React.useState(() => {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -133,9 +151,9 @@ const TimesheetDashboard = () => {
 
     return (
         <>
-            <section className={'clock-in'}>
+            {config.attendance && <section className={'clock-in'}>
                 <ClockIn/>
-            </section>
+            </section>}
             <section className={'week-selector'}>
                 <WeekSelector month={month} setMonth={setMonth} week={week} setWeek={setWeek} />
             </section>

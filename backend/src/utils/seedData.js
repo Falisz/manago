@@ -18,15 +18,17 @@ const appModules = [
         description: "It can be used for project-related management allowing major logical divisions within the company."},
     {id: 3, title: 'Branches', icon: 'graph_3', enabled: true,
         description: "Similarly to the projects, but it allows for major physical divisions for the company. It also enables Region groupings."},
-    {id: 4, title: 'Time Management', icon: 'calendar_month', enabled: true,
-        description: "This is powerful tool for schedule planning, timesheets, job posts, payroll, leaves and time offs."},
-    {id: 5, title: 'Tasks', icon: 'task_alt', enabled: false,
+    {id: 4, title: 'Work Planner', icon: 'edit_calendar', enabled: true,
+        description: "This is powerful tool for schedule planning, job posts, leaves and time offs."},
+    {id: 5, title: 'Timesheets', icon: 'calendar_month', enabled: true,
+        description: "Module for timesheets, project billings and payrolls."},
+    {id: 6, title: 'Tasks', icon: 'task_alt', enabled: false,
         description: "This module allows to-do and Kanban tasks and plans management."},
-    {id: 6, title: 'Trainings', icon: 'school', enabled: false,
+    {id: 7, title: 'Trainings', icon: 'school', enabled: false,
         description: "This module allows for centralised employee training experience, assessments and progress tracking."},
-    {id: 7, title: 'Posts', icon: 'forum', enabled: false,
+    {id: 8, title: 'Posts', icon: 'forum', enabled: false,
         description: "This module allows post threads and channels (general, teams, projects and/or branch related ones"},
-    {id: 8, title: 'Blogs', icon: 'newsmode', enabled: false,
+    {id: 9, title: 'Blogs', icon: 'newsmode', enabled: false,
         description: "Use this module for edited articles, like news or blogposts."}
 ];
 
@@ -80,9 +82,33 @@ const appConfigs = [
         options: [false, true]
     },
     {
-        configName: 'dispositions',
+        configName: 'Dispositions',
         selectedOption: false,
         module: 4,
+        options: [false, true]
+    },
+    {
+        configName: 'attendance',
+        selectedOption: false,
+        module: 5,
+        options: [false, true]
+    },
+    {
+        configName: 'capLaborWithAttendance',
+        selectedOption: false,
+        module: 5,
+        options: [false, true]
+    },
+    {
+        configName: 'projectTimesheets',
+        selectedOption: true,
+        module: 5,
+        options: [false, true]
+    },
+    {
+        configName: 'shiftBasedTimesheets',
+        selectedOption: false,
+        module: 5,
         options: [false, true]
     }
 ];
@@ -276,7 +302,7 @@ const appPages = [
             {
                 "path": "timesheets",
                 "title": "timesheets",
-                "module": 4,
+                "module": 5,
                 "icon": "calendar_month",
                 "component": "TimesheetDashboard",
                 "subpages": [
@@ -303,21 +329,21 @@ const appPages = [
             {
                 "path": "Tasks",
                 "title": "Tasks",
-                "module": 5,
+                "module": 6,
                 "icon": "task",
                 "component": "TasksDashboard"
             },
             {
                 "path": "Trainings",
                 "title": "Trainings",
-                "module": 6,
+                "module": 7,
                 "icon": "school",
                 "component": "TrainingsDashboard"
             },
             {
                 "path": "posts",
                 "title": "Posts",
-                "module": 7,
+                "module": 8,
                 "icon": "forum",
                 "component": "PostsIndex",
                 "subpages": [
@@ -333,7 +359,7 @@ const appPages = [
             {
                 "path": "Blogs",
                 "title": "Blogs",
-                "module": 8,
+                "module": 9,
                 "icon": "feed",
                 "component": "Blogs"
             },

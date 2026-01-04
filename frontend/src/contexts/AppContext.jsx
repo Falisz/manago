@@ -20,6 +20,7 @@ import ApprovalsIndex from "../components/Approvals/Index";
 import ProjectIndex from "../components/Projects/Index";
 import OrganizationDashboard from "../components/Organization";
 import TimesheetDashboard from "../components/Timesheets/Index";
+import TimesheetsSettings from "../components/Timesheets/Settings";
 
 setupAxiosInterceptor();
 
@@ -39,7 +40,8 @@ const COMPONENT_MAP = {
     ApprovalsIndex,
     ProjectIndex,
     OrganizationDashboard,
-    TimesheetDashboard
+    TimesheetDashboard,
+    TimesheetsSettings
 };
 
 const mapPagesToComponents = (pages) => {

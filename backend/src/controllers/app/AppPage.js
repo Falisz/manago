@@ -28,6 +28,7 @@ export async function getPages(view = 0) {
             page.subpages = page.subpages.filter(subpage =>
                 moduleStatus.get(subpage.module !== undefined ? subpage.module : page.module)
                 && (subpage.path === 'leaves' ? config.workPlanner.leaves : true)
+                && (subpage.path === 'attendance' ? config.timesheets.attendance : true)
             );
         }
 

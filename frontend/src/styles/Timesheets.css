@@ -1,7 +1,7 @@
 .app.manager main.timesheets.index {
     display: grid;
-    grid-template-columns: 2fr 4fr;
-    grid-template-rows: 1fr 5fr;
+    grid-template-columns: 2fr 5fr;
+    grid-template-rows: auto 1fr;
     grid-template-areas: 'a c' 'b c';
 }
 .timesheets .clock-in {
