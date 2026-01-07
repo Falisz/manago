@@ -11,7 +11,7 @@ import {useHolidays} from "../../hooks/useResource";
 import useApp from "../../contexts/AppContext";
 
 
-const LeaveItem = ({ leave }) => {
+export const LeaveItem = ({ leave }) => {
 
     const { openDialog } = useNav();
 
@@ -33,7 +33,7 @@ const LeaveItem = ({ leave }) => {
     );
 }
 
-const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onClick,
+export const ShiftItem = ({ shift, editMode, onDragStart, onDragEnd, onContextMenu, onClick,
                        selectShift, updateShift, jobPosts }) => {
 
     const { appState } = useApp();

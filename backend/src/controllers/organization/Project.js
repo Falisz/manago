@@ -9,11 +9,11 @@ import isNumberOrNumberArray from '#utils/isNumberOrNumberArray.js';
 /**
  * Retrieves one Project by its ID or all Projects if ID is not provided.
  * @param {number} id - optional - Project ID to fetch a specific project
- * @param {number|number[]} manager - optional - Manager user ID(s) to filter projects by
+ * @param {number|number[]} manager - optional - User ID(s) to filter projects by
  * @param {boolean} get_members - optional - Should members be fetched for the found Projects?
  * @returns {Promise<Object|Array|null>} Single Project, array of Projects, or null
  */
-export async function getProject({ id, manager, get_members = true } = {}) {
+export async function getProject({ id, user, get_members = true } = {}) {
     async function expandProject(project) {
         if (get_members) {
             project.owners = await getProjectUsers({project: project.id, role: 1});
@@ -29,8 +29,12 @@ export async function getProject({ id, manager, get_members = true } = {}) {
     // Logic if no ID is provided - fetch all Projects
     if (!id || isNaN(id)) {
         const where = {};
-        if (manager)
-            where.manager = manager;
+        if (user)
+            where.id = (await ProjectUser.findAll({
+                where: { user },
+                attributes: ['project'],
+                raw: true
+            })).map(up => up.project);
 
         const projects = await Project.findAll({
             where,

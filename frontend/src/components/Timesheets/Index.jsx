@@ -2,11 +2,13 @@
 import React, {useMemo} from 'react';
 import Button from "../Button";
 import MonthGrid from "../MonthGrid";
-import {days, months, formatDate, generateDateList, getFirstDay, getWeekNumber} from "../../utils/dates";
+import {days, months, formatDate, generateDateList, getFirstDay, getWeekNumber, sameDay} from "../../utils/dates";
 import '../../styles/Timesheets.css';
 import useApp from "../../contexts/AppContext";
-import {useHolidays, useLeaves, useShifts} from "../../hooks/useResource";
+import useNav from "../../contexts/NavContext";
+import {useHolidays, useLeaves, useShifts, useHolidayWorkings, useWeekendWorkings, useProjects} from "../../hooks/useResource";
 import Loader from "../Loader";
+import { LeaveItem, ShiftItem } from '../Schedules/UserSchedule';
 
 const ClockIn = () => {
     return (
@@ -62,74 +64,190 @@ const TimeSheet = ({week}) => {
     //  and project managers.
 
     const { user, appState } = useApp();
+    const { openDialog } = useNav();
     const { modules } = appState;
     const { holidays, loading: holidaysLoading, fetchHolidays } = useHolidays();
+    const { holidayWorkings, loading: hwLoading, fetchHolidayWorkings } = useHolidayWorkings();
+    const { weekendWorkings, loading: wwLoading, fetchWeekendWorkings } = useWeekendWorkings();
     const { shifts, loading: shiftsLoading, fetchShifts } = useShifts();
     const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
-    const loading = useMemo(() => holidaysLoading || shiftsLoading || leavesLoading,
-        [holidaysLoading, shiftsLoading, leavesLoading]);
+    const { projects, loading: projectsLoading, fetchProjects } = useProjects();
+    const loading = useMemo(() => holidaysLoading || shiftsLoading || leavesLoading || hwLoading || wwLoading || projectsLoading,
+        [holidaysLoading, shiftsLoading, leavesLoading, hwLoading, wwLoading, projectsLoading]);
 
     const projectsEnabled = React.useMemo(() =>
-        modules.find(m => m.title?.toLowerCase() === 'projects')?.enabled || false
-    , [modules]);
+        (modules.find(m => m.title?.toLowerCase() === 'projects')?.enabled && appState.timesheets.projectTimesheets) || false
+    , [modules, appState.timesheets]);
 
     const [yearNo, weekNo] = week?.split('-W').map(Number);
     const startDate = React.useMemo(() => new Date(getFirstDay(week)), [week]);
     const endDate = React.useMemo(() => new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000), [startDate]);
-    const dates = React.useMemo(() => generateDateList(startDate, endDate), [startDate, endDate]);
 
     React.useEffect(() => {
         if (appState.workPlanner.holidays)
             fetchHolidays().then();
-    }, [appState.workPlanner, fetchHolidays]);
+        if (projectsEnabled)
+            fetchProjects({user: user.id}).then();
+    }, [appState.workPlanner, projectsEnabled, user, fetchProjects, fetchHolidays]);
 
     React.useEffect(() => {
         const start_date = formatDate(startDate);
         const end_date = formatDate(endDate);
         fetchShifts({user: user.id, start_date, end_date}).then();
+        fetchWeekendWorkings({user: user.id, start_date, end_date}).then();
+
+        if (appState.workPlanner.holidays)
+            fetchHolidayWorkings({user: user.id, start_date, end_date}).then();
+        
         if (appState.workPlanner.leaves)
             fetchLeaves({user: user.id, start_date, end_date}).then();
 
-    }, [startDate, endDate, user.id, fetchShifts, fetchLeaves, appState.workPlanner ]);
+    }, [startDate, endDate, user.id, appState.workPlanner, fetchShifts, fetchLeaves, fetchHolidayWorkings, fetchWeekendWorkings]);
 
-    console.log(projectsEnabled, holidays, shifts, leaves);
+    const dates = React.useMemo(() => {
+
+        return generateDateList(startDate, endDate).map(date => {
+
+            const str = formatDate(date);
+            const shortDay = days[date.getDay()];
+            const isWeekend = [0,6].includes(date.getUTCDay());
+            const holiday = holidays?.find(holiday => sameDay(new Date(holiday.date), date));
+            const weekendWorking = isWeekend ? weekendWorkings?.find(ww => ww.date === str ) : null;
+            const holidayWorking = holiday ? holidayWorkings?.find(hw => hw.holiday === holiday.id) : null;
+            const leave = leaves?.find((l) =>
+                            ((date >= new Date(l.start_date) && date <= new Date(l.end_date)) || l.start_date === str)
+                                && [1, 2, 4].includes(l.status?.id));
+            const fShifts = shifts?.filter(sh => sameDay(new Date(sh.date), date));
+
+
+            return {
+                date,
+                str,
+                shortDay,
+                isWeekend,
+                isHoliday: holiday ?? false,
+                weekendWorking,
+                holidayWorking,
+                leave,
+                shifts: fShifts
+            };
+
+        });
+
+    }, [startDate, endDate, holidays, leaves, shifts, holidayWorkings, weekendWorkings]);
 
     return (
         <>
             <table className={'timesheet-table'}>
                 <thead>
-                    <tr key={'week'}>
+                    <tr className={'header week'}>
                         <th colSpan='7'>
                             Week #{weekNo} of {yearNo}
                         </th>
                     </tr>
-                    <tr key={'days'}>
-                        {dates.map((date, index) => (
-                                <th key={index}>
-                                    <div className={'date'}>{formatDate(date)}</div>
-                                    <div className={'short-day'}>{days[date.getDay()]}</div>
-                                </th>
-                        ))}
-                    </tr>
-                    {
+                    <tr className={'days'}>
+                        {dates.map((date, index) => {
 
-                    }
+                            if (!date)
+                                return null;
+
+                            const { str, isHoliday, isWeekend, shortDay } = date;
+                            
+                            const onClick = () => {
+                                if (isHoliday || isWeekend)
+                                    openDialog({content: 'dateDetails', contentId: formatDate(date), closeButton: false});
+                            }
+
+                            const className = isHoliday ? 'holiday' : isWeekend ? 'weekend' : null;
+
+                            return (
+                                <th key={index} onClick={onClick} className={className}>
+                                    <div className={'date'}>{str}</div>
+                                    <div className={'short-day'}>{shortDay}</div>
+                                </th>
+                            );
+                        })}
+                    </tr>
+                    <tr className='header'>
+                        <th colSpan={7}>
+                            Planned Schedule
+                        </th>
+                    </tr>
+                    <tr className={'schedule'}>
+                        {dates.map((date, index) => {
+
+                            const { leave, shifts, isHoliday, isWeekend, holidayWorking, weekendWorking } = date;
+
+                            return (
+                                <th key={index}>
+                                    {
+                                        isWeekend && !weekendWorking ? <div>OFF</div> :
+                                        isHoliday && !holidayWorking ? <div>OFF</div> : 
+                                        leave ? <LeaveItem leave={leave}/> : 
+                                        shifts?.length ? shifts.map((s, i) => <ShiftItem shift={s} key={i}/>) : 
+                                        <div>WORKING</div>
+                                    }
+                                </th>
+                            );
+                        })}
+                    </tr>
                 </thead>
                 <tbody>
-                {loading ? <tr><td colSpan='7'><Loader/></td></tr> :
-                <tr key={'no-project'}>
-                    {dates.map((date, index) => (
-                        <td key={index}>
-                            <input
-                                className={'hours'}
-                                type={'number'}
-                                placeholder={'Hours'}
-                                min={0}
-                                max={24}
-                            />
-                        </td>
-                    ))}
-                </tr>}
+                {loading ? <tr><td colSpan={7}><Loader/></td></tr> :
+                <>
+                    {projectsEnabled && 
+                        <tr className='header'>
+                            <th colSpan={7}>
+                                Non-Project Labor
+                            </th>
+                        </tr>
+                    }
+                    <tr key={'no-project'}>
+                        {dates.map((date) => (
+                            <td key={date.str}>
+                                <input
+                                    className={'hours'}
+                                    type={'number'}
+                                    placeholder={'Hours'}
+                                    min={0}
+                                    max={24}
+                                />
+                            </td>
+                        ))}
+                    </tr>
+                    {projectsEnabled && 
+                        <>
+                        <tr className='header'>
+                            <th colSpan={7}>
+                                Project Labor
+                            </th>
+                        </tr>
+                        {projects?.length ? projects.map((p, i) => 
+                            <>
+                                <tr className='project-header' >
+                                    <th colSpan={7}>
+                                        {p.name}
+                                    </th>
+                                </tr>
+                                <tr>
+                                    {dates.map((date) => (
+                                        <td key={date.str}>
+                                            <input
+                                                className={'hours'}
+                                                type={'number'}
+                                                placeholder={'Hours'}
+                                                min={0}
+                                                max={24}
+                                            />
+                                        </td>
+                                    ))}
+                                </tr>
+                            </>
+                        ) : <tr><td>No assigned Projects found.</td></tr>
+                        }
+                        </>
+                    }
+                </>}
                 </tbody>
             </table>
         </>

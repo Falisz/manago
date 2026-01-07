@@ -19,7 +19,50 @@
 .timesheets .timesheet {
     grid-area: c;
 }
-
+.timesheet-table {
+    border-collapse: collapse;
+}
+.timesheet-table tr.header th {
+    font-weight: 300;
+    font-size: 1.5rem;
+    text-align: center;
+    padding-top: 5px;
+}
+.timesheet-table tr.project-header th {
+    text-align: left;
+    font-size: 1.25rem;
+}
+.timesheet-table th .short-day {
+    width: fit-content;
+    padding: 2px 5px;
+    border-radius: var(--def-border-radius);
+    margin: 0 auto;
+}
+.timesheet-table th.holiday,
+.timesheet-table th.weekend {
+    cursor: pointer;
+}
+.timesheet-table th.holiday .date {
+    color:#770000;
+}
+.timesheet-table th.holiday .short-day {
+    background: #770000;
+}
+.timesheet-table th.weekend .date {
+    color: var(--color);
+}
+.timesheet-table th.weekend .short-day {
+    background: var(--color);
+}
+.timesheet-table tr.schedule th {
+    background: var(--background-color-3);
+}
+.timesheet-table tr.schedule th:first-child {
+    border-radius: var(--def-border-radius) 0 0 var(--def-border-radius);
+}
+.timesheet-table tr.schedule th:last-child {
+    border-radius: 0 var(--def-border-radius) var(--def-border-radius) 0;
+}
 .timesheet-table td {
     padding: 2px;
     text-align: center;

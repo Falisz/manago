@@ -23,6 +23,7 @@ const fetchHandler = async (req, res) => {
     try {
         const projects = await getProject({
             id,
+            user: req.query.user != null ? parseInt(req.query.user) : null,
             get_members: req.query.get_members !== 'false'
         });
 
