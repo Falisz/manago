@@ -61,7 +61,7 @@ const WeekSelector = ({week, setWeek}) => {
     )
 };
 
-const LaborItem = ({labor, date, addLabor, deleteLabor, updateLabor}) => {
+const LaborItem = ({labor, date, project=null, addLabor, deleteLabor, updateLabor}) => {
     return (
         <div className={'labor-wrapper'}>
             {labor?.length && labor.map(l => <div style={{display: 'flex'}}>
@@ -83,7 +83,7 @@ const LaborItem = ({labor, date, addLabor, deleteLabor, updateLabor}) => {
             <Button
                 transparent
                 icon={'add_circle'}
-                onClick={() => addLabor(date, null)}
+                onClick={() => addLabor(date, project)}
             />
         </div>
     );
@@ -295,6 +295,7 @@ const TimeSheet = ({week}) => {
                                         !date || !date.isWorking ? 'OFF' : (
                                             <LaborItem
                                                 labor={date.labor?.[p.id]}
+                                                project={p.id}
                                                 addLabor={addLabor}
                                                 updateLabor={updateLabor}
                                                 deleteLabor={deleteLabor}
