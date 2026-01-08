@@ -564,4 +564,5 @@ export const useWeekendWorkings = ({debug}={}) => useResource('weekendWorking', 
 export const useJobPosts = ({debug}={}) => useResource('jobPost', debug);
 export const useJobLocations = ({debug}={}) => useResource('jobLocation', debug);
 export const useHolidays = ({debug}={}) => useResource('holiday', debug);
+export const useLabor = ({debug}={}) => useResource('labor', debug);
 export const useRequestStatuses = ({debug}={}) => useResource('requestStatus', debug);

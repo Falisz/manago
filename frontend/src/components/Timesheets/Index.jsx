@@ -1,14 +1,16 @@
 // FRONTEND/components/Timesheets/Index.jsx
 import React, {useMemo} from 'react';
 import Button from "../Button";
+import Loader from "../Loader";
 import MonthGrid from "../MonthGrid";
-import {days, months, formatDate, generateDateList, getFirstDay, getWeekNumber, sameDay} from "../../utils/dates";
-import '../../styles/Timesheets.css';
 import useApp from "../../contexts/AppContext";
 import useNav from "../../contexts/NavContext";
-import {useHolidays, useLeaves, useShifts, useHolidayWorkings, useWeekendWorkings, useProjects} from "../../hooks/useResource";
-import Loader from "../Loader";
+import {useHolidays, useLeaves, useShifts, useHolidayWorkings, useWeekendWorkings, useProjects, useLabor}
+    from "../../hooks/useResource";
 import { LeaveItem, ShiftItem } from '../Schedules/UserSchedule';
+import {days, months, formatDate, generateDateList, getFirstDay, getWeekNumber, sameDay}
+    from "../../utils/dates";
+import '../../styles/Timesheets.css';
 
 const ClockIn = () => {
     return (
@@ -18,14 +20,19 @@ const ClockIn = () => {
     );
 };
 
-const WeekSelector = ({month, setMonth, week, setWeek}) => {
+const WeekSelector = ({week, setWeek}) => {
+
+    const [ month, setMonth ] = React.useState(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    });
     const [yearNo, monthNo] = month.split('-').map(Number);
 
     const changeMonth = React.useCallback((val=0) => {
         const newYear = monthNo + val > 12 ? parseInt(yearNo) + 1 : monthNo + val <= 0 ? parseInt(yearNo) - 1 : yearNo;
         const newMonth = String(monthNo + val > 12 ? 1 : monthNo + val <= 0 ? 12 : monthNo + val).padStart(2, '0');
 
-        setMonth(`${newYear}-${newMonth}`)
+        setMonth(`${newYear}-${newMonth}`);
     }, [yearNo, monthNo, setMonth]);
 
     const handleSelection = React.useCallback((week) => setWeek(week), [setWeek]);
@@ -56,24 +63,23 @@ const WeekSelector = ({month, setMonth, week, setWeek}) => {
 
 const TimeSheet = ({week}) => {
 
-    // TODO: Add fetching of Users Schedule, Users Special working agreements, user labors, user projects and user tasks.
-    // TODO: Below Dates and above Labor there should be row with scheduled shifts and absences for reference.
-    // TODO: with ProjectsEnabled the table will be rendered with multiple rows for each project that have relevant stuff.
-
+    // TODO: Proper Add (+) Button for adding labor for each date for each project. Object that will handle all that.
+    // TODO: Submit button to send the new labor.
     // TODO: Separate UserTimeSheets and ProjectTimeSheets modals to display and approve pending timesheets for Managers
     //  and project managers.
 
     const { user, appState } = useApp();
     const { openDialog } = useNav();
     const { modules } = appState;
-    const { holidays, loading: holidaysLoading, fetchHolidays } = useHolidays();
+    const { labor, loading: lLoading, fetchLabor } = useLabor();
+    const { holidays, loading: hLoading, fetchHolidays } = useHolidays();
     const { holidayWorkings, loading: hwLoading, fetchHolidayWorkings } = useHolidayWorkings();
     const { weekendWorkings, loading: wwLoading, fetchWeekendWorkings } = useWeekendWorkings();
-    const { shifts, loading: shiftsLoading, fetchShifts } = useShifts();
-    const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
-    const { projects, loading: projectsLoading, fetchProjects } = useProjects();
-    const loading = useMemo(() => holidaysLoading || shiftsLoading || leavesLoading || hwLoading || wwLoading || projectsLoading,
-        [holidaysLoading, shiftsLoading, leavesLoading, hwLoading, wwLoading, projectsLoading]);
+    const { shifts, loading: shLoading, fetchShifts } = useShifts();
+    const { leaves, loading: lvLoading, fetchLeaves } = useLeaves();
+    const { projects, loading: pLoading, fetchProjects } = useProjects();
+    const loading = useMemo(() => lLoading || hLoading || hwLoading || wwLoading || shLoading || lvLoading || pLoading,
+        [lLoading, hLoading, hwLoading, wwLoading, shLoading, lvLoading, pLoading]);
 
     const projectsEnabled = React.useMemo(() =>
         (modules.find(m => m.title?.toLowerCase() === 'projects')?.enabled && appState.timesheets.projectTimesheets) || false
@@ -93,16 +99,16 @@ const TimeSheet = ({week}) => {
     React.useEffect(() => {
         const start_date = formatDate(startDate);
         const end_date = formatDate(endDate);
-        fetchShifts({user: user.id, start_date, end_date}).then();
-        fetchWeekendWorkings({user: user.id, start_date, end_date}).then();
+        const query = {user: user.id, start_date, end_date};
 
-        if (appState.workPlanner.holidays)
-            fetchHolidayWorkings({user: user.id, start_date, end_date}).then();
-        
-        if (appState.workPlanner.leaves)
-            fetchLeaves({user: user.id, start_date, end_date}).then();
+        fetchLabor(query).then();
+        fetchShifts(query).then();
+        fetchWeekendWorkings(query).then();
+        if (appState.workPlanner.holidays) fetchHolidayWorkings(query).then();
+        if (appState.workPlanner.leaves) fetchLeaves(query).then();
 
-    }, [startDate, endDate, user.id, appState.workPlanner, fetchShifts, fetchLeaves, fetchHolidayWorkings, fetchWeekendWorkings]);
+    }, [startDate, endDate, user.id, appState.workPlanner,
+        fetchShifts, fetchLeaves, fetchLabor, fetchHolidayWorkings, fetchWeekendWorkings]);
 
     const dates = React.useMemo(() => {
 
@@ -118,23 +124,27 @@ const TimeSheet = ({week}) => {
                             ((date >= new Date(l.start_date) && date <= new Date(l.end_date)) || l.start_date === str)
                                 && [1, 2, 4].includes(l.status?.id));
             const fShifts = shifts?.filter(sh => sameDay(new Date(sh.date), date));
+            const isWorking = !((holiday && !holidayWorking) || (isWeekend && !weekendWorking));
 
+            const fLabor = labor.filter(l => sameDay(new Date(l.start_date), date));
 
             return {
                 date,
                 str,
                 shortDay,
+                isWorking,
                 isWeekend,
                 isHoliday: holiday ?? false,
                 weekendWorking,
                 holidayWorking,
+                labor: fLabor,
                 leave,
                 shifts: fShifts
             };
 
         });
 
-    }, [startDate, endDate, holidays, leaves, shifts, holidayWorkings, weekendWorkings]);
+    }, [startDate, endDate, holidays, leaves, shifts, holidayWorkings, weekendWorkings, labor]);
 
     return (
         <>
@@ -202,18 +212,24 @@ const TimeSheet = ({week}) => {
                             </th>
                         </tr>
                     }
-                    <tr key={'no-project'}>
-                        {dates.map((date) => (
-                            <td key={date.str}>
-                                <input
-                                    className={'hours'}
-                                    type={'number'}
-                                    placeholder={'Hours'}
-                                    min={0}
-                                    max={24}
-                                />
-                            </td>
-                        ))}
+                    <tr className={'no-project-labor'}>
+                        {dates.map((date) => {
+
+                            if (!date || !date.isWorking)
+                                return <td key={date.str}></td>;
+
+                            return (
+                                <td key={date.str}>
+                                    <input
+                                        className={'hours'}
+                                        type={'number'}
+                                        placeholder={'Hours'}
+                                        min={0}
+                                        max={24}
+                                    />
+                                </td>
+                            );
+                        })}
                     </tr>
                     {projectsEnabled && 
                         <>
@@ -224,26 +240,34 @@ const TimeSheet = ({week}) => {
                         </tr>
                         {projects?.length ? projects.map((p, i) => 
                             <>
-                                <tr className='project-header' >
+                                <tr className='project-header' key={`${i}h`}>
                                     <th colSpan={7}>
                                         {p.name}
                                     </th>
                                 </tr>
-                                <tr>
-                                    {dates.map((date) => (
-                                        <td key={date.str}>
-                                            <input
-                                                className={'hours'}
-                                                type={'number'}
-                                                placeholder={'Hours'}
-                                                min={0}
-                                                max={24}
-                                            />
-                                        </td>
-                                    ))}
+                                <tr className={'project-labor'} key={`${i}l`}>
+                                    {dates.map((date) => {
+
+                                        if (!date || !date.isWorking)
+                                            return <td key={date.str}></td>;
+
+                                        return (
+                                            <td key={date.str}>
+                                                <input
+                                                    className={'hours'}
+                                                    type={'number'}
+                                                    placeholder={'Hours'}
+                                                    min={0}
+                                                    max={24}
+                                                />
+                                            </td>
+                                        );
+                                    })}
                                 </tr>
                             </>
-                        ) : <tr><td>No assigned Projects found.</td></tr>
+                        ) : <tr>
+                            <td colSpan={7}>No assigned Projects found.</td>
+                        </tr>
                         }
                         </>
                     }
@@ -257,10 +281,6 @@ const TimeSheet = ({week}) => {
 const TimesheetDashboard = () => {
     const { timesheets: config } = useApp().appState;
 
-    const [ month, setMonth ] = React.useState(() => {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    });
     const [ week, setWeek ] = React.useState(() => {
         const [ week, year ] = getWeekNumber(new Date());
         return `${year}-W${String(week).padStart(2, '0')}`
@@ -273,7 +293,7 @@ const TimesheetDashboard = () => {
                 <ClockIn/>
             </section>}
             <section className={'week-selector'}>
-                <WeekSelector month={month} setMonth={setMonth} week={week} setWeek={setWeek} />
+                <WeekSelector week={week} setWeek={setWeek} />
             </section>
             <section className={'timesheet'}>
                 <TimeSheet week={week}/>
