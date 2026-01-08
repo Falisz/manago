@@ -64,8 +64,16 @@
     border-radius: 0 var(--def-border-radius) var(--def-border-radius) 0;
 }
 .timesheet-table td {
+    vertical-align: top;
     padding: 2px;
     text-align: center;
+}
+.timesheet-table td .labor-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-start;
 }
 .timesheet-table input.hours {
     width: 70px;

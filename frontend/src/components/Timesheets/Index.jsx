@@ -61,6 +61,34 @@ const WeekSelector = ({week, setWeek}) => {
     )
 };
 
+const LaborItem = ({labor, date, addLabor, deleteLabor, updateLabor}) => {
+    return (
+        <div className={'labor-wrapper'}>
+            {labor?.length && labor.map(l => <div style={{display: 'flex'}}>
+                <input
+                    id={l.id}
+                    className={'hours'}
+                    placeholder={'Hours'}
+                    value={l?.time}
+                    onChange={(e) => updateLabor(l.id,e.target.value)}
+                    disabled={[1,2].includes(l?.status?.id)}
+                />
+                <Button
+                    id={'del-'+l.id}
+                    transparent
+                    icon={'delete'}
+                    onClick={() => deleteLabor(l.id)}
+                />
+            </div>)}
+            <Button
+                transparent
+                icon={'add_circle'}
+                onClick={() => addLabor(date, null)}
+            />
+        </div>
+    );
+};
+
 const TimeSheet = ({week}) => {
 
     // TODO: Proper Add (+) Button for adding labor for each date for each project. Object that will handle all that.
@@ -71,7 +99,7 @@ const TimeSheet = ({week}) => {
     const { user, appState } = useApp();
     const { openDialog } = useNav();
     const { modules } = appState;
-    const { labor, loading: lLoading, fetchLabor } = useLabor();
+    const { labor, setLabor, loading: lLoading, fetchLabor } = useLabor();
     const { holidays, loading: hLoading, fetchHolidays } = useHolidays();
     const { holidayWorkings, loading: hwLoading, fetchHolidayWorkings } = useHolidayWorkings();
     const { weekendWorkings, loading: wwLoading, fetchWeekendWorkings } = useWeekendWorkings();
@@ -119,14 +147,19 @@ const TimeSheet = ({week}) => {
             const isWeekend = [0,6].includes(date.getUTCDay());
             const holiday = holidays?.find(holiday => sameDay(new Date(holiday.date), date));
             const weekendWorking = isWeekend ? weekendWorkings?.find(ww => ww.date === str ) : null;
-            const holidayWorking = holiday ? holidayWorkings?.find(hw => hw.holiday === holiday.id) : null;
+            const holidayWorking = holiday ? holidayWorkings?.find(hw => hw.holiday.id === holiday.id) : null;
             const leave = leaves?.find((l) =>
                             ((date >= new Date(l.start_date) && date <= new Date(l.end_date)) || l.start_date === str)
                                 && [1, 2, 4].includes(l.status?.id));
             const fShifts = shifts?.filter(sh => sameDay(new Date(sh.date), date));
             const isWorking = !((holiday && !holidayWorking) || (isWeekend && !weekendWorking));
 
-            const fLabor = labor.filter(l => sameDay(new Date(l.start_date), date));
+            const fLabor = labor?.filter(l => sameDay(new Date(l.date), date)).reduce((acc, labor) => {
+                const key = labor.project == null ? 'nonProject' : labor.project;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(labor);
+                return acc;
+            }, {})
 
             return {
                 date,
@@ -145,6 +178,21 @@ const TimeSheet = ({week}) => {
         });
 
     }, [startDate, endDate, holidays, leaves, shifts, holidayWorkings, weekendWorkings, labor]);
+
+    const [count, setCount] = React.useState(0);
+
+    const addLabor = React.useCallback((date, project) => {
+        setLabor(prev => [...prev, { id: 'new-'+count, date, project }]);
+        setCount(prev => prev + 1);
+    }, [setCount, count, setLabor]);
+
+    const deleteLabor = React.useCallback((id) => {
+        setLabor(prev => prev.filter(l => l.id !== id));
+    }, [setLabor]);
+
+    const updateLabor = React.useCallback((id, time) => {
+        setLabor(prev => [...prev.filter(l => l.id !== id), {...prev.find(l => l.id === id), time}]);
+    }, [setLabor]);
 
     return (
         <>
@@ -165,7 +213,7 @@ const TimeSheet = ({week}) => {
                             
                             const onClick = () => {
                                 if (isHoliday || isWeekend)
-                                    openDialog({content: 'dateDetails', contentId: formatDate(date), closeButton: false});
+                                    openDialog({content: 'dateDetails', contentId: str, closeButton: false});
                             }
 
                             const className = isHoliday ? 'holiday' : isWeekend ? 'weekend' : null;
@@ -213,23 +261,19 @@ const TimeSheet = ({week}) => {
                         </tr>
                     }
                     <tr className={'no-project-labor'}>
-                        {dates.map((date) => {
-
-                            if (!date || !date.isWorking)
-                                return <td key={date.str}></td>;
-
-                            return (
-                                <td key={date.str}>
-                                    <input
-                                        className={'hours'}
-                                        type={'number'}
-                                        placeholder={'Hours'}
-                                        min={0}
-                                        max={24}
+                        {dates.map((date) =>
+                            <td key={date.str}> {
+                                !date || !date.isWorking ? 'OFF' : (
+                                    <LaborItem
+                                        labor={date.labor?.['nonProject']}
+                                        addLabor={addLabor}
+                                        updateLabor={updateLabor}
+                                        deleteLabor={deleteLabor}
+                                        date={date.str}
                                     />
-                                </td>
-                            );
-                        })}
+                                )}
+                            </td>
+                        )}
                     </tr>
                     {projectsEnabled && 
                         <>
@@ -246,23 +290,19 @@ const TimeSheet = ({week}) => {
                                     </th>
                                 </tr>
                                 <tr className={'project-labor'} key={`${i}l`}>
-                                    {dates.map((date) => {
-
-                                        if (!date || !date.isWorking)
-                                            return <td key={date.str}></td>;
-
-                                        return (
-                                            <td key={date.str}>
-                                                <input
-                                                    className={'hours'}
-                                                    type={'number'}
-                                                    placeholder={'Hours'}
-                                                    min={0}
-                                                    max={24}
-                                                />
-                                            </td>
-                                        );
-                                    })}
+                                    {dates.map((date) =>
+                                        <td key={date.str}> {
+                                        !date || !date.isWorking ? 'OFF' : (
+                                            <LaborItem
+                                                labor={date.labor?.[p.id]}
+                                                addLabor={addLabor}
+                                                updateLabor={updateLabor}
+                                                deleteLabor={deleteLabor}
+                                                date={date.str}
+                                            />
+                                        )}
+                                        </td>
+                                    )}
                                 </tr>
                             </>
                         ) : <tr>
