@@ -47,6 +47,9 @@ const fetchLaborHandler = async (req, res) => {
                 query.user = users.map(user => user?.id);
             }
 
+            if (req.query.managed)
+                query.user = (await getUser({scope: 'manager', scope_id: parseInt(req.query.managed)})).map(u => u.id);
+
             if (req.query.date) {
                 query.date = req.query.date;
             } else {
@@ -90,61 +93,7 @@ const fetchLaborHandler = async (req, res) => {
 };
 
 /**
- * Create a new Labor record or multiple Labor records.
- * @param {express.Request} req
- * @param {number} req.user
- * @param {express.Response} res
- */
-const createLaborHandler = async (req, res) => {
-
-    const { hasAccess } = await checkAccess(req.user, 'create', 'labor');
-
-    if (!hasAccess)
-        return res.status(403).json({message: 'Not permitted.'});
-
-    try {
-        const data = req.body;
-
-        if (Array.isArray(data)) {
-            const newLabors = [];
-            const errorMessages = [];
-
-            for (const laborData of data) {
-                if (laborData.user == null) laborData.user = req.user;
-                if (laborData.status == null) laborData.status = 0;
-
-                const { success, message, id } = await createLabor(laborData);
-
-                if (success)
-                    newLabors.push(await getLabor({id}));
-                else
-                    errorMessages.push(message);
-            }
-
-            res.status(201).json({ message: `Created ${newLabors.length} new labor records.`, newLabors, errorMessages})
-
-        } else {
-            if (data.user == null) data.user = req.user;
-            if (data.status == null) data.status = 0;
-
-            const { success, message, id } = await createLabor(data);
-
-            if (!success)
-                return res.status(400).json({ message });
-
-            const labor = await getLabor({id});
-
-            res.status(201).json({ message, labor });
-        }
-
-    } catch (err) {
-        console.error('Error creating a Labor record:', err, 'Provided data: ', req.body);
-        res.status(500).json({ message: 'Server error.' });
-    }
-};
-
-/**
- * Update a specific Labor record or multiple Labor records.
+ * Create Labor record, update a specific Labor record or multiple Labor records.
  * @param {express.Request} req
  * @param {number} req.user
  * @param {express.Response} res
@@ -169,40 +118,62 @@ const updateLaborHandler = async (req, res) => {
             const labor = await getLabor({id});
 
             res.json({ message, labor });
+
         } else {
-            let { ids, data } = req.body;
+            let { new: newData, update: updateData, delete: deleteData } = req.body;
 
-            const {
-                hasAccess,
-                hasFullAccess,
-                allowedIds,
-                forbiddenIds
-            } = await checkAccess(req.user, 'update', 'labor', ids);
+            const { hasAccess } = await checkAccess(req.user, 'update', 'labor');
 
-            if (!hasAccess)
-                return res.status(403).json({message: 'Not permitted.'});
+            if (!hasAccess) return res.status(403).json({message: 'Not permitted.'});
 
+            const created = [];
+            const updated = [];
+            let cleared = 0;
             const warning = [];
 
-            if (!hasFullAccess) {
-                ids = Array.from(allowedIds);
-
-                warning.push(`You are not permitted to update
-                 ${'Labor record' + (forbiddenIds.size > 1 ? 's with IDs:' : ' with ID:')} ${forbiddenIds.join(', ')}.`);
+            async function createFromData(data) {
+                if (data.user == null) data.user = req.user;
+                if (data.type == null) data.type = 1;
+                if (data.status == null) data.status = 2;
+                const { success, message, id } = await createLabor(data);
+                if (success) created.push(await getLabor({id}));
+                else warning.push(message);
             }
 
-            const updated = [];
-
-            for (const id of ids) {
-                const { success, message } = await updateLabor(parseInt(id), data);
-
-                if (success)
-                    updated.push(await getLabor({ id }));
-                else
-                    warning.push(message);
+            async function updateFromData(data) {
+                if (data.user == null) data.user = req.user;
+                if (data.type == null) data.type = 1;
+                if (data.status == null) data.status = 2;
+                const { success, message } = await updateLabor(data.id, data);
+                if (success) updated.push(await getLabor({id}));
+                else warning.push(message);
             }
 
-            res.status(201).json({ message: `Updated ${updated.length} labor records.`, updated, warning})
+            async function deleteIds(ids) {
+                const { success, message, deletedCount } = await deleteLabor(ids);
+                if (success) cleared = deletedCount
+                else warning.push(message);
+            }
+
+            if (Array.isArray(newData)) for (const laborData of newData) await createFromData(laborData);
+            else if (newData) await createFromData(newData);
+
+            if (Array.isArray(updateData)) for (const laborData of updateData) await updateFromData(laborData);
+            else if (updateData) await updateFromData(updateData);
+
+            if (deleteData?.length) await deleteIds(deleteData);
+
+            let message = ''
+            if (created.length || updated.length)
+                message += `Submitted ${created.length + updated.length} records`;
+            if (warning.length)
+                message += ` with ${warning.length} warning${warning.length > 1 ? 's' : ''}`;
+            if (created.length || updated.length)
+                message += '. ';
+            if (cleared)
+                message += `Cleared ${cleared} record${cleared > 1 ? 's' : ''}.`
+
+            res.status(201).json({ message, success: true, created, updated, warning})
 
         }
     } catch (err) {
@@ -223,7 +194,7 @@ const deleteLaborHandler = async (req, res) =>
 export const router = express.Router();
 
 router.get('/{:id}', fetchLaborHandler);
-router.post('/', createLaborHandler);
+router.post('/', updateLaborHandler);
 router.put('/', updateLaborHandler);
 router.put('/:id', checkResourceIdHandler, updateLaborHandler);
 router.delete('/{:id}', deleteLaborHandler);

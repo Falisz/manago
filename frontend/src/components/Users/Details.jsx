@@ -167,8 +167,6 @@ const UserDetails = ({ id, modal }) => {
         }
     }), [user, openDialog]);
 
-    console.log(user);
-
     return <Details
         header={header}
         sections={sections}

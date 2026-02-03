@@ -11,6 +11,7 @@ import { LeaveItem, ShiftItem } from '../Schedules/UserSchedule';
 import {days, months, formatDate, generateDateList, getFirstDay, getWeekNumber, sameDay}
     from "../../utils/dates";
 import '../../styles/Timesheets.css';
+import Icon from "../Icon";
 
 const ClockIn = () => {
     return (
@@ -61,45 +62,37 @@ const WeekSelector = ({week, setWeek}) => {
     )
 };
 
-const LaborItem = ({labor, date, project=null, addLabor, deleteLabor, updateLabor}) => {
+const LaborItem = ({labor, date, project=null, update, disabled}) => {
+    const colors = {
+        1: '#777',
+        2: '#3a3ae6',
+        3: '#67d811',
+        4: '#dd3636'
+    };
     return (
         <div className={'labor-wrapper'}>
-            {labor?.length && labor.map(l => <div style={{display: 'flex'}}>
-                <input
-                    id={l.id}
-                    className={'hours'}
-                    placeholder={'Hours'}
-                    value={l?.time}
-                    onChange={(e) => updateLabor(l.id,e.target.value)}
-                    disabled={[1,2].includes(l?.status?.id)}
-                />
-                <Button
-                    id={'del-'+l.id}
-                    transparent
-                    icon={'delete'}
-                    onClick={() => deleteLabor(l.id)}
-                />
-            </div>)}
-            <Button
-                transparent
-                icon={'add_circle'}
-                onClick={() => addLabor(date, project)}
+            <input
+                className={'labor-item'}
+                placeholder={'Hours'}
+                onChange={(e) => update({id: labor?.id, date, project, time: e.target.value})}
+                disabled={disabled || [2, 3].includes(labor?.status?.id)}
+                value={labor?.time}
+            />
+            <Icon
+                style={{color: colors[labor?.status?.id ?? 1], cursor: 'default'}}
+                i={'radio_button_checked'}
+                s
+                title={labor?.status?.name ?? 'Empty'}
             />
         </div>
     );
 };
 
 const TimeSheet = ({week}) => {
-
-    // TODO: Proper Add (+) Button for adding labor for each date for each project. Object that will handle all that.
-    // TODO: Submit button to send the new labor.
-    // TODO: Separate UserTimeSheets and ProjectTimeSheets modals to display and approve pending timesheets for Managers
-    //  and project managers.
-
-    const { user, appState } = useApp();
+    const { user, appState, refreshTriggers } = useApp();
     const { openDialog } = useNav();
     const { modules } = appState;
-    const { labor, setLabor, loading: lLoading, fetchLabor } = useLabor();
+    const { labor, setLabor, loading: lLoading, fetchLabor, saveLabor } = useLabor();
     const { holidays, loading: hLoading, fetchHolidays } = useHolidays();
     const { holidayWorkings, loading: hwLoading, fetchHolidayWorkings } = useHolidayWorkings();
     const { weekendWorkings, loading: wwLoading, fetchWeekendWorkings } = useWeekendWorkings();
@@ -109,6 +102,13 @@ const TimeSheet = ({week}) => {
     const loading = useMemo(() => lLoading || hLoading || hwLoading || wwLoading || shLoading || lvLoading || pLoading,
         [lLoading, hLoading, hwLoading, wwLoading, shLoading, lvLoading, pLoading]);
 
+    const [count, setCount] = React.useState(0);
+    const laborUpdate = React.useRef({
+        new: new Set(),
+        update: new Set(),
+        delete: new Set()
+    })
+
     const projectsEnabled = React.useMemo(() =>
         (modules.find(m => m.title?.toLowerCase() === 'projects')?.enabled && appState.timesheets.projectTimesheets) || false
     , [modules, appState.timesheets]);
@@ -116,6 +116,8 @@ const TimeSheet = ({week}) => {
     const [yearNo, weekNo] = week?.split('-W').map(Number);
     const startDate = React.useMemo(() => new Date(getFirstDay(week)), [week]);
     const endDate = React.useMemo(() => new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000), [startDate]);
+
+    const [submittable, setSubmittable] = React.useState(false);
 
     React.useEffect(() => {
         if (appState.workPlanner.holidays)
@@ -129,20 +131,29 @@ const TimeSheet = ({week}) => {
         const end_date = formatDate(endDate);
         const query = {user: user.id, start_date, end_date};
 
-        fetchLabor(query).then();
         fetchShifts(query).then();
         fetchWeekendWorkings(query).then();
         if (appState.workPlanner.holidays) fetchHolidayWorkings(query).then();
         if (appState.workPlanner.leaves) fetchLeaves(query).then();
 
     }, [startDate, endDate, user.id, appState.workPlanner,
-        fetchShifts, fetchLeaves, fetchLabor, fetchHolidayWorkings, fetchWeekendWorkings]);
+        fetchShifts, fetchLeaves, fetchHolidayWorkings, fetchWeekendWorkings]);
+
+    React.useEffect(() => {
+        const start_date = formatDate(startDate);
+        const end_date = formatDate(endDate);
+        const query = {user: user.id, start_date, end_date};
+
+        if (refreshTriggers.labors)
+            delete refreshTriggers.labors;
+
+        fetchLabor(query).then();
+    }, [startDate, endDate, user.id, refreshTriggers.labors, fetchLabor]);
 
     const dates = React.useMemo(() => {
-
         return generateDateList(startDate, endDate).map(date => {
-
             const str = formatDate(date);
+            const isFuture = date > new Date();
             const shortDay = days[date.getDay()];
             const isWeekend = [0,6].includes(date.getUTCDay());
             const holiday = holidays?.find(holiday => sameDay(new Date(holiday.date), date));
@@ -155,9 +166,8 @@ const TimeSheet = ({week}) => {
             const isWorking = !((holiday && !holidayWorking) || (isWeekend && !weekendWorking));
 
             const fLabor = labor?.filter(l => sameDay(new Date(l.date), date)).reduce((acc, labor) => {
-                const key = labor.project == null ? 'nonProject' : labor.project;
-                if (!acc[key]) acc[key] = [];
-                acc[key].push(labor);
+                const key = labor.project == null ? 'nonProject' : labor.project.id;
+                acc[key] = labor;
                 return acc;
             }, {})
 
@@ -167,6 +177,7 @@ const TimeSheet = ({week}) => {
                 shortDay,
                 isWorking,
                 isWeekend,
+                isFuture,
                 isHoliday: holiday ?? false,
                 weekendWorking,
                 holidayWorking,
@@ -174,30 +185,61 @@ const TimeSheet = ({week}) => {
                 leave,
                 shifts: fShifts
             };
-
         });
-
     }, [startDate, endDate, holidays, leaves, shifts, holidayWorkings, weekendWorkings, labor]);
 
-    const [count, setCount] = React.useState(0);
+    const updateLabor = React.useCallback(({id, date, project, time}) => {
+        if (time)
+            time = parseInt(time, 10);
 
-    const addLabor = React.useCallback((date, project) => {
-        setLabor(prev => [...prev, { id: 'new-'+count, date, project }]);
-        setCount(prev => prev + 1);
+        console.log(id, date, project, time, laborUpdate.current);
+
+        if (id && time) {
+            setLabor(prev => [...prev.filter(l => l.id !== id), {...prev.find(l => l.id === id), time}]);
+            if (typeof id === 'number') laborUpdate.current.update.add(id);
+        }
+        if (!id && time) {
+            const newId = 'new-'+count;
+            setCount(prev => prev + 1);
+            setLabor(prev => [...prev, { id: newId, date, project: {id: project}, time }]);
+            laborUpdate.current.new.add(newId);
+        }
+        if (id && !time) {
+            setLabor(prev => prev.filter(l => l.id !== id));
+            if (typeof id === 'string' && id.startsWith('new')) laborUpdate.current.new.delete(id);
+            else {
+                laborUpdate.current.update.delete(id);
+                laborUpdate.current.delete.add(id);
+            }
+        }
+        const { new: newLabor, update: updateLabor, delete: deleteLabor } = laborUpdate.current;
+        setSubmittable(Boolean(newLabor.size || updateLabor.size || deleteLabor.size));
     }, [setCount, count, setLabor]);
 
-    const deleteLabor = React.useCallback((id) => {
-        setLabor(prev => prev.filter(l => l.id !== id));
-    }, [setLabor]);
-
-    const updateLabor = React.useCallback((id, time) => {
-        setLabor(prev => [...prev.filter(l => l.id !== id), {...prev.find(l => l.id === id), time}]);
-    }, [setLabor]);
-
-    const saveLabor = React.useCallback(() => {
-        // Implementation for saving labor data
-        console.log('Saving labor data:', labor);
-    }, [labor]);
+    const submitLabor = React.useCallback(async () => {
+        const data = {
+            new: labor.filter(l => laborUpdate.current.new.has(l.id)).map(l => ({
+                date: l.date,
+                project: l.project?.id,
+                user: l.user?.id,
+                time: l.time,
+                type: 1,
+                status: 2
+            })),
+            update: labor.filter(l => laborUpdate.current.update.has(l.id)).map(l => ({
+                id: l.id,
+                date: l.date,
+                project: l.project?.id,
+                user: l.user?.id,
+                time: l.time,
+                type: 1,
+                status: 2
+            })),
+            delete: Array.from(laborUpdate.current.delete)
+        };
+        const success = await saveLabor({data});
+        if (success) laborUpdate.current = { new: new Set(), update: new Set(), delete: new Set() }
+    }, [labor, saveLabor]);
 
     return (
         <>
@@ -244,11 +286,11 @@ const TimeSheet = ({week}) => {
                             return (
                                 <th key={index}>
                                     {
-                                        isWeekend && !weekendWorking ? <div>OFF</div> :
-                                        isHoliday && !holidayWorking ? <div>OFF</div> : 
+                                        (isWeekend && !weekendWorking) || (isHoliday && !holidayWorking) ?
+                                            <div className={'sched-item'}>OFF</div> :
                                         leave ? <LeaveItem leave={leave}/> : 
                                         shifts?.length ? shifts.map((s, i) => <ShiftItem shift={s} key={i}/>) : 
-                                        <div>WORKING</div>
+                                        <div className={'sched-item'}>WORKING</div>
                                     }
                                 </th>
                             );
@@ -258,10 +300,15 @@ const TimeSheet = ({week}) => {
                 <tbody>
                 {loading ? <tr><td colSpan={7}><Loader/></td></tr> :
                 <>
-                    {projectsEnabled && 
-                        <tr className='header'>
+                    <tr className='header'>
+                        <th colSpan={7}>
+                            Labor
+                        </th>
+                    </tr>
+                    {projectsEnabled &&
+                        <tr className='project-header' key={`nph`}>
                             <th colSpan={7}>
-                                Non-Project Labor
+                                Non-project Labor
                             </th>
                         </tr>
                     }
@@ -271,54 +318,58 @@ const TimeSheet = ({week}) => {
                                 !date || !date.isWorking ? 'OFF' : (
                                     <LaborItem
                                         labor={date.labor?.['nonProject']}
-                                        addLabor={addLabor}
-                                        updateLabor={updateLabor}
-                                        deleteLabor={deleteLabor}
                                         date={date.str}
+                                        update={updateLabor}
+                                        disabled={date.isFuture}
                                     />
                                 )}
                             </td>
                         )}
                     </tr>
-                    {projectsEnabled && 
-                        <>
-                        <tr className='header'>
-                            <th colSpan={7}>
-                                Project Labor
-                            </th>
-                        </tr>
-                        {projects?.length ? projects.map((p, i) => 
-                            <>
-                                <tr className='project-header' key={`${i}h`}>
-                                    <th colSpan={7}>
-                                        {p.name}
-                                    </th>
-                                </tr>
-                                <tr className={'project-labor'} key={`${i}l`}>
-                                    {dates.map((date) =>
-                                        <td key={date.str}> {
-                                        !date || !date.isWorking ? 'OFF' : (
-                                            <LaborItem
-                                                labor={date.labor?.[p.id]}
-                                                project={p.id}
-                                                addLabor={addLabor}
-                                                updateLabor={updateLabor}
-                                                deleteLabor={deleteLabor}
-                                                date={date.str}
-                                            />
-                                        )}
-                                        </td>
+                    {projectsEnabled ? projects?.length ? projects.map((p, i) =>
+                        <React.Fragment key={i}>
+                            <tr className='project-header' key={`${i}h`}>
+                                <th colSpan={7}>
+                                    {p.name}
+                                </th>
+                            </tr>
+                            <tr className={'project-labor'} key={`${i}l`}>
+                                {dates.map((date) =>
+                                    <td key={date.str}> {
+                                    !date || !date.isWorking ? 'OFF' : (
+                                        <LaborItem
+                                            labor={date.labor?.[p.id]}
+                                            date={date.str}
+                                            project={p.id}
+                                            update={updateLabor}
+                                            disabled={date.isFuture}
+                                        />
                                     )}
-                                </tr>
-                            </>
-                        ) : <tr>
-                            <td colSpan={7}>No assigned Projects found.</td>
-                        </tr>
+                                    </td>
+                                )}
+                            </tr>
+                        </React.Fragment>
+                    ) :
+                        <>
+                            <tr className='project-header' key={`no-proj-f`}>
+                                <th colSpan={7}>Other projects</th>
+                            </tr>
+                            <tr>
+                                <td colSpan={7}>No assigned Projects found.</td>
+                            </tr>
+                        </> : null
                         }
-                        </>
-                    }
-                    <tr><td colSpan={7}><Button label={'Save Labor'} icon={'save'} onClick={saveLabor}/></td></tr>
                 </>}
+                <tr className={'timesheet-submit-row'}>
+                    <td colSpan={7}>
+                        <Button
+                            label={'Submit Timesheet'}
+                            icon={'save'}
+                            onClick={submitLabor}
+                            disabled={!submittable}
+                        />
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </>

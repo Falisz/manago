@@ -2,7 +2,7 @@
 import React, {useCallback, useMemo, useRef} from 'react';
 import useApp from "../../contexts/AppContext";
 import useNav from "../../contexts/NavContext";
-import {useHolidayWorkings, useLeaves, useWeekendWorkings} from "../../hooks/useResource";
+import {useHolidayWorkings, useLeaves, useWeekendWorkings, useLabor} from "../../hooks/useResource";
 import Button from "../Button";
 import Table from "../Table";
 
@@ -11,6 +11,7 @@ const Approvals = ({approvals, loading, pending}) => {
     const { saveLeave } = useLeaves();
     const { saveHolidayWorkings } = useHolidayWorkings();
     const { saveWeekendWorkings } = useWeekendWorkings();
+    const { saveLabor } = useLabor();
 
     const handleApproval = useCallback((type, id, status, action = 'accept') => {
         openPopUp({
@@ -21,11 +22,10 @@ const Approvals = ({approvals, loading, pending}) => {
                 if (type === 'Absence') await saveLeave({id, data: {status, approver_note: note}});
                 if (type === 'Holiday Working') await saveHolidayWorkings({id, data: {status, approver_note: note}});
                 if (type === 'Weekend Working') await saveWeekendWorkings({id, data: {status, approver_note: note}});
+                if (type === 'labor') await saveLabor({id, data: {status, approver_note: note}});
             },
         });
-    }, [openPopUp, saveLeave, saveHolidayWorkings, saveWeekendWorkings]);
-
-
+    }, [openPopUp, saveLeave, saveHolidayWorkings, saveWeekendWorkings, saveLabor]);
 
     const fields = useMemo(() => ({
         0: {
@@ -53,6 +53,21 @@ const Approvals = ({approvals, loading, pending}) => {
         5: pending ? {
             label: 'Action',
             value: (data) => {
+                if (data.type === 'labor' && data.status.id === 2)
+                    return <div style={{display: 'flex', gap: '5px'}}>
+                        <Button icon={'check_circle'} transparent label={'Approve'} onClick={ () => handleApproval(
+                            data.type,
+                            data.id,
+                            3,
+                            'accept'
+                        )} />
+                        <Button icon={'cancel'} transparent label={'Reject'} onClick={ () => handleApproval(
+                            data.type,
+                            data.id,
+                            4,
+                            'reject'
+                        )} />
+                    </div>
                 if (data.status.id === 1 || data.status.id === 4)
                     return <div style={{display: 'flex', gap: '5px'}}>
                         <Button icon={'check_circle'} transparent label={'Approve'} onClick={ () => handleApproval(
@@ -77,6 +92,7 @@ const Approvals = ({approvals, loading, pending}) => {
     return (
         <Table
             data={approvals?.filter(apr =>
+                apr.type === 'labor' ? pending ? apr.status.id === 2 : [3, 4].includes(apr.status.id) :
                 pending ? [1, 4].includes(apr.status.id) : [2, 3, 5].includes(apr.status.id))}
             fields={fields}
             dataPlaceholder={`No ${pending ? 'Pending' : 'Processed'} Approvals found.`}
@@ -93,8 +109,9 @@ const ApprovalsIndex = () => {
     const { leaves, loading: leavesLoading, fetchLeaves } = useLeaves();
     const { holidayWorkings, loading: holidayWorkingLoading, fetchHolidayWorkings } = useHolidayWorkings();
     const { weekendWorkings, loading: weekendWorkingLoading, fetchWeekendWorkings } = useWeekendWorkings();
-    const loading = useMemo(() => leavesLoading || holidayWorkingLoading || weekendWorkingLoading,
-        [leavesLoading, holidayWorkingLoading, weekendWorkingLoading]);
+    const { labor, loading: laborLoading, fetchLabor } = useLabor();
+    const loading = useMemo(() => leavesLoading || holidayWorkingLoading || weekendWorkingLoading || laborLoading,
+        [leavesLoading, holidayWorkingLoading, weekendWorkingLoading, laborLoading]);
     const isMounted = useRef(false);
 
     React.useEffect(() => {
@@ -103,26 +120,27 @@ const ApprovalsIndex = () => {
         const refreshLeaves = refreshTriggers?.leaves;
         const refreshHW = refreshTriggers?.holidayWorkings;
         const refreshWW = refreshTriggers?.weekendWorkings;
+        const refreshLabor = refreshTriggers?.labor;
 
-        if (isMounted.current && !(refreshLeaves || refreshHW || refreshWW)) return;
+        if (isMounted.current && !(refreshLeaves || refreshHW || refreshWW || refreshLabor)) return;
 
         if (refreshLeaves || !leaves) fetchLeaves({ user_scope: 'manager', user_scope_id: user.id, reload: true }).then();
-
         if (refreshHW || !weekendWorkings) fetchHolidayWorkings({ managed: user.id, reload: true }).then();
-
         if (refreshWW || !holidayWorkings) fetchWeekendWorkings({ managed: user.id, reload: true }).then();
+        if (refreshLabor || !labor) fetchLabor({ managed: user.id, reload: true}).then();
 
         if (refreshLeaves) delete refreshTriggers.leaves;
         if (refreshHW) delete refreshTriggers.holidayWorkings;
         if (refreshWW) delete refreshTriggers.weekendWorkings;
+        if (refreshLabor) delete refreshTriggers.labor;
 
         isMounted.current = true;
 
     }, [fetchLeaves, leaves, fetchHolidayWorkings, holidayWorkings, fetchWeekendWorkings, weekendWorkings,
-        refreshTriggers, user.id]);
+        refreshTriggers, user.id, fetchLabor, labor]);
 
     const approvals = useMemo(() => {
-        if (!leaves || !weekendWorkings || !holidayWorkings)
+        if (!leaves && !weekendWorkings && !holidayWorkings && !labor)
             return [];
 
         const getDay = (str) => {
@@ -132,7 +150,7 @@ const ApprovalsIndex = () => {
         };
 
         const result = [
-            ...leaves.map(l => ({
+            ...(leaves ?? []).map(l => ({
                 id: l.id,
                 type: 'Absence',
                 name: l.type?.name || 'Leave',
@@ -143,7 +161,7 @@ const ApprovalsIndex = () => {
                 date: l.start_date,
                 end_date: l.end_date
             })),
-            ...holidayWorkings.map(hw => ({
+            ...(holidayWorkings ?? []).map(hw => ({
                 id: hw.id,
                 type: 'Holiday Working',
                 name: (hw.holiday?.name || 'Holiday') + ' Working',
@@ -152,7 +170,7 @@ const ApprovalsIndex = () => {
                 user: hw.user,
                 date: hw.holiday?.date,
             })),
-            ...weekendWorkings.map(ww => ({
+            ...(weekendWorkings ?? []).map(ww => ({
                 id: ww.id,
                 type: 'Weekend Working',
                 name: getDay(ww.date) + ' Working',
@@ -160,11 +178,20 @@ const ApprovalsIndex = () => {
                 status: ww.status,
                 user: ww.user,
                 date: ww.date,
+            })),
+            ...(labor ?? []).map(labor => ({
+                id: labor.id,
+                type: 'labor',
+                name: labor.time + ` hrs labor`,
+                modalType: 'labor',
+                user: labor.user,
+                date: labor.date,
+                status: labor.status
             }))
         ];
 
         return result.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }, [leaves, weekendWorkings, holidayWorkings]);
+    }, [leaves, weekendWorkings, holidayWorkings, labor]);
 
     return (
         <>

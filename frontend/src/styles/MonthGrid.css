@@ -28,6 +28,9 @@
 .month-grid tr.selected td {
     background: var(--background-color-3);
 }
+.app.fluent .month-grid tr.selected td {
+    background: var(--seethrough-background-2);
+}
 .month-grid tr.selected td:first-child {
     border-radius: var(--def-border-radius) 0 0 var(--def-border-radius);
 }
@@ -40,6 +43,9 @@
 .month-grid tr:not(.selected) td:not(.selected):hover {
     background: var(--background-color-3);
     border-radius: var(--def-border-radius);
+}
+.app.fluent .month-grid tr:not(.selected) td:not(.selected):hover {
+    background: var(--seethrough-background-2);
 }
 .month-grid td.other-month {
     opacity: 0.6;

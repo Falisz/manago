@@ -92,7 +92,8 @@ export const AppProvider = ({ children }) => {
         weekendWorkings: null,
         leaveTypes: null,
         jobPosts: null,
-        jobLocations: null
+        jobLocations: null,
+        labors: null
     });
 
     // State and Ref setters

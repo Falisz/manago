@@ -134,7 +134,9 @@ export async function createLabor(data) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date))
         return { success: false, message: 'Invalid date format. Use YYYY-MM-DD.' };
 
-    if (typeof data.time !== 'number' || data.time <= 0)
+    if (!isNaN(data.time)) data.time = Number(data.time);
+
+    if (data.time <= 0)
         return { success: false, message: 'Time must be a positive number.' };
 
     const labor = await Labor.create({

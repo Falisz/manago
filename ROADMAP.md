@@ -1,9 +1,18 @@
 Following roadmap and tasks to-do.
-# MVP (till 31-01-25)
-### TimeSheets and Labor 
-- Timesheets filling interface. To record efforts and labor, helping bill the projects. Labor for each date and user filled with time and a type (regulars, on-calls, on-stand-by, overtime, etc.) To be further accepted or rejected by manager.
-- Monthly time reports for employees and projects.
-- Option for both employees and managers to autofill the timesheet based on published schedule.
+# MVP
+### Permissions and JWT related logic
+- Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
+- Implement Roles and/or Permission based restrictions over the UI.
+### Staff View
+- Dashboard: shortcuts and all
+- Organization: Team and Project info
+- Schedule: team and individual rosters, special working requests
+- TimeSheets: timesheet filling
+- Leaves: leave requests
+# MVP ENDS HERE
+### TimeSheets and Labor
+- Timesheets preview interface. To help count and bill the projects and summarize labor of a user.
+- Seperate views for Project Timesheets and User Timesheets.
 ### Branches and Regions
 - Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
 - Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.
@@ -11,16 +20,6 @@ Following roadmap and tasks to-do.
 - Regions for different LeaveTypes, Contracts, Etc. Region to be a large physical grouping (larger than branches)
 - If a LeaveType, Contract or Holiday does not have specified Region field it means that the said option is available globally.
 - Regions is a separate app-module that shares the tab with branches in the front UI.
-### Staff View
-- Dashboard: shortcuts and all
-- Organization: Team and Project info
-- Schedule: team and individual rosters, special working requests
-- TimeSheets: timesheet filling
-- Leaves: leave requests
-### Permissions and JWT related logic
-- Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
-- Implement Roles and/or Permission based restrictions over the UI.
-# MVP ENDS HERE
 ### Employee Contracts
 - Frontend and Backend implementation for Contracts, Contract Types and User-Contract assignments.
 ### Work Planner
@@ -35,8 +34,10 @@ Following roadmap and tasks to-do.
 - If shrinking date range in currently defined schedule draft with shifts planned, those shifts will be removed once Schedule is saved. Respective warning in UI.
 - When Publishing schedule two verifications check, first for the labor law, define in module's config and the second for existing shifts for the given users and dates in scope. Only then the option with "overwriting" to show up.
 - Performance limits in place - no larger scope than 31 days and 100 users.
-### Timesheets
-- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids. Clocking-in and out, and breaks tracking, work reporting, tardiness reporting.
+### TimeSheets and Labor
+- Attendance marking, possible to map with on-promises badges clocking if using the same user Ids. Clocking-in and out, and breaks tracking, work reporting, tardiness reporting. Capping timesheet time with attendance filled.
+- Monthly time reports for employees and projects.
+- Option for both employees and managers to autofill the timesheet based on published schedule.
 ### Tasks
 - per Users, Shift, Branches, Project, company-wide.
 - typical tasks, motivation KPI contests for branches/teams/projects/users, etc.
