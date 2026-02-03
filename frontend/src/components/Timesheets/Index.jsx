@@ -194,6 +194,11 @@ const TimeSheet = ({week}) => {
         setLabor(prev => [...prev.filter(l => l.id !== id), {...prev.find(l => l.id === id), time}]);
     }, [setLabor]);
 
+    const saveLabor = React.useCallback(() => {
+        // Implementation for saving labor data
+        console.log('Saving labor data:', labor);
+    }, [labor]);
+
     return (
         <>
             <table className={'timesheet-table'}>
@@ -312,6 +317,7 @@ const TimeSheet = ({week}) => {
                         }
                         </>
                     }
+                    <tr><td colSpan={7}><Button label={'Save Labor'} icon={'save'} onClick={saveLabor}/></td></tr>
                 </>}
                 </tbody>
             </table>
