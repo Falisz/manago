@@ -16,10 +16,10 @@ const fetchHandler = async (req, res) => {
     const query = {};
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.user, 'read', 'request-status', id);
-
-            if (!hasAccess)
-                return res.status(403).json({message: 'Not permitted.'});
+            // const { hasAccess } = await checkAccess(req.user, 'read', 'request-status', id);
+            //
+            // if (!hasAccess)
+            //     return res.status(403).json({message: 'Not permitted.'});
 
             query.id = id;
         }

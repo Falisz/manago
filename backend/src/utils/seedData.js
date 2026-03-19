@@ -130,7 +130,7 @@ const appPages = [
                 "title": "Schedule",
                 "module": 4,
                 "icon": "calendar_month",
-                "component": "Schedule",
+                "component": "ScheduleView",
                 "subpages": [
                     {
                         "path": "dispositions",
@@ -142,11 +142,40 @@ const appPages = [
                 ]
             },
             {
+                "path": "timesheets",
+                "title": "Timesheets",
+                "module": 5,
+                "icon": "punch_clock",
+                "component": "TimesheetDashboard",
+                "subpages": [
+                    {
+                        "path": "attendance",
+                        "title": "Attendance",
+                        "icon": "",
+                        "component": "YourAttendance",
+                    }
+                ]
+            },
+            {
+                "path": "leaves",
+                "title": "Leaves",
+                "module": 4,
+                "icon": "local_florist",
+                "component": "LeavesDashboard"
+            },
+            {
+                "path": "org",
+                "title": "Organisation",
+                "module": 0,
+                "icon": "people",
+                "component": "OrganizationDashboard"
+            },
+            {
                 "path": "trainings",
                 "title": "Trainings",
                 "module": 6,
                 "icon": "school",
-                "component": "Trainings",
+                "component": "TrainingsDashboard",
                 "subpages": []
             },
             {
@@ -154,7 +183,7 @@ const appPages = [
                 "title": "Posts",
                 "module": 7,
                 "icon": "forum",
-                "component": "PostsIndex",
+                "component": "PostsDashboard",
                 "subpages": []
             }
         ]

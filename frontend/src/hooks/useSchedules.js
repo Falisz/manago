@@ -39,24 +39,26 @@ const useSchedules = () => {
     }, []);
 
     const mapUsers = useCallback( (shifts, users, leaves) => {
+
         if (!users)
             return new Map();
 
-        if (!(users instanceof Map))
+        if (!(users instanceof Map) && !users.length) {
             users = new Map(users.map(user => [user.id, user]));
 
-        users.forEach((user, userId) => {
-            user.shifts = shifts
-                .filter(shift => shift.user.id === userId)
-                .map(shift => ({...shift, user: shift.user.id}));
+            users.forEach((user, userId) => {
+                user.shifts = shifts
+                    .filter(shift => shift.user.id === userId)
+                    .map(shift => ({...shift, user: shift.user.id}));
 
-            user.shifts = mapDates(user.shifts);
+                user.shifts = mapDates(user.shifts);
 
-            if (leaves)
-                user.leaves = leaves
-                    .filter(leave => leave.user.id === userId)
-                    .map(leave => ({...leave, user: leave.user.id}));
-        });
+                if (leaves)
+                    user.leaves = leaves
+                        .filter(leave => leave.user.id === userId)
+                        .map(leave => ({...leave, user: leave.user.id}));
+            });
+        }
 
         return new Map(
             [...users.entries()].sort((a, b) => {
@@ -183,6 +185,11 @@ const useSchedules = () => {
                 user_scope,
                 user_scope_id
             });
+
+        if (!users) {
+            loading && setLoading(false);
+            return null;
+        }
 
         if (!Array.isArray(users))
             users = [users];

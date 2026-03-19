@@ -142,6 +142,9 @@ main.schedules.view .schedule-view {
     text-transform: uppercase;;
     font-family: 'Roboto Condensed', sans-serif;
 }
+.app-schedule-header .form-content {
+    overflow: unset;
+}
 .app-schedule-header .app-form .form-group {
     gap: 0;
 }

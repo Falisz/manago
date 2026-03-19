@@ -18,11 +18,16 @@ import NotFound from "../NotFound";
 
 const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, scopeIdOptions}) => {
 
+    const { user } = useApp();
+
     const disableButton = !(schedule?.view === 'users' && schedule?.start_date && schedule?.end_date &&
         schedule?.user_scope && (schedule?.user_scope === 'all' || schedule?.user_scope_id));
 
     if (!schedule)
         return <Loader/>;
+
+    const displayEditButton = schedule?.view === 'users' &&
+        (user?.permissions?.includes('*') || user?.permissions?.includes('manager_access'));
 
     return (
         <div className={'app-schedule-header'}>
@@ -113,7 +118,7 @@ const CurrentViewHeader = ({schedule, editSchedule, handleChange, scopeOptions, 
                     </div>
                 </div>}
             </div>
-            { schedule?.view === 'users' &&
+            { displayEditButton &&
                 <Button
                     label='Edit Schedule'
                     icon='edit'

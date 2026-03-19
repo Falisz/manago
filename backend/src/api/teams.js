@@ -22,10 +22,10 @@ import deleteResource from '#utils/deleteResource.js';
 const fetchHandler = async (req, res) => {
     const id = parseInt(req.params?.id);
 
-    const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
-
-    if (!hasAccess)
-        return res.status(403).json({message: 'Not permitted.'});
+    // const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
+    //
+    // if (!hasAccess)
+    //     return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const query = {};

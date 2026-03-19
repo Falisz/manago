@@ -24,10 +24,10 @@ const fetchHandler = async (req, res) => {
 
     try {
         if (id) {
-            const { hasAccess } = await checkAccess(req.user, 'read', 'job-post', id);
-
-            if (!hasAccess)
-                return res.status(403).json({message: 'Not permitted.'});
+            // const { hasAccess } = await checkAccess(req.user, 'read', 'job-post', id);
+            //
+            // if (!hasAccess)
+            //     return res.status(403).json({message: 'Not permitted.'});
 
             const result = await getJobPost({ id: parseInt(id) });
 

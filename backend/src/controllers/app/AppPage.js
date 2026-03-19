@@ -24,6 +24,9 @@ export async function getPages(view = 0) {
         if (!moduleStatus.get(page.module))
             return false;
 
+        if (page.path === 'leaves' && !config.workPlanner.leaves)
+            return false;
+
         if (page.subpages && page.subpages.length > 0) {
             page.subpages = page.subpages.filter(subpage =>
                 moduleStatus.get(subpage.module !== undefined ? subpage.module : page.module)

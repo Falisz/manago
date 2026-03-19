@@ -5,7 +5,7 @@ import { WARN } from './consoleColors.js';
 // General limiter to all the requests
 export const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
-    limit: 100, // 100 requests tops within the above time window
+    limit: 500, // 500 requests tops within the above time window
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     message: { message: 'Too many requests, please try again later.' },
