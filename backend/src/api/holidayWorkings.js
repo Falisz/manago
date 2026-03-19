@@ -40,10 +40,10 @@ const fetchHandler = async (req, res) => {
             return res.json(result);
         }
 
-        const { hasAccess } = await checkAccess(req.user, 'read', 'holiday-working');
-
-        if (!hasAccess)
-            return res.status(403).json({ message: 'Not permitted.' });
+        // const { hasAccess } = await checkAccess(req.user, 'read', 'holiday-working');
+        //
+        // if (!hasAccess)
+        //     return res.status(403).json({ message: 'Not permitted.' });
 
         const query = {};
 
