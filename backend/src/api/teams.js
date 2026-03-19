@@ -71,10 +71,10 @@ const fetchHandler = async (req, res) => {
 const fetchUsersHandler = async (req, res) => {
     const { id } = req.params;
 
-    const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
-
-    if (!hasAccess)
-        return res.status(403).json({message: 'Not permitted.'});
+    // const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
+    //
+    // if (!hasAccess)
+    //     return res.status(403).json({message: 'Not permitted.'});
 
     try {
         const users = await getTeamUsers({
