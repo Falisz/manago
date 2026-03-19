@@ -15,25 +15,16 @@ import {
 } from '#controllers';
 import checkAccess from '#utils/checkAccess.js';
 import {
+    ACCESS_TOKEN_OPTIONS,
+    REFRESH_TOKEN_OPTIONS,
+    HALF_HOUR, ONE_MONTH,
     generateAccessToken,
     generateRefreshToken,
     verifyAccessToken,
     verifyRefreshToken
 } from '#utils/jwt.js';
 import { securityLog } from '#utils/securityLogs.js';
-
-const HALF_HOUR = 30 * 60 * 1000;
-const ONE_DAY = 24 * 60 * 60 * 1000;
-const ONE_MONTH = 30 * ONE_DAY;
-const ACCESS_TOKEN_OPTIONS = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-};
-const REFRESH_TOKEN_OPTIONS = {
-    ...ACCESS_TOKEN_OPTIONS,
-    sameSite: 'strict'
-};
+import Session from "#models/Session.js";
 
 // API Handlers
 /**
@@ -81,7 +72,17 @@ const loginHandler = async (req, res) => {
         }
 
         const accessToken = generateAccessToken({ userId: id });
-        const refreshToken = generateRefreshToken({ userId: id });
+        const { token: refreshToken, jti } = generateRefreshToken({ userId: id });
+
+        await Session.create({
+            id: jti,
+            userId: id,
+            token: refreshToken,
+            expiresAt: new Date(Date.now() + ONE_MONTH),
+            ipAddress: req.ip,
+            userAgent: req.headers['user-agent']
+        });
+
         res.cookie('access_token', accessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
         res.cookie('refresh_token', refreshToken, { ...REFRESH_TOKEN_OPTIONS, maxAge: ONE_MONTH });
 
@@ -121,16 +122,33 @@ const authHandler = async (req, res) => {
             if (!refreshToken)
                 return res.status(401).json({message: 'No User Refresh Token found.'});
 
-            const { userId } = verifyRefreshToken(refreshToken);
-            if (!userId)
-                return res.status(401).json({message: 'No User ID found.'});
+            try {
+                const { userId, jti } = verifyRefreshToken(refreshToken);
 
-            const newAccessToken = generateAccessToken({ userId });
+                if (!userId)
+                    return res.status(401).json({message: 'No User ID found.'});
 
-            res.cookie('access_token', newAccessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
-            await securityLog(userId, req.ip, 'Token Refresh', 'Success');
+                const activeSession = await Session.findOne({
+                    where: { id: jti, userId: userId }
+                });
 
-            return res.json({ message: 'Token refreshed!' });
+                if (!activeSession) {
+                    await securityLog(userId, req.ip, 'Token Refresh', 'Failure: Session Revoked');
+                    res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
+                    res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
+                    return res.status(401).json({ message: 'Session has been revoked.' });
+                }
+
+                const newAccessToken = generateAccessToken({ userId });
+
+                res.cookie('access_token', newAccessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
+                await securityLog(userId, req.ip, 'Token Refresh', 'Success');
+
+                return res.json({ message: 'Token refreshed successfully!' });
+
+            } catch (jwtErr) {
+                return res.status(401).json({ message: 'Invalid or expired Refresh Token.' });
+            }
 
         }
         const token = req.cookies?.access_token;
@@ -188,6 +206,11 @@ const authHandler = async (req, res) => {
  */
 const logoutHandler = async (req, res) => {
     try {
+        const refreshToken = req.cookies?.refresh_token;
+        if (refreshToken) {
+            const { jti } = verifyRefreshToken(refreshToken);
+            await Session.destroy({ where: { id: jti } });
+        }
         res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
         res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
         return res.json({ success: true, message: 'Logged out successfully!' });

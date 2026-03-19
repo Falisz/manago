@@ -1,6 +1,6 @@
 Following roadmap and tasks to-do.
 # MVP
-### Permissions and JWT related logic
+### Permissions
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
 - Implement Roles and/or Permission based restrictions over the UI.
 ### Staff View
@@ -12,7 +12,7 @@ Following roadmap and tasks to-do.
 # MVP ENDS HERE
 ### TimeSheets and Labor
 - Timesheets preview interface. To help count and bill the projects and summarize labor of a user.
-- Seperate views for Project Timesheets and User Timesheets.
+- Separate views for Project Timesheets and User Timesheets.
 ### Branches and Regions
 - Different logo per branch (?) e.g., if a Users is from Branches One, they have a diff logo than the user from Branches Two.
 - Teams nor Users cannot be assigned to Teams across different branches. Same with a Manager reporting system.

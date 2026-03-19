@@ -1,7 +1,14 @@
 // BACKEND/api/checkJwt.js
 import checkAccess from '#utils/checkAccess.js';
-import {generateAccessToken, verifyAccessToken, verifyRefreshToken} from '#utils/jwt.js';
+import {
+    ACCESS_TOKEN_OPTIONS,
+    REFRESH_TOKEN_OPTIONS,
+    generateAccessToken,
+    verifyAccessToken,
+    verifyRefreshToken
+} from '#utils/jwt.js';
 import { securityLog } from '#utils/securityLogs.js';
+import Session from "#models/Session.js";
 
 /**
  * Middleware to check if a User is authenticated.
@@ -26,18 +33,26 @@ const checkJwtHandler = async (req, res, next) => {
             if (!userId)
                 return res.status(401).json({message: 'No User ID found in the Token provided.'});
 
+            console.log(access_token);
+
         } else {
             const refreshToken = req.cookies?.refresh_token;
 
             if (!refreshToken)
                 return res.status(401).json({message: 'No User Tokens found.'});
 
-            // TODO: Add a token database check-up for validation revoking option.
-
-            const { userId } = verifyRefreshToken(refreshToken);
+            const { userId, jti } = verifyRefreshToken(refreshToken);
 
             if (!userId)
                 return res.status(401).json({message: 'No User ID found in the Token provided!'});
+
+            const activeSession = await Session.findOne({ where: { id: jti, userId } });
+
+            if (!activeSession) {
+                res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
+                res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
+                return res.status(401).json({ message: 'Session revoked or expired.' });
+            }
 
             const newAccessToken = generateAccessToken({ userId });
 
