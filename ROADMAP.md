@@ -1,14 +1,17 @@
 Following roadmap and tasks to-do.
 # MVP
+### Optimization
+- Fewer Requests: Upon auth, fetch all the UI data like leaveTypes, jobPosts as well as logged-in related user data such as: Teams, Reportees, Managers,
 ### Permissions
 - Roles and/or Permission based security restrictions to the API endpoints in the backend. - in progress
 - Implement Roles and/or Permission based restrictions over the UI.
-### Staff View
-- Dashboard: shortcuts and all
-- Organization: Team and Project info
-- Schedule: team and individual rosters, special working requests
-- TimeSheets: timesheet filling
-- Leaves: leave requests
+### UI
+- Fix Styling
+- Organization dashboard: add proper listings, add managers/team-leaders listings, att button styled Go to buttons
+- Change Timesheet and Leave Dashboards main style from grid to flex with columns
+- Staff and Manager Home Dashboards: shortcuts and all
+
+
 # MVP ENDS HERE
 ### TimeSheets and Labor
 - Timesheets preview interface. To help count and bill the projects and summarize labor of a user.

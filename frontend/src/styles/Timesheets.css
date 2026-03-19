@@ -1,4 +1,5 @@
-.app.manager main.timesheets.index {
+.app.manager main.timesheets.index,
+.app.staff main.timesheets {
     display: grid;
     grid-template-columns: 2fr 5fr;
     grid-template-rows: auto 1fr;
@@ -14,10 +15,10 @@
     align-items: center;
     justify-content: center;
 }
-.app.manager main.timesheets>section.week-selector {
+.timesheets>section.week-selector {
     grid-area: b;
     display: flex;
-    flex-direction: row;
+    flex-direction: row !important;
     align-items: flex-start;
 }
 .timesheets .timesheet {

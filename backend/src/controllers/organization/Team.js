@@ -12,12 +12,12 @@ import isNumber from "#utils/isNumber.js";
  * @param {number} id - optional - Team ID to fetch a specific Team
  * @param {boolean} all - optional - Should all Teams be returned - regardless of top-parent structure.
  * @param {number} user - optional - User ID to fetch Teams assigned to the User
- * @param {number|null} parent_team - optional - ID of the parent Team.
+ * @param {number} parent_team - optional - ID of the parent Team.
  * @param {boolean} get_subteams - optional - Should be Subteams fetched for the found Teams?
  * @param {boolean} get_members - optional - Should be members fetched for the found Teams?
  * @returns {Promise<Object|null>} Single Team or null
  */
-export async function getTeam({id, all=false, user=null, parent_team=null,
+export async function getTeam({id, all=false, user=null, parent_team,
                                   get_subteams=true, get_members=true} = {}) {
 
     async function expandTeam(team) {
@@ -44,7 +44,7 @@ export async function getTeam({id, all=false, user=null, parent_team=null,
     if (isNumber(id)) {
         const result = await Team.findByPk(id, {raw: true});
         if (result.parent_team)
-            result.parent= await getTeam({id: result.parent_team,  get_subteams: false, get_members: false});
+            result.parent = await getTeam({id: result.parent_team,  get_subteams: false, get_members: false});
         return expandTeam(result);
     }
 
@@ -52,8 +52,10 @@ export async function getTeam({id, all=false, user=null, parent_team=null,
     const where = {};
     const include = [];
 
-    if (!all || !parent_team)
+    if (parent_team !== undefined)
         where.parent_team = parent_team;
+    else if (!all)
+        where.parent_team = null;
 
     if (user)
         include.push({model: TeamUser, where: {user: user}, required: true});

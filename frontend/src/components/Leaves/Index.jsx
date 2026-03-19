@@ -268,6 +268,8 @@ const ReporteeLeaves = ({requests}) => {
 };
 
 const LeavesIndex = () => {
+    const { user } = useApp();
+
     return (
         <>
             <section className={'your-leaves'}>
@@ -276,9 +278,12 @@ const LeavesIndex = () => {
             <section className={'your-leave-balance'}>
                 <YourBalance/>
             </section>
-            <section className={'reportee-leaves'}>
-                <ReporteeLeaves/>
-            </section>
+            {
+                user?.managed_users?.length > 0 &&
+                <section className={'reportee-leaves'}>
+                    <ReporteeLeaves/>
+                </section>
+            }
         </>
     );
 };

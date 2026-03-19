@@ -20,14 +20,11 @@ import deleteResource from '#utils/deleteResource.js';
  * @param {express.Response} res
  */
 const fetchHandler = async (req, res) => {
-    const id = parseInt(req.params?.id);
-
-    // const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
-    //
-    // if (!hasAccess)
-    //     return res.status(403).json({message: 'Not permitted.'});
+    let id = parseInt(req.params?.id);
 
     try {
+        const { hasAccess } = await checkAccess(req.user, 'read', 'team', id);
+
         const query = {};
         if (id) {
             query.id = id;
@@ -36,7 +33,7 @@ const fetchHandler = async (req, res) => {
             if (req.query.all != null)
                 query.all = !['false', 'no', '0', 'n'].includes(req.query.all.toLowerCase());
 
-            if (req.query.user != null)
+            if (hasAccess && req.query.user != null)
                 query.user = parseInt(req.query.user);
 
             if (req.query.parent != null)
@@ -48,6 +45,10 @@ const fetchHandler = async (req, res) => {
             if (req.query.members != null)
                 query.get_members = !['false', 'no', '0', 'n'].includes(req.query.members.toLowerCase());
 
+            if (!hasAccess) {
+                query.user = req.user;
+                query.all = true;
+            }
         }
 
         const teams = await getTeam(query);

@@ -186,15 +186,6 @@ const ScheduleView = () => {
     const { users: managers, fetchUsers: fetchManagers } = useUsers();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
-    let scopeOptions = [
-        { id: 'all', name: 'All Users' }, 
-        { id: 'you', name: 'Yours' },
-        ...(modules.find((m) => m.title === 'Teams' && m.enabled) ? [{ id: 'team', name: 'Team' }] : []),
-        ...(modules.find((m) => m.title === 'Branches' && m.enabled) ? [{ id: 'branch', name: 'Branch' }] : []),
-        ...(modules.find((m) => m.title === 'Projects' && m.enabled) ? [{ id: 'project', name: 'Project' }] : []),
-        { id: 'manager', name: 'Users by Manager' }, 
-        { id: 'user', name: 'User' }
-    ];
     const [ scopeIdOptions, setScopeIdOptions ] = useState([{id: null, name: 'None'}]);
     const isMounted = useRef(false);
     
@@ -251,7 +242,6 @@ const ScheduleView = () => {
                 `&scope=${schedule.user_scope}&sid=${schedule.user_scope_id}`);
 
     }, [scheduleId, schedule, navigate]);
-
 
     useEffect(() => {
        if (!isMounted.current) return;
@@ -382,9 +372,27 @@ const ScheduleView = () => {
     //
     // Logic for rendering Current Schedule View
     //
+    const scopeOptions = [
+        { id: 'you', name: 'Yours' }
+    ];
 
-    if (['monthly', 'jobs'].includes(schedule?.view))
-        scopeOptions = scopeOptions.filter(option => ['team', 'branch', 'project', 'all'].includes(option.id));
+    if (user?.permissions?.includes('schedule-display-scope-user-by-id'))
+        scopeOptions.push({ id: 'user', name: 'User' });
+
+    // if (modules.find((m) => m.title === 'Teams' && m.enabled) && user?.permissions?.includes('schedule-display-scope-team'))
+        scopeOptions.push({ id: 'team', name: 'Team' });
+
+    if (modules.find((m) => m.title === 'Branches' && m.enabled) && user?.permissions?.includes('schedule-display-scope-branch'))
+        scopeOptions.push({ id: 'branch', name: 'Branch' });
+
+    if (modules.find((m) => m.title === 'Projects' && m.enabled) && user?.permissions?.includes('schedule-display-scope-project'))
+        scopeOptions.push({ id: 'project', name: 'Project' });
+
+    if (user?.permissions?.includes('schedule-display-scope-all-users'))
+        scopeOptions.push({ id: 'all', name: 'All Users' });
+
+    if (user?.permissions?.includes('schedule-display-scope-user-by-manager'))
+        scopeOptions.push({ id: 'manager', name: 'Users by Manager' });
 
     return <section className={'schedule-view'}>
         <Helmet>

@@ -18,8 +18,8 @@ import WorkPlannerSettings from '../components/Schedules/Settings';
 import setupAxiosInterceptor from "../utils/interceptors";
 import ApprovalsIndex from "../components/Approvals/Index";
 import ProjectIndex from "../components/Projects/Index";
-import OrganizationDashboard from "../components/Organization";
-import TimesheetDashboard from "../components/Timesheets/Index";
+import OrganizationIndex from "../components/Organization";
+import TimesheetIndex from "../components/Timesheets/Index";
 import TimesheetsSettings from "../components/Timesheets/Settings";
 
 setupAxiosInterceptor();
@@ -39,8 +39,8 @@ const COMPONENT_MAP = {
     AppSettings,
     ApprovalsIndex,
     ProjectIndex,
-    OrganizationDashboard,
-    TimesheetDashboard,
+    OrganizationIndex,
+    TimesheetIndex,
     TimesheetsSettings
 };
 

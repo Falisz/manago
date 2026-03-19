@@ -281,24 +281,34 @@
     font-weight: 300;
     font-family: var(--font-family-condensed), sans-serif;
 }
-.app.manager main > section {
+.app.manager main > section,
+.app.manager main > .column > section  {
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 20px;
     overflow: hidden;
 }
-.app.manager main > section > .header {
+.app.manager main > section > .header,
+.app.manager main > .column > section > .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
 }
-.app.manager main > section h1 {
+.app.manager main > section h1,
+.app.manager main > .column > section h1 {
     margin: 0;
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 300;
     font-size: 2rem;
+}
+
+.app.manager main > .column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
 }
 
 .app.manager.fluent section {

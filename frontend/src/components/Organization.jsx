@@ -1,51 +1,106 @@
 // FRONTEND/components/Organization.jsx
-import React from "react";
+import React, {useEffect} from "react";
 import useApp from "../contexts/AppContext";
-import TeamsIndex from "./Teams/Index";
-import ProjectIndex from "./Projects/Index";
 import InWorks from "./InWorks";
+import {useProjects, useTeams} from "../hooks/useResource";
+import Loader from "./Loader";
+import {Link} from "react-router-dom";
 
-const OrganizationDashboard = () => {
-    const { appState } = useApp();
+const OrganizationIndex = () => {
+    const { appState, refreshTriggers, user } = useApp();
+    const { teams, loading: teamLoading, fetchTeams } = useTeams();
+    const { projects, loading: projectsLoading, fetchProjects } = useProjects();
 
-    const { teams, projects, branches } = React.useMemo(() => ({
-        teams: appState.modules?.find(m => m.title?.toLowerCase() === 'teams')?.enabled,
-        projects: appState.modules?.find(m => m.title?.toLowerCase() === 'projects')?.enabled,
-        branches: appState.modules?.find(m => m.title?.toLowerCase() === 'branches')?.enabled
+    useEffect(() => {
+        const refresh = refreshTriggers?.teams || refreshTriggers?.projects || false;
+
+        if (refresh) {
+            delete refreshTriggers.teams;
+            delete refreshTriggers.projects;
+        }
+
+        if (!teams || refresh)
+            fetchTeams({all: true, user: user.id, loading: true}).then();
+
+        if (!projects || refresh) fetchProjects({user: user.id}).then();
+
+    }, [fetchTeams, teams, refreshTriggers.teams]);
+
+    const { teamsM, projectsM, branchesM } = React.useMemo(() => ({
+        teamsM: appState.modules?.find(m => m.title?.toLowerCase() === 'teams')?.enabled,
+        projectsM: appState.modules?.find(m => m.title?.toLowerCase() === 'projects')?.enabled,
+        branchesM: appState.modules?.find(m => m.title?.toLowerCase() === 'branches')?.enabled
     }), [appState]);
+
+    const displaySeeAllTeamsButton = true;
+    const displaySeeAllProjectsButton = true;
 
     return (
         <>
-            {
-                teams && <section className={'teams'}>
-                    <TeamsIndex compact transparent/>
+            <div className={'column left'}>
+                <section className={'your-manager'}>
+                    <h1>Your Managers</h1>
+                    <div className={'list'}>
+                        {
+                            (user?.managers?.length && user.managers.map((mgr, i) =>
+                                <div key={i}>{mgr.first_name} {mgr.last_name}</div>
+                            )) || <div className={'empty'}>No Managers to display.</div>
+                        }
+                    </div>
                 </section>
-            }
-            {
-                projects && <section className={'projects'}>
-                    <ProjectIndex compact transparent/>
-                </section>
-            }
-            {
-                branches && <>
-                    <section className={'branches'}>
-                        <h1>Branches</h1>
-                        <InWorks transparent icon={'hub'} hideReturnLink description={'Work in progress'}/>
+                {
+                    teamsM && <section className={'teams'}>
+                        <h1>Your Teams</h1>
+                        {
+                            displaySeeAllTeamsButton && <Link
+                                to={'/org/teams'}
+                            >See all Teams</Link>
+                        }
+                        <div className={'list'}>
+                            {teamLoading && <Loader />}
+                            {(teams?.length && (
+                                teams.map((team, i) => (
+                                    <div key={i}>{team.name}</div>
+                                ))
+                            )) || <div className={'empty'}>No Teams to display.</div>}
+                        </div>
                     </section>
-                    <section className={'regions'}>
-                        <h1>Regions</h1>
-                        <InWorks transparent icon={'globe'} hideReturnLink description={'Work in progress'}/>
+                }
+            </div>
+            <div className={'column right'}>
+                {
+                    projectsM && <section className={'teams'}>
+                        <h1 className={'header'}>Your Projects</h1>
+                        {
+                            displaySeeAllProjectsButton && <Link
+                                to={'/org/projects'}
+                            >See all Projects</Link>
+                        }
+                        <div className={'list'}>
+                            {projectsLoading && <Loader />}
+                            {(projects?.length && (
+                                projects.map((project, i) => (
+                                    <div key={i}>{project.name}</div>
+                                ))
+                            ))  || <div className={'empty'}>No Teams to display.</div>}
+                        </div>
                     </section>
-                </>
-            }
-            {
-                !(teams || projects || branches) && <>
-                    Currently all organization units including: Teams, Projects, Branches and Regions are disabled.<br/>
-                    Reach out to your Admin to enable any organization-related app module if needed.
-                </>
-            }
+                }
+                {
+                    branchesM && <>
+                        <section className={'branches'}>
+                            <h1>Branches</h1>
+                            <InWorks transparent icon={'hub'} hideReturnLink description={'Work in progress'}/>
+                        </section>
+                        <section className={'regions'}>
+                            <h1>Regions</h1>
+                            <InWorks transparent icon={'globe'} hideReturnLink description={'Work in progress'}/>
+                        </section>
+                    </>
+                }
+            </div>
         </>
     );
 };
 
-export default OrganizationDashboard;
+export default OrganizationIndex;

@@ -192,8 +192,6 @@ const TimeSheet = ({week}) => {
         if (time)
             time = parseInt(time, 10);
 
-        console.log(id, date, project, time, laborUpdate.current);
-
         if (id && time) {
             setLabor(prev => [...prev.filter(l => l.id !== id), {...prev.find(l => l.id === id), time}]);
             if (typeof id === 'number') laborUpdate.current.update.add(id);
@@ -376,7 +374,7 @@ const TimeSheet = ({week}) => {
     );
 };
 
-const TimesheetDashboard = () => {
+const TimesheetIndex = () => {
     const { timesheets: config } = useApp().appState;
 
     const [ week, setWeek ] = React.useState(() => {
@@ -400,4 +398,4 @@ const TimesheetDashboard = () => {
     );
 };
 
-export default TimesheetDashboard;
+export default TimesheetIndex;

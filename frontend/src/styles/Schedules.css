@@ -216,19 +216,20 @@ main.schedules.view .schedule-view {
 
 
 /* Leaves.jsx */
-.app.manager main.schedules.leaves {
+.app.manager main.schedules.leaves,
+.app.staff main.leaves {
     display: grid;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
     grid-template-areas: "a b" "a c";
 }
-main.schedules.leaves .your-leaves {
+main.leaves .your-leaves {
     grid-area: a;
 }
-main.schedules.leaves .your-leave-balance {
+main.leaves .your-leave-balance {
     grid-area: b;
 }
-main.schedules.leaves .reportee-leaves {
+main.leaves .reportee-leaves {
     grid-area: c;
 }
 

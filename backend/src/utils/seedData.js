@@ -122,7 +122,7 @@ const appPages = [
                 "title": "Home",
                 "module": 0,
                 "icon": "home",
-                "component": "Dashboard",
+                "component": "Index",
                 "subpages": []
             },
             {
@@ -146,7 +146,7 @@ const appPages = [
                 "title": "Timesheets",
                 "module": 5,
                 "icon": "punch_clock",
-                "component": "TimesheetDashboard",
+                "component": "TimesheetIndex",
                 "subpages": [
                     {
                         "path": "attendance",
@@ -161,21 +161,21 @@ const appPages = [
                 "title": "Leaves",
                 "module": 4,
                 "icon": "local_florist",
-                "component": "LeavesDashboard"
+                "component": "LeavesIndex"
             },
             {
                 "path": "org",
                 "title": "Organisation",
                 "module": 0,
                 "icon": "people",
-                "component": "OrganizationDashboard"
+                "component": "OrganizationIndex"
             },
             {
                 "path": "trainings",
                 "title": "Trainings",
                 "module": 6,
                 "icon": "school",
-                "component": "TrainingsDashboard",
+                "component": "TrainingsIndex",
                 "subpages": []
             },
             {
@@ -183,7 +183,7 @@ const appPages = [
                 "title": "Posts",
                 "module": 7,
                 "icon": "forum",
-                "component": "PostsDashboard",
+                "component": "PostsIndex",
                 "subpages": []
             }
         ]
@@ -196,7 +196,7 @@ const appPages = [
                 "title": "Home",
                 "module": 0,
                 "icon": "home",
-                "component": "ManagerDashboard",
+                "component": "ManagerIndex",
                 "subpages": []
             },
             {
@@ -231,7 +231,7 @@ const appPages = [
                 "title": "Organization",
                 "module": 0,
                 "icon": "account_tree",
-                "component": "OrganizationDashboard",
+                "component": "OrganizationIndex",
                 "subpages": [
                     {
                         "path": "teams",
@@ -333,13 +333,13 @@ const appPages = [
                 "title": "timesheets",
                 "module": 5,
                 "icon": "calendar_month",
-                "component": "TimesheetDashboard",
+                "component": "TimesheetIndex",
                 "subpages": [
                     {
                         "path": "attendance",
                         "title": "Attendance",
                         "icon": "",
-                        "component": "YourAttendance",
+                        "component": "AttendanceIndex",
                     },
                     {
                         "path": "approvals",
@@ -360,14 +360,14 @@ const appPages = [
                 "title": "Tasks",
                 "module": 6,
                 "icon": "task",
-                "component": "TasksDashboard"
+                "component": "TasksIndex"
             },
             {
                 "path": "Trainings",
                 "title": "Trainings",
                 "module": 7,
                 "icon": "school",
-                "component": "TrainingsDashboard"
+                "component": "TrainingsIndex"
             },
             {
                 "path": "posts",
