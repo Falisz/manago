@@ -25,21 +25,22 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "connect-session-sequelize": "^8.0.4",
+    "connect-session-sequelize": "^8.0.6",
     "cookie-parser": "^1.4.7",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
     "http-proxy": "^1.18.1",
     "jsonwebtoken": "^9.0.3",
     "lorem-ipsum": "^2.0.8",
-    "mssql": "^12.2.0",
-    "pg": "^8.16.2",
-    "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7",
-    "winston": "^3.17.0"
+    "mssql": "^12.2.1",
+    "pg": "^8.20.0",
+    "sequelize": "^6.37.8",
+    "sqlite3": "^6.0.1",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "@types/express": "^5.0.6",
+    "nodemon": "^3.1.14"
   }
 }
