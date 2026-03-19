@@ -187,7 +187,7 @@ export const AppProvider = ({ children }) => {
 
     const getModules = useCallback(async () => {
         try {
-            const response = await axios.get('/modules?psthr=true');
+            const response = await axios.get('/modules');
             return response.data;
         } catch(err) {
             return [];
@@ -196,7 +196,7 @@ export const AppProvider = ({ children }) => {
 
     const getPages = useCallback(async () => {
         try {
-            const response = await axios.get('/pages?psthr=true');
+            const response = await axios.get('/pages');
             return mapPagesToComponents(response.data);
         } catch(err) {
             return [];

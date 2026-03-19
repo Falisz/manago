@@ -16,7 +16,7 @@ const logger = winston.createLogger({
     transports: [
         new winston.transports.File({
             filename: 'logs/requests.log',
-            level: 'warn',
+            level: 'info',
             format: winston.format((info) => {
                 return info.level === 'error' ? false : info;
             })()
