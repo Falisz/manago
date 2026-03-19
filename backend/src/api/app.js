@@ -25,6 +25,7 @@ import {
 } from '#utils/jwt.js';
 import { securityLog } from '#utils/securityLogs.js';
 import Session from "#models/Session.js";
+import {authLimiter} from "#utils/rateLimit.js";
 
 // API Handlers
 /**
@@ -460,7 +461,7 @@ const updateUserThemeHandler = async (req, res) => {
 export const router = express.Router();
 
 router.get('/', apiEndpointHandler)
-
+router.post('/auth', authLimiter);
 router.post('/auth', loginHandler);
 router.get('/auth', authHandler);
 router.get('/logout', logoutHandler);

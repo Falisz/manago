@@ -33,8 +33,6 @@ const checkJwtHandler = async (req, res, next) => {
             if (!userId)
                 return res.status(401).json({message: 'No User ID found in the Token provided.'});
 
-            console.log(access_token);
-
         } else {
             const refreshToken = req.cookies?.refresh_token;
 

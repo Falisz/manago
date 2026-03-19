@@ -8,17 +8,30 @@ import sequelize from '#utils/database.js';
 import { requestLoggerHandler, errorLoggerHandler } from '#utils/logger.js';
 import { getCorsConfig } from '#utils/corsConfig.js';
 import { INFO, ERROR, WARN } from '#utils/consoleColors.js';
+import { globalLimiter } from '#utils/rateLimit.js';
 
 // Environment variables
 const PORT = process.env.PORT || 5000;
 
-// App and Middleware initialization.
+// App initialization
 const app = express();
+
+// Rate Limiter
+app.set('trust proxy', 1);
+app.use(globalLimiter);
+
+// Cookie Parser and COORS
 app.use(cookieParser());
 app.use(cors(getCorsConfig()));
 app.use(express.json());
+
+// Request Logger
 app.use(requestLoggerHandler);
+
+// Request Router
 app.use(apiRouter);
+
+// Error Logger
 app.use(errorLoggerHandler);
 
 /**
