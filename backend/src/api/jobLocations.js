@@ -40,9 +40,9 @@ const fetchHandler = async (req, res) => {
         }
 
         // Fetch all
-        const { hasAccess } = await checkAccess(req.user, 'read', 'job-location');
-        if (!hasAccess)
-            return res.status(403).json({ message: 'Not permitted.' });
+        // const { hasAccess } = await checkAccess(req.user, 'read', 'job-location');
+        // if (!hasAccess)
+        //     return res.status(403).json({ message: 'Not permitted.' });
 
         const locations = await getJobLocation({ include_shifts });
         res.json(locations);
