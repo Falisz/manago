@@ -5,9 +5,10 @@ import {getConfig, getModules} from '#controllers';
 /**
  * Retrieves pages for a user based on their manager view configuration.
  * @param {number} view - 0 for Staff View and 1 for Manager View.
+ * @param userId
  * @returns {Promise<Object[]>} Array of page objects with nested subpages
  */
-export async function getPages(view = 0) {
+export async function getPages(view = 0, userId) {
     const viewKey = view === 1 ? 'manager_view' : 'staff_view';
 
     const appPage = await AppPage.findOne({ where: { view: viewKey } });
@@ -17,7 +18,7 @@ export async function getPages(view = 0) {
 
     let pages = appPage.pages;
     const modules = await getModules();
-    const config = await getConfig();
+    const config = await getConfig({userId});
     const moduleStatus = new Map(modules.map(module => [module.id, module.enabled]));
 
     pages = pages.filter(page => {

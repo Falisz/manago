@@ -104,7 +104,7 @@ const loginHandler = async (req, res) => {
             is_connected: true,
             ...await getConfig({userId: id}),
             modules: await getModules(),
-            pages: await getPages(managerView ? 1 : 0),
+            pages: await getPages(managerView ? 1 : 0, id),
         };
 
         return res.json({ message, user, app });
@@ -153,7 +153,7 @@ const authHandler = async (req, res) => {
             is_connected: true,
             ...await getConfig({userId: req.user}),
             modules: await getModules(),
-            pages: await getPages(managerView ? 1 : 0),
+            pages: await getPages(managerView ? 1 : 0, id),
         };
 
         return res.json({ message: 'User Authentication successful!', user, app });
@@ -325,7 +325,7 @@ const fetchPagesHandler = async (req, res) => {
         const user = await getUser({id: userId, include_configs: true});
         const managerView = user?.manager_view_enabled ?? false;
 
-        res.json(await getPages(managerView ? 1 : 0));
+        res.json(await getPages(managerView ? 1 : 0, userId));
     } catch (err) {
         console.error('Error fetching pages:', err.message);
         res.status(500).json({ message: 'API Error.' });
