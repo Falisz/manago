@@ -3,12 +3,17 @@ import {AppConfig} from '#models';
 
 /**
  * Retrieves the current configuration from the database.
+ * @param {number | null} userId - UserId of requester
  * @returns {Promise<Object>} Configuration object.
  */
-export async function getConfig() {
+export async function getConfig({userId}={}) {
     const configs = await AppConfig.findAll();
     const configObject = {};
     for (const config of configs) {
+        if (!userId)
+            if (!['theme', 'style', 'color', 'background'].includes(config.configName))
+                continue;
+
         if (config.selectedOption === 'true')
             config.selectedOption = true;
 

@@ -20,23 +20,7 @@ import weekendWorkingRoutes from "./weekendWorkings.js";
 import requestStatusRoutes from './requestStatuses.js';
 import laborRoutes from './labor.js';
 import postRoutes from './posts.js';
-import checkJwtHandler from '#middleware/checkJwt.js';
-
 const router = express.Router();
-
-const publicRules = [
-    { path: '/', methods: ['GET'] },
-    { path: '/config', methods: ['GET'] },
-    { path: '/modules', methods: ['GET'] },
-    { path: '/pages', methods: ['GET'] },
-    { path: '/auth', methods: ['GET', 'POST'] }
-];
-
-router.use((req, res, next) => {
-    const isPublic = publicRules.some(rule => rule.path === req.path && rule.methods.includes(req.method));
-    if (isPublic) return next();
-    return checkJwtHandler(req, res, next);
-});
 
 // Base routes (authentication, app info, etc.)
 router.use('/', appRoutes);

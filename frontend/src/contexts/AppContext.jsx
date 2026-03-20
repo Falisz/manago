@@ -165,19 +165,26 @@ export const AppProvider = ({ children }) => {
     }, []);
 
     // API Get calls.
-    const getUser = useCallback(async () => {
-        const response = await axios.get('/auth');
-        return response.data.user;
+    const getAuth = useCallback(async () => {
+        let response;
+
+        try {
+            response = await axios.get('/auth');
+        } catch (error) {
+            response = error.response;
+        }
+
+        const { user, message, app } = response.data;
+
+        if (app.pages)
+            app.pages = mapPagesToComponents(app.pages);
+
+        return { user, message, app };
     }, []);
 
     const getConfig = useCallback(async () => {
         const response = await axios.get('/config');
-        const config = response.data;
-        Cookies.set('style', config.style);
-        Cookies.set('theme', config.theme);
-        Cookies.set('color', config.color);
-        Cookies.set('background', config.background);
-        return config;
+        return response.data;
     }, []);
 
     const getConfigOptions = useCallback(async () => {
@@ -209,6 +216,10 @@ export const AppProvider = ({ children }) => {
         loading && setLoading(true);
         try {
             const config = await getConfig();
+            Cookies.set('style', config.style);
+            Cookies.set('theme', config.theme);
+            Cookies.set('color', config.color);
+            Cookies.set('background', config.background);
             setAppState(prev => {
                 const hasChanged = Object.keys(config).some(key => prev[key] !== config[key]);
                 return hasChanged ? { ...prev, ...config } : prev;
@@ -238,15 +249,15 @@ export const AppProvider = ({ children }) => {
 
     const checkConnection = useCallback(async () => {
         try {
-            const config = await getConfig();
+            await axios.get('/ping');
             setAppState(prev => {
-                if (prev.is_connected === config.is_connected) { return prev; }
-                return {...prev, is_connected: config.is_connected};
+                if (prev.is_connected) { return prev; }
+                return {...prev, is_connected: true};
             });
         } catch (error) {
             setAppState(prev => ({ ...prev, is_connected: false }));
         }
-    }, [getConfig]);
+    }, []);
 
     const refreshModules = useCallback(async () => {
         try {
@@ -277,7 +288,7 @@ export const AppProvider = ({ children }) => {
 
     const refreshUser = useCallback(async () => {
         try {
-            const user = await getUser();
+            const {user} = await getAuth();
             setAppState(prev => {
                 if (prev.user === user)
                     return prev;
@@ -286,7 +297,7 @@ export const AppProvider = ({ children }) => {
         } catch (error) {
             console.error('Error refreshing Logged On User:', error);
         }
-    }, [getUser]);
+    }, [getAuth]);
 
     const toggleModule = useCallback(async (id, enabled) => {
         try {
@@ -321,19 +332,17 @@ export const AppProvider = ({ children }) => {
         }
     }, [setUser]);
 
-
     const loginUser = useCallback(async (username, password) => {
         setLoading(true);
         try {
             const response = await axios.post('/auth', { username, password });
-            const { user, message } = response.data;
+            const { user, message, app = {} } = response.data;
+            if (app?.pages)
+                app.pages = mapPagesToComponents(app.pages);
             if (user) {
-                setUser(user);
                 showPopUp({ type: 'success', content: message });
-                await refreshModules();
-                await refreshPages();
-                setLoading(false);
-                return { success: true, user };
+                setAppState(prev => ({...prev, user, ...app, loading: false }));
+                return { success: true };
             }
             setLoading(false);
             return { success: false, message };
@@ -343,7 +352,7 @@ export const AppProvider = ({ children }) => {
             setLoading(false);
             return { success: false, message: err.message };
         }
-    }, [setUser, showPopUp, refreshModules, refreshPages, setLoading]);
+    }, [showPopUp, setLoading]);
 
     const logoutUser = useCallback(async () => {
         try {
@@ -363,25 +372,20 @@ export const AppProvider = ({ children }) => {
     useEffect(() => {
         checkConnection().then();
         const interval = setInterval(checkConnection, 60000);
+        return () => clearInterval(interval);
+    }, [checkConnection]);
 
+    useEffect(() => {
         const handleInit = async () => {
             try {
-                setAppState({
-                    user: await getUser(),
-                    ...(await getConfig()),
-                    modules: await getModules(),
-                    pages: await getPages()
-                });
-                setLoading(false);
+                const { user, app } = await getAuth();
+                setAppState({ user, ...app, loading: false });
             } catch (error) {
                 console.error(error.name, error.message);
             }
         };
-
         handleInit().then();
-
-        return () => clearInterval(interval);
-    }, [checkConnection, getUser, getConfig, getModules, getPages, setLoading, setUser]);
+    }, [getAuth]);
 
     useEffect(() => {
         !appState.is_connected && showPopUp({

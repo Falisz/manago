@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import '#utils/dotenv.js';
 import apiRouter from '#api';
+import checkJwtHandler from '#middleware/checkJwt.js';
 import sequelize from '#utils/database.js';
 import { requestLoggerHandler, errorLoggerHandler } from '#utils/logger.js';
 import { getCorsConfig } from '#utils/corsConfig.js';
@@ -27,6 +28,9 @@ app.use(express.json());
 
 // Request Logger
 app.use(requestLoggerHandler);
+
+// JWT Handler
+app.use(checkJwtHandler);
 
 // Request Router
 app.use(apiRouter);

@@ -98,7 +98,16 @@ const loginHandler = async (req, res) => {
             permissions: true
         });
 
-        return res.json({message, user});
+        const managerView = user?.manager_view_enabled ?? false;
+
+        const app = {
+            is_connected: true,
+            ...await getConfig({userId: id}),
+            modules: await getModules(),
+            pages: await getPages(managerView ? 1 : 0),
+        };
+
+        return res.json({ message, user, app });
 
     } catch (err) {
         console.error('Login error:', err);
@@ -111,63 +120,13 @@ const loginHandler = async (req, res) => {
 /**
  * Check user authorization.
  * @param {express.Request} req
- * @param {string} req.cookies.access_token
- * @param {string} req.cookies.refresh_token
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const authHandler = async (req, res) => {
     try {
-        const { refresh } = req.query;
-        if (refresh) {
-            const refreshToken = req.cookies?.refresh_token;
-            if (!refreshToken)
-                return res.status(401).json({message: 'No User Refresh Token found.'});
-
-            try {
-                const { userId, jti } = verifyRefreshToken(refreshToken);
-
-                if (!userId)
-                    return res.status(401).json({message: 'No User ID found.'});
-
-                const activeSession = await Session.findOne({
-                    where: { id: jti, userId: userId }
-                });
-
-                if (!activeSession) {
-                    await securityLog(userId, req.ip, 'Token Refresh', 'Failure: Session Revoked');
-                    res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
-                    res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
-                    return res.status(401).json({ message: 'Session has been revoked.' });
-                }
-
-                const newAccessToken = generateAccessToken({ userId });
-
-                res.cookie('access_token', newAccessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
-                await securityLog(userId, req.ip, 'Token Refresh', 'Success');
-
-                return res.json({ message: 'Token refreshed successfully!' });
-
-            } catch (jwtErr) {
-                return res.status(401).json({ message: 'Invalid or expired Refresh Token.' });
-            }
-
-        }
-        const token = req.cookies?.access_token;
-        if (!token)
-            return res.json({
-                message: 'User Authentication failed, no User Access Token found.',
-                user: null
-            });
-
-        const { userId } = verifyAccessToken(token);
-        if (!userId)
-            return res.json({
-                message: 'User Authentication failed, no User ID in the Token found.',
-                user: null
-            });
-
         const user = await getUser({
-            id: userId,
+            id: req.user,
             roles: true,
             managers: true,
             all_managed_users: true,
@@ -176,27 +135,35 @@ const authHandler = async (req, res) => {
         });
 
         if (!user) {
-            await securityLog(userId, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
+            await securityLog(req.user, `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
                 'Auth Check', 'Failure: No User found or User removed');
             return res.json({
                 message: 'User Authentication failed, no User found.',
-                user: null
+                user: null,
+                app: {...await getConfig()}
             });
         }
 
         await securityLog(user['id'], `${req.ip || 'Unknown IP'} ${req.headers.host || 'Unknown Host'}`,
             'Auth Check', 'Success');
 
-        return res.json({
-            message: 'User Authentication successful!',
-            user,
-        });
+        const managerView = user?.manager_view_enabled ?? false;
+
+        const app = {
+            is_connected: true,
+            ...await getConfig({userId: req.user}),
+            modules: await getModules(),
+            pages: await getPages(managerView ? 1 : 0),
+        };
+
+        return res.json({ message: 'User Authentication successful!', user, app });
 
     } catch (err) {
         console.error('Access checkup error:', err);
         return res.status(500).json({
             message: 'User Authentication server error.',
             user: null,
+            app: {...await getConfig()}
         });
     }
 };
@@ -222,15 +189,25 @@ const logoutHandler = async (req, res) => {
 };
 
 /**
- * Fetch app configuration.
+ * Check user authorization.
  * @param {express.Request} _req
  * @param {express.Response} res
  */
-const fetchConfigHandler = async (_req, res) => {
+const pingHandler = async (_req, res) => {
+    return res.json(true);
+};
+
+/**
+ * Fetch app configuration.
+ * @param {express.Request} req
+ * @param {number} req.user
+ * @param {express.Response} res
+ */
+const fetchConfigHandler = async (req, res) => {
     try {
         res.json({
             is_connected: true,
-            ...await getConfig()
+            ...await getConfig({userId: req.user})
         });
 
     } catch (err) {
@@ -464,6 +441,7 @@ router.get('/', apiEndpointHandler)
 router.post('/auth', authLimiter);
 router.post('/auth', loginHandler);
 router.get('/auth', authHandler);
+router.get('/ping', pingHandler);
 router.get('/logout', logoutHandler);
 router.get('/config', fetchConfigHandler);
 router.get('/config-options', fetchConfigOptionsHandler);
