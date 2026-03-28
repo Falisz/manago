@@ -153,7 +153,7 @@ const authHandler = async (req, res) => {
             is_connected: true,
             ...await getConfig({userId: req.user}),
             modules: await getModules(),
-            pages: await getPages(managerView ? 1 : 0, id),
+            pages: await getPages(managerView ? 1 : 0, user['id']),
         };
 
         return res.json({ message: 'User Authentication successful!', user, app });
