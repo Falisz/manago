@@ -29,9 +29,17 @@ export const generateRefreshToken = (payload) => {
 };
 
 export const verifyAccessToken = (token) => {
-    return jwt.verify(token, ACCESS_SECRET, { algorithms: ['HS256'] });
+    try {
+        return jwt.verify(token, ACCESS_SECRET, { algorithms: ['HS256'] });
+    } catch (err) {
+        return {};
+    }
 };
 
 export const verifyRefreshToken = (token) => {
-    return jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] });
+    try {
+        return jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] });
+    } catch (err) {
+        return {};
+    }
 };

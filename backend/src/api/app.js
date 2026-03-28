@@ -20,7 +20,6 @@ import {
     HALF_HOUR, ONE_MONTH,
     generateAccessToken,
     generateRefreshToken,
-    verifyAccessToken,
     verifyRefreshToken
 } from '#utils/jwt.js';
 import { securityLog } from '#utils/securityLogs.js';
@@ -177,7 +176,7 @@ const logoutHandler = async (req, res) => {
         const refreshToken = req.cookies?.refresh_token;
         if (refreshToken) {
             const { jti } = verifyRefreshToken(refreshToken);
-            await Session.destroy({ where: { id: jti } });
+            if (jti) await Session.destroy({ where: { id: jti } });
         }
         res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
         res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
@@ -264,13 +263,7 @@ const updateConfigHandler = async (req, res) => {
  */
 const fetchModulesHandler = async (req, res) => {
     try {
-        const token = req.cookies?.access_token;
-        const { userId } = token ? verifyAccessToken(token) : {};
-        if (!userId)
-            return res.json([]);
-
         return res.json(await getModules());
-
     } catch (err) {
         console.error('Config fetching error:', err);
         res.status(500).json({ message: 'Config fetching Error.', connected: false });
@@ -312,19 +305,13 @@ const updateModuleHandler = async (req, res) => {
 /**
  * Fetch app pages.
  * @param {express.Request} req
+ * @param {number} req.user
  * @param {express.Response} res
  */
 const fetchPagesHandler = async (req, res) => {
     try {
-
-        const token = req.cookies?.access_token;
-        const { userId } = token ? verifyAccessToken(token) : {};
-        if (!userId)
-            return res.json([]);
-
-        const user = await getUser({id: userId, include_configs: true});
+        const user = await getUser({id: req.user, include_configs: true});
         const managerView = user?.manager_view_enabled ?? false;
-
         res.json(await getPages(managerView ? 1 : 0, userId));
     } catch (err) {
         console.error('Error fetching pages:', err.message);
