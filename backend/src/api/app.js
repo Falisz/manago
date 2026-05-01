@@ -14,14 +14,6 @@ import {
     updateUser
 } from '#controllers';
 import checkAccess from '#utils/checkAccess.js';
-import {
-    ACCESS_TOKEN_OPTIONS,
-    REFRESH_TOKEN_OPTIONS,
-    HALF_HOUR, ONE_MONTH,
-    generateAccessToken,
-    generateRefreshToken,
-    verifyRefreshToken
-} from '#utils/jwt.js';
 import { securityLog } from '#utils/securityLogs.js';
 import Session from "#models/Session.js";
 import {authLimiter} from "#utils/rateLimit.js";
@@ -49,6 +41,14 @@ const apiEndpointHandler = (_req, res) => {
     }
 };
 
+const ONE_MONTH = 30 * 24 * 60 * 60 * 1000;
+const SESSION_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: ONE_MONTH
+};
+
 /**
  * Handle user login.
  * @param {express.Request} req
@@ -71,20 +71,14 @@ const loginHandler = async (req, res) => {
             return res.status(status).json({ message });
         }
 
-        const accessToken = generateAccessToken({ userId: id });
-        const { token: refreshToken, jti } = generateRefreshToken({ userId: id });
-
-        await Session.create({
-            id: jti,
+        const newSession = await Session.create({
             userId: id,
-            token: refreshToken,
             expiresAt: new Date(Date.now() + ONE_MONTH),
             ipAddress: req.ip,
             userAgent: req.headers['user-agent']
         });
 
-        res.cookie('access_token', accessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
-        res.cookie('refresh_token', refreshToken, { ...REFRESH_TOKEN_OPTIONS, maxAge: ONE_MONTH });
+        res.cookie('session_id', newSession.id, SESSION_COOKIE_OPTIONS);
 
         await securityLog(id, `${ip} ${host}`, 'Login', 'Success');
 
@@ -170,16 +164,16 @@ const authHandler = async (req, res) => {
  * Logout User.
  * @param {express.Request} req
  * @param {express.Response} res
+ * @param {string} res.cookies.session_id
  */
 const logoutHandler = async (req, res) => {
     try {
-        const refreshToken = req.cookies?.refresh_token;
-        if (refreshToken) {
-            const { jti } = verifyRefreshToken(refreshToken);
-            if (jti) await Session.destroy({ where: { id: jti } });
-        }
-        res.clearCookie('access_token', ACCESS_TOKEN_OPTIONS);
-        res.clearCookie('refresh_token', REFRESH_TOKEN_OPTIONS);
+        const sessionId = req.cookies?.session_id;
+
+        if (sessionId) await Session.destroy({ where: { id: sessionId } });
+
+        res.clearCookie('session_id', SESSION_COOKIE_OPTIONS);
+
         return res.json({ success: true, message: 'Logged out successfully!' });
     } catch (err) {
         console.error('Logout error:', err);
@@ -312,7 +306,7 @@ const fetchPagesHandler = async (req, res) => {
     try {
         const user = await getUser({id: req.user, include_configs: true});
         const managerView = user?.manager_view_enabled ?? false;
-        res.json(await getPages(managerView ? 1 : 0, userId));
+        res.json(await getPages(managerView ? 1 : 0, req.user));
     } catch (err) {
         console.error('Error fetching pages:', err.message);
         res.status(500).json({ message: 'API Error.' });

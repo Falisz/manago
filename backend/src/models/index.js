@@ -27,6 +27,7 @@ import ProjectUser from './ProjectUser.js';
 import RequestStatus from './RequestStatus.js';
 import Role from './Role.js';
 import RolePermission from './RolePermission.js';
+import Session from './Session.js';
 import Schedule from './Schedule.js';
 import Shift from './Shift.js';
 import Team from './Team.js';
@@ -211,5 +212,5 @@ export {
     Channel, Contract, ContractType, Disposition, DispositionPreset, Holiday, HolidayWorking, JobPost, JobLocation,
     AbsenceType, Post, Permission, Project, ProjectRole, ProjectUser, RequestStatus, Role, RolePermission, Schedule,
     Shift, Team, TeamRole, TeamUser, Labor, LaborStatus, LaborType, User, UserManager, UserPermission, UserRole,
-    WeekendWorking
+    WeekendWorking, Session
 }

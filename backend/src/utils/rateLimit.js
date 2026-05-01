@@ -5,7 +5,7 @@ import { WARN } from './consoleColors.js';
 // General limiter to all the requests
 export const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
-    limit: 500, // 500 requests tops within the above time window
+    limit: 100000, // 100000 requests tops within the above time window
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     message: { message: 'Too many requests, please try again later.' },
@@ -17,7 +17,7 @@ export const globalLimiter = rateLimit({
 
 // Login limiter for Brute-force
 export const authLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hr
+    windowMs: 30 * 60 * 1000, // 30 min
     limit: 10, // 10 login-attempts
     message: { message: 'Too many login attempts. Please try again in an hour.' },
     standardHeaders: true,

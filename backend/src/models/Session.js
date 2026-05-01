@@ -14,7 +14,7 @@ const Session = sequelize.define('Session', {
     },
     token: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: true
     },
     expiresAt: {
         type: DataTypes.DATE,

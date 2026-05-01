@@ -4,12 +4,12 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import '#utils/dotenv.js';
 import apiRouter from '#api';
-import checkJwtHandler from '#middleware/checkJwt.js';
 import sequelize from '#utils/database.js';
 import { requestLoggerHandler, errorLoggerHandler } from '#utils/logger.js';
 import { getCorsConfig } from '#utils/corsConfig.js';
 import { INFO, ERROR, WARN } from '#utils/consoleColors.js';
 import { globalLimiter } from '#utils/rateLimit.js';
+import checkSessionStoreHandler from "#middleware/checkSessionStoreHandler.js";
 
 // Environment variables
 const PORT = process.env.PORT || 5000;
@@ -29,8 +29,8 @@ app.use(express.json());
 // Request Logger
 app.use(requestLoggerHandler);
 
-// JWT Handler
-app.use(checkJwtHandler);
+// Session Store Handler
+app.use(checkSessionStoreHandler);
 
 // Request Router
 app.use(apiRouter);

@@ -18,12 +18,12 @@ import randomId from '#utils/randomId.js';
 
 /**
  * Retrieves one User by their ID or all Users if ID is not provided.
- * @param {number} id - optional - User ID to fetch a specific User or User group type.
- * @param {string} scope
- * @param {number} scope_id
- * @param {string} group - optional - Kind of group users to be fetched - currently available: employees, managers
- * @param {boolean} roles - optional - Should Roles be added to the output User
- * @param {boolean} managers - optional - Should Managers be added to the output User
+ * @param {number|string} id - optional - User ID to fetch a specific User or User group type.
+ * @param {string?} scope - optional -
+ * @param {number|string?} scope_id - optional -
+ * @param {string?} group - optional - Kind of group users to be fetched - currently available: employees, managers
+ * @param {boolean?} roles - optional - Should Roles be added to the output User
+ * @param {boolean?} managers - optional - Should Managers be added to the output User
  * @param {boolean} all_managers
  * @param {boolean} permissions
  * @param {boolean} managed_users - optional - Should Reportee Users be added to the output User
