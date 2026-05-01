@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 const TEST_TYPE = __ENV.TEST || 'sessionStore'; // domyślnie sessionStore
-const PASSWORD = __ENV.PASSWORD || '@$^P4sSw0rD!#%';
-const USERNAME = __ENV.USERNAME || 'ceo';
+const PASSWORD = __ENV.PSWD || '@$^P4sSw0rD!#%';
+const USERNAME = __ENV.USRN || 'ceo';
 const BASE_URL = 'http://localhost:3000';
 
 export const options = {
@@ -25,6 +25,11 @@ export function setup() {
     });
     const params = { headers: { 'Content-Type': 'application/json' } };
     const loginRes = http.post(`${BASE_URL}/auth`, payload, params);
+
+    // console.log(`Payload sent: ${payload}`);
+    // console.log(`Response Status: ${loginRes.status}`);
+    // console.log(`Response Body: ${loginRes.body}`);
+    // console.log(`Cookies received: ${JSON.stringify(loginRes.cookies)}`);
 
     let authData = { type: TEST_TYPE };
 
