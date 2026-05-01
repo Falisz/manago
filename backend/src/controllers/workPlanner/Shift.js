@@ -194,15 +194,21 @@ export async function updateShift(id, data) {
     }
 
     if (data.job_post !== undefined) {
-        if (data.job_post !== null && (await JobPost.findByPk(data.job_post)))
+        const jobPostId = (data.job_post && typeof data.job_post === 'object')
+            ? data.job_post.id
+            : data.job_post;
+        if (data.job_post !== null && (await JobPost.findByPk(jobPostId)))
             return { success: false, message: 'Job Post not found.' };
-        updates.job_post = data.job_post || null;
+        updates.job_post = jobPostId || null;
     }
 
     if (data.job_location !== undefined) {
-        if (data.job_location !== null && !(await JobPost.findByPk(data.job_location)))
+        const jobLocId = (data.job_post && typeof data.job_location === 'object')
+            ? data.job_location.id
+            : data.job_location;
+        if (data.job_location !== null && !(await JobLocation.findByPk(jobLocId)))
             return { success: false, message: 'Job Location not found.' };
-        updates.job_location = data.job_location || null;
+        updates.job_location = jobLocId || null;
     }
 
     // === Optional: schedule ===

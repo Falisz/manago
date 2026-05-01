@@ -17,12 +17,12 @@ async function getManagedUsers(manager) {
     const reportees = (await getUserManagers({manager, include_all_users: true})).map(u => u.id);
     
     const managedTeams = (await getTeamUsers({user: manager, role: 3, include_subteams: true})).map(t => t.id);
-    const teamReportees = (await getTeamUsers({team: managedTeams, role: [1, 2], include_subteams: true})).map(u => u.id);
+    const teamReportees = (await getTeamUsers({team: managedTeams, include_subteams: true})).map(u => u.id);
     
-    const managedProjects = (await getProject({manager})).map(p => p.id);
+    const managedProjects = (await getProjectUsers({user: manager, role: 3})).map(p => p.id);
     const projectReportees = (await getProjectUsers({project: managedProjects})).map(u => u.id);
 
-    const managedBranches = (await getBranch({manager})).map(b => b.id);
+    const managedBranches = (await getBranchUsers({user: manager, role: 3})).map(b => b.id);
     const branchReportees = (await getBranchUsers({branch: managedBranches})).map(u => u.id);
 
     return Array.from(new Set([
