@@ -928,8 +928,8 @@ const jobLocations = [
     { id: 4, name: 'Field', color: '#F44336' }
 ];
 
-const startDate = '2025-12-24';
 
+const startDate = '2026-05-01';
 const shifts = [
     // Team 1 (Parent team) and its subteams (Los Angeles, Washington)
     // Users in Los Angeles (team 4): 100007 (leader), 100013-100017
