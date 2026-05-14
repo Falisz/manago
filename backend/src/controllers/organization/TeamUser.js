@@ -17,7 +17,7 @@ export async function getTeamUsers({team, user, role, include_subteams = false, 
     let teamIds;
 
     if (team)
-        teamIds = [team];
+        teamIds = Array.isArray(team) ? team : [team];
     else if (user)
         teamIds = (await TeamUser.findAll({where: {user, role}})).map(tu => tu['team']);
     else return [];

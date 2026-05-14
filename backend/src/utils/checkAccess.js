@@ -8,28 +8,26 @@ import {
     getProject,
     getProjectUsers,
     getBranch,
-    getBranchUsers,
     getSchedule,
     getShift
 } from '#controllers';
 
 async function getManagedUsers(manager) {
-    const reportees = (await getUserManagers({manager, include_all_users: true})).map(u => u.id);
+    const directReportees = (await getUserManagers({manager, include_all_users: true})).map(u => u.id);
     
     const managedTeams = (await getTeamUsers({user: manager, role: 3, include_subteams: true})).map(t => t.id);
-    const teamReportees = (await getTeamUsers({team: managedTeams, include_subteams: true})).map(u => u.id);
+    let teamReportees = []
+    if (managedTeams?.length) teamReportees = (await getTeamUsers({team: managedTeams, include_subteams: true})).map(u => u.id);
     
     const managedProjects = (await getProjectUsers({user: manager, role: 3})).map(p => p.id);
-    const projectReportees = (await getProjectUsers({project: managedProjects})).map(u => u.id);
-
-    const managedBranches = (await getBranchUsers({user: manager, role: 3})).map(b => b.id);
-    const branchReportees = (await getBranchUsers({branch: managedBranches})).map(u => u.id);
+    let projectReportees = []
+    if (managedProjects?.length)
+        projectReportees = (await getProjectUsers({project: managedProjects})).map(u => u.id);
 
     return Array.from(new Set([
-        ...reportees,
+        ...directReportees,
         ...teamReportees,
-        ...projectReportees,
-        ...branchReportees
+        ...projectReportees
     ]));
 }
 
@@ -68,6 +66,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
         if (!Array.isArray(ids))
             ids = [ids];
+        ids = ids.map(Number);
 
         let permittedIds;
         
@@ -108,7 +107,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
                 permittedIds = new Set((await getUserRoles({user})).map(r => r.id));
             
         const hasFullAccess = [...ids].every(id => permittedIds.has(id));
-        let hasAccess = false;
+        let hasAccess = hasFullAccess;
         let allowedIds = [];
         let forbiddenIds = [];
 
@@ -139,17 +138,17 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
     for (const type of ['managed', 'own'])
         if (action !== 'assign')
             if (hasPermission(`${type}-${resource}`))
-                return await resourceAccess(resource, Array.from(id));
+                return resourceAccess(resource, id);
         
         else if (resource2)
             if (hasPermission('assign', resource, resource2))
                 return { hasFullAccess: true, hasAccess: true };
             
             else if (hasPermission(`${type}-${resource}`, resource2))
-                return await resourceAccess(resource, Array.from(id));
+                return await resourceAccess(resource, id);
             
             else if (hasPermission(resource, `${type}-${resource2}`))
-                return await resourceAccess(resource2, Array.from(id2));
+                return await resourceAccess(resource2, id);
             
             else if (hasPermission(`${type}-${resource}`, `${type}-${resource2}`)) {
                 const { 
@@ -157,13 +156,13 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
                     hasAccess, 
                     allowedIds,
                     forbiddenIds 
-                } = await resourceAccess(resource, Array.from(id));
+                } = await resourceAccess(resource, id);
                 const { 
                     hasFullAccess: hasFullAccess2, 
                     hasAccess: hasAccess2, 
                     allowedIds: allowedIds2,
                     forbiddenIds: forbiddenIds2
-                } = await resourceAccess(resource2, Array.from(id2));
+                } = await resourceAccess(resource2, id2);
                 
                 return { 
                     hasFullAccess: hasFullAccess && hasFullAccess2, 

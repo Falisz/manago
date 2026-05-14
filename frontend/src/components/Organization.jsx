@@ -24,7 +24,7 @@ const OrganizationIndex = () => {
 
         if (!projects || refresh) fetchProjects({user: user.id}).then();
 
-    }, [fetchTeams, teams, refreshTriggers.teams]);
+    }, [fetchTeams, teams, refreshTriggers.teams, fetchProjects, projects, refreshTriggers.projects, user.id]);
 
     const { teamsM, projectsM, branchesM } = React.useMemo(() => ({
         teamsM: appState.modules?.find(m => m.title?.toLowerCase() === 'teams')?.enabled,

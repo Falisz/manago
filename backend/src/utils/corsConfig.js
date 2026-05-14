@@ -7,7 +7,7 @@ export function getCorsConfig() {
     return {
         origin: ['http://localhost:3000'],
         credentials: true,
-        methods: ['GET', 'POST', 'OPTIONS'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
         preflightContinue: false
     };

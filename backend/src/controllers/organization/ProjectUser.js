@@ -15,9 +15,9 @@ export async function getProjectUsers({project, user, role} ={}) {
     let projectIds;
 
     if (project)
-        projectIds = [project];
+        projectIds = Array.isArray(project) ? project : [project];
     else if (user)
-        projectIds = (await ProjectUser.findAll({where: {project, role}})).map(pu => pu['team']);
+        projectIds = (await ProjectUser.findAll({where: {user, role}})).map(pu => pu['project']);
     else return [];
 
     projectIds = [...new Set(projectIds)];
