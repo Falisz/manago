@@ -68,12 +68,12 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
             ids = [ids];
         ids = ids.map(Number);
 
-        let permittedIds;
+        let permittedIds = new Set();
         
-        if (type === 'managed')
+        if (type === 'managed') {
             if (resource === 'user' || resource === 'manager')
                 permittedIds = new Set(await getManagedUsers(user));
-            
+
             else if (resource === 'role') {
                 permittedIds = new Set((await getUserRoles({user})).map(r => r.id));
 
@@ -82,9 +82,7 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
                 if (permittedIds.has(12) || permittedIds.has(13))
                     [1, 2, 3, 11].forEach(r => permittedIds.add(r));
-            }
-
-            else if (resource === 'team')
+            } else if (resource === 'team')
                 permittedIds = new Set((await getTeamUsers({user, role: 3, include_subteams: true})).map(t => t.id));
 
             else if (resource === 'project')
@@ -99,12 +97,29 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
             else if (resource === 'shift')
                 permittedIds = new Set((await getShift({user: await getManagedUsers(user)})).map(s => s.id));
 
-        else if (type === 'own')
+        } else if (type === 'own-team') {
+            permittedIds = new Set([user]);
+
+            const ownTeams = (await getTeamUsers({user, include_subteams: true})).map(t => t.id);
+
+            if (ownTeams?.length) {
+                const teamColleagues = (await getTeamUsers({
+                    team: ownTeams,
+                    include_subteams: true
+                })).map(u => u.id);
+
+                teamColleagues?.forEach(id => permittedIds.add(id));
+
+                console.log(permittedIds);
+            }
+
+        } else if (type === 'own' || type === 'self') {
             if (resource === 'user')
                 permittedIds = new Set([user]);
 
             else if (resource === 'role')
                 permittedIds = new Set((await getUserRoles({user})).map(r => r.id));
+        }
             
         const hasFullAccess = [...ids].every(id => permittedIds.has(id));
         let hasAccess = hasFullAccess;
@@ -118,6 +133,8 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
         if (allowedIds.length > 0)
             hasAccess = true;
+
+        console.log(resource, ids, type, hasFullAccess, hasAccess, allowedIds, forbiddenIds);
 
         return { hasFullAccess, hasAccess, allowedIds, forbiddenIds };
     }
@@ -135,45 +152,53 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
     // Managed-resource permissions 
     // permission name format: <action>-managed-<resource> (e.g. read-managed-user)
-    for (const type of ['managed', 'own'])
-        if (action !== 'assign')
+
+    let access = { hasFullAccess: false, hasAccess: false };
+
+    for (const type of ['managed', 'own-team', 'own', 'self']) {
+        if (action !== 'assign') {
             if (hasPermission(`${type}-${resource}`))
-                return resourceAccess(resource, id);
-        
-        else if (resource2)
+                access = await resourceAccess(resource, id, type);
+
+        } else if (resource2) {
             if (hasPermission('assign', resource, resource2))
-                return { hasFullAccess: true, hasAccess: true };
-            
+                access = {hasFullAccess: true, hasAccess: true};
+
             else if (hasPermission(`${type}-${resource}`, resource2))
-                return await resourceAccess(resource, id);
-            
+                access = await resourceAccess(resource, id, type);
+
             else if (hasPermission(resource, `${type}-${resource2}`))
-                return await resourceAccess(resource2, id);
-            
+                access = await resourceAccess(resource2, id, type);
+
             else if (hasPermission(`${type}-${resource}`, `${type}-${resource2}`)) {
-                const { 
-                    hasFullAccess, 
-                    hasAccess, 
+                const {
+                    hasFullAccess,
+                    hasAccess,
                     allowedIds,
-                    forbiddenIds 
-                } = await resourceAccess(resource, id);
-                const { 
-                    hasFullAccess: hasFullAccess2, 
-                    hasAccess: hasAccess2, 
+                    forbiddenIds
+                } = await resourceAccess(resource, id, type);
+                const {
+                    hasFullAccess: hasFullAccess2,
+                    hasAccess: hasAccess2,
                     allowedIds: allowedIds2,
                     forbiddenIds: forbiddenIds2
-                } = await resourceAccess(resource2, id2);
-                
-                return { 
-                    hasFullAccess: hasFullAccess && hasFullAccess2, 
-                    hasAccess: hasAccess && hasAccess2, 
+                } = await resourceAccess(resource2, id2, type);
+
+                access = {
+                    hasFullAccess: hasFullAccess && hasFullAccess2,
+                    hasAccess: hasAccess && hasAccess2,
                     allowedIds,
                     forbiddenIds,
-                    allowedIds2, 
+                    allowedIds2,
                     forbiddenIds2
                 };
             }
-    return { hasFullAccess: false, hasAccess: false };
+        }
+
+        if (access.hasFullAccess) break;
+    }
+
+    return access;
 }
 
 export default checkAccess;

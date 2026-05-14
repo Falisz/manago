@@ -18,8 +18,12 @@ export async function getTeamUsers({team, user, role, include_subteams = false, 
 
     if (team)
         teamIds = Array.isArray(team) ? team : [team];
-    else if (user)
-        teamIds = (await TeamUser.findAll({where: {user, role}})).map(tu => tu['team']);
+    else if (user) {
+        const where = {user}
+        if (role != null)
+            where.role = role;
+        teamIds = (await TeamUser.findAll({where})).map(tu => tu['team']);
+    }
     else return [];
 
     async function getParentIds(teamIds) {

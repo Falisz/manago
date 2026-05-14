@@ -34,6 +34,11 @@ const fetchHandler = async (req, res) => {
     try {
         const falsy = [0, '0', 'false', false, 'no', 'not'];
 
+        const { hasAccess } = await checkAccess(req.user, 'read', 'user', id);
+
+        if (!hasAccess)
+            return res.status(403).json({message: 'Not permitted.'});
+
         const users = await getUser({ 
             id,
             group: req.query.group,
