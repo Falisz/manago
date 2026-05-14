@@ -155,7 +155,11 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
     let access = { hasFullAccess: false, hasAccess: false };
 
-    for (const type of ['managed', 'own-team', 'own', 'self']) {
+    if (action === 'access') {
+        if(hasPermission(resource))
+            access = { hasFullAccess: true, hasAccess: true };
+
+    } else for (const type of ['managed', 'own-team', 'own', 'self']) {
         if (action !== 'assign') {
             if (hasPermission(`${type}-${resource}`))
                 access = await resourceAccess(resource, id, type);
@@ -194,7 +198,6 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
                 };
             }
         }
-
         if (access.hasFullAccess) break;
     }
 

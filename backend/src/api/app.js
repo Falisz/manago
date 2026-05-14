@@ -336,9 +336,10 @@ const toggleManagerViewHandler = async (req, res) => {
                 manager_view: false
             });
 
-        const hasAccess = await checkAccess(req.user, 'access', 'manager-view');
+        const access = await checkAccess(req.user, 'access', 'manager-view');
+        console.log(access);
 
-        if (!hasAccess)
+        if (!access.hasFullAccess && !access.hasAccess)
             return res.status(403).json({
                 success: false,
                 message: 'Manager view access not permitted.',
