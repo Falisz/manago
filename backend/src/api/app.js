@@ -17,7 +17,7 @@ import checkAccess from '#utils/checkAccess.js';
 import {
     ACCESS_TOKEN_OPTIONS,
     REFRESH_TOKEN_OPTIONS,
-    HALF_HOUR, ONE_MONTH,
+    FIVE_MIN, ONE_MONTH,
     generateAccessToken,
     generateRefreshToken,
     verifyRefreshToken
@@ -83,7 +83,7 @@ const loginHandler = async (req, res) => {
             userAgent: req.headers['user-agent']
         });
 
-        res.cookie('access_token', accessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: HALF_HOUR });
+        res.cookie('access_token', accessToken, { ...ACCESS_TOKEN_OPTIONS, maxAge: FIVE_MIN });
         res.cookie('refresh_token', refreshToken, { ...REFRESH_TOKEN_OPTIONS, maxAge: ONE_MONTH });
 
         await securityLog(id, `${ip} ${host}`, 'Login', 'Success');

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'your-very-long-random-access-secret';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-even-longer-refresh-secret';
 
-export const HALF_HOUR = 30 * 60 * 1000;
+export const FIVE_MIN = 5 * 60 * 1000;
 export const ONE_DAY = 24 * 60 * 60 * 1000;
 export const ONE_MONTH = 30 * ONE_DAY;
 export const ACCESS_TOKEN_OPTIONS = {
@@ -19,7 +19,7 @@ export const REFRESH_TOKEN_OPTIONS = {
 };
 
 export const generateAccessToken = (payload) => {
-    return jwt.sign(payload, ACCESS_SECRET, { expiresIn: '30m' });
+    return jwt.sign(payload, ACCESS_SECRET, { expiresIn: '5m' });
 };
 
 export const generateRefreshToken = (payload) => {
