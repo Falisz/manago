@@ -109,8 +109,6 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
                 })).map(u => u.id);
 
                 teamColleagues?.forEach(id => permittedIds.add(id));
-
-                console.log(permittedIds);
             }
 
         } else if (type === 'own' || type === 'self') {
@@ -133,8 +131,6 @@ async function checkAccess(user, action, resource, id, resource2, id2) {
 
         if (allowedIds.length > 0)
             hasAccess = true;
-
-        console.log(resource, ids, type, hasFullAccess, hasAccess, allowedIds, forbiddenIds);
 
         return { hasFullAccess, hasAccess, allowedIds, forbiddenIds };
     }

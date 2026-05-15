@@ -14,6 +14,9 @@ import sequelize from '#utils/database.js';
  */
 export async function getRole({id, users=true} = {}) {
 
+    // if (Number(id) === 2)
+    //     throw new Error("Information about error if Role #2 is to be read!");
+
     // Logic if no ID is provided - fetch all Roles
     if (!id || isNaN(id)) {
         const roles = await Role.findAll({

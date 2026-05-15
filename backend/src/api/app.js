@@ -312,7 +312,7 @@ const fetchPagesHandler = async (req, res) => {
     try {
         const user = await getUser({id: req.user, include_configs: true});
         const managerView = user?.manager_view_enabled ?? false;
-        res.json(await getPages(managerView ? 1 : 0, userId));
+        res.json(await getPages(managerView ? 1 : 0, req.user));
     } catch (err) {
         console.error('Error fetching pages:', err.message);
         res.status(500).json({ message: 'API Error.' });
@@ -337,7 +337,6 @@ const toggleManagerViewHandler = async (req, res) => {
             });
 
         const access = await checkAccess(req.user, 'access', 'manager-view');
-        console.log(access);
 
         if (!access.hasFullAccess && !access.hasAccess)
             return res.status(403).json({
