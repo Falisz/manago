@@ -1,0 +1,47 @@
+PS C:\Users\Falisz\OneDrive\Desktop\test_bruteforce> k6 run bruteforce.js
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: bruteforce.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 5 max VUs, 40s max duration (incl. graceful stop):
+              * brute_force_attack: 200 iterations shared among 5 VUs (maxDuration: 10s, gracefulStop: 30s)
+
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 200     88.475602/s
+    checks_succeeded...: 100.00% 200 out of 200
+    checks_failed......: 0.00%   0 out of 200
+
+    ✓ Przetworzone żądania (pierwsze 10 ze statusem 401, pozostałe 429)
+
+    HTTP
+    http_req_duration....: avg=5.04ms min=506µs   med=1.5ms   max=120.92ms p(90)=2.12ms  p(95)=6.78ms
+    http_req_failed......: 100.00% 200 out of 200
+    http_reqs............: 200     88.475602/s
+
+    EXECUTION
+    iteration_duration...: avg=55.5ms min=50.62ms med=51.81ms max=173.28ms p(90)=52.66ms p(95)=57.21ms
+    iterations...........: 200     88.475602/s
+    vus..................: 5       min=5          max=5
+    vus_max..............: 5       min=5          max=5
+
+    NETWORK
+    data_received........: 107 kB  47 kB/s
+    data_sent............: 35 kB   15 kB/s
+
+
+
+
+running (02.3s), 0/5 VUs, 200 complete and 0 interrupted iterations
+brute_force_attack ✓ [======================================] 5 VUs  02.3s/10s  200/200 shared iters
+PS C:\Users\Falisz\OneDrive\Desktop\test_bruteforce>
